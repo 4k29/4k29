@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="../../style.css" />
   <link rel="stylesheet" href="../../editor/github.css" />
   <link rel="stylesheet" href="editor.css" />
+  <link rel="stylesheet" href="draft-history.css" />
 </head>
 
 <body class="editor-page">
@@ -41,7 +42,10 @@
             <p>01</p>
             <h2 id="metadata-title">記事情報</h2>
           </div>
-          <button class="text-button" id="import-button" type="button">Markdownを読み込む</button>
+          <div class="editor-section-actions">
+            <button class="text-button" id="drafts-button" type="button">下書き一覧</button>
+            <button class="text-button" id="import-button" type="button">Markdownを読み込む</button>
+          </div>
           <input id="import-file" type="file" accept=".md,text/markdown,text/plain" hidden />
         </div>
 
@@ -146,6 +150,25 @@
     </form>
   </main>
 
+  <dialog id="draft-history-dialog" class="editor-dialog draft-history-dialog" aria-labelledby="draft-history-title">
+    <section class="draft-history-shell">
+      <header class="draft-history-header">
+        <div class="draft-history-header-row">
+          <div class="dialog-heading">
+            <p>GitHub history</p>
+            <h2 id="draft-history-title">過去の下書き</h2>
+          </div>
+          <div class="draft-history-header-actions">
+            <button id="draft-history-refresh" type="button">更新</button>
+            <button id="draft-history-close" type="button">閉じる</button>
+          </div>
+        </div>
+        <p class="draft-history-status" id="draft-history-status" role="status" aria-live="polite">GitHubの保存履歴から下書きを探します。</p>
+      </header>
+      <div class="draft-history-list" id="draft-history-list"></div>
+    </section>
+  </dialog>
+
   <dialog id="image-dialog" class="editor-dialog">
     <form method="dialog">
       <div class="dialog-heading">
@@ -174,5 +197,6 @@
   <script src="../../editor/github-config.js"></script>
   <script src="../../editor/github.js"></script>
   <script src="editor.js"></script>
+  <script src="draft-history.js"></script>
 </body>
 </html>
