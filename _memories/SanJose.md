@@ -1,0 +1,23 @@
+---
+title: "San Jose"
+description: "2025.08.12 — San Jose"
+date: "2025-08-12 00:00:00 +0900"
+last_modified_at: "2025-08-12 00:00:00 +0900"
+date_display: "2025.08.12"
+permalink: "/memory/SanJose.html"
+image: "/images/ogp/San%20Jose.png"
+image_alt: "San Jose"
+photos:
+  - src: "/images/San%20Jose/IMG_3853.jpeg"
+    caption: "SJC"
+  - src: "/images/San%20Jose/IMG_3869.jpeg"
+    caption: "San Jose"
+  - src: "/images/San%20Jose/IMG_1018.jpeg"
+    caption: "Google Mountain View"
+  - src: "/images/San%20Jose/IMG_1028.jpeg"
+    caption: "Google Mountain View"
+  - src: "/images/San%20Jose/IMG_1047.jpeg"
+    caption: "Google Mountain View"
+  - src: "/images/San%20Jose/IMG_1049.jpeg"
+    caption: "Stanford University"
+---

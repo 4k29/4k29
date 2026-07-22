@@ -17,10 +17,11 @@ permalink: /sitemap.xml
     <lastmod>{{ note.last_modified_at | default: note.date | date_to_xmlschema }}</lastmod>
   </url>
   {% endfor %}
-  {% assign memory_paths = "/memory/yumeshima.html|/memory/kyoto.html|/memory/Cairns.html|/memory/NY.html|/memory/NewYork.html|/memory/SanFrancisco.html|/memory/ApplePark.html|/memory/SanJose.html" | split: "|" %}
-  {% for memory_path in memory_paths %}
+  {% assign sorted_memories = site.memories | sort: "date" | reverse %}
+  {% for memory in sorted_memories %}
   <url>
-    <loc>{{ memory_path | absolute_url }}</loc>
+    <loc>{{ memory.url | absolute_url }}</loc>
+    <lastmod>{{ memory.last_modified_at | default: memory.date | date_to_xmlschema }}</lastmod>
   </url>
   {% endfor %}
 </urlset>

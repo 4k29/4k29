@@ -97,48 +97,19 @@ permalink: /
     </section>
 
     <section class="content-section" id="memory">
-      <div class="section-heading"><h2>Memory</h2><span>08</span></div>
+      {% assign sorted_memories = site.memories | sort: "date" | reverse %}
+      <div class="section-heading">
+        <h2>Memory</h2>
+        <span>{% if sorted_memories.size < 10 %}0{% endif %}{{ sorted_memories.size }}</span>
+      </div>
       <div class="section-body row-list">
-          <a href="memory/yumeshima.html" class="row-item compact">
-            <time>2026.03.29</time>
-            <span class="row-title">YUMESHIMA</span>
-            <span class="arrow">↗</span>
-          </a>
-          <a href="memory/kyoto.html" class="row-item compact">
-            <time>2026.03.28</time>
-            <span class="row-title">Kyoto</span>
-            <span class="arrow">↗</span>
-          </a>
-          <a href="memory/Cairns.html" class="row-item compact">
-            <time>2025.09.10–14</time>
-            <span class="row-title">Cairns</span>
-            <span class="arrow">↗</span>
-          </a>
-          <a href="memory/NY.html" class="row-item compact">
-            <time>2025.08.16</time>
-            <span class="row-title">New York</span>
-            <span class="arrow">↗</span>
-          </a>
-          <a href="memory/NewYork.html" class="row-item compact">
-            <time>2025.08.15</time>
-            <span class="row-title">New York</span>
-            <span class="arrow">↗</span>
-          </a>
-          <a href="memory/SanFrancisco.html" class="row-item compact">
-            <time>2025.08.13–14</time>
-            <span class="row-title">San Francisco</span>
-            <span class="arrow">↗</span>
-          </a>
-          <a href="memory/ApplePark.html" class="row-item compact">
-            <time>2025.08.13</time>
-            <span class="row-title">Apple Park Visitor Center</span>
-            <span class="arrow">↗</span>
-          </a>
-          <a href="memory/SanJose.html" class="row-item compact">
-            <time>2025.08.12</time>
-            <span class="row-title">San Jose</span>
-            <span class="arrow">↗</span>
-          </a>
+        {% for memory in sorted_memories %}
+        <a href="{{ memory.url | relative_url }}" class="row-item compact">
+          <time datetime="{{ memory.date | date: '%Y-%m-%d' }}">{{ memory.date_display | escape }}</time>
+          <span class="row-title">{{ memory.list_title | default: memory.title | escape }}</span>
+          <span class="arrow">↗</span>
+        </a>
+        {% endfor %}
       </div>
     </section>
 
@@ -175,4 +146,3 @@ permalink: /
   <footer><p>© 2026 4k29</p><a href="#top">Back to top ↑</a></footer>
 </body>
 </html>
-
