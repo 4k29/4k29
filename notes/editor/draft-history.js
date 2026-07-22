@@ -171,10 +171,22 @@
     };
   }
 
+  function comparableDraft(data) {
+    return {
+      title: String(data.title || ""),
+      slug: String(data.slug || ""),
+      date: String(data.date || ""),
+      description: String(data.description || ""),
+      image: String(data.image || ""),
+      imageAlt: String(data.imageAlt || ""),
+      tags: Array.isArray(data.tags) ? data.tags : [],
+      body: String(data.body || "")
+    };
+  }
+
   function sameDraft(left, right) {
     if (!left || !right) return false;
-    if (left.slug && right.slug) return left.slug === right.slug;
-    return left.title === right.title && left.body === right.body;
+    return JSON.stringify(comparableDraft(left)) === JSON.stringify(comparableDraft(right));
   }
 
   async function preserveCurrentDraft(nextData) {
@@ -342,7 +354,8 @@
     if (event.target === dialog) dialog.close();
   });
 
-  dialog.addEventListener("cancel", function () {
+  dialog.addEventListener("cancel", function (event) {
+    event.preventDefault();
     dialog.close();
   });
 
