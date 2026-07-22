@@ -152,6 +152,21 @@ async function notifyDiscord(articles) {
   }
 }
 
+async function sendTestNotification() {
+  await notifyDiscord([
+    {
+      source: "Orchard",
+      sourceId: "apple-newsroom",
+      titleJa: "Orchardの通知テストに成功しました",
+      summaryJa: "Apple関連RSSの新着記事は、今後このチャンネルへ日本語で届きます。",
+      titleOriginal: "Orchard notification test",
+      url: "https://orchard-news.brisk-joy-8941.chatgpt.site",
+      publishedAt: new Date().toISOString(),
+      imageUrl: null,
+    },
+  ]);
+}
+
 async function main() {
   const state = await readState();
   const settled = await Promise.allSettled(FEEDS.map(fetchFeed));
@@ -190,3 +205,6 @@ async function main() {
 }
 
 await main();
+if (process.env.SEND_TEST_NOTIFICATION === "true") {
+  await sendTestNotification();
+}
