@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: 'ja' }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KK7MDCLBGT"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+    gtag("config", "G-KK7MDCLBGT");
+  </script>
+
+  <title>{{ page.title | escape }} / {{ site.title | escape }}</title>
+  <meta name="description" content="{{ page.description | escape }}" />
+  <meta name="author" content="{{ page.author | default: 'うまいしか' | escape }}" />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <link rel="canonical" href="{{ page.url | absolute_url }}" />
+  <link rel="alternate" type="application/atom+xml" title="4k29 Notes" href="{{ '/feed.xml' | absolute_url }}" />
+
+  <!-- Open Graph -->
+  <meta property="og:locale" content="ja_JP" />
+  <meta property="og:site_name" content="{{ site.title | escape }}" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="{{ page.title | escape }}" />
+  <meta property="og:description" content="{{ page.description | escape }}" />
+  <meta property="og:url" content="{{ page.url | absolute_url }}" />
+  <meta property="og:image" content="{{ page.image | absolute_url }}" />
+  <meta property="og:image:alt" content="{{ page.image_alt | default: page.title | escape }}" />
+  <meta property="article:published_time" content="{{ page.date | date_to_xmlschema }}" />
+  <meta property="article:modified_time" content="{{ page.last_modified_at | default: page.date | date_to_xmlschema }}" />
+  <meta property="article:author" content="https://x.com/p_horeer" />
+  {% for tag in page.tags %}
+  <meta property="article:tag" content="{{ tag | escape }}" />
+  {% endfor %}
+
+  <!-- X Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@p_horeer" />
+  <meta name="twitter:creator" content="@p_horeer" />
+  <meta name="twitter:title" content="{{ page.title | escape }}" />
+  <meta name="twitter:description" content="{{ page.description | escape }}" />
+  <meta name="twitter:image" content="{{ page.image | absolute_url }}" />
+  <meta name="twitter:image:alt" content="{{ page.image_alt | default: page.title | escape }}" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": {{ page.title | jsonify }},
+    "description": {{ page.description | jsonify }},
+    "image": {{ page.image | absolute_url | jsonify }},
+    "datePublished": {{ page.date | date_to_xmlschema | jsonify }},
+    "dateModified": {{ page.last_modified_at | default: page.date | date_to_xmlschema | jsonify }},
+    "inLanguage": "ja",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": {{ page.url | absolute_url | jsonify }}
+    },
+    "author": {
+      "@type": "Person",
+      "name": "うまいしか",
+      "url": "https://x.com/p_horeer"
+    },
+    "publisher": {
+      "@type": "Person",
+      "name": "うまいしか",
+      "url": {{ '/' | absolute_url | jsonify }}
+    },
+    "keywords": {{ page.tags | jsonify }}
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": {{ '/' | absolute_url | jsonify }}
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Notes",
+        "item": {{ '/notes/' | absolute_url | jsonify }}
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": {{ page.title | jsonify }},
+        "item": {{ page.url | absolute_url | jsonify }}
+      }
+    ]
+  }
+  </script>
+
+  <link rel="icon" href="{{ '/favicon.ico' | relative_url }}" />
+  <link rel="apple-touch-icon" href="{{ '/favicon.png' | relative_url }}" />
+  <link rel="stylesheet" href="{{ '/style.css' | relative_url }}" />
+</head>
+
+<body>
+  <div class="note-page" id="top">
+    <header class="note-nav">
+      <div>
+        <a href="{{ '/' | relative_url }}">Home</a>
+        <span>/</span>
+        <a href="{{ '/notes/' | relative_url }}">Notes</a>
+      </div>
+
+      <a href="https://x.com/p_horeer" target="_blank" rel="noopener noreferrer">
+        @p_horeer ↗
+      </a>
+    </header>
+
+    <main class="note-content">
+      <article>
+        <header class="note-hero">
+          <p>
+            Note /
+            <time datetime="{{ page.date | date: '%Y-%m-%d' }}">{{ page.date | date: "%Y.%m.%d" }}</time>
+          </p>
+          <h1>{{ page.title | escape }}</h1>
+        </header>
+
+        <div class="article-body">
+          {{ content }}
+        </div>
+      </article>
+
+      <div class="article-share">
+        <p>Share this note</p>
+        {% capture share_text %}{{ page.title }}
+@p_horeer
+{{ page.url | absolute_url }}{% endcapture %}
+        <a href="https://twitter.com/intent/tweet?text={{ share_text | strip | url_encode }}" target="_blank" rel="noopener noreferrer">
+          Share on X ↗
+        </a>
+      </div>
+
+      {% assign sorted_notes = site.notes | sort: "date" | reverse %}
+      <section class="related-notes" aria-labelledby="more-notes-title">
+        <div class="related-notes-heading">
+          <h2 id="more-notes-title">More Notes</h2>
+          <a href="{{ '/notes/' | relative_url }}">View all ↗</a>
+        </div>
+        <div class="row-list">
+          {% assign related_count = 0 %}
+          {% for note in sorted_notes %}
+            {% unless note.url == page.url %}
+              {% if related_count < 3 %}
+              <a href="{{ note.url | relative_url }}" class="row-item compact">
+                <time datetime="{{ note.date | date: '%Y-%m-%d' }}">{{ note.date | date: "%Y.%m.%d" }}</time>
+                <span class="row-title">{{ note.title | escape }}</span>
+                <span class="arrow">↗</span>
+              </a>
+              {% assign related_count = related_count | plus: 1 %}
+              {% endif %}
+            {% endunless %}
+          {% endfor %}
+        </div>
+      </section>
+    </main>
+
+    <footer class="note-footer">
+      <p>© {{ site.time | date: "%Y" }} 4k29</p>
+      <a href="#top">Back to top ↑</a>
+    </footer>
+  </div>
+</body>
+</html>

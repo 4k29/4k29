@@ -1,39 +1,26 @@
+---
+layout: null
+permalink: /sitemap.xml
+---
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://4k29.github.io/4k29/</loc>
+    <loc>{{ '/' | absolute_url }}</loc>
   </url>
   <url>
-    <loc>https://4k29.github.io/4k29/memory/yumeshima.html</loc>
+    <loc>{{ '/notes/' | absolute_url }}</loc>
   </url>
+  {% assign sorted_notes = site.notes | sort: "date" | reverse %}
+  {% for note in sorted_notes %}
   <url>
-    <loc>https://4k29.github.io/4k29/memory/kyoto.html</loc>
+    <loc>{{ note.url | absolute_url }}</loc>
+    <lastmod>{{ note.last_modified_at | default: note.date | date_to_xmlschema }}</lastmod>
   </url>
+  {% endfor %}
+  {% assign memory_paths = "/memory/yumeshima.html|/memory/kyoto.html|/memory/Cairns.html|/memory/NY.html|/memory/NewYork.html|/memory/SanFrancisco.html|/memory/ApplePark.html|/memory/SanJose.html" | split: "|" %}
+  {% for memory_path in memory_paths %}
   <url>
-    <loc>https://4k29.github.io/4k29/memory/Cairns.html</loc>
+    <loc>{{ memory_path | absolute_url }}</loc>
   </url>
-  <url>
-    <loc>https://4k29.github.io/4k29/memory/NY.html</loc>
-  </url>
-  <url>
-    <loc>https://4k29.github.io/4k29/memory/NewYork.html</loc>
-  </url>
-  <url>
-    <loc>https://4k29.github.io/4k29/memory/SanFrancisco.html</loc>
-  </url>
-  <url>
-    <loc>https://4k29.github.io/4k29/memory/ApplePark.html</loc>
-  </url>
-  <url>
-    <loc>https://4k29.github.io/4k29/memory/SanJose.html</loc>
-  </url>
-  <url>
-    <loc>https://4k29.github.io/4k29/notes/Instants.html</loc>
-  </url>
-  <url>
-    <loc>https://4k29.github.io/4k29/notes/iPhone-e.html</loc>
-  </url>
-  <url>
-    <loc>https://4k29.github.io/4k29/notes/Nothing-Headphone-1.html</loc>
-  </url>
+  {% endfor %}
 </urlset>
