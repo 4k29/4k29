@@ -163,10 +163,10 @@ async function main() {
   if (!raw.length) throw new Error("All RSS feeds failed");
 
   const knownUrls = new Set((state.articles ?? []).map((article) => article.url));
-  const unseen = raw
+  const unseenCandidates = raw
     .filter((article) => !knownUrls.has(article.url))
-    .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
-    .slice(0, 40);
+    .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+  const unseen = state.initialized ? unseenCandidates.slice(0, 40) : unseenCandidates;
 
   if (!unseen.length) {
     console.log("No new articles.");
