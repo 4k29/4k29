@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <title>Memory Editor / 4k29</title>
+  <link rel="icon" href="../../favicon.ico" />
+  <link rel="apple-touch-icon" href="../../favicon.png" />
+  <link rel="stylesheet" href="../../style.css" />
+  <link rel="stylesheet" href="editor.css" />
+</head>
+
+<body class="memory-editor-page">
+  <header class="memory-editor-nav">
+    <div class="memory-editor-breadcrumb">
+      <a href="../../">Home</a>
+      <span>/</span>
+      <span>Memory Editor</span>
+    </div>
+    <p id="save-status" role="status" aria-live="polite">端末内に自動保存</p>
+  </header>
+
+  <main class="memory-editor-main">
+    <header class="memory-editor-intro">
+      <p>Private photo workspace</p>
+      <h1>Memory Editor</h1>
+      <p>写真を選び、順番とキャプションを整えるだけ。公開用の画像とMemoryデータをまとめて作ります。</p>
+    </header>
+
+    <form id="memory-form" novalidate>
+      <section class="memory-editor-section" aria-labelledby="memory-info-title">
+        <div class="memory-editor-section-heading">
+          <div>
+            <p>01</p>
+            <h2 id="memory-info-title">Memory情報</h2>
+          </div>
+          <p>ページと検索表示に使われます</p>
+        </div>
+
+        <div class="memory-metadata-grid">
+          <label class="memory-field memory-field-wide">
+            <span>場所・タイトル</span>
+            <input id="title" name="title" type="text" autocomplete="off" placeholder="Tokyo" required />
+          </label>
+
+          <label class="memory-field">
+            <span>スラッグ <small>URLとファイル名</small></span>
+            <input id="slug" name="slug" type="text" inputmode="url" autocomplete="off" placeholder="tokyo-2026" pattern="[A-Za-z0-9][A-Za-z0-9._-]*" required />
+          </label>
+
+          <label class="memory-field">
+            <span>並び替え用の日付</span>
+            <input id="date" name="date" type="date" required />
+          </label>
+
+          <label class="memory-field">
+            <span>画面に表示する日付</span>
+            <input id="date-display" name="dateDisplay" type="text" autocomplete="off" placeholder="2026.07.22–24" required />
+          </label>
+
+          <label class="memory-field memory-field-wide">
+            <span>概要 <small><output id="description-count">0</output>文字</small></span>
+            <textarea id="description" name="description" rows="3" placeholder="2026.07.22 — Tokyoで撮影した写真の記録。" required></textarea>
+          </label>
+        </div>
+
+        <p class="memory-url-preview">公開URL: <span id="url-preview">https://4k29.github.io/4k29/memory/…</span></p>
+      </section>
+
+      <section class="memory-editor-section" aria-labelledby="photos-title">
+        <div class="memory-editor-section-heading">
+          <div>
+            <p>02</p>
+            <h2 id="photos-title">写真とキャプション</h2>
+          </div>
+          <p><output id="photo-count">0</output>枚</p>
+        </div>
+
+        <label class="memory-drop-zone" id="drop-zone" for="photo-input">
+          <input id="photo-input" type="file" accept="image/*" multiple hidden />
+          <span class="memory-drop-icon" aria-hidden="true">＋</span>
+          <strong>写真を選ぶ</strong>
+          <span>複数枚をまとめて選択できます</span>
+          <small>長辺2400px・WebPに自動で軽量化</small>
+        </label>
+
+        <div class="memory-photo-list" id="photo-list" aria-live="polite"></div>
+        <p class="memory-photo-empty" id="photo-empty">写真を追加すると、ここで順番とキャプションを編集できます。</p>
+      </section>
+
+      <section class="memory-publish-panel" aria-labelledby="memory-publish-title">
+        <div class="memory-publish-copy">
+          <p>03</p>
+          <h2 id="memory-publish-title">書き出して公開</h2>
+          <p>公開セットを解凍し、画像とMemoryデータをそれぞれGitHubへアップロードします。HTMLを書く必要はありません。</p>
+        </div>
+
+        <ol class="memory-publish-steps">
+          <li><span>1</span><div><strong>公開セットを保存</strong><small>ZIPを解凍すると、画像と <code>.md</code> が入っています。</small></div></li>
+          <li><span>2</span><div><strong>画像をアップロード</strong><small><code>.webp</code> をすべて選びます。</small></div></li>
+          <li><span>3</span><div><strong>Memoryデータをアップロード</strong><small><code>.md</code> を1つ選ぶと公開されます。</small></div></li>
+        </ol>
+
+        <div class="memory-publish-actions">
+          <button class="memory-secondary-button" id="new-button" type="button">新規作成</button>
+          <button class="memory-secondary-button" id="copy-button" type="button">Memoryデータをコピー</button>
+          <button class="memory-primary-button" id="download-button" type="button">公開セットを保存</button>
+          <a class="memory-primary-button" href="https://github.com/4k29/4k29/upload/main/images/memory" target="_blank" rel="noopener noreferrer">画像のアップロード先 ↗</a>
+          <a class="memory-primary-button" href="https://github.com/4k29/4k29/upload/main/_memories" target="_blank" rel="noopener noreferrer">Memoryデータのアップロード先 ↗</a>
+        </div>
+      </section>
+    </form>
+  </main>
+
+  <template id="photo-card-template">
+    <article class="memory-photo-card" draggable="true">
+      <div class="memory-photo-preview">
+        <img alt="" />
+        <span class="memory-photo-number"></span>
+        <span class="memory-cover-badge">Cover</span>
+      </div>
+      <div class="memory-photo-card-body">
+        <div class="memory-photo-file">
+          <strong></strong>
+          <small></small>
+        </div>
+        <label class="memory-field">
+          <span>キャプション</span>
+          <input class="memory-caption-input" type="text" autocomplete="off" placeholder="この写真に写っているもの・場所" required />
+        </label>
+        <div class="memory-photo-actions">
+          <button type="button" data-action="before" aria-label="1つ前へ移動">← 前へ</button>
+          <button type="button" data-action="after" aria-label="1つ後ろへ移動">後へ →</button>
+          <button type="button" data-action="remove" class="memory-remove-button">削除</button>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <script src="editor.js"></script>
+</body>
+</html>
