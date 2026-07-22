@@ -2,7 +2,8 @@
   "use strict";
 
   var config = window.EDITOR_GITHUB_CONFIG || {};
-  var TOKEN_KEY = "4k29-editor-github-token";
+  var SESSION_TOKEN_KEY = "4k29-editor-github-token";
+  var PERSISTENT_TOKEN_KEY = "4k29-editor-github-token-persistent";
   var API_ROOT = "https://api.github.com";
   var API_VERSION = "2022-11-28";
   var token = "";
@@ -93,7 +94,7 @@
     var card = gateContent(
       "Private editor",
       "GitHubで本人確認",
-      message || "下書き専用リポジトリにだけ使えるGitHubキーを入力してください。キーは、このタブを開いている間だけ保持します。"
+      message || "下書き専用リポジトリにだけ使えるGitHubキーを入力してください。本人確認後、この端末に安全に保存します。"
     );
     var form = document.createElement("form");
     form.className = "editor-github-form";
@@ -134,11 +135,11 @@
 
       try {
         await verifyAccess();
-        saveSessionToken(token);
+        savePersistentToken(token);
         unlock();
         notifyReady();
       } catch (error) {
-        clearSessionToken();
+        clearStoredToken();
         token = "";
         button.disabled = false;
         result.textContent = accessErrorMessage(error);
@@ -177,7 +178,7 @@
 
     var button = document.createElement("button");
     button.type = "button";
-    button.textContent = "ロック";
+    button.textContent = "ログアウト";
     button.addEventListener("click", signOut);
 
     account.append(text, button);
@@ -224,25 +225,41 @@
     window.dispatchEvent(new CustomEvent("editorgithubready", { detail: editorApi }));
   }
 
-  function saveSessionToken(value) {
+  function savePersistentToken(value) {
     try {
-      window.sessionStorage.setItem(TOKEN_KEY, value);
+      window.localStorage.setItem(PERSISTENT_TOKEN_KEY, value);
+      window.sessionStorage.removeItem(SESSION_TOKEN_KEY);
     } catch (error) {
-      return;
+      try {
+        window.sessionStorage.setItem(SESSION_TOKEN_KEY, value);
+      } catch (sessionError) {
+        return;
+      }
     }
   }
 
-  function readSessionToken() {
+  function readStoredToken() {
     try {
-      return window.sessionStorage.getItem(TOKEN_KEY) || "";
+      var persistentToken = window.localStorage.getItem(PERSISTENT_TOKEN_KEY) || "";
+      if (persistentToken) return persistentToken;
+    } catch (error) {
+      // Fall back to the current tab when persistent storage is unavailable.
+    }
+    try {
+      return window.sessionStorage.getItem(SESSION_TOKEN_KEY) || "";
     } catch (error) {
       return "";
     }
   }
 
-  function clearSessionToken() {
+  function clearStoredToken() {
     try {
-      window.sessionStorage.removeItem(TOKEN_KEY);
+      window.localStorage.removeItem(PERSISTENT_TOKEN_KEY);
+    } catch (error) {
+      // Continue and clear the current tab as well.
+    }
+    try {
+      window.sessionStorage.removeItem(SESSION_TOKEN_KEY);
     } catch (error) {
       return;
     }
@@ -554,7 +571,7 @@
   }
 
   function signOut() {
-    clearSessionToken();
+    clearStoredToken();
     token = "";
     ready = false;
     user = null;
@@ -571,7 +588,7 @@
       return;
     }
 
-    token = readSessionToken();
+    token = readStoredToken();
     if (!token) {
       showLogin();
       return;
@@ -580,10 +597,11 @@
     showLoading();
     try {
       await verifyAccess();
+      savePersistentToken(token);
       unlock();
       notifyReady();
     } catch (error) {
-      clearSessionToken();
+      clearStoredToken();
       token = "";
       showLogin(accessErrorMessage(error));
     }
