@@ -131,7 +131,15 @@
             Note /
             <time datetime="{{ page.date | date: '%Y-%m-%d' }}">{{ page.date | date: "%Y.%m.%d" }}</time>
           </p>
-          <h1>{{ page.title | escape }}</h1>
+          <h1>
+            {% if page.title_lines %}
+              {% for line in page.title_lines %}
+              <span class="title-line">{{ line | escape }}</span>
+              {% endfor %}
+            {% else %}
+              {{ page.title | escape }}
+            {% endif %}
+          </h1>
         </header>
 
         <div class="article-body">
