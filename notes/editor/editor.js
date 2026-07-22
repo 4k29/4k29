@@ -5,7 +5,10 @@
   var BASE_URL = "https://4k29.github.io/4k29";
   var GITHUB_UPLOAD_URL = "https://github.com/4k29/4k29/upload/main/_notes";
   var saveTimer = null;
+  var githubSaveTimer = null;
   var slugTouched = false;
+  var githubApi = null;
+  var localUpdatedAt = "";
 
   var form = document.getElementById("note-form");
   var fields = {
@@ -99,7 +102,7 @@
     };
   }
 
-  function setData(data) {
+  function setData(data, skipSave) {
     Object.keys(fields).forEach(function (key) {
       if (key === "tags") {
         fields.tags.value = Array.isArray(data.tags) ? data.tags.join(", ") : (data.tags || "");
@@ -108,7 +111,11 @@
       }
     });
     slugTouched = Boolean(fields.slug.value);
-    updateAll();
+    if (skipSave) {
+      updatePreview();
+    } else {
+      updateAll();
+    }
   }
 
   function yamlValue(value) {
@@ -185,12 +192,48 @@
     });
   }
 
+  function hasDraftContent(data) {
+    return Boolean(data.title || data.description || data.body);
+  }
+
   function saveDraft() {
+    var data = getData();
+    var updatedAt = new Date().toISOString();
+    localUpdatedAt = updatedAt;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(getData()));
-      status.textContent = "端末内に保存済み";
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        data: data,
+        updatedAt: updatedAt
+      }));
+      status.textContent = githubApi ? "GitHubへの保存待ち…" : "端末内に保存済み";
     } catch (error) {
-      status.textContent = "自動保存できませんでした";
+      status.textContent = githubApi ? "GitHubに保存中・端末内保存不可" : "自動保存できませんでした";
+    }
+
+    if (githubApi && hasDraftContent(data)) scheduleGitHubSave();
+  }
+
+  function scheduleGitHubSave() {
+    window.clearTimeout(githubSaveTimer);
+    githubSaveTimer = window.setTimeout(syncGitHubDraft, 3000);
+  }
+
+  async function syncGitHubDraft() {
+    window.clearTimeout(githubSaveTimer);
+    githubSaveTimer = null;
+    if (!githubApi) return;
+    var data = getData();
+    if (!hasDraftContent(data)) return;
+    var updatedAt = localUpdatedAt || new Date().toISOString();
+    localUpdatedAt = updatedAt;
+    status.textContent = "GitHubに保存中…";
+    try {
+      await githubApi.saveDraft("notes", Object.assign({}, data, {
+        updatedAt: updatedAt
+      }));
+      if (localUpdatedAt === updatedAt) status.textContent = "GitHubに保存済み";
+    } catch (error) {
+      if (localUpdatedAt === updatedAt) status.textContent = "端末内に保存済み・GitHub未同期";
     }
   }
 
@@ -204,11 +247,54 @@
     var stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return false;
     try {
-      setData(JSON.parse(stored));
+      var parsed = JSON.parse(stored);
+      var record = parsed && parsed.data ? parsed : {
+        data: parsed,
+        updatedAt: ""
+      };
+      localUpdatedAt = record.updatedAt || "";
+      setData(record.data || {}, true);
       status.textContent = "下書きを復元しました";
       return true;
     } catch (error) {
       return false;
+    }
+  }
+
+  async function connectGitHub(api) {
+    githubApi = api;
+    status.textContent = "GitHubの下書きを確認中…";
+
+    try {
+      var githubRecord = await api.loadDraft("notes");
+      var githubData = githubRecord && githubRecord.data;
+      var githubUpdatedAt = githubData && githubData.updatedAt ? githubData.updatedAt : "";
+      var localData = getData();
+
+      if (githubData && (!hasDraftContent(localData) || githubUpdatedAt > localUpdatedAt)) {
+        localUpdatedAt = githubUpdatedAt;
+        setData(githubData, true);
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            data: getData(),
+            updatedAt: localUpdatedAt
+          }));
+        } catch (error) {
+          // GitHub remains the source of truth if this browser blocks local storage.
+        }
+        status.textContent = "GitHubの下書きを復元しました";
+      } else if (hasDraftContent(localData)) {
+        var updatedAt = localUpdatedAt || new Date().toISOString();
+        localUpdatedAt = updatedAt;
+        await api.saveDraft("notes", Object.assign({}, localData, {
+          updatedAt: updatedAt
+        }));
+        status.textContent = "GitHubに保存済み";
+      } else {
+        status.textContent = "GitHubに接続済み";
+      }
+    } catch (error) {
+      status.textContent = "端末内の下書きを使用中・GitHub未同期";
     }
   }
 
@@ -508,8 +594,16 @@
   });
 
   document.getElementById("new-button").addEventListener("click", function () {
-    if (!window.confirm("端末内の現在の下書きを消して、新規作成しますか？")) return;
+    if (!window.confirm("端末内とGitHubの現在の下書きを消して、新規作成しますか？")) return;
+    window.clearTimeout(githubSaveTimer);
+    githubSaveTimer = null;
     localStorage.removeItem(STORAGE_KEY);
+    localUpdatedAt = "";
+    if (githubApi) {
+      githubApi.deleteDraft("notes").catch(function () {
+        status.textContent = "GitHubの下書きを削除できませんでした";
+      });
+    }
     form.reset();
     fields.date.value = jstDate();
     slugTouched = false;
@@ -538,10 +632,18 @@
     reader.readAsText(file, "UTF-8");
   });
 
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden" && githubSaveTimer) syncGitHubDraft();
+  });
+
   if (!loadDraft()) {
     fields.date.value = jstDate();
-    updateAll();
+    updatePreview();
   } else {
     updatePreview();
+  }
+
+  if (window.EditorGitHub) {
+    window.EditorGitHub.onReady(connectGitHub);
   }
 })();
