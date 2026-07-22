@@ -28,11 +28,18 @@
 
   var photos = [];
   var saveTimer = null;
+  var githubSyncTimer = null;
   var slugTouched = false;
   var dateDisplayTouched = false;
   var descriptionTouched = false;
   var draggedPhotoId = "";
   var processing = false;
+  var githubApi = null;
+  var githubSyncing = false;
+  var githubSyncQueued = false;
+  var pendingDeletedPaths = [];
+  var localUpdatedAt = "";
+  var initialRestorePromise = null;
 
   function jstDate() {
     var parts = new Intl.DateTimeFormat("en-CA", {
@@ -215,29 +222,53 @@
         width: photo.width,
         height: photo.height,
         type: photo.type,
-        blob: photo.blob
+        blob: photo.blob,
+        githubPath: photo.githubPath || ""
       };
     });
   }
 
-  function saveDraft() {
-    var draft = {
+  function buildDraftRecord(updatedAt) {
+    return {
       metadata: getMetadata(),
       photos: serializablePhotos(),
       flags: {
         slugTouched: slugTouched,
         dateDisplayTouched: dateDisplayTouched,
         descriptionTouched: descriptionTouched
-      }
+      },
+      pendingDeletedPaths: pendingDeletedPaths.slice(),
+      updatedAt: updatedAt || localUpdatedAt || new Date().toISOString()
     };
+  }
+
+  function hasDraftContent() {
+    var metadata = getMetadata();
+    return Boolean(metadata.title || metadata.description || photos.length);
+  }
+
+  function saveDraft() {
+    var updatedAt = new Date().toISOString();
+    localUpdatedAt = updatedAt;
+    var draft = buildDraftRecord(updatedAt);
+    var shouldSyncGitHub = githubApi && (hasDraftContent() || pendingDeletedPaths.length);
+
+    status.textContent = shouldSyncGitHub ? "GitHubへの保存待ち…" : "端末内に保存中…";
 
     databaseRequest("readwrite", function (store) {
       return store.put(draft, DB_KEY);
     }).then(function () {
-      status.textContent = "端末内に保存済み";
+      if (!shouldSyncGitHub) status.textContent = "端末内に保存済み";
     }).catch(function () {
-      status.textContent = "自動保存できませんでした";
+      if (!shouldSyncGitHub) status.textContent = "端末内へ自動保存できませんでした";
     });
+
+    if (shouldSyncGitHub) scheduleGitHubSync();
+  }
+
+  function scheduleGitHubSync() {
+    window.clearTimeout(githubSyncTimer);
+    githubSyncTimer = window.setTimeout(syncGitHubDraft, 3000);
   }
 
   function restoreDraft() {
@@ -246,12 +277,18 @@
     }).then(function (draft) {
       if (!draft) return false;
 
+      localUpdatedAt = draft.updatedAt || "";
       setMetadata(draft.metadata || {});
       slugTouched = Boolean(draft.flags && draft.flags.slugTouched);
       dateDisplayTouched = Boolean(draft.flags && draft.flags.dateDisplayTouched);
       descriptionTouched = Boolean(draft.flags && draft.flags.descriptionTouched);
+      pendingDeletedPaths = Array.isArray(draft.pendingDeletedPaths)
+        ? draft.pendingDeletedPaths.filter(Boolean)
+        : [];
 
-      photos = (draft.photos || []).map(function (photo) {
+      photos = (draft.photos || []).filter(function (photo) {
+        return photo && photo.blob;
+      }).map(function (photo) {
         return {
           id: photo.id || createId(),
           originalName: photo.originalName || "photo",
@@ -260,10 +297,9 @@
           height: photo.height || 0,
           type: photo.type || (photo.blob && photo.blob.type) || "image/webp",
           blob: photo.blob,
-          previewUrl: URL.createObjectURL(photo.blob)
+          previewUrl: URL.createObjectURL(photo.blob),
+          githubPath: photo.githubPath || ""
         };
-      }).filter(function (photo) {
-        return photo.blob;
       });
 
       renderPhotos();
@@ -280,6 +316,163 @@
     }).catch(function () {
       return undefined;
     });
+  }
+
+  function githubFilePath(photo) {
+    return photo.githubPath || ("memory/files/" + photo.id + "." + fileExtension(photo));
+  }
+
+  function githubPhotoData(photoSnapshot, pathsById) {
+    return photoSnapshot.map(function (photo) {
+      return {
+        id: photo.id,
+        originalName: photo.originalName,
+        caption: photo.caption,
+        width: photo.width,
+        height: photo.height,
+        type: photo.type,
+        githubPath: pathsById[photo.id]
+      };
+    });
+  }
+
+  async function syncGitHubDraft() {
+    window.clearTimeout(githubSyncTimer);
+    githubSyncTimer = null;
+    if (!githubApi || (!hasDraftContent() && !pendingDeletedPaths.length)) return;
+    if (githubSyncing) {
+      githubSyncQueued = true;
+      return;
+    }
+
+    githubSyncing = true;
+    githubSyncQueued = false;
+    var syncingUpdatedAt = localUpdatedAt || new Date().toISOString();
+    var photoSnapshot = photos.slice();
+    var metadataSnapshot = getMetadata();
+    var flagsSnapshot = {
+      slugTouched: slugTouched,
+      dateDisplayTouched: dateDisplayTouched,
+      descriptionTouched: descriptionTouched
+    };
+    var deletedSnapshot = pendingDeletedPaths.slice();
+    var pathsById = {};
+    var files = [];
+    var syncSucceeded = false;
+    status.textContent = "GitHubに保存中…";
+
+    try {
+      photoSnapshot.forEach(function (photo) {
+        var path = githubFilePath(photo);
+        pathsById[photo.id] = path;
+        if (!photo.githubPath) files.push({ path: path, blob: photo.blob });
+      });
+
+      await githubApi.saveDraft("memory", {
+        metadata: metadataSnapshot,
+        photos: githubPhotoData(photoSnapshot, pathsById),
+        flags: flagsSnapshot,
+        updatedAt: syncingUpdatedAt
+      }, {
+        files: files,
+        deletePaths: deletedSnapshot
+      });
+
+      photoSnapshot.forEach(function (savedPhoto) {
+        var currentPhoto = photos.find(function (photo) {
+          return photo.id === savedPhoto.id;
+        });
+        if (currentPhoto) currentPhoto.githubPath = pathsById[savedPhoto.id];
+      });
+      pendingDeletedPaths = pendingDeletedPaths.filter(function (path) {
+        return !deletedSnapshot.includes(path);
+      });
+
+      await databaseRequest("readwrite", function (store) {
+        return store.put(buildDraftRecord(localUpdatedAt || syncingUpdatedAt), DB_KEY);
+      }).catch(function () {
+        return undefined;
+      });
+      syncSucceeded = true;
+
+      if (localUpdatedAt === syncingUpdatedAt) {
+        status.textContent = "GitHubに保存済み";
+      }
+    } catch (error) {
+      if (localUpdatedAt === syncingUpdatedAt) {
+        status.textContent = "端末内に保存済み・GitHub未同期";
+      }
+    } finally {
+      githubSyncing = false;
+      if (githubSyncQueued || localUpdatedAt !== syncingUpdatedAt || (syncSucceeded && pendingDeletedPaths.length)) {
+        githubSyncQueued = false;
+        syncGitHubDraft();
+      }
+    }
+  }
+
+  async function applyGitHubDraft(githubRecord) {
+    var data = githubRecord.data || {};
+    var githubPhotos = data.photos || [];
+    status.textContent = "GitHubの写真を復元中…";
+
+    var restoredPhotos = await Promise.all(githubPhotos.map(async function (photo) {
+      var blob = await githubApi.downloadDraftFile(photo.githubPath);
+      return {
+        id: photo.id || createId(),
+        originalName: photo.originalName || "photo",
+        caption: photo.caption || "",
+        width: photo.width || 0,
+        height: photo.height || 0,
+        type: photo.type || blob.type || "image/webp",
+        blob: blob,
+        previewUrl: URL.createObjectURL(blob),
+        githubPath: photo.githubPath
+      };
+    }));
+
+    photos.forEach(function (photo) {
+      URL.revokeObjectURL(photo.previewUrl);
+    });
+    photos = restoredPhotos;
+    setMetadata(data.metadata || {});
+    slugTouched = Boolean(data.flags && data.flags.slugTouched);
+    dateDisplayTouched = Boolean(data.flags && data.flags.dateDisplayTouched);
+    descriptionTouched = Boolean(data.flags && data.flags.descriptionTouched);
+    pendingDeletedPaths = [];
+    localUpdatedAt = data.updatedAt || "";
+    renderPhotos();
+
+    await databaseRequest("readwrite", function (store) {
+      return store.put(buildDraftRecord(localUpdatedAt), DB_KEY);
+    }).catch(function () {
+      return undefined;
+    });
+    status.textContent = "GitHubの下書きを復元しました";
+  }
+
+  async function connectGitHub(api) {
+    githubApi = api;
+    if (initialRestorePromise) await initialRestorePromise;
+    status.textContent = "GitHubの下書きを確認中…";
+
+    try {
+      var githubRecord = await api.loadDraft("memory");
+      var githubUpdatedAt = githubRecord && githubRecord.data && githubRecord.data.updatedAt
+        ? githubRecord.data.updatedAt
+        : "";
+
+      if (githubRecord && (!hasDraftContent() || githubUpdatedAt > localUpdatedAt)) {
+        await applyGitHubDraft(githubRecord);
+      } else if (hasDraftContent()) {
+        localUpdatedAt = localUpdatedAt || new Date().toISOString();
+        await syncGitHubDraft();
+      } else {
+        status.textContent = "GitHubに接続済み";
+      }
+    } catch (error) {
+      status.textContent = "端末内の下書きを使用中・GitHub未同期";
+    }
   }
 
   function loadImage(file) {
@@ -391,8 +584,13 @@
     });
     if (index < 0) return;
     if (!window.confirm("この写真をMemoryから削除しますか？")) return;
-    URL.revokeObjectURL(photos[index].previewUrl);
+    var removedPhoto = photos[index];
+    URL.revokeObjectURL(removedPhoto.previewUrl);
     photos.splice(index, 1);
+    if (githubApi) {
+      var removedPath = githubFilePath(removedPhoto);
+      if (!pendingDeletedPaths.includes(removedPath)) pendingDeletedPaths.push(removedPath);
+    }
     renderPhotos();
     scheduleSave();
   }
@@ -470,8 +668,7 @@
     var textarea = document.createElement("textarea");
     textarea.value = content;
     textarea.setAttribute("readonly", "");
-    textarea.style.position = "fixed";
-    textarea.style.opacity = "0";
+    textarea.className = "memory-copy-helper";
     document.body.appendChild(textarea);
     textarea.select();
     var copied = document.execCommand("copy");
@@ -741,12 +938,17 @@
   document.getElementById("download-button").addEventListener("click", downloadPublishSet);
 
   document.getElementById("new-button").addEventListener("click", async function () {
-    if (!window.confirm("端末内の現在の下書きを消して、新規作成しますか？")) return;
+    if (!window.confirm("端末内とGitHubの現在の下書きを消して、新規作成しますか？")) return;
+    window.clearTimeout(githubSyncTimer);
+    githubSyncTimer = null;
+    var githubPaths = photos.map(githubFilePath).concat(pendingDeletedPaths).filter(Boolean);
     photos.forEach(function (photo) {
       URL.revokeObjectURL(photo.previewUrl);
     });
     photos = [];
     await clearSavedDraft();
+    localUpdatedAt = "";
+    pendingDeletedPaths = [];
     form.reset();
     fields.date.value = jstDate();
     fields.dateDisplay.value = displayDate(fields.date.value);
@@ -755,18 +957,35 @@
     descriptionTouched = false;
     updateAutomaticDescription();
     renderPhotos();
-    scheduleSave();
     fields.title.focus();
-    status.textContent = "新しい下書き";
+
+    if (githubApi) {
+      try {
+        await githubApi.deleteDraft("memory", githubPaths);
+        status.textContent = "新しい下書き・GitHubから削除済み";
+      } catch (error) {
+        status.textContent = "新しい下書き・GitHubの削除に失敗";
+      }
+    } else {
+      status.textContent = "新しい下書き";
+    }
   });
 
   fields.date.value = jstDate();
   fields.dateDisplay.value = displayDate(fields.date.value);
-  restoreDraft().then(function (restored) {
+  initialRestorePromise = restoreDraft().then(function (restored) {
     if (!restored) {
       updateAutomaticDescription();
       renderPhotos();
-      scheduleSave();
     }
+    return restored;
   });
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden" && githubSyncTimer) syncGitHubDraft();
+  });
+
+  if (window.EditorGitHub) {
+    window.EditorGitHub.onReady(connectGitHub);
+  }
 }());
