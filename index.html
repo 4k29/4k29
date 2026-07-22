@@ -1,3 +1,7 @@
+---
+layout: null
+permalink: /
+---
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -15,16 +19,18 @@
     gtag("config", "G-KK7MDCLBGT");
   </script>
 
-  <title>4k29</title>
-  <meta name="description" content="AppleとNothing、ときどき記憶。" />
+  <title>4k29 — Apple・Nothing・UIを考える学生の記録</title>
+  <meta name="description" content="AppleとNothingを中心に、ガジェット、UI、デザイン、写真について学生目線で考える個人サイト。" />
   <link rel="canonical" href="https://4k29.github.io/4k29/" />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <link rel="alternate" type="application/atom+xml" title="4k29 Notes" href="{{ '/feed.xml' | absolute_url }}" />
 
   <!-- Open Graph -->
   <meta property="og:locale" content="ja_JP" />
   <meta property="og:site_name" content="4k29" />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="4k29" />
-  <meta property="og:description" content="AppleとNothing、ときどき記憶。" />
+  <meta property="og:title" content="4k29 — Apple・Nothing・UIを考える学生の記録" />
+  <meta property="og:description" content="AppleとNothingを中心に、ガジェット、UI、デザイン、写真について学生目線で考える個人サイト。" />
   <meta property="og:url" content="https://4k29.github.io/4k29/" />
   <meta property="og:image" content="https://4k29.github.io/4k29/images/ogp/4k29.png" />
   <meta property="og:image:alt" content="4k29" />
@@ -33,8 +39,8 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@p_horeer" />
   <meta name="twitter:creator" content="@p_horeer" />
-  <meta name="twitter:title" content="4k29" />
-  <meta name="twitter:description" content="AppleとNothing、ときどき記憶。" />
+  <meta name="twitter:title" content="4k29 — Apple・Nothing・UIを考える学生の記録" />
+  <meta name="twitter:description" content="AppleとNothingを中心に、ガジェット、UI、デザイン、写真について学生目線で考える個人サイト。" />
   <meta name="twitter:url" content="https://4k29.github.io/4k29/" />
   <meta name="twitter:image" content="https://4k29.github.io/4k29/images/ogp/4k29.png" />
   <meta name="twitter:image:alt" content="4k29" />
@@ -42,13 +48,32 @@
   <link rel="icon" href="favicon.ico" />
   <link rel="apple-touch-icon" href="favicon.png" />
   <link rel="stylesheet" href="style.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "name": "4k29",
+    "url": "https://4k29.github.io/4k29/",
+    "description": "AppleとNothingを中心に、ガジェット、UI、デザイン、写真について学生目線で考える個人サイト。",
+    "inLanguage": "ja",
+    "mainEntity": {
+      "@type": "Person",
+      "name": "うまいしか",
+      "url": "https://4k29.github.io/4k29/",
+      "sameAs": [
+        "https://x.com/p_horeer",
+        "https://www.instagram.com/__4k29"
+      ]
+    }
+  }
+  </script>
 </head>
 <body>
   <header class="site-header">
     <a class="logo" href="#top">4k29</a>
     <nav aria-label="メインナビゲーション">
       <a href="#memory">Memory</a>
-      <a href="#notes">Notes</a>
+      <a href="{{ '/notes/' | relative_url }}">Notes</a>
       <a href="#sns">SNS</a>
     </nav>
   </header>
@@ -120,27 +145,18 @@
     <section class="content-section" id="notes">
       <div class="section-heading">
         <h2>Notes</h2>
-        <span>03</span>
+        <a class="section-link" href="{{ '/notes/' | relative_url }}">All notes ↗</a>
       </div>
-      
+
+      {% assign sorted_notes = site.notes | sort: "date" | reverse %}
       <div class="section-body row-list">
-        <a href="notes/Nothing-Headphone-1.html" class="row-item compact">
-          <time>2026.08.01</time>
-          <span class="row-title">Nothing Headphone (1) 4ヶ月使用レビュー</span>
+        {% for note in sorted_notes limit: 4 %}
+        <a href="{{ note.url | relative_url }}" class="row-item compact">
+          <time datetime="{{ note.date | date: '%Y-%m-%d' }}">{{ note.date | date: "%Y.%m.%d" }}</time>
+          <span class="row-title">{{ note.title | escape }}</span>
           <span class="arrow">↗</span>
         </a>
-        
-        <a href="notes/Instants.html" class="row-item compact">
-          <time>2026.05.21</time>
-          <span class="row-title">Instantsに思うこと</span>
-          <span class="arrow">↗</span>
-        </a>
-        
-        <a href="notes/iPhone-e.html" class="row-item compact">
-          <time>2026.03.15</time>
-          <span class="row-title">iPhone eシリーズの意義を考える</span>
-          <span class="arrow">↗</span>
-        </a>
+        {% endfor %}
       </div>
     </section>
 
