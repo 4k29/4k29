@@ -1,0 +1,120 @@
+---
+layout: null
+title: Notes
+description: Apple、Nothing、ガジェット、UI、デザインについて、学生目線で考えた記事の一覧。
+permalink: /notes/
+---
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: 'ja' }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KK7MDCLBGT"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+    gtag("config", "G-KK7MDCLBGT");
+  </script>
+
+  <title>Notes / {{ site.title | escape }}</title>
+  <meta name="description" content="{{ page.description | escape }}" />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <link rel="canonical" href="{{ page.url | absolute_url }}" />
+  <link rel="alternate" type="application/atom+xml" title="4k29 Notes" href="{{ '/feed.xml' | absolute_url }}" />
+
+  <meta property="og:locale" content="ja_JP" />
+  <meta property="og:site_name" content="{{ site.title | escape }}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Notes / {{ site.title | escape }}" />
+  <meta property="og:description" content="{{ page.description | escape }}" />
+  <meta property="og:url" content="{{ page.url | absolute_url }}" />
+  <meta property="og:image" content="{{ '/images/ogp/4k29.png' | absolute_url }}" />
+  <meta property="og:image:alt" content="4k29 Notes" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@p_horeer" />
+  <meta name="twitter:creator" content="@p_horeer" />
+  <meta name="twitter:title" content="Notes / {{ site.title | escape }}" />
+  <meta name="twitter:description" content="{{ page.description | escape }}" />
+  <meta name="twitter:image" content="{{ '/images/ogp/4k29.png' | absolute_url }}" />
+
+  {% assign sorted_notes = site.notes | sort: "date" | reverse %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "4k29 Notes",
+    "description": {{ page.description | jsonify }},
+    "url": {{ page.url | absolute_url | jsonify }},
+    "inLanguage": "ja",
+    "mainEntity": {
+      "@type": "ItemList",
+      "numberOfItems": {{ sorted_notes | size }},
+      "itemListElement": [
+        {% for note in sorted_notes %}
+        {
+          "@type": "ListItem",
+          "position": {{ forloop.index }},
+          "url": {{ note.url | absolute_url | jsonify }},
+          "name": {{ note.title | jsonify }}
+        }{% unless forloop.last %},{% endunless %}
+        {% endfor %}
+      ]
+    }
+  }
+  </script>
+
+  <link rel="icon" href="{{ '/favicon.ico' | relative_url }}" />
+  <link rel="apple-touch-icon" href="{{ '/favicon.png' | relative_url }}" />
+  <link rel="stylesheet" href="{{ '/style.css' | relative_url }}" />
+</head>
+
+<body>
+  <div class="notes-index" id="top">
+    <header class="note-nav">
+      <div>
+        <a href="{{ '/' | relative_url }}">Home</a>
+        <span>/</span>
+        <span>Notes</span>
+      </div>
+      <a href="{{ '/feed.xml' | relative_url }}">RSS ↗</a>
+    </header>
+
+    <main class="note-content">
+      <header class="archive-hero">
+        <p>Writing about technology and design</p>
+        <h1>Notes</h1>
+        <p class="archive-description">{{ page.description }}</p>
+      </header>
+
+      <section class="note-index-list" aria-label="記事一覧">
+        {% for note in sorted_notes %}
+        <article class="note-index-item">
+          <a href="{{ note.url | relative_url }}">
+            <div class="note-index-meta">
+              <time datetime="{{ note.date | date: '%Y-%m-%d' }}">{{ note.date | date: "%Y.%m.%d" }}</time>
+              {% if note.tags and note.tags.size > 0 %}
+              <span>{{ note.tags | first }}</span>
+              {% endif %}
+            </div>
+            <h2>{{ note.title | escape }}</h2>
+            <p>{{ note.description | escape }}</p>
+            <span class="note-index-arrow" aria-hidden="true">↗</span>
+          </a>
+        </article>
+        {% endfor %}
+      </section>
+    </main>
+
+    <footer class="note-footer">
+      <p>© {{ site.time | date: "%Y" }} 4k29</p>
+      <a href="#top">Back to top ↑</a>
+    </footer>
+  </div>
+</body>
+</html>
