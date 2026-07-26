@@ -34,7 +34,7 @@
     <header class="memory-editor-intro">
       <p>Private photo workspace</p>
       <h1>Memory Editor</h1>
-      <p>入力内容と写真は端末とGitHubへ自動保存されます。過去の下書きを開いて、続きを編集することもできます。</p>
+      <p>写真と情報を整え、最後に下書きを保存するか、そのまま公開します。ZIPの保存やGitHubでの操作は必要ありません。</p>
     </header>
 
     <form id="memory-form" novalidate>
@@ -45,7 +45,6 @@
             <h2 id="memory-info-title">Memory情報</h2>
           </div>
           <div class="memory-editor-section-actions">
-            <button class="memory-editor-text-button" id="save-now-button" type="button">今すぐ保存</button>
             <button class="memory-editor-text-button" id="drafts-button" type="button">下書き一覧</button>
           </div>
         </div>
@@ -104,22 +103,18 @@
       <section class="memory-publish-panel" aria-labelledby="memory-publish-title">
         <div class="memory-publish-copy">
           <p>03</p>
-          <h2 id="memory-publish-title">書き出して公開</h2>
-          <p>公開セットを解凍し、画像とMemoryデータをそれぞれGitHubへアップロードします。HTMLを書く必要はありません。</p>
+          <h2 id="memory-publish-title">保存と公開</h2>
+          <p>下書きを残すか、写真とMemoryをまとめて4k29へ公開します。</p>
         </div>
 
-        <ol class="memory-publish-steps">
-          <li><span>1</span><div><strong>公開セットを保存</strong><small>ZIPを解凍すると、画像と <code>.md</code> が入っています。</small></div></li>
-          <li><span>2</span><div><strong>画像をアップロード</strong><small><code>.webp</code> をすべて選びます。</small></div></li>
-          <li><span>3</span><div><strong>Memoryデータをアップロード</strong><small><code>.md</code> を1つ選ぶと公開されます。</small></div></li>
-        </ol>
-
         <div class="memory-publish-actions">
-          <button class="memory-secondary-button" id="new-button" type="button">新規作成</button>
-          <button class="memory-secondary-button" id="copy-button" type="button">Memoryデータをコピー</button>
-          <button class="memory-primary-button" id="download-button" type="button">公開セットを保存</button>
-          <a class="memory-primary-button" href="https://github.com/4k29/4k29/upload/main/images/memory" target="_blank" rel="noopener noreferrer">画像のアップロード先 ↗</a>
-          <a class="memory-primary-button" href="https://github.com/4k29/4k29/upload/main/_memories" target="_blank" rel="noopener noreferrer">Memoryデータのアップロード先 ↗</a>
+          <button class="memory-secondary-button" id="save-draft-button" type="button">下書きを上書き保存</button>
+          <button class="memory-primary-button" id="publish-button" type="button">公開</button>
+          <div hidden aria-hidden="true">
+            <button id="new-button" type="button"></button>
+            <button id="copy-button" type="button"></button>
+            <button id="download-button" type="button"></button>
+          </div>
         </div>
       </section>
     </form>
@@ -171,8 +166,10 @@
 
   <script src="../../editor/github-config.js"></script>
   <script src="../../editor/github.js"></script>
+  <script src="../../editor/public-github.js"></script>
   <script src="editor.js"></script>
   <script src="draft-history.js"></script>
+  <script src="direct-actions.js"></script>
   <script src="../../editor/date-default.js"></script>
 </body>
 </html>
