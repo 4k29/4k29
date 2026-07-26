@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="../../style.css" />
   <link rel="stylesheet" href="../../editor/github.css" />
   <link rel="stylesheet" href="editor.css" />
+  <link rel="stylesheet" href="draft-history.css" />
 </head>
 
 <body class="memory-editor-page">
@@ -26,14 +27,14 @@
       <span>/</span>
       <a href="../../notes/editor/">Note Editor</a>
     </div>
-    <p id="save-status" role="status" aria-live="polite">GitHub下書きに自動保存</p>
+    <p id="save-status" role="status" aria-live="polite">✓ 下書きは自動保存されます</p>
   </header>
 
   <main class="memory-editor-main">
     <header class="memory-editor-intro">
       <p>Private photo workspace</p>
       <h1>Memory Editor</h1>
-      <p>写真を選び、順番とキャプションを整えるだけ。公開用の画像とMemoryデータをまとめて作ります。</p>
+      <p>入力内容と写真は端末とGitHubへ自動保存されます。過去の下書きを開いて、続きを編集することもできます。</p>
     </header>
 
     <form id="memory-form" novalidate>
@@ -43,7 +44,10 @@
             <p>01</p>
             <h2 id="memory-info-title">Memory情報</h2>
           </div>
-          <p>ページと検索表示に使われます</p>
+          <div class="memory-editor-section-actions">
+            <button class="memory-editor-text-button" id="save-now-button" type="button">今すぐ保存</button>
+            <button class="memory-editor-text-button" id="drafts-button" type="button">下書き一覧</button>
+          </div>
         </div>
 
         <div class="memory-metadata-grid">
@@ -64,12 +68,12 @@
 
           <label class="memory-field">
             <span>画面に表示する日付</span>
-            <input id="date-display" name="dateDisplay" type="text" autocomplete="off" placeholder="2026.07.22–24" required />
+            <input id="date-display" name="dateDisplay" type="text" autocomplete="off" placeholder="2026.07.22-24" required />
           </label>
 
           <label class="memory-field memory-field-wide">
             <span>概要 <small><output id="description-count">0</output>文字</small></span>
-            <textarea id="description" name="description" rows="3" placeholder="2026.07.22 — Tokyoで撮影した写真の記録。" required></textarea>
+            <textarea id="description" name="description" rows="3" placeholder="2026.07.22-24 - Tokyo" required></textarea>
           </label>
         </div>
 
@@ -121,6 +125,25 @@
     </form>
   </main>
 
+  <dialog id="draft-history-dialog" class="memory-draft-dialog" aria-labelledby="draft-history-title">
+    <section class="memory-draft-shell">
+      <header class="memory-draft-header">
+        <div class="memory-draft-header-row">
+          <div class="memory-draft-heading-copy">
+            <p>GitHub history</p>
+            <h2 id="draft-history-title">過去の下書き</h2>
+          </div>
+          <div class="memory-draft-header-actions">
+            <button id="draft-history-refresh" type="button">更新</button>
+            <button id="draft-history-close" type="button">閉じる</button>
+          </div>
+        </div>
+        <p class="memory-draft-status" id="draft-history-status" role="status" aria-live="polite">GitHubの保存履歴からMemoryを探します。</p>
+      </header>
+      <div class="memory-draft-list" id="draft-history-list"></div>
+    </section>
+  </dialog>
+
   <template id="photo-card-template">
     <article class="memory-photo-card" draggable="true">
       <div class="memory-photo-preview">
@@ -149,6 +172,7 @@
   <script src="../../editor/github-config.js"></script>
   <script src="../../editor/github.js"></script>
   <script src="editor.js"></script>
+  <script src="draft-history.js"></script>
   <script src="../../editor/date-default.js"></script>
 </body>
 </html>
