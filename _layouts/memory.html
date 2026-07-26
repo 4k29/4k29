@@ -75,6 +75,12 @@
       width: min(calc(100% - 40px), var(--content-width));
     }
 
+    .memory-footer-links {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
     @media (max-width: 560px) {
       .memory-nav,
       .memory-content,
@@ -101,21 +107,26 @@
     {% assign previous_candidate = memory %}
   {% endfor %}
 
+  {% if next_memory %}
+    {% assign next_url = next_memory.url %}
+  {% else %}
+    {% assign next_url = '/404.html' %}
+  {% endif %}
+
   <div class="memory-page" id="top">
     <header class="memory-nav">
       <div class="memory-nav-left">
         <a href="{{ '/' | relative_url }}">Home</a>
         {% if before_memory %}<span>/</span><a href="{{ before_memory.url | relative_url }}">Before</a>{% endif %}
       </div>
-      <p>{{ page.date_display | escape }} — {{ page.title | escape }}</p>
+      <p>{{ page.date_display | escape }} - {{ page.title | escape }}</p>
       <div class="memory-nav-right">
-        {% if next_memory %}<a href="{{ next_memory.url | relative_url }}">Next</a>{% else %}<span>Next</span>{% endif %}
+        <a href="{{ next_url | relative_url }}">Next</a>
       </div>
     </header>
 
     <main class="memory-content">
       <section class="memory-intro">
-        <p>Memory / {{ page.date_display | escape }}</p>
         <h1>{{ page.title | escape }}</h1>
       </section>
 
@@ -136,7 +147,10 @@
 
     <footer class="memory-footer">
       <p>© {{ site.time | date: "%Y" }} 4k29</p>
-      <a href="#top">Back to top ↑</a>
+      <div class="memory-footer-links">
+        <a href="#top">Back to top ↑</a>
+        <a href="{{ next_url | relative_url }}">Next</a>
+      </div>
     </footer>
   </div>
 </body>
