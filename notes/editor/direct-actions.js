@@ -1,0 +1,183 @@
+(function () {
+  "use strict";
+
+  var STORAGE_KEY = "4k29-note-editor-v1";
+  var BASE_URL = "https://4k29.github.io/4k29";
+  var form = document.getElementById("note-form");
+  var status = document.getElementById("save-status");
+  var saveButton = document.getElementById("save-draft-button");
+  var publishButton = document.getElementById("publish-button");
+
+  if (!form || !saveButton || !publishButton) return;
+
+  var fields = {
+    title: document.getElementById("title"),
+    slug: document.getElementById("slug"),
+    date: document.getElementById("date"),
+    description: document.getElementById("description"),
+    image: document.getElementById("image"),
+    imageAlt: document.getElementById("image-alt"),
+    tags: document.getElementById("tags"),
+    body: document.getElementById("body")
+  };
+
+  function jstDate() {
+    var parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).formatToParts(new Date());
+    var values = {};
+    parts.forEach(function (part) {
+      values[part.type] = part.value;
+    });
+    return values.year + "-" + values.month + "-" + values.day;
+  }
+
+  function normalizeOgImage(value) {
+    var path = String(value || "").trim();
+    path = path.replace(BASE_URL, "");
+    path = path.replace(/^\.\.\/images\//, "/images/");
+    path = path.replace(/^images\//, "/images/");
+    if (path && path.charAt(0) !== "/" && !/^https?:\/\//i.test(path)) {
+      path = "/" + path;
+    }
+    return path;
+  }
+
+  function getData() {
+    return {
+      title: fields.title.value.trim(),
+      slug: fields.slug.value.trim(),
+      date: fields.date.value,
+      description: fields.description.value.trim(),
+      image: normalizeOgImage(fields.image.value),
+      imageAlt: fields.imageAlt.value.trim(),
+      tags: fields.tags.value.split(",").map(function (tag) {
+        return tag.trim();
+      }).filter(Boolean),
+      body: fields.body.value.trim()
+    };
+  }
+
+  function validate(data) {
+    var errors = [];
+    if (!data.title) errors.push("タイトル");
+    if (!data.slug || !/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(data.slug)) errors.push("スラッグ");
+    if (!data.date) errors.push("公開日");
+    if (!data.description) errors.push("概要");
+    if (!data.image) errors.push("OGP画像");
+    if (!data.imageAlt) errors.push("画像の代替テキスト");
+    if (!data.body) errors.push("本文");
+
+    if (!errors.length) return true;
+    window.alert("未入力または形式が違う項目があります: " + errors.join("、"));
+    var firstInvalid = form.querySelector(":invalid");
+    if (firstInvalid) firstInvalid.focus();
+    return false;
+  }
+
+  function yamlValue(value) {
+    return JSON.stringify(value == null ? "" : value);
+  }
+
+  function buildMarkdown(data) {
+    var modified = jstDate() + " 00:00:00 +0900";
+    var published = data.date + " 00:00:00 +0900";
+    return [
+      "---",
+      "title: " + yamlValue(data.title),
+      "description: " + yamlValue(data.description),
+      "date: " + yamlValue(published),
+      "last_modified_at: " + yamlValue(modified),
+      "permalink: " + yamlValue("/notes/" + data.slug + ".html"),
+      "image: " + yamlValue(data.image),
+      "image_alt: " + yamlValue(data.imageAlt),
+      "tags: " + JSON.stringify(data.tags),
+      "---",
+      "",
+      data.body,
+      ""
+    ].join("\n");
+  }
+
+  function setBusy(busy) {
+    saveButton.disabled = busy;
+    publishButton.disabled = busy;
+  }
+
+  async function overwriteDraft() {
+    var api = window.EditorGitHub;
+    if (!api || !api.isReady()) {
+      window.alert("GitHubへの接続が完了していません。");
+      return;
+    }
+
+    var data = getData();
+    var updatedAt = new Date().toISOString();
+    setBusy(true);
+    status.textContent = "下書きを保存中…";
+
+    try {
+      await api.saveDraft("notes", Object.assign({}, data, {
+        updatedAt: updatedAt
+      }));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          data: data,
+          updatedAt: updatedAt
+        }));
+      } catch (error) {
+        // GitHubへの保存が成功していれば続行する。
+      }
+      status.textContent = "下書きを上書き保存しました";
+    } catch (error) {
+      status.textContent = "下書きを保存できませんでした";
+      window.alert("下書きをGitHubへ保存できませんでした。通信状況を確認してください。");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function publish() {
+    var data = getData();
+    if (!validate(data)) return;
+    if (!window.EditorPublicGitHub) {
+      window.alert("公開機能を読み込めませんでした。ページを再読み込みしてください。");
+      return;
+    }
+    if (!window.confirm("この記事を公開しますか？")) return;
+
+    setBusy(true);
+    status.textContent = "公開前に下書きを保存中…";
+
+    try {
+      if (window.EditorGitHub && window.EditorGitHub.isReady()) {
+        var updatedAt = new Date().toISOString();
+        await window.EditorGitHub.saveDraft("notes", Object.assign({}, data, {
+          updatedAt: updatedAt
+        }));
+      }
+
+      status.textContent = "GitHubへ公開中…";
+      await window.EditorPublicGitHub.commit([
+        {
+          path: "_notes/" + data.slug + ".md",
+          content: buildMarkdown(data)
+        }
+      ], "Publish note: " + data.title);
+
+      status.textContent = "公開しました";
+      window.alert("公開しました。GitHub Pagesへの反映後、記事ページに表示されます。");
+    } catch (error) {
+      status.textContent = "公開できませんでした";
+      window.alert(window.EditorPublicGitHub.permissionMessage(error));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  saveButton.addEventListener("click", overwriteDraft);
+  publishButton.addEventListener("click", publish);
+}());
