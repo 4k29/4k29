@@ -1,6 +1,6 @@
 ---
 title: "Nagano"
-description: "2026.07.25"
+description: "2026.07.25 - Nagano"
 date: "2026-07-25 00:00:00 +0900"
 last_modified_at: "2026-07-26 00:00:00 +0900"
 date_display: "2026.07.25"
