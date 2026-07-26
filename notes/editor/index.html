@@ -28,7 +28,7 @@
     <header class="editor-intro">
       <p>Private writing workspace</p>
       <h1>Note Editor</h1>
-      <p>入力内容は端末とGitHubへ自動保存されます。書き終えたら、公開用Markdownを書き出してGitHubへアップロードします。</p>
+      <p>記事を書き、最後に下書きを保存するか、そのまま公開します。ファイルの書き出しやGitHubでの操作は必要ありません。</p>
     </header>
 
     <form id="note-form" novalidate>
@@ -81,12 +81,16 @@
       </section>
 
       <section class="publish-panel" aria-labelledby="publish-title">
-        <div><p>03</p><h2 id="publish-title">公開する</h2><p>まず公開用Markdownを書き出し、開いたGitHub画面で <code>_notes</code> フォルダへアップロードすると記事が公開されます。</p></div>
+        <div><p>03</p><h2 id="publish-title">保存と公開</h2><p>下書きを残すか、入力内容をそのまま4k29へ公開します。</p></div>
         <div class="publish-actions">
-          <button class="secondary-button" id="new-button" type="button">新しい記事を書く</button>
-          <button class="secondary-button" id="copy-button" type="button">公開用Markdownをコピー</button>
-          <button class="primary-button" id="download-button" type="button">公開用Markdownを書き出す</button>
-          <button class="primary-button" id="github-button" type="button">公開画面を開く ↗</button>
+          <button class="secondary-button" id="save-draft-button" type="button">下書きを上書き保存</button>
+          <button class="primary-button" id="publish-button" type="button">公開</button>
+          <div hidden aria-hidden="true">
+            <button id="new-button" type="button"></button>
+            <button id="copy-button" type="button"></button>
+            <button id="download-button" type="button"></button>
+            <button id="github-button" type="button"></button>
+          </div>
         </div>
       </section>
     </form>
@@ -98,11 +102,13 @@
 
   <script src="../../editor/github-config.js"></script>
   <script src="../../editor/github.js"></script>
+  <script src="../../editor/public-github.js"></script>
   <script src="editor.js"></script>
   <script src="save-status.js"></script>
   <script src="draft-history.js"></script>
   <script src="draft-delete.js"></script>
   <script src="image-upload.js"></script>
+  <script src="direct-actions.js"></script>
   <script src="../../editor/date-default.js"></script>
 </body>
 </html>
