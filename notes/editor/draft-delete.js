@@ -4,6 +4,7 @@
   var API_ROOT = "https://api.github.com";
   var API_VERSION = "2022-11-28";
   var DELETED_PATH = "notes/deleted-drafts.json";
+  var CURRENT_DRAFT_PATH = "notes/current.json";
   var SESSION_TOKEN_KEY = "4k29-editor-github-token";
   var PERSISTENT_TOKEN_KEY = "4k29-editor-github-token-persistent";
   var STORAGE_KEY = "4k29-note-editor-v1";
@@ -13,6 +14,7 @@
   var deletedKeys = new Set();
   var deletedFileSha = "";
   var loaded = false;
+  var hasCurrentDraft = true;
 
   if (!list) return;
 
@@ -77,6 +79,15 @@
     historyStatus.textContent = count ? count + "件の下書きを表示しています。" : "復元できる過去の下書きはまだありません。";
   }
 
+  async function checkCurrentDraft() {
+    var file = await request(
+      repoPath("/contents/" + CURRENT_DRAFT_PATH + "?ref=" + encodeURIComponent(config.branch || "main")),
+      { allow404: true }
+    );
+    hasCurrentDraft = Boolean(file && file.content);
+    return hasCurrentDraft;
+  }
+
   async function loadDeleted() {
     if (loaded) return;
     var file = await request(repoPath("/contents/" + DELETED_PATH + "?ref=" + encodeURIComponent(config.branch || "main")), { allow404: true });
@@ -106,9 +117,23 @@
     if (window.EditorGitHub && window.EditorGitHub.isReady()) {
       await window.EditorGitHub.deleteDraft("notes");
     }
+    hasCurrentDraft = false;
+  }
+
+  function clearHistoryWhenNoCurrentDraft() {
+    if (hasCurrentDraft) return false;
+    list.innerHTML = "";
+    var empty = document.createElement("p");
+    empty.className = "draft-history-empty";
+    empty.textContent = "復元できる過去の下書きはまだありません。";
+    list.appendChild(empty);
+    updateVisibleCount();
+    return true;
   }
 
   function decorate() {
+    if (clearHistoryWhenNoCurrentDraft()) return;
+
     var changed = false;
 
     Array.from(list.querySelectorAll(".draft-history-item")).forEach(function (item) {
@@ -145,8 +170,7 @@
           var isCurrent = Boolean(item.querySelector(".draft-history-current"));
           if (isCurrent) await clearCurrentDraft();
           row.remove();
-          updateVisibleCount();
-          if (isCurrent) location.reload();
+          if (!clearHistoryWhenNoCurrentDraft()) updateVisibleCount();
         } catch (error) {
           deletedKeys.delete(key);
           remove.disabled = false;
@@ -158,7 +182,7 @@
     if (changed && loaded) updateVisibleCount();
   }
 
-  loadDeleted().then(function () {
+  Promise.all([loadDeleted(), checkCurrentDraft()]).then(function () {
     decorate();
     updateVisibleCount();
     new MutationObserver(decorate).observe(list, { childList: true });
