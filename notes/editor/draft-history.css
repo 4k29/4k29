@@ -18,12 +18,15 @@
 }
 
 .draft-history-shell {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   max-height: min(82vh, 760px);
+  overflow: hidden;
 }
 
 .draft-history-header {
+  flex: none;
   padding: 25px 26px 20px;
   border-bottom: 1px solid var(--line);
 }
@@ -75,10 +78,13 @@
 }
 
 .draft-history-list {
+  flex: 1 1 auto;
   min-height: 150px;
+  max-height: calc(min(82vh, 760px) - 118px);
   overflow-y: auto;
   padding: 0 26px 26px;
   scrollbar-color: #333 transparent;
+  -webkit-overflow-scrolling: touch;
 }
 
 .draft-history-item {
@@ -172,6 +178,7 @@
   }
 
   .draft-history-list {
+    max-height: calc(88vh - 112px);
     padding: 0 20px 22px;
   }
 
