@@ -28,7 +28,7 @@ Nothing Headphone (1)を購入して、もうすぐ4ヶ月。運動するとき�
 半年以上迷って買ったHeadphone (1)は、今では毎日使うものになった。
 
 <figure class="article-image">
-<img src="../images/Nothing%20Headphone%20(1)/IMG_1693.webp" loading="lazy" alt="Nothing Headphone (1)を開封したときの様子" />
+<img src="../images/notes/Nothing-Headphone-1-1.webp" loading="lazy" alt="Nothing Headphone (1)を開封したときの様子" />
 <figcaption>購入して、初対面のとき。過去一テンションが上がった。</figcaption>
 </figure>
 
@@ -81,17 +81,17 @@ Headphone (1)は独特な形状をしているため、首にかけると左右�
 毎日使う以上、ある程度の傷は仕方ない。ただ、Headphone (1)はデザインを気に入って買う人が多い製品だと思うので、ここはもう少し傷に強いとうれしかった。
 
 <figure class="article-image">
-<img src="../images/Nothing%20Headphone%20(1)/IMG_0203.webp" loading="lazy" alt="Nothing Headphone (1)を首にかけた状態" />
+<img src="../images/notes/Nothing-Headphone-1-2.webp" loading="lazy" alt="Nothing Headphone (1)を首にかけた状態" />
 <figcaption>首にかけるとこの状態になり、左右の内側がぶつかってしまう。</figcaption>
 </figure>
 
 <figure class="article-image">
-<img src="../images/Nothing%20Headphone%20(1)/IMG_0204.webp" loading="lazy" alt="イヤーカップの内側に付いた傷" />
+<img src="../images/notes/Nothing-Headphone-1-3.webp" loading="lazy" alt="イヤーカップの内側に付いた傷" />
 <figcaption>内側がぶつかり、アルミ部分の表面が少し剥がれてきた。</figcaption>
 </figure>
 
 <figure class="article-image">
-<img src="../images/Nothing%20Headphone%20(1)/IMG_0205.webp" loading="lazy" alt="Nothing Headphone (1)に付いた小さな傷" />
+<img src="../images/notes/Nothing-Headphone-1-4.webp" loading="lazy" alt="Nothing Headphone (1)に付いた小さな傷" />
 <figcaption>一度落として付けてしまった小さな傷。小さいが、精神へのダメージはかなり大きい。</figcaption>
 </figure>
 
