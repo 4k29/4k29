@@ -18,6 +18,8 @@
   var imageAltInput = document.getElementById("dialog-image-alt");
   var imageDialog = document.getElementById("image-dialog");
   var body = document.getElementById("body");
+  var slugInput = document.getElementById("slug");
+  var titleInput = document.getElementById("title");
 
   if (!uploadButton || !uploadInput || !uploadStatus) return;
 
@@ -29,18 +31,74 @@
     }
   }
 
-  function safeFileName(name) {
-    var dot = name.lastIndexOf(".");
-    var extension = dot >= 0 ? name.slice(dot).toLowerCase() : "";
-    var base = dot >= 0 ? name.slice(0, dot) : name;
-    base = base
-      .normalize("NFKD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^A-Za-z0-9_-]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .toLowerCase();
-    if (!base) base = "image";
-    return base + "-" + Date.now() + extension;
+  function normalizeBaseName(value) {
+    var base = String(value || "")
+      .normalize("NFKC")
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[\\/:*?"<>|#%]+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    return base || "note";
+  }
+
+  function fileExtension(file) {
+    var dot = file.name.lastIndexOf(".");
+    if (dot >= 0) return file.name.slice(dot).toLowerCase();
+
+    var extensions = {
+      "image/jpeg": ".jpg",
+      "image/png": ".png",
+      "image/webp": ".webp",
+      "image/gif": ".gif",
+      "image/avif": ".avif"
+    };
+    return extensions[file.type] || ".webp";
+  }
+
+  function articleBaseName() {
+    var slug = slugInput ? slugInput.value : "";
+    var title = titleInput ? titleInput.value : "";
+    return normalizeBaseName(slug || title);
+  }
+
+  function repositoryContentUrl(path) {
+    return API_ROOT + "/repos/" + OWNER + "/" + REPOSITORY + "/contents/" +
+      path.split("/").map(encodeURIComponent).join("/") + "?ref=" + encodeURIComponent(BRANCH);
+  }
+
+  async function pathExists(path, token) {
+    var response = await window.fetch(repositoryContentUrl(path), {
+      method: "GET",
+      headers: {
+        "Accept": "application/vnd.github+json",
+        "Authorization": "Bearer " + token,
+        "X-GitHub-Api-Version": "2022-11-28"
+      },
+      cache: "no-store",
+      credentials: "omit"
+    });
+
+    if (response.status === 404) return false;
+    if (!response.ok) {
+      var error = new Error("画像番号を確認できませんでした");
+      error.status = response.status;
+      throw error;
+    }
+    return true;
+  }
+
+  async function nextFileName(file, token) {
+    var base = articleBaseName();
+    var extension = fileExtension(file);
+
+    for (var number = 1; number <= 999; number += 1) {
+      var filename = base + "-" + number + extension;
+      var path = IMAGE_DIRECTORY + "/" + filename;
+      if (!(await pathExists(path, token))) return filename;
+    }
+
+    throw new Error("画像番号の上限に達しました");
   }
 
   function blobToBase64(file) {
@@ -60,7 +118,7 @@
     var token = readToken();
     if (!token) throw new Error("GitHubキーが見つかりません");
 
-    var filename = safeFileName(file.name);
+    var filename = await nextFileName(file, token);
     var path = IMAGE_DIRECTORY + "/" + filename;
     var content = await blobToBase64(file);
     var response = await window.fetch(
