@@ -9,7 +9,8 @@
   var OWNER = "4k29";
   var REPOSITORY = "4k29";
   var BRANCH = "main";
-  var IMAGE_DIRECTORY = "images/notes";
+  var NOTE_IMAGE_DIRECTORY = "images/notes";
+  var OGP_IMAGE_DIRECTORY = "images/ogp";
 
   var uploadButton = document.getElementById("image-upload-button");
   var uploadInput = document.getElementById("image-upload-input");
@@ -20,8 +21,30 @@
   var body = document.getElementById("body");
   var slugInput = document.getElementById("slug");
   var titleInput = document.getElementById("title");
+  var ogpPathInput = document.getElementById("image");
+  var ogpAltInput = document.getElementById("image-alt");
 
   if (!uploadButton || !uploadInput || !uploadStatus) return;
+
+  var ogpUploadButton = document.createElement("button");
+  ogpUploadButton.type = "button";
+  ogpUploadButton.className = "text-button";
+  ogpUploadButton.textContent = "OGP画像をアップロード";
+
+  var ogpUploadInput = document.createElement("input");
+  ogpUploadInput.type = "file";
+  ogpUploadInput.accept = "image/jpeg,image/png,image/webp,image/gif,image/avif";
+  ogpUploadInput.hidden = true;
+
+  var ogpUploadStatus = document.createElement("small");
+  ogpUploadStatus.setAttribute("role", "status");
+  ogpUploadStatus.setAttribute("aria-live", "polite");
+
+  if (ogpPathInput && ogpPathInput.parentElement) {
+    ogpPathInput.parentElement.appendChild(ogpUploadButton);
+    ogpPathInput.parentElement.appendChild(ogpUploadInput);
+    ogpPathInput.parentElement.appendChild(ogpUploadStatus);
+  }
 
   function readToken() {
     try {
@@ -67,7 +90,7 @@
       path.split("/").map(encodeURIComponent).join("/") + "?ref=" + encodeURIComponent(BRANCH);
   }
 
-  async function pathExists(path, token) {
+  async function fetchExistingFile(path, token) {
     var response = await window.fetch(repositoryContentUrl(path), {
       method: "GET",
       headers: {
@@ -79,23 +102,23 @@
       credentials: "omit"
     });
 
-    if (response.status === 404) return false;
+    if (response.status === 404) return null;
     if (!response.ok) {
-      var error = new Error("画像番号を確認できませんでした");
+      var error = new Error("画像の保存先を確認できませんでした");
       error.status = response.status;
       throw error;
     }
-    return true;
+    return response.json();
   }
 
-  async function nextFileName(file, token) {
+  async function nextNoteFileName(file, token) {
     var base = articleBaseName();
     var extension = fileExtension(file);
 
     for (var number = 1; number <= 999; number += 1) {
       var filename = base + "-" + number + extension;
-      var path = IMAGE_DIRECTORY + "/" + filename;
-      if (!(await pathExists(path, token))) return filename;
+      var path = NOTE_IMAGE_DIRECTORY + "/" + filename;
+      if (!(await fetchExistingFile(path, token))) return filename;
     }
 
     throw new Error("画像番号の上限に達しました");
@@ -114,13 +137,24 @@
     });
   }
 
-  async function uploadFile(file) {
-    var token = readToken();
-    if (!token) throw new Error("GitHubキーが見つかりません");
+  function validateFile(file) {
+    if (!/^image\/(jpeg|png|webp|gif|avif)$/i.test(file.type)) {
+      throw new Error("JPEG、PNG、WebP、GIF、AVIFの画像を選んでください。");
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      throw new Error("画像は20MB以下にしてください。");
+    }
+  }
 
-    var filename = await nextFileName(file, token);
-    var path = IMAGE_DIRECTORY + "/" + filename;
+  async function putFile(path, file, token, existingSha, message) {
     var content = await blobToBase64(file);
+    var payload = {
+      message: message,
+      content: content,
+      branch: BRANCH
+    };
+    if (existingSha) payload.sha = existingSha;
+
     var response = await window.fetch(
       API_ROOT + "/repos/" + OWNER + "/" + REPOSITORY + "/contents/" + path.split("/").map(encodeURIComponent).join("/"),
       {
@@ -131,11 +165,7 @@
           "Content-Type": "application/json",
           "X-GitHub-Api-Version": "2022-11-28"
         },
-        body: JSON.stringify({
-          message: "Upload note image: " + filename,
-          content: content,
-          branch: BRANCH
-        }),
+        body: JSON.stringify(payload),
         cache: "no-store",
         credentials: "omit"
       }
@@ -152,10 +182,33 @@
       uploadError.status = response.status;
       throw uploadError;
     }
+  }
+
+  async function uploadNoteImage(file) {
+    var token = readToken();
+    if (!token) throw new Error("GitHubキーが見つかりません");
+
+    var filename = await nextNoteFileName(file, token);
+    var path = NOTE_IMAGE_DIRECTORY + "/" + filename;
+    await putFile(path, file, token, null, "Upload note image: " + filename);
 
     return {
       markdownPath: "../" + path,
-      ogpPath: "/" + path,
+      filename: filename
+    };
+  }
+
+  async function uploadOgpImage(file) {
+    var token = readToken();
+    if (!token) throw new Error("GitHubキーが見つかりません");
+
+    var filename = articleBaseName() + fileExtension(file);
+    var path = OGP_IMAGE_DIRECTORY + "/" + filename;
+    var existing = await fetchExistingFile(path, token);
+    await putFile(path, file, token, existing && existing.sha, "Upload OGP image: " + filename);
+
+    return {
+      path: "/" + path,
       filename: filename
     };
   }
@@ -175,6 +228,16 @@
     body.focus();
   }
 
+  function showUploadError(error, statusElement) {
+    if (error.status === 403 || error.status === 404) {
+      statusElement.textContent = "書き込み権限がありません";
+      window.alert("GitHubキーの対象リポジトリに「4k29」を追加し、ContentsをRead and writeにしてください。");
+    } else {
+      statusElement.textContent = "アップロードできませんでした";
+      window.alert(error.message || "画像をアップロードできませんでした。通信状況を確認してください。");
+    }
+  }
+
   uploadButton.addEventListener("click", function () {
     uploadInput.click();
   });
@@ -183,14 +246,10 @@
     var file = uploadInput.files && uploadInput.files[0];
     if (!file) return;
 
-    if (!/^image\/(jpeg|png|webp|gif|avif)$/i.test(file.type)) {
-      window.alert("JPEG、PNG、WebP、GIF、AVIFの画像を選んでください。");
-      uploadInput.value = "";
-      return;
-    }
-
-    if (file.size > 20 * 1024 * 1024) {
-      window.alert("画像は20MB以下にしてください。");
+    try {
+      validateFile(file);
+    } catch (error) {
+      window.alert(error.message);
       uploadInput.value = "";
       return;
     }
@@ -199,7 +258,7 @@
     uploadStatus.textContent = "GitHubへアップロード中…";
 
     try {
-      var uploaded = await uploadFile(file);
+      var uploaded = await uploadNoteImage(file);
       var suggestedAlt = file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ");
       imagePathInput.value = uploaded.markdownPath;
       imageAltInput.value = suggestedAlt;
@@ -207,16 +266,47 @@
       insertImageMarkdown(uploaded.markdownPath, suggestedAlt);
       if (imageDialog && imageDialog.open) imageDialog.close();
     } catch (error) {
-      if (error.status === 403 || error.status === 404) {
-        uploadStatus.textContent = "4k29リポジトリへの書き込み権限がありません";
-        window.alert("GitHubキーの対象リポジトリに「4k29」を追加し、ContentsをRead and writeにしてください。");
-      } else {
-        uploadStatus.textContent = "画像をアップロードできませんでした";
-        window.alert("画像をアップロードできませんでした。通信状況を確認してください。");
-      }
+      showUploadError(error, uploadStatus);
     } finally {
       uploadButton.disabled = false;
       uploadInput.value = "";
+    }
+  });
+
+  ogpUploadButton.addEventListener("click", function (event) {
+    event.preventDefault();
+    ogpUploadInput.click();
+  });
+
+  ogpUploadInput.addEventListener("change", async function () {
+    var file = ogpUploadInput.files && ogpUploadInput.files[0];
+    if (!file) return;
+
+    try {
+      validateFile(file);
+    } catch (error) {
+      window.alert(error.message);
+      ogpUploadInput.value = "";
+      return;
+    }
+
+    ogpUploadButton.disabled = true;
+    ogpUploadStatus.textContent = " GitHubへアップロード中…";
+
+    try {
+      var uploaded = await uploadOgpImage(file);
+      ogpPathInput.value = uploaded.path;
+      if (ogpAltInput && !ogpAltInput.value.trim()) {
+        ogpAltInput.value = titleInput && titleInput.value.trim() ? titleInput.value.trim() : file.name.replace(/\.[^.]+$/, "");
+      }
+      ogpPathInput.dispatchEvent(new Event("input", { bubbles: true }));
+      if (ogpAltInput) ogpAltInput.dispatchEvent(new Event("input", { bubbles: true }));
+      ogpUploadStatus.textContent = " アップロード済み：" + uploaded.filename;
+    } catch (error) {
+      showUploadError(error, ogpUploadStatus);
+    } finally {
+      ogpUploadButton.disabled = false;
+      ogpUploadInput.value = "";
     }
   });
 })();
