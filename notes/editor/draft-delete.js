@@ -71,6 +71,12 @@
     return (title ? title.textContent.trim() : "無題の下書き") + "|" + (meta ? meta.textContent.trim() : "");
   }
 
+  function updateVisibleCount() {
+    if (!historyStatus) return;
+    var count = list.querySelectorAll(".draft-history-item").length;
+    historyStatus.textContent = count ? count + "件の下書きを表示しています。" : "復元できる過去の下書きはまだありません。";
+  }
+
   async function loadDeleted() {
     if (loaded) return;
     var file = await request(repoPath("/contents/" + DELETED_PATH + "?ref=" + encodeURIComponent(config.branch || "main")), { allow404: true });
@@ -103,12 +109,15 @@
   }
 
   function decorate() {
+    var changed = false;
+
     Array.from(list.querySelectorAll(".draft-history-item")).forEach(function (item) {
       if (item.dataset.deleteReady === "true") return;
       item.dataset.deleteReady = "true";
       var key = itemKey(item);
       if (deletedKeys.has(key)) {
         item.remove();
+        changed = true;
         return;
       }
 
@@ -123,6 +132,7 @@
       remove.textContent = "削除";
       remove.setAttribute("aria-label", "「" + (item.querySelector("strong") ? item.querySelector("strong").textContent : "下書き") + "」を削除");
       row.appendChild(remove);
+      changed = true;
 
       remove.addEventListener("click", async function () {
         var title = item.querySelector("strong") ? item.querySelector("strong").textContent : "この下書き";
@@ -135,7 +145,7 @@
           var isCurrent = Boolean(item.querySelector(".draft-history-current"));
           if (isCurrent) await clearCurrentDraft();
           row.remove();
-          if (historyStatus) historyStatus.textContent = "下書きを削除しました。";
+          updateVisibleCount();
           if (isCurrent) location.reload();
         } catch (error) {
           deletedKeys.delete(key);
@@ -144,10 +154,13 @@
         }
       });
     });
+
+    if (changed && loaded) updateVisibleCount();
   }
 
   loadDeleted().then(function () {
     decorate();
+    updateVisibleCount();
     new MutationObserver(decorate).observe(list, { childList: true });
   }).catch(function () {
     new MutationObserver(decorate).observe(list, { childList: true });
