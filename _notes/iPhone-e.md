@@ -20,7 +20,7 @@ iPhone 16eから始まったiPhoneのeシリーズ。
 今回はそんなiPhone eシリーズの意義を考えていく。 　　　　
 
 <figure class="article-image">
-<img src="../images/iPhone-e/IMG_1127.webp" loading="lazy" alt="Apple Park Visitor Centerにて2025/8/13に撮影したiPhone 16e。" />
+<img src="../images/notes/iPhone-e-1.webp" loading="lazy" alt="Apple Park Visitor Centerにて2025/8/13に撮影したiPhone 16e。" />
 <figcaption>Apple Park Visitor Centerにて2025/8/13、撮影。</figcaption>
 </figure>
 
@@ -39,7 +39,7 @@ iPhone 17eではSEシリーズはもちろん16eでも見送られていたMagSa
 SEが古い筐体に足し算の考え方で作られたiPhoneだとすると、eシリーズは現行モデルに引き算の考え方で作られたとも言えるだろう。
 
 <figure class="article-image">
-<img src="../images/iPhone-e/IMG_1755.webp" loading="lazy" alt="SEと16eのカメラサイズ比較。同じシングルカメラでもちゃんと進化している。" />
+<img src="../images/notes/iPhone-e-2.webp" loading="lazy" alt="SEと16eのカメラサイズ比較。同じシングルカメラでもちゃんと進化している。" />
 <figcaption aria-hidden="true">SEと16eのカメラサイズ比較。同じシングルカメラでもちゃんと進化している。</figcaption>
 </figure>
 
