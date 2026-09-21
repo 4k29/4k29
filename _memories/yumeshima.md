@@ -1,7 +1,6 @@
 ---
-seo_title: "夢洲駅の写真 — 2026年3月29日"
-seo_description: "2026年3月29日に撮影した夢洲駅の写真。改札、券売機、ホーム、エスカレーター、路線図など、駅の空間と設備の記録。"
 title: "YUMESHIMA"
+seo_title_exact: true
 description: "2026.03.29 - YUMESHIMA"
 date: "2026-03-29 00:00:00 +0900"
 last_modified_at: "2026-03-29 00:00:00 +0900"
