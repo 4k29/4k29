@@ -1,8 +1,8 @@
 ---
 sitemap: true
-seo_title: "つくることを、考える。"
+seo_title: "Tecirc — Technology, design, and experience."
 seo_title_exact: true
-seo_description: "つくることを、考える。"
+seo_description: "Tecircは、ガジェット、サービス、情報技術の設計や体験、その背景にある意図を考察する場所です。"
 layout: null
 permalink: /
 ---
@@ -23,38 +23,52 @@ permalink: /
 
   {% include seo.html %}
 
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="enhancements.css" />
-  <script src="theme.js" defer></script>
+  <link rel="stylesheet" href="{{ '/style.css' | relative_url }}" />
+  <link rel="stylesheet" href="{{ '/enhancements.css' | relative_url }}" />
+  <script src="{{ '/theme.js' | relative_url }}" defer></script>
 
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "4k29",
-    "url": "https://4k29.github.io/4k29/",
+    "name": {{ site.title | jsonify }},
+    "url": {{ '/' | absolute_url | jsonify }},
     "inLanguage": "ja",
     "description": {{ seo_description | jsonify }}
   }
   </script>
-  <link rel="icon" type="image/x-icon" href="/4k29/favicon-star-one-v1.ico" />
-  <link rel="icon" type="image/png" sizes="128x128" href="/4k29/favicon-star-one-v1.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/4k29/apple-touch-icon-star-one-v1.png" />
+
+  <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}" />
+  <link rel="icon" type="image/png" sizes="128x128" href="{{ '/favicon-tecirc.png' | relative_url }}" />
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ '/apple-touch-icon-tecirc.png' | relative_url }}" />
 </head>
 <body>
   {% include site-header.html %}
 
   <main id="top">
-    <section class="hero">
-      <h1>4k29</h1>
-      <p class="lead">つくることを、考える。</p>
+    <section class="hero tecirc-hero">
+      <div class="tecirc-lockup">
+        <span class="tecirc-mark tecirc-mark-large" aria-hidden="true"></span>
+        <h1>Tecirc</h1>
+      </div>
+      <p class="lead">Technology, design, and experience.</p>
+      <p class="hero-description">ガジェットやサービス、情報技術を、スペックや新しさだけでなく、設計・体験・その背景にある意図から考えます。</p>
     </section>
 
     <section class="content-section" id="about">
-      <div class="section-heading"><h2>About</h2><span>4k29</span></div>
+      <div class="section-heading"><h2>About</h2><span>Tech + Circle</span></div>
       <div class="section-body profile">
-        <p>ガジェットやサービスを、使う側だけでなく、つくる側の視点から考えます。設計や体験、その背景にある意図まで考察するための場所です。</p>
+        <p>Tecircは、技術を囲んで考えるための場所です。製品そのものだけでなく、なぜその形になったのか、使う人にどんな体験を生むのか、その選択の背景まで見ていきます。</p>
       </div>
+    </section>
+
+    <section class="content-section" aria-labelledby="scope-title">
+      <div class="section-heading"><h2 id="scope-title">Scope</h2><span>What we look at</span></div>
+      <dl class="section-body scope-list">
+        <div><dt>Design</dt><dd>形やUIだけでなく、その選択の理由を考える。</dd></div>
+        <div><dt>Experience</dt><dd>機能が、人の行動や感覚にどう届くかを見る。</dd></div>
+        <div><dt>Technology</dt><dd>新しさだけでなく、人や社会との関係から捉える。</dd></div>
+      </dl>
     </section>
 
     <section class="content-section" id="notes">
@@ -65,27 +79,10 @@ permalink: /
 
       {% assign sorted_notes = site.notes | sort: "date" | reverse %}
       <div class="section-body row-list">
-        {% for note in sorted_notes limit: 5 %}
+        {% for note in sorted_notes limit: 6 %}
         <a href="{{ note.url | relative_url }}" class="row-item compact">
           <time datetime="{{ note.date | date: '%Y-%m-%d' }}">{{ note.date | date: "%Y.%m.%d" }}</time>
           <span class="row-title">{{ note.title | escape }}</span>
-          <span class="arrow" aria-hidden="true">↗</span>
-        </a>
-        {% endfor %}
-      </div>
-    </section>
-
-    <section class="content-section">
-      {% assign sorted_memories = site.memories | sort: "date" | reverse %}
-      <div class="section-heading">
-        <h2>Memory</h2>
-        <a class="section-link" href="{{ '/memory/' | relative_url }}">All memory ↗</a>
-      </div>
-      <div class="section-body row-list">
-        {% for memory in sorted_memories limit: 5 %}
-        <a href="{{ memory.url | relative_url }}" class="row-item compact">
-          <time datetime="{{ memory.date | date: '%Y-%m-%d' }}">{{ memory.date_display | escape }}</time>
-          <span class="row-title">{{ memory.list_title | default: memory.title | escape }}</span>
           <span class="arrow" aria-hidden="true">↗</span>
         </a>
         {% endfor %}
@@ -96,14 +93,18 @@ permalink: /
       <div class="section-heading"><h2>Links</h2></div>
       <ul class="section-body contact-list">
         <li><a href="https://x.com/p_horeer?s=21" target="_blank" rel="noopener noreferrer">X ↗</a></li>
-        <li><a href="https://x.com/uma_4k?s=21" target="_blank" rel="noopener noreferrer">X (Sub) ↗</a></li>
-        <li><a href="https://x.com/___4k29?s=21" target="_blank" rel="noopener noreferrer">X (Photo) ↗</a></li>
         <li><a href="https://www.instagram.com/__4k29" target="_blank" rel="noopener noreferrer">Instagram ↗</a></li>
-        <li><a href="https://music.apple.com/profile/__4k29" target="_blank" rel="noopener noreferrer">Apple Music ↗</a></li>
       </ul>
     </section>
   </main>
 
-  <footer><p>© 2026 4k29</p><div class="footer-links"><a href="{{ '/sitemap/' | relative_url }}">Sitemap</a><a href="#top">Back to top ↑</a></div></footer>
+  <footer>
+    <p>© {{ site.time | date: "%Y" }} Tecirc</p>
+    <div class="footer-links">
+      <a href="{{ '/memory/' | relative_url }}">Memory</a>
+      <a href="{{ '/sitemap/' | relative_url }}">Sitemap</a>
+      <a href="#top">Back to top ↑</a>
+    </div>
+  </footer>
 </body>
 </html>
