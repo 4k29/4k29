@@ -1,14 +1,12 @@
 (function () {
   "use strict";
 
-  var TOKEN_KEYS = [
-    "4k29-editor-github-token-persistent",
-    "4k29-editor-github-token"
-  ];
+  var SESSION_TOKEN_KEY = "4k29-editor-github-token";
   var API_ROOT = "https://api.github.com";
-  var OWNER = "4k29";
-  var REPOSITORY = "4k29";
-  var BRANCH = "main";
+  var config = window.EDITOR_GITHUB_CONFIG || {};
+  var OWNER = config.owner || "4k29";
+  var REPOSITORY = config.publicRepository || "tecirc";
+  var BRANCH = config.publicBranch || "main";
   var NOTE_IMAGE_DIRECTORY = "images/notes";
   var OGP_IMAGE_DIRECTORY = "images/ogp";
 
@@ -50,7 +48,7 @@
 
   function readToken() {
     try {
-      return window.localStorage.getItem(TOKEN_KEYS[0]) || window.sessionStorage.getItem(TOKEN_KEYS[1]) || "";
+      return window.sessionStorage.getItem(SESSION_TOKEN_KEY) || "";
     } catch (error) {
       return "";
     }
@@ -234,7 +232,7 @@
   function showUploadError(error, statusElement) {
     if (error.status === 403 || error.status === 404) {
       statusElement.textContent = "書き込み権限がありません";
-      window.alert("GitHubキーの対象リポジトリに「4k29」を追加し、ContentsをRead and writeにしてください。");
+      window.alert("GitHubキーの対象リポジトリに「tecirc」を追加し、ContentsをRead and writeにしてください。");
     } else {
       statusElement.textContent = "アップロードできませんでした";
       window.alert(error.message || "画像をアップロードできませんでした。通信状況を確認してください。");

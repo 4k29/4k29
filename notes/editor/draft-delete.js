@@ -6,7 +6,6 @@
   var DELETED_PATH = "notes/deleted-drafts.json";
   var CURRENT_DRAFT_PATH = "notes/current.json";
   var SESSION_TOKEN_KEY = "4k29-editor-github-token";
-  var PERSISTENT_TOKEN_KEY = "4k29-editor-github-token-persistent";
   var STORAGE_KEY = "4k29-note-editor-v1";
   var config = window.EDITOR_GITHUB_CONFIG || {};
   var list = document.getElementById("draft-history-list");
@@ -19,10 +18,6 @@
   if (!list) return;
 
   function token() {
-    try {
-      var persistent = localStorage.getItem(PERSISTENT_TOKEN_KEY) || "";
-      if (persistent) return persistent;
-    } catch (error) {}
     try {
       return sessionStorage.getItem(SESSION_TOKEN_KEY) || "";
     } catch (error) {

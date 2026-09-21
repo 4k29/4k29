@@ -7,7 +7,6 @@
   var API_ROOT = "https://api.github.com";
   var API_VERSION = "2022-11-28";
   var SESSION_TOKEN_KEY = "4k29-editor-github-token";
-  var PERSISTENT_TOKEN_KEY = "4k29-editor-github-token-persistent";
   var DB_NAME = "4k29-memory-editor-v1";
   var DB_STORE = "drafts";
   var DB_KEY = "current";
@@ -39,10 +38,6 @@
   if (!form || !draftsButton || !dialog || !list) return;
 
   function storedToken() {
-    try {
-      var persistent = localStorage.getItem(PERSISTENT_TOKEN_KEY) || "";
-      if (persistent) return persistent;
-    } catch (error) {}
     try {
       return sessionStorage.getItem(SESSION_TOKEN_KEY) || "";
     } catch (error) {

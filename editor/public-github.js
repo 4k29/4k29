@@ -4,19 +4,15 @@
   var config = window.EDITOR_GITHUB_CONFIG || {};
   var API_ROOT = "https://api.github.com";
   var API_VERSION = "2022-11-28";
-  var TOKEN_KEYS = [
-    "4k29-editor-github-token-persistent",
-    "4k29-editor-github-token"
-  ];
+  var SESSION_TOKEN_KEY = "4k29-editor-github-token";
   var owner = config.owner || "4k29";
-  var repository = config.publicRepository || "4k29";
+  var repository = config.publicRepository || "tecirc";
   var branch = config.publicBranch || "main";
   var writeQueue = Promise.resolve();
 
   function readToken() {
     try {
-      return window.localStorage.getItem(TOKEN_KEYS[0]) ||
-        window.sessionStorage.getItem(TOKEN_KEYS[1]) || "";
+      return window.sessionStorage.getItem(SESSION_TOKEN_KEY) || "";
     } catch (error) {
       return "";
     }
@@ -230,7 +226,7 @@
 
   function permissionMessage(error) {
     if (error && (error.status === 403 || error.status === 404)) {
-      return "GitHubキーの対象リポジトリに「4k29」を追加し、ContentsをRead and writeにしてください。";
+      return "GitHubキーの対象リポジトリに「tecirc」を追加し、ContentsをRead and writeにしてください。";
     }
     return "GitHubへ公開できませんでした。通信状況を確認して、もう一度試してください。";
   }

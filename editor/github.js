@@ -3,7 +3,7 @@
 
   var config = window.EDITOR_GITHUB_CONFIG || {};
   var SESSION_TOKEN_KEY = "4k29-editor-github-token";
-  var PERSISTENT_TOKEN_KEY = "4k29-editor-github-token-persistent";
+  var LEGACY_PERSISTENT_TOKEN_KEY = "4k29-editor-github-token-persistent";
   var API_ROOT = "https://api.github.com";
   var API_VERSION = "2022-11-28";
   var token = "";
@@ -94,7 +94,7 @@
     var card = gateContent(
       "Private editor",
       "GitHubで本人確認",
-      message || "下書き専用リポジトリにだけ使えるGitHubキーを入力してください。本人確認後、この端末に安全に保存します。"
+      message || "このEditor用に対象リポジトリを限定したGitHubキーを入力してください。キーはこのタブのセッション内だけに保持します。"
     );
     var form = document.createElement("form");
     form.className = "editor-github-form";
@@ -135,7 +135,7 @@
 
       try {
         await verifyAccess();
-        savePersistentToken(token);
+        saveSessionToken(token);
         unlock();
         notifyReady();
       } catch (error) {
@@ -225,26 +225,24 @@
     window.dispatchEvent(new CustomEvent("editorgithubready", { detail: editorApi }));
   }
 
-  function savePersistentToken(value) {
+  function saveSessionToken(value) {
     try {
-      window.localStorage.setItem(PERSISTENT_TOKEN_KEY, value);
-      window.sessionStorage.removeItem(SESSION_TOKEN_KEY);
+      window.sessionStorage.setItem(SESSION_TOKEN_KEY, value);
     } catch (error) {
-      try {
-        window.sessionStorage.setItem(SESSION_TOKEN_KEY, value);
-      } catch (sessionError) {
-        return;
-      }
+      // The in-memory token still works for the current page.
+    }
+  }
+
+  function clearLegacyPersistentToken() {
+    try {
+      window.localStorage.removeItem(LEGACY_PERSISTENT_TOKEN_KEY);
+    } catch (error) {
+      // Ignore storage errors and continue without persistent credentials.
     }
   }
 
   function readStoredToken() {
-    try {
-      var persistentToken = window.localStorage.getItem(PERSISTENT_TOKEN_KEY) || "";
-      if (persistentToken) return persistentToken;
-    } catch (error) {
-      // Fall back to the current tab when persistent storage is unavailable.
-    }
+    clearLegacyPersistentToken();
     try {
       return window.sessionStorage.getItem(SESSION_TOKEN_KEY) || "";
     } catch (error) {
@@ -253,11 +251,7 @@
   }
 
   function clearStoredToken() {
-    try {
-      window.localStorage.removeItem(PERSISTENT_TOKEN_KEY);
-    } catch (error) {
-      // Continue and clear the current tab as well.
-    }
+    clearLegacyPersistentToken();
     try {
       window.sessionStorage.removeItem(SESSION_TOKEN_KEY);
     } catch (error) {
@@ -597,7 +591,7 @@
     showLoading();
     try {
       await verifyAccess();
-      savePersistentToken(token);
+      saveSessionToken(token);
       unlock();
       notifyReady();
     } catch (error) {

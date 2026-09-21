@@ -6,7 +6,6 @@
   var API_ROOT = "https://api.github.com";
   var API_VERSION = "2022-11-28";
   var SESSION_TOKEN_KEY = "4k29-editor-github-token";
-  var PERSISTENT_TOKEN_KEY = "4k29-editor-github-token-persistent";
   var MAX_RESULTS = 16;
   var COMMITS_PER_PAGE = 30;
   var MAX_PAGES = 3;
@@ -25,12 +24,6 @@
   if (!button || !dialog || !list) return;
 
   function getStoredToken() {
-    try {
-      var persistent = window.localStorage.getItem(PERSISTENT_TOKEN_KEY) || "";
-      if (persistent) return persistent;
-    } catch (error) {
-      // Fall back to session storage.
-    }
     try {
       return window.sessionStorage.getItem(SESSION_TOKEN_KEY) || "";
     } catch (error) {
