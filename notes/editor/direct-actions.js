@@ -173,13 +173,21 @@
         ? editing.path
         : "_notes/" + data.slug + ".md";
 
-      await window.EditorPublicGitHub.commit([
+      var publishedCommit = await window.EditorPublicGitHub.commit([
         {
           path: targetPath,
+          expectedSha: editing ? editing.sha : null,
           content: buildMarkdown(data)
         }
       ], (editing ? "Update note: " : "Publish note: ") + data.title);
 
+      window.NotePublishedEdit = {
+        path: targetPath, slug: data.slug, title: data.title,
+        sha: publishedCommit.contentShas[targetPath]
+      };
+      fields.slug.readOnly = true;
+      publishButton.textContent = "更新";
+      publishButton.dataset.mode = "update";
       status.textContent = actionLabel + "しました";
       window.alert(actionLabel + "しました。GitHub Pagesへの反映後、記事ページに表示されます。");
     } catch (error) {

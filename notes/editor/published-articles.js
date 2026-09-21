@@ -130,10 +130,11 @@
     fields.slug.readOnly = true;
   }
 
-  function enterEditMode(record, path) {
+  function enterEditMode(record, path, sha) {
     setEditorData(record);
     window.NotePublishedEdit = {
       path: path,
+      sha: sha,
       slug: record.slug,
       title: record.title
     };
@@ -161,6 +162,7 @@
     var result = await window.EditorPublicGitHub.readText(file.path);
     return {
       path: file.path,
+      sha: result.sha,
       record: parseMarkdown(result.content, file.path)
     };
   }
@@ -179,7 +181,7 @@
     articleButton.appendChild(title);
     articleButton.appendChild(meta);
     articleButton.addEventListener("click", function () {
-      enterEditMode(item.record, item.path);
+      enterEditMode(item.record, item.path, item.sha);
       dialog.close();
       fields.title.focus();
     });

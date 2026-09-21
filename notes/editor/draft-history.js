@@ -5,7 +5,6 @@
   var DRAFT_PATH = EDITOR + "/current.json";
   var API_ROOT = "https://api.github.com";
   var API_VERSION = "2022-11-28";
-  var SESSION_TOKEN_KEY = "4k29-editor-github-token";
   var MAX_RESULTS = 16;
   var COMMITS_PER_PAGE = 30;
   var MAX_PAGES = 3;
@@ -24,11 +23,8 @@
   if (!button || !dialog || !list) return;
 
   function getStoredToken() {
-    try {
-      return window.sessionStorage.getItem(SESSION_TOKEN_KEY) || "";
-    } catch (error) {
-      return "";
-    }
+    return window.EditorGitHub && window.EditorGitHub.getToken
+      ? window.EditorGitHub.getToken() : "";
   }
 
   function repoPath(suffix) {

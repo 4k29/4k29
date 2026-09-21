@@ -34,13 +34,13 @@
       icon.rel = "icon";
       document.head.appendChild(icon);
     }
-    icon.type = "image/png";
+    icon.type = "image/svg+xml";
     icon.href = FAVICON_URL;
   }
 
   function getContentContext() {
     var path = window.location.pathname;
-    var base = "/4k29";
+    var base = "/tecirc";
 
     if (path === base + "/notes/" || path === base + "/notes") {
       return { type: "archive", section: "notes" };

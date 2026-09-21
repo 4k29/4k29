@@ -1,23 +1,12 @@
 (function () {
   "use strict";
 
-  var DB_NAME = "4k29-memory-editor-v1";
-  var DB_STORE = "drafts";
-  var DB_KEY = "current";
   var form = document.getElementById("memory-form");
   var status = document.getElementById("save-status");
   var saveButton = document.getElementById("save-draft-button");
   var publishButton = document.getElementById("publish-button");
 
   if (!form || !saveButton || !publishButton) return;
-
-  var fields = {
-    title: document.getElementById("title"),
-    slug: document.getElementById("slug"),
-    date: document.getElementById("date"),
-    dateDisplay: document.getElementById("date-display"),
-    description: document.getElementById("description")
-  };
 
   function jstDate() {
     var parts = new Intl.DateTimeFormat("en-CA", {
@@ -33,87 +22,9 @@
     return values.year + "-" + values.month + "-" + values.day;
   }
 
-  function metadata() {
-    return {
-      title: fields.title.value.trim(),
-      slug: fields.slug.value.trim(),
-      date: fields.date.value,
-      dateDisplay: fields.dateDisplay.value.trim(),
-      description: fields.description.value.trim()
-    };
-  }
-
-  function openDatabase() {
-    return new Promise(function (resolve, reject) {
-      var request = indexedDB.open(DB_NAME, 1);
-      request.onupgradeneeded = function () {
-        var database = request.result;
-        if (!database.objectStoreNames.contains(DB_STORE)) {
-          database.createObjectStore(DB_STORE);
-        }
-      };
-      request.onsuccess = function () {
-        resolve(request.result);
-      };
-      request.onerror = function () {
-        reject(request.error || new Error("下書きを開けませんでした"));
-      };
-    });
-  }
-
-  function databaseRequest(mode, action) {
-    return openDatabase().then(function (database) {
-      return new Promise(function (resolve, reject) {
-        var transaction = database.transaction(DB_STORE, mode);
-        var store = transaction.objectStore(DB_STORE);
-        var request = action(store);
-        request.onsuccess = function () {
-          resolve(request.result);
-        };
-        request.onerror = function () {
-          reject(request.error || new Error("下書きを読み込めませんでした"));
-        };
-        transaction.oncomplete = function () {
-          database.close();
-        };
-        transaction.onerror = function () {
-          reject(transaction.error || new Error("下書きを更新できませんでした"));
-          database.close();
-        };
-      });
-    });
-  }
-
-  function currentCaptions() {
-    var captions = {};
-    document.querySelectorAll(".memory-caption-input[data-id]").forEach(function (input) {
-      captions[input.dataset.id] = input.value;
-    });
-    return captions;
-  }
-
   async function currentRecord() {
-    var record = await databaseRequest("readonly", function (store) {
-      return store.get(DB_KEY);
-    });
-    record = record || {
-      metadata: {},
-      photos: [],
-      flags: {},
-      pendingDeletedPaths: []
-    };
-
-    var captions = currentCaptions();
-    record.metadata = metadata();
-    record.photos = (record.photos || []).map(function (photo) {
-      return Object.assign({}, photo, {
-        caption: Object.prototype.hasOwnProperty.call(captions, photo.id)
-          ? captions[photo.id]
-          : (photo.caption || "")
-      });
-    });
-    record.updatedAt = new Date().toISOString();
-    return record;
+    if (!window.MemoryEditor) throw new Error("エディターを読み込めませんでした");
+    return window.MemoryEditor.getDraftSnapshot();
   }
 
   function extension(photo) {
@@ -165,9 +76,8 @@
     });
     record.pendingDeletedPaths = [];
 
-    await databaseRequest("readwrite", function (store) {
-      return store.put(record, DB_KEY);
-    });
+    // The editor's autosave owns local state. Do not overwrite newer edits
+    // with a snapshot after a slow network request completes.
     return record;
   }
 

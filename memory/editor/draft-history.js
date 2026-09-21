@@ -6,7 +6,6 @@
   var DELETED_PATH = "memory/deleted-drafts.json";
   var API_ROOT = "https://api.github.com";
   var API_VERSION = "2022-11-28";
-  var SESSION_TOKEN_KEY = "4k29-editor-github-token";
   var DB_NAME = "4k29-memory-editor-v1";
   var DB_STORE = "drafts";
   var DB_KEY = "current";
@@ -38,11 +37,8 @@
   if (!form || !draftsButton || !dialog || !list) return;
 
   function storedToken() {
-    try {
-      return sessionStorage.getItem(SESSION_TOKEN_KEY) || "";
-    } catch (error) {
-      return "";
-    }
+    return window.EditorGitHub && window.EditorGitHub.getToken
+      ? window.EditorGitHub.getToken() : "";
   }
 
   function repoPath(suffix) {

@@ -22,6 +22,7 @@
     isReady: function () {
       return ready && Boolean(token && user && repository);
     },
+    getToken: function () { return ready ? token : ""; },
     getUser: function () {
       return user;
     },
@@ -94,7 +95,7 @@
     var card = gateContent(
       "Private editor",
       "GitHubで本人確認",
-      message || "このEditor用に対象リポジトリを限定したGitHubキーを入力してください。キーはこのタブのセッション内だけに保持します。"
+      message || "下書き用と公開用の2つのリポジトリに限定したGitHubキーを入力してください。キーはこのページを開いている間だけ保持します。"
     );
     var form = document.createElement("form");
     form.className = "editor-github-form";
@@ -135,7 +136,7 @@
 
       try {
         await verifyAccess();
-        saveSessionToken(token);
+        input.value = "";
         unlock();
         notifyReady();
       } catch (error) {
@@ -146,10 +147,6 @@
         input.select();
       }
     });
-  }
-
-  function showLoading() {
-    gateContent("Private editor", "確認中…", "GitHubアカウントと下書き保存先を確認しています。");
   }
 
   function accessErrorMessage(error) {
@@ -225,33 +222,12 @@
     window.dispatchEvent(new CustomEvent("editorgithubready", { detail: editorApi }));
   }
 
-  function saveSessionToken(value) {
-    try {
-      window.sessionStorage.setItem(SESSION_TOKEN_KEY, value);
-    } catch (error) {
-      // The in-memory token still works for the current page.
-    }
-  }
-
-  function clearLegacyPersistentToken() {
+  function clearStoredToken() {
     try {
       window.localStorage.removeItem(LEGACY_PERSISTENT_TOKEN_KEY);
     } catch (error) {
-      // Ignore storage errors and continue without persistent credentials.
+      // Continue and clear the current tab as well.
     }
-  }
-
-  function readStoredToken() {
-    clearLegacyPersistentToken();
-    try {
-      return window.sessionStorage.getItem(SESSION_TOKEN_KEY) || "";
-    } catch (error) {
-      return "";
-    }
-  }
-
-  function clearStoredToken() {
-    clearLegacyPersistentToken();
     try {
       window.sessionStorage.removeItem(SESSION_TOKEN_KEY);
     } catch (error) {
@@ -576,29 +552,14 @@
   async function initialize() {
     if (initialized) return;
     initialized = true;
+    clearStoredToken();
     lock();
     if (!configured()) {
       showSetupRequired();
       return;
     }
 
-    token = readStoredToken();
-    if (!token) {
-      showLogin();
-      return;
-    }
-
-    showLoading();
-    try {
-      await verifyAccess();
-      saveSessionToken(token);
-      unlock();
-      notifyReady();
-    } catch (error) {
-      clearStoredToken();
-      token = "";
-      showLogin(accessErrorMessage(error));
-    }
+    showLogin();
   }
 
   if (document.readyState === "loading") {

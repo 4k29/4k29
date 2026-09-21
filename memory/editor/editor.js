@@ -235,6 +235,14 @@
     });
   }
 
+  window.MemoryEditor = Object.freeze({
+    getDraftSnapshot: function () {
+      if (processing) throw new Error("写真の軽量化が終わってから操作してください。");
+      return buildDraftRecord(new Date().toISOString());
+    },
+    isProcessing: function () { return processing; }
+  });
+
   function buildDraftRecord(updatedAt) {
     return {
       metadata: getMetadata(),

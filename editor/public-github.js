@@ -4,18 +4,14 @@
   var config = window.EDITOR_GITHUB_CONFIG || {};
   var API_ROOT = "https://api.github.com";
   var API_VERSION = "2022-11-28";
-  var SESSION_TOKEN_KEY = "4k29-editor-github-token";
   var owner = config.owner || "4k29";
   var repository = config.publicRepository || "tecirc";
   var branch = config.publicBranch || "main";
   var writeQueue = Promise.resolve();
 
   function readToken() {
-    try {
-      return window.sessionStorage.getItem(SESSION_TOKEN_KEY) || "";
-    } catch (error) {
-      return "";
-    }
+    return window.EditorGitHub && window.EditorGitHub.getToken
+      ? window.EditorGitHub.getToken() : "";
   }
 
   function repoPath(suffix) {
@@ -43,6 +39,7 @@
       credentials: "omit"
     });
 
+    if (options.allow404 && response.status === 404) return null;
     if (!response.ok) {
       var details = null;
       try {
@@ -138,10 +135,30 @@
     return results;
   }
 
+  function validateWritePath(path) {
+    var value = validatePath(path);
+    if (!/^(?:_notes|_memories)\/[A-Za-z0-9][A-Za-z0-9._-]*\.md$/.test(value) &&
+        !/^images\/(?:notes|memory|ogp)\/[A-Za-z0-9][A-Za-z0-9._-]*\.(?:jpe?g|png|webp|gif|avif|mp4)$/i.test(value)) {
+      throw new Error("記事とメディア以外のファイルには公開できません");
+    }
+    return value;
+  }
+
+  function conflictError() {
+    var error = new Error("公開先の記事がすでに存在するか、読み込み後に変更されています。公開済み記事を読み直してください。");
+    error.editorCode = "content-conflict";
+    return error;
+  }
+
+  async function pathSha(path, ref) {
+    var file = await apiRequest(repoPath("/contents/" + encodeContentPath(path) + "?ref=" + encodeURIComponent(ref)), { allow404: true });
+    return file ? file.sha : null;
+  }
+
   async function prepareEntries(entries) {
     var unique = new Map();
     entries.forEach(function (entry) {
-      unique.set(validatePath(entry.path), entry);
+      unique.set(validateWritePath(entry.path), entry);
     });
 
     return mapWithLimit(Array.from(unique.values()), 3, async function (entry) {
@@ -174,9 +191,12 @@
     };
   }
 
-  async function commitPreparedEntries(prepared, message) {
+  async function commitPreparedEntries(prepared, message, expected) {
     for (var attempt = 0; attempt < 2; attempt += 1) {
       var state = await repositoryState();
+      await mapWithLimit(prepared, 4, async function (entry) {
+        if (await pathSha(entry.path, state.headSha) !== expected.get(entry.path)) throw conflictError();
+      });
       var tree = await apiRequest(repoPath("/git/trees"), {
         method: "POST",
         body: {
@@ -202,6 +222,7 @@
             body: { sha: commit.sha, force: false }
           }
         );
+        commit.contentShas = Object.fromEntries(prepared.map(function (entry) { return [entry.path, entry.sha]; }));
         return commit;
       } catch (error) {
         if (attempt === 0 && (error.status === 409 || error.status === 422)) {
@@ -215,8 +236,17 @@
 
   function commit(entries, message) {
     var queued = writeQueue.then(async function () {
+      if (!readToken()) throw new Error("GitHubへの接続が完了していません");
+      entries.forEach(function (entry) { validateWritePath(entry.path); });
+      var initial = await repositoryState();
+      var expected = new Map();
+      await mapWithLimit(entries, 4, async function (entry) {
+        var sha = await pathSha(entry.path, initial.headSha);
+        if (Object.prototype.hasOwnProperty.call(entry, "expectedSha") && entry.expectedSha !== sha) throw conflictError();
+        expected.set(entry.path, sha);
+      });
       var prepared = await prepareEntries(entries);
-      return commitPreparedEntries(prepared, message);
+      return commitPreparedEntries(prepared, message, expected);
     });
     writeQueue = queued.catch(function () {
       return undefined;
@@ -225,8 +255,9 @@
   }
 
   function permissionMessage(error) {
+    if (error && error.editorCode === "content-conflict") return error.message;
     if (error && (error.status === 403 || error.status === 404)) {
-      return "GitHubキーの対象リポジトリに「tecirc」を追加し、ContentsをRead and writeにしてください。";
+      return "GitHubキーの対象リポジトリに「" + repository + "」を追加し、ContentsをRead and writeにしてください。";
     }
     return "GitHubへ公開できませんでした。通信状況を確認して、もう一度試してください。";
   }

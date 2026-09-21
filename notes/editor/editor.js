@@ -90,7 +90,7 @@
   function normalizeBodyImage(value) {
     var path = (value || "").trim();
     path = path.replace(BASE_URL, "");
-    path = path.replace(/^\/4k29\/images\//, "../images/");
+    path = path.replace(/^\/(?:tecirc|4k29)\/images\//, "../images/");
     path = path.replace(/^\/images\//, "../images/");
     path = path.replace(/^images\//, "../images/");
     return path;

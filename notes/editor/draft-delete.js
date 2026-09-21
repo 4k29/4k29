@@ -5,7 +5,6 @@
   var API_VERSION = "2022-11-28";
   var DELETED_PATH = "notes/deleted-drafts.json";
   var CURRENT_DRAFT_PATH = "notes/current.json";
-  var SESSION_TOKEN_KEY = "4k29-editor-github-token";
   var STORAGE_KEY = "4k29-note-editor-v1";
   var config = window.EDITOR_GITHUB_CONFIG || {};
   var list = document.getElementById("draft-history-list");
@@ -18,11 +17,8 @@
   if (!list) return;
 
   function token() {
-    try {
-      return sessionStorage.getItem(SESSION_TOKEN_KEY) || "";
-    } catch (error) {
-      return "";
-    }
+    return window.EditorGitHub && window.EditorGitHub.getToken
+      ? window.EditorGitHub.getToken() : "";
   }
 
   function repoPath(suffix) {

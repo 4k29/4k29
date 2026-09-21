@@ -1,7 +1,6 @@
 (function () {
   "use strict";
 
-  var SESSION_TOKEN_KEY = "4k29-editor-github-token";
   var API_ROOT = "https://api.github.com";
   var config = window.EDITOR_GITHUB_CONFIG || {};
   var OWNER = config.owner || "4k29";
@@ -47,11 +46,8 @@
   }
 
   function readToken() {
-    try {
-      return window.sessionStorage.getItem(SESSION_TOKEN_KEY) || "";
-    } catch (error) {
-      return "";
-    }
+    return window.EditorGitHub && window.EditorGitHub.getToken
+      ? window.EditorGitHub.getToken() : "";
   }
 
   function normalizeBaseName(value) {
@@ -66,9 +62,7 @@
   }
 
   function fileExtension(file) {
-    if (file.type === "video/mp4" || /\.mp4$/i.test(file.name)) return ".mp4";
-    var dot = file.name.lastIndexOf(".");
-    if (dot >= 0) return file.name.slice(dot).toLowerCase();
+    if (file.type === "video/mp4" || (!file.type && /\.mp4$/i.test(file.name))) return ".mp4";
 
     var extensions = {
       "image/jpeg": ".jpg",
@@ -232,7 +226,7 @@
   function showUploadError(error, statusElement) {
     if (error.status === 403 || error.status === 404) {
       statusElement.textContent = "書き込み権限がありません";
-      window.alert("GitHubキーの対象リポジトリに「tecirc」を追加し、ContentsをRead and writeにしてください。");
+      window.alert("GitHubキーの対象リポジトリに「" + REPOSITORY + "」を追加し、ContentsをRead and writeにしてください。");
     } else {
       statusElement.textContent = "アップロードできませんでした";
       window.alert(error.message || "画像をアップロードできませんでした。通信状況を確認してください。");
