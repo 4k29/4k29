@@ -31,8 +31,21 @@
     font-style: normal !important;
     letter-spacing: -0.01em !important;
     background: var(--bg);
+    isolation: isolate;
     transition: transform .26s cubic-bezier(.22, 1, .36, 1);
     will-change: transform;
+  }
+
+  .global-header::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 100vw;
+    transform: translateX(-50%);
+    background: var(--bg);
   }
 
   .global-header.is-scrolled {
