@@ -33,9 +33,12 @@
   var importFile = document.getElementById("import-file");
   var videoDialog = document.getElementById("video-dialog");
   var videoPath = document.getElementById("dialog-video-path");
+  var youtubeDialog = document.getElementById("youtube-dialog");
+  var youtubeUrl = document.getElementById("dialog-youtube-url");
   window.noteVideoPreviews = new Map();
   var lastPreviewBody = null;
   var videoSelection = null;
+  var youtubeSelection = null;
   var imageSelection = null;
   var imageDialog = document.getElementById("image-dialog");
   var dialogImagePath = document.getElementById("dialog-image-path");
@@ -319,6 +322,40 @@
     return /^(https?:\/\/|\.\.\/|\.\/|\/|#)/i.test(value);
   }
 
+  function youtubeIdFromUrl(value) {
+    var raw = String(value || "").trim();
+    if (!raw) return "";
+
+    try {
+      var url = new URL(raw);
+      var host = url.hostname.replace(/^www\./, "").toLowerCase();
+      var id = "";
+
+      if (host === "youtu.be") {
+        id = url.pathname.split("/").filter(Boolean)[0] || "";
+      } else if (host === "youtube.com" || host === "m.youtube.com") {
+        if (url.pathname === "/watch") {
+          id = url.searchParams.get("v") || "";
+        } else {
+          var parts = url.pathname.split("/").filter(Boolean);
+          if (parts[0] === "shorts" || parts[0] === "live" || parts[0] === "embed") {
+            id = parts[1] || "";
+          }
+        }
+      }
+
+      return /^[A-Za-z0-9_-]{6,20}$/.test(id) ? id : "";
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function youtubeEmbedMarkup(id) {
+    return '<figure class="youtube-embed"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/' +
+      id +
+      '" title="YouTube video player" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></figure>';
+  }
+
   function previewImageUrl(value) {
     if (/^\.\.\/images\//.test(value)) {
       return "../../images/" + value.replace(/^\.\.\/images\//, "");
@@ -392,6 +429,23 @@
       if (inCode) {
         code.push(line);
         return;
+      }
+
+
+
+      // Render only the YouTube embed markup produced by this editor.
+      if (/^\s*<figure\b/i.test(line) && /class=["']youtube-embed["']/i.test(line)) {
+        var youtubeDocument = new DOMParser().parseFromString(line, "text/html");
+        var figure = youtubeDocument.body.firstElementChild;
+        var iframe = figure && figure.querySelector("iframe");
+        var youtubeSource = iframe && iframe.getAttribute("src");
+        var youtubeMatch = youtubeSource && youtubeSource.match(/^https:\/\/www\.youtube-nocookie\.com\/embed\/([A-Za-z0-9_-]{6,20})$/);
+        if (figure && figure.tagName === "FIGURE" && youtubeMatch) {
+          flushParagraph();
+          closeList();
+          html.push(youtubeEmbedMarkup(youtubeMatch[1]));
+          return;
+        }
       }
 
       // Render only our video markup, never arbitrary user-provided HTML.
@@ -528,6 +582,12 @@
       videoDialog.showModal();
       videoPath.focus();
     }
+    if (action === "youtube") {
+      youtubeSelection = [fields.body.selectionStart, fields.body.selectionEnd];
+      youtubeUrl.value = "";
+      youtubeDialog.showModal();
+      youtubeUrl.focus();
+    }
     if (action === "image") {
       imageSelection = [fields.body.selectionStart, fields.body.selectionEnd];
       dialogImagePath.value = "";
@@ -613,6 +673,24 @@
   document.getElementById("insert-image-button").addEventListener("click", function (event) {
     event.preventDefault();
     insertImage();
+  });
+
+
+
+  document.getElementById("insert-youtube-button").addEventListener("click", function (event) {
+    event.preventDefault();
+    var id = youtubeIdFromUrl(youtubeUrl.value);
+    if (!id) {
+      window.alert("YouTubeの動画URLを入力してください。");
+      return;
+    }
+
+    var selection = youtubeSelection || [fields.body.selectionStart, fields.body.selectionEnd];
+    var markup = "\n\n" + youtubeEmbedMarkup(id) + "\n\n";
+    fields.body.setRangeText(markup, selection[0], selection[1], "end");
+    youtubeDialog.close();
+    fields.body.focus();
+    updateAll();
   });
 
   document.getElementById("insert-video-button").addEventListener("click", function (event) {
