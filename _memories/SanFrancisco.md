@@ -1,7 +1,6 @@
 ---
-seo_title: "サンフランシスコの旅の写真"
-seo_description: "2025年8月13〜14日のサンフランシスコの写真。ゴールデンゲートブリッジ、ケーブルカー、チャイナタウン、Apple Union Squareなどの記録。"
 title: "San Francisco"
+seo_title_exact: true
 description: "2025.08.13-14 - San Francisco"
 date: "2025-08-13 12:00:00 +0900"
 last_modified_at: "2025-08-14 00:00:00 +0900"
