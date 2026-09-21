@@ -2,7 +2,7 @@
   "use strict";
 
   var STORAGE_KEY = "4k29-note-editor-v1";
-  var BASE_URL = "https://4k29.github.io/4k29";
+  var BASE_URL = "https://tecirc.com";
   var form = document.getElementById("note-form");
   var status = document.getElementById("save-status");
   var saveButton = document.getElementById("save-draft-button");
