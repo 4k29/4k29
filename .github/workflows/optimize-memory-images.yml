@@ -1,0 +1,42 @@
+name: Optimize Memory Images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "images/memory/**"
+      - ".github/workflows/optimize-memory-images.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install ImageMagick
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
+
+      - name: Optimize Memory JPEGs
+        shell: bash
+        run: |
+          find images/memory -type f \( -iname '*.jpg' -o -iname '*.jpeg' \) -print0 | \
+            xargs -0 -r mogrify -auto-orient -strip -resize '2000x2000>' -quality 82
+
+      - name: Commit optimized images
+        shell: bash
+        run: |
+          if git diff --quiet -- images/memory; then
+            echo "No image changes."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add images/memory
+          git commit -m "Optimize Memory images"
+          git push
