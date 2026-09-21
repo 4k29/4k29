@@ -27,7 +27,7 @@
     {% if page.photos and page.photos.size > 0 %}"primaryImageOfPage": {{ page.photos.first.src | absolute_url | jsonify }},{% endif %}
     "isPartOf": {
       "@type": "WebSite",
-      "name": "4k29",
+      "name": {{ site.title | jsonify }},
       "url": {{ '/' | absolute_url | jsonify }}
     },
     "creator": {
@@ -56,7 +56,7 @@
       {
         "@type": "ListItem",
         "position": 1,
-        "name": "4k29",
+        "name": {{ site.title | jsonify }},
         "item": {{ '/' | absolute_url | jsonify }}
       },
       {
@@ -91,9 +91,9 @@
       }
     }
   </style>
-  <link rel="icon" type="image/x-icon" href="/4k29/favicon-star-one-v1.ico" />
-  <link rel="icon" type="image/png" sizes="128x128" href="/4k29/favicon-star-one-v1.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/4k29/apple-touch-icon-star-one-v1.png" />
+  <link rel="icon" type="image/svg+xml" href="{{ '/favicon.svg' | relative_url }}" />
+  <link rel="icon" type="image/png" sizes="128x128" href="{{ '/favicon-tecirc.png' | relative_url }}" />
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ '/apple-touch-icon-tecirc.png' | relative_url }}" />
 </head>
 <body>
   {% assign sorted_memories = site.memories | sort: "date" %}
@@ -141,7 +141,7 @@
     </main>
 
     <footer class="memory-footer">
-      <p>© {{ site.time | date: "%Y" }} 4k29</p>
+      <p>© {{ site.time | date: "%Y" }} {{ site.title }}</p>
       <div class="memory-footer-links">
         <a href="{{ '/sitemap/' | relative_url }}">Sitemap</a>
         <a href="#top">Back to top ↑</a>
