@@ -95,7 +95,7 @@
     var card = gateContent(
       "Private editor",
       "GitHubで本人確認",
-      message || "下書き用と公開用の2つのリポジトリに限定したGitHubキーを入力してください。キーはこのページを開いている間だけ保持します。"
+      message || "下書き用と公開用の2つのリポジトリに限定したGitHubキーを入力してください。同じタブでは、再読み込みやNotes・Memory間の移動後もログインを維持します。"
     );
     var form = document.createElement("form");
     form.className = "editor-github-form";
@@ -136,6 +136,7 @@
 
       try {
         await verifyAccess();
+        saveSessionToken();
         input.value = "";
         unlock();
         notifyReady();
@@ -220,6 +221,27 @@
       }
     });
     window.dispatchEvent(new CustomEvent("editorgithubready", { detail: editorApi }));
+  }
+
+  function saveSessionToken() {
+    try {
+      window.sessionStorage.setItem(SESSION_TOKEN_KEY, token);
+    } catch (error) {
+      // Keep working in memory if browser storage is unavailable.
+    }
+  }
+
+  function readSessionToken() {
+    try {
+      window.localStorage.removeItem(LEGACY_PERSISTENT_TOKEN_KEY);
+    } catch (error) {
+      // Never use legacy persistent credentials.
+    }
+    try {
+      return window.sessionStorage.getItem(SESSION_TOKEN_KEY) || "";
+    } catch (error) {
+      return "";
+    }
   }
 
   function clearStoredToken() {
@@ -552,14 +574,30 @@
   async function initialize() {
     if (initialized) return;
     initialized = true;
-    clearStoredToken();
+    token = readSessionToken();
     lock();
     if (!configured()) {
       showSetupRequired();
       return;
     }
 
-    showLogin();
+    if (!token) {
+      showLogin();
+      return;
+    }
+
+    gateContent("Private editor", "確認中…", "GitHubへの接続を確認しています。");
+    try {
+      await verifyAccess();
+      unlock();
+      notifyReady();
+    } catch (error) {
+      if (error.status === 401 || error.status === 403 || error.status === 404 || error.editorCode) {
+        clearStoredToken();
+      }
+      token = "";
+      showLogin(accessErrorMessage(error));
+    }
   }
 
   if (document.readyState === "loading") {
