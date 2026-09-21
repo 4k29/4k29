@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var BASE_URL = "https://4k29.github.io/4k29";
+  var BASE_URL = "https://tecirc.com";
   var DB_NAME = "4k29-memory-editor-v1";
   var DB_STORE = "drafts";
   var DB_KEY = "current";
