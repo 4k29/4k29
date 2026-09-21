@@ -4,5 +4,5 @@ window.EDITOR_GITHUB_CONFIG = Object.freeze({
   branch: "main",
   publicRepository: "Tecirc",
   publicBranch: "main",
-  setupUrl: "/4k29/editor/setup/"
+  setupUrl: "/editor/setup/"
 });
