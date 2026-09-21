@@ -76,7 +76,7 @@
   function addSetupLink(card) {
     var link = document.createElement("a");
     link.className = "editor-github-help";
-    link.href = config.setupUrl || "/editor/setup/";
+    link.href = config.setupUrl || "/tecirc/editor/setup/";
     link.textContent = "初回設定のやり方を見る";
     card.appendChild(link);
   }
