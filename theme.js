@@ -3,7 +3,7 @@
 
   var STORAGE_KEY = "4k29-theme";
   var GA_ID = "G-KK7MDCLBGT";
-  var FAVICON_URL = "/favicon.svg";
+  var FAVICON_URL = "/tecirc/favicon.svg";
   var root = document.documentElement;
   var mobileQuery = window.matchMedia ? window.matchMedia("(max-width: 560px)") : null;
 
