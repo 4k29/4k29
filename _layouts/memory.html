@@ -125,8 +125,9 @@
           <img
             src="{{ photo.src | relative_url }}"
             alt="{{ photo.alt | default: photo.caption | default: page.title | escape }}"
-            loading="{% if forloop.index <= 6 %}eager{% else %}lazy{% endif %}"
-            {% if forloop.index <= 3 %}fetchpriority="high"{% endif %}
+            loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+            decoding="async"
+            {% if forloop.first %}fetchpriority="high"{% else %}fetchpriority="low"{% endif %}
           />
           <figcaption><span>{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>{{ photo.caption | escape }}</figcaption>
         </figure>
