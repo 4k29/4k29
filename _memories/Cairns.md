@@ -1,7 +1,6 @@
 ---
-seo_title: "ケアンズの旅の写真 — 2025年9月"
-seo_description: "2025年9月10〜14日のケアンズ旅行の写真。コアラやカンガルー、アボリジナルアート、エスプラネード・ラグーンなどを記録しています。"
 title: "Cairns"
+seo_title_exact: true
 description: "2025.09.10-14 - Cairns"
 date: "2025-09-10 00:00:00 +0900"
 last_modified_at: "2025-09-10 00:00:00 +0900"
