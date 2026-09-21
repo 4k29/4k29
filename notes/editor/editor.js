@@ -2,7 +2,7 @@
   "use strict";
 
   var STORAGE_KEY = "4k29-note-editor-v1";
-  var BASE_URL = "https://4k29.github.io/4k29";
+  var BASE_URL = "https://tecirc.com";
   var GITHUB_UPLOAD_URL = "https://github.com/4k29/Tecirc/upload/main/_notes";
   var saveTimer = null;
   var githubSaveTimer = null;
