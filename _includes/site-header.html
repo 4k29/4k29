@@ -46,12 +46,15 @@
 
   .global-header .global-brand {
     color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     font-family: inherit !important;
     font-size: 12px !important;
     font-style: normal !important;
     font-weight: 560 !important;
     line-height: 1 !important;
-    letter-spacing: .04em !important;
+    letter-spacing: -.015em !important;
   }
 
   .global-header .global-nav {
@@ -84,9 +87,7 @@
   }
 
   @supports not (background: color-mix(in srgb, white, black)) {
-    .global-header.is-scrolled {
-      background: var(--bg);
-    }
+    .global-header.is-scrolled { background: var(--bg); }
   }
 
   @media (max-width: 560px) {
@@ -100,9 +101,7 @@
       width: calc(100% - var(--site-shell-gutter-mobile)) !important;
     }
 
-    .global-header .global-nav {
-      gap: 14px !important;
-    }
+    .global-header .global-nav { gap: 14px !important; }
 
     .global-header .global-nav a,
     .global-header .global-nav a[aria-current="page"] {
@@ -120,26 +119,21 @@
       opacity: .82;
     }
 
-    .global-header .theme-toggle:hover {
-      background: transparent;
-    }
-
-    .global-header .theme-toggle-icon {
-      width: 15px;
-      height: 15px;
-    }
+    .global-header .theme-toggle:hover { background: transparent; }
+    .global-header .theme-toggle-icon { width: 15px; height: 15px; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .global-header {
-      transition: none !important;
-    }
+    .global-header { transition: none !important; }
   }
 </style>
 <header class="global-header">
-  <a class="global-brand" href="{{ '/' | relative_url }}">4k29</a>
+  <a class="global-brand" href="{{ '/' | relative_url }}" aria-label="Tecirc Home">
+    <span class="tecirc-mark" aria-hidden="true"></span>
+    <span>Tecirc</span>
+  </a>
   <nav class="global-nav" aria-label="メインナビゲーション">
     <a href="{{ '/notes/' | relative_url }}"{% if page.url == '/notes/' or page.collection == 'notes' %} aria-current="page"{% endif %}>Notes</a>
-    <a href="{{ '/memory/' | relative_url }}"{% if page.url == '/memory/' or page.collection == 'memories' %} aria-current="page"{% endif %}>Memory</a>
+    <a href="{{ '/#about' | relative_url }}">About</a>
   </nav>
 </header>
