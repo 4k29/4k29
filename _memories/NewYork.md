@@ -1,7 +1,6 @@
 ---
-seo_title: "ニューヨークの写真 — 2025年8月15日"
-seo_description: "2025年8月15日、サンフランシスコからニューヨークへ。地下鉄や街並み、自由の女神、タイムズスクエアを撮影した旅の写真記録。"
 title: "New York"
+seo_title_exact: true
 description: "2025.08.15 - New York"
 date: "2025-08-15 00:00:00 +0900"
 last_modified_at: "2025-08-15 00:00:00 +0900"
