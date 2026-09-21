@@ -2,7 +2,7 @@ window.EDITOR_GITHUB_CONFIG = Object.freeze({
   owner: "4k29",
   repository: "4k29-editor-drafts",
   branch: "main",
-  publicRepository: "Tecirc",
+  publicRepository: "tecirc",
   publicBranch: "main",
-  setupUrl: "/editor/setup/"
+  setupUrl: "/tecirc/editor/setup/"
 });
