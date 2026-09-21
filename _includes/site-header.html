@@ -30,14 +30,13 @@
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif !important;
     font-style: normal !important;
     letter-spacing: -0.01em !important;
-    transition: transform .26s cubic-bezier(.22, 1, .36, 1), background-color .18s ease, backdrop-filter .18s ease;
+    background: var(--bg);
+    transition: transform .26s cubic-bezier(.22, 1, .36, 1);
     will-change: transform;
   }
 
   .global-header.is-scrolled {
-    background: color-mix(in srgb, var(--bg) 88%, transparent);
-    -webkit-backdrop-filter: blur(16px) saturate(140%);
-    backdrop-filter: blur(16px) saturate(140%);
+    background: var(--bg);
   }
 
   .global-header.is-hidden {
@@ -86,10 +85,6 @@
     max-width: 100% !important;
   }
 
-  @supports not (background: color-mix(in srgb, white, black)) {
-    .global-header.is-scrolled { background: var(--bg); }
-  }
-
   @media (max-width: 560px) {
     .global-header,
     body > main,
@@ -129,7 +124,7 @@
 </style>
 <header class="global-header">
   <a class="global-brand" href="{{ '/' | relative_url }}" aria-label="Tecirc Home">
-    <span class="tecirc-mark" aria-hidden="true"></span>
+    {% include tecirc-mark.html %}
     <span>Tecirc</span>
   </a>
   <nav class="global-nav" aria-label="メインナビゲーション">
