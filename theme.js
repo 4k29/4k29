@@ -3,7 +3,7 @@
 
   var STORAGE_KEY = "4k29-theme";
   var GA_ID = "G-KK7MDCLBGT";
-  var FAVICON_URL = "/4k29/favicon-star-one-v1.png";
+  var FAVICON_URL = "/4k29/favicon.svg";
   var root = document.documentElement;
   var mobileQuery = window.matchMedia ? window.matchMedia("(max-width: 560px)") : null;
 
