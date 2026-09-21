@@ -1,7 +1,6 @@
 ---
-seo_title: "Apple Park Visitor Centerの写真"
-seo_description: "2025年8月13日に訪れたApple Park Visitor Centerの写真。ショップのグッズや展示、カフェなど、現地での記録をまとめました。"
 title: "Apple Park"
+seo_title_exact: true
 list_title: "Apple Park Visitor Center"
 description: "2025.08.13 - Apple Park"
 date: "2025-08-13 06:00:00 +0900"
