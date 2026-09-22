@@ -131,6 +131,7 @@
   }
 
   function enterEditMode(record, path, sha) {
+    window.NoteDraftIdentity.open(record, path);
     setEditorData(record);
     window.NotePublishedEdit = {
       path: path,
@@ -150,6 +151,7 @@
     delete publishButton.dataset.mode;
 
     if (clearFields) {
+      window.NoteDraftIdentity.reset();
       Object.keys(fields).forEach(function (key) {
         fields[key].value = "";
         fields[key].dispatchEvent(new Event("input", { bubbles: true }));
@@ -239,3 +241,4 @@
     fields.title.focus();
   });
 }());
+

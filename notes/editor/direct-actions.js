@@ -48,6 +48,7 @@
 
   function getData() {
     return {
+      draftId: window.NoteDraftIdentity.get(),
       title: fields.title.value.trim(),
       slug: fields.slug.value.trim(),
       date: fields.date.value,
@@ -208,7 +209,7 @@
 
     if (!document.querySelector('script[src^="published-articles.js"]')) {
       var script = document.createElement("script");
-      script.src = "published-articles.js?v=20260910-1";
+      script.src = "published-articles.js?v=20260922-1";
       document.body.appendChild(script);
     }
   }
@@ -217,4 +218,5 @@
   publishButton.addEventListener("click", publish);
   loadPublishedEditor();
 }());
+
 

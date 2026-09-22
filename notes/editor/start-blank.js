@@ -23,6 +23,7 @@
     var form = document.getElementById("note-form");
     if (!form) return;
 
+    window.NoteDraftIdentity.reset();
     form.reset();
 
     var ids = ["title", "slug", "date", "description", "image", "image-alt", "tags", "body"];
@@ -72,3 +73,4 @@
     if (event.persisted) window.location.reload();
   });
 }());
+

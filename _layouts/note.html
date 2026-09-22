@@ -111,7 +111,7 @@
         <div class="article-body">
           {% capture image_prefix %}="{{ '/images/' | relative_url }}{% endcapture %}
           {% capture single_image_prefix %}='{{ '/images/' | relative_url }}{% endcapture %}
-          {{ content | replace: '="../images/', image_prefix | replace: "='../images/", single_image_prefix }}
+          {{ content | replace: 'autoplay=1', 'autoplay=0' | replace: '; autoplay;', "; autoplay 'none';" | replace: '="../images/', image_prefix | replace: "='../images/", single_image_prefix }}
         </div>
       </article>
 
@@ -176,3 +176,4 @@
   </script>
 </body>
 </html>
+

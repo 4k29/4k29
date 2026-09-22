@@ -98,6 +98,7 @@
 
   function getData() {
     return {
+      draftId: window.NoteDraftIdentity.get(),
       title: fields.title.value.trim(),
       slug: fields.slug.value.trim(),
       date: fields.date.value,
@@ -112,6 +113,7 @@
   }
 
   function setData(data, skipSave) {
+    window.NoteDraftIdentity.open(data, "import");
     Object.keys(fields).forEach(function (key) {
       if (key === "tags") {
         fields.tags.value = Array.isArray(data.tags) ? data.tags.join(", ") : (data.tags || "");
@@ -352,8 +354,8 @@
 
   function youtubeEmbedMarkup(id) {
     return '<figure class="youtube-embed"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/' +
-      id +
-      '" title="YouTube video player" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></figure>';
+      id + "?autoplay=0" +
+      '" title="YouTube video player" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay \'none\'; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></figure>';
   }
 
   function previewImageUrl(value) {
@@ -439,7 +441,7 @@
         var figure = youtubeDocument.body.firstElementChild;
         var iframe = figure && figure.querySelector("iframe");
         var youtubeSource = iframe && iframe.getAttribute("src");
-        var youtubeMatch = youtubeSource && youtubeSource.match(/^https:\/\/www\.youtube-nocookie\.com\/embed\/([A-Za-z0-9_-]{6,20})$/);
+        var youtubeMatch = youtubeSource && youtubeSource.match(/^https:\/\/www\.youtube-nocookie\.com\/embed\/([A-Za-z0-9_-]{6,20})(?:\?autoplay=[01])?$/);
         if (figure && figure.tagName === "FIGURE" && youtubeMatch) {
           flushParagraph();
           closeList();
@@ -741,6 +743,7 @@
         status.textContent = "GitHubの下書きを削除できませんでした";
       });
     }
+    window.NoteDraftIdentity.reset();
     form.reset();
     fields.date.value = jstDate();
     slugTouched = false;
@@ -784,4 +787,5 @@
     window.EditorGitHub.onReady(connectGitHub);
   }
 })();
+
 

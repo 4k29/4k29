@@ -70,11 +70,7 @@
   }
 
   function draftIdentity(data, fallback) {
-    var slug = String(data.slug || "").trim().toLowerCase();
-    if (slug) return "slug:" + slug;
-    var title = String(data.title || "").trim().toLowerCase();
-    if (title) return "title:" + title;
-    return "commit:" + fallback;
+    return window.NoteDraftIdentity.identity(data, fallback);
   }
 
   function commitDate(commit) {
@@ -147,6 +143,7 @@
 
   function collectCurrentData() {
     return {
+      draftId: window.NoteDraftIdentity.get(),
       title: document.getElementById("title").value.trim(),
       slug: document.getElementById("slug").value.trim(),
       date: document.getElementById("date").value,
@@ -189,7 +186,13 @@
     }));
   }
 
-  function applyDraft(data) {
+  function applyDraft(data, sourceRef) {
+    window.NoteDraftIdentity.open(data, sourceRef);
+    window.NotePublishedEdit = null;
+    document.getElementById("slug").readOnly = false;
+    var publishButton = document.getElementById("publish-button");
+    publishButton.textContent = "公開";
+    delete publishButton.dataset.mode;
     var values = {
       title: data.title || "",
       slug: data.slug || "",
@@ -252,6 +255,7 @@
       var item = document.createElement("button");
       item.type = "button";
       item.className = "draft-history-item";
+      item.dataset.draftIdentity = draftIdentity(data, record.sourceRef);
 
       var heading = document.createElement("span");
       heading.className = "draft-history-item-heading";
@@ -283,7 +287,7 @@
         status.textContent = "現在の内容を保存して、下書きを開いています…";
         try {
           await preserveCurrentDraft(data);
-          applyDraft(data);
+          applyDraft(data, record.sourceRef);
           dialog.close();
         } catch (error) {
           item.disabled = false;
@@ -327,7 +331,7 @@
 
   button.addEventListener("click", function () {
     dialog.showModal();
-    loadAndRender(false);
+    loadAndRender(true);
   });
 
   closeButton.addEventListener("click", function () {
@@ -355,3 +359,4 @@
     });
   }
 }());
+

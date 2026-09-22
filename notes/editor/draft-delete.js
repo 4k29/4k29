@@ -61,7 +61,7 @@
   function itemKey(item) {
     var title = item.querySelector("strong");
     var meta = item.querySelector(".draft-history-meta");
-    return (title ? title.textContent.trim() : "無題の下書き") + "|" + (meta ? meta.textContent.trim() : "");
+    return item.dataset.draftIdentity || (title ? title.textContent.trim() : "無題の下書き") + "|" + (meta ? meta.textContent.trim() : "");
   }
 
   function updateVisibleCount() {
@@ -131,7 +131,8 @@
       if (item.dataset.deleteReady === "true") return;
       item.dataset.deleteReady = "true";
       var key = itemKey(item);
-      if (deletedKeys.has(key)) {
+      var legacyKey = (item.querySelector("strong") ? item.querySelector("strong").textContent.trim() : "無題の下書き") + "|" + (item.querySelector(".draft-history-meta") ? item.querySelector(".draft-history-meta").textContent.trim() : "");
+      if (deletedKeys.has(key) || deletedKeys.has(legacyKey)) {
         item.remove();
         changed = true;
         return;
@@ -181,3 +182,4 @@
     new MutationObserver(decorate).observe(list, { childList: true });
   });
 }());
+
