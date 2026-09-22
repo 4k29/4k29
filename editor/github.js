@@ -3,7 +3,7 @@
 
   var config = window.EDITOR_GITHUB_CONFIG || {};
   var SESSION_TOKEN_KEY = "4k29-editor-github-token";
-  var LEGACY_PERSISTENT_TOKEN_KEY = "4k29-editor-github-token-persistent";
+  var PERSISTENT_TOKEN_KEY = "4k29-editor-github-token-persistent";
   var API_ROOT = "https://api.github.com";
   var API_VERSION = "2022-11-28";
   var token = "";
@@ -95,7 +95,7 @@
     var card = gateContent(
       "Private editor",
       "GitHubで本人確認",
-      message || "下書き用と公開用の2つのリポジトリに限定したGitHubキーを入力してください。同じタブでは、再読み込みやNotes・Memory間の移動後もログインを維持します。"
+      message || "下書き用と公開用の2つのリポジトリに限定したGitHubキーを入力してください。キーはこのブラウザに保存され、次回から自動で接続します。ログアウトすると保存したキーを削除します。"
     );
     var form = document.createElement("form");
     form.className = "editor-github-form";
@@ -136,7 +136,7 @@
 
       try {
         await verifyAccess();
-        saveSessionToken();
+        saveStoredToken();
         input.value = "";
         unlock();
         notifyReady();
@@ -223,19 +223,23 @@
     window.dispatchEvent(new CustomEvent("editorgithubready", { detail: editorApi }));
   }
 
-  function saveSessionToken() {
+  function saveStoredToken() {
     try {
-      window.sessionStorage.setItem(SESSION_TOKEN_KEY, token);
+      window.localStorage.setItem(PERSISTENT_TOKEN_KEY, token);
+      try { window.sessionStorage.removeItem(SESSION_TOKEN_KEY); } catch (error) {}
+      return;
     } catch (error) {
-      // Keep working in memory if browser storage is unavailable.
+      // Fall back to the current tab when persistent storage is unavailable.
     }
+    try { window.sessionStorage.setItem(SESSION_TOKEN_KEY, token); } catch (error) {}
   }
 
-  function readSessionToken() {
+  function readStoredToken() {
     try {
-      window.localStorage.removeItem(LEGACY_PERSISTENT_TOKEN_KEY);
+      var saved = window.localStorage.getItem(PERSISTENT_TOKEN_KEY);
+      if (saved) return saved;
     } catch (error) {
-      // Never use legacy persistent credentials.
+      // Session storage may still be available.
     }
     try {
       return window.sessionStorage.getItem(SESSION_TOKEN_KEY) || "";
@@ -246,7 +250,7 @@
 
   function clearStoredToken() {
     try {
-      window.localStorage.removeItem(LEGACY_PERSISTENT_TOKEN_KEY);
+      window.localStorage.removeItem(PERSISTENT_TOKEN_KEY);
     } catch (error) {
       // Continue and clear the current tab as well.
     }
@@ -574,7 +578,7 @@
   async function initialize() {
     if (initialized) return;
     initialized = true;
-    token = readSessionToken();
+    token = readStoredToken();
     lock();
     if (!configured()) {
       showSetupRequired();
@@ -589,16 +593,25 @@
     gateContent("Private editor", "確認中…", "GitHubへの接続を確認しています。");
     try {
       await verifyAccess();
+      saveStoredToken();
       unlock();
       notifyReady();
     } catch (error) {
-      if (error.status === 401 || error.status === 403 || error.status === 404 || error.editorCode) {
+      if (error.status === 401 || error.editorCode) {
         clearStoredToken();
       }
       token = "";
       showLogin(accessErrorMessage(error));
     }
   }
+
+  window.addEventListener("storage", function (event) {
+    if (event.storageArea === window.localStorage &&
+        (event.key === PERSISTENT_TOKEN_KEY || event.key === null) &&
+        !event.newValue && ready) {
+      signOut();
+    }
+  });
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initialize, { once: true });
