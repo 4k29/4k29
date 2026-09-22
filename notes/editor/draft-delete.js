@@ -4,15 +4,14 @@
   var API_ROOT = "https://api.github.com";
   var API_VERSION = "2022-11-28";
   var DELETED_PATH = "notes/deleted-drafts.json";
-  var CURRENT_DRAFT_PATH = "notes/current.json";
   var STORAGE_KEY = "4k29-note-editor-v1";
   var config = window.EDITOR_GITHUB_CONFIG || {};
   var list = document.getElementById("draft-history-list");
   var historyStatus = document.getElementById("draft-history-status");
   var deletedKeys = new Set();
-  var deletedFileSha = "";
+  var deletionQueue = Promise.resolve();
   var loaded = false;
-  var hasCurrentDraft = true;
+
 
   if (!list) return;
 
@@ -40,7 +39,11 @@
       credentials: "omit"
     });
     if (options.allow404 && response.status === 404) return null;
-    if (!response.ok) throw new Error("GitHub API request failed");
+    if (!response.ok) {
+      var error = new Error("GitHub API request failed");
+      error.status = response.status;
+      throw error;
+    }
     return response.status === 204 ? null : response.json();
   }
 
@@ -70,60 +73,66 @@
     historyStatus.textContent = count ? count + "件の下書きを表示しています。" : "復元できる過去の下書きはまだありません。";
   }
 
-  async function checkCurrentDraft() {
-    var file = await request(
-      repoPath("/contents/" + CURRENT_DRAFT_PATH + "?ref=" + encodeURIComponent(config.branch || "main")),
-      { allow404: true }
-    );
-    hasCurrentDraft = Boolean(file && file.content);
-    return hasCurrentDraft;
+  async function readDeleted() {
+    var file = await request(repoPath("/contents/" + DELETED_PATH + "?ref=" + encodeURIComponent(config.branch || "main")), { allow404: true });
+    var keys = [];
+    if (file && file.content) {
+      var data = JSON.parse(decodeText(file.content));
+      if (!Array.isArray(data.keys)) throw new Error("Invalid deleted draft list");
+      keys = data.keys;
+    }
+    return { keys: keys, sha: file && file.sha };
   }
 
   async function loadDeleted() {
-    if (loaded) return;
-    var file = await request(repoPath("/contents/" + DELETED_PATH + "?ref=" + encodeURIComponent(config.branch || "main")), { allow404: true });
-    if (file && file.content) {
-      deletedFileSha = file.sha || "";
-      try {
-        var data = JSON.parse(decodeText(file.content));
-        (Array.isArray(data.keys) ? data.keys : []).forEach(function (key) { deletedKeys.add(key); });
-      } catch (error) {}
-    }
+    var state = await readDeleted();
+    deletedKeys = new Set(state.keys);
     loaded = true;
   }
 
-  async function saveDeleted() {
-    var body = {
-      message: "Hide deleted note draft",
-      content: encodeText(JSON.stringify({ keys: Array.from(deletedKeys), updatedAt: new Date().toISOString() }, null, 2) + "\n"),
-      branch: config.branch || "main"
-    };
-    if (deletedFileSha) body.sha = deletedFileSha;
-    var result = await request(repoPath("/contents/" + DELETED_PATH), { method: "PUT", body: body });
-    deletedFileSha = result && result.content ? result.content.sha : deletedFileSha;
+  function saveDeleted(key) {
+    var operation = deletionQueue.then(async function () {
+      for (var attempt = 0; attempt < 3; attempt += 1) {
+        // Always read the latest version; another tab may have deleted a draft.
+        var state = await readDeleted();
+        var keys = new Set(state.keys);
+        keys.add(key);
+        var body = {
+          message: "Hide deleted note draft",
+          content: encodeText(JSON.stringify({ keys: Array.from(keys), updatedAt: new Date().toISOString() }, null, 2) + "\n"),
+          branch: config.branch || "main"
+        };
+        if (state.sha) body.sha = state.sha;
+        try {
+          await request(repoPath("/contents/" + DELETED_PATH), { method: "PUT", body: body });
+          deletedKeys = keys;
+          loaded = true;
+          return;
+        } catch (error) {
+          if (attempt < 2 && (error.status === 409 || error.status === 422)) continue;
+          throw error;
+        }
+      }
+    });
+    deletionQueue = operation.catch(function () {});
+    return operation;
   }
 
-  async function clearCurrentDraft() {
+  function clearCurrentDraft() {
     try { localStorage.removeItem(STORAGE_KEY); } catch (error) {}
-    if (window.EditorGitHub && window.EditorGitHub.isReady()) {
-      await window.EditorGitHub.deleteDraft("notes");
-    }
-    hasCurrentDraft = false;
+    // current.json is a shared history pointer, not necessarily the open draft.
+    window.dispatchEvent(new CustomEvent("notedraftdeleted"));
   }
 
-  function clearHistoryWhenNoCurrentDraft() {
-    if (hasCurrentDraft) return false;
-    list.innerHTML = "";
-    var empty = document.createElement("p");
-    empty.className = "draft-history-empty";
-    empty.textContent = "復元できる過去の下書きはまだありません。";
-    list.appendChild(empty);
-    updateVisibleCount();
-    return true;
+  function errorMessage(error) {
+    if (error.status === 401) return "GitHubの認証が切れています。ログインし直してください。";
+    if (error.status === 403 || error.status === 404) return "下書き保存先へのアクセス権限を確認してください。GitHubの利用制限の可能性もあります。";
+    if (error.status === 409 || error.status === 422) return "別の保存処理と重なりました。もう一度削除してください。";
+    return "下書きを削除できませんでした。通信状況を確認して再試行してください。";
   }
 
   function decorate() {
-    if (clearHistoryWhenNoCurrentDraft()) return;
+    if (!loaded) return;
 
     var changed = false;
 
@@ -157,16 +166,14 @@
         remove.disabled = true;
         if (historyStatus) historyStatus.textContent = "下書きを削除しています…";
         try {
-          deletedKeys.add(key);
-          await saveDeleted();
+          await saveDeleted(key);
           var isCurrent = Boolean(item.querySelector(".draft-history-current"));
           if (isCurrent) await clearCurrentDraft();
           row.remove();
-          if (!clearHistoryWhenNoCurrentDraft()) updateVisibleCount();
+          updateVisibleCount();
         } catch (error) {
-          deletedKeys.delete(key);
           remove.disabled = false;
-          if (historyStatus) historyStatus.textContent = "下書きを削除できませんでした。通信状況を確認してください。";
+          if (historyStatus) historyStatus.textContent = errorMessage(error);
         }
       });
     });
@@ -174,12 +181,17 @@
     if (changed && loaded) updateVisibleCount();
   }
 
-  Promise.all([loadDeleted(), checkCurrentDraft()]).then(function () {
-    decorate();
-    updateVisibleCount();
-    new MutationObserver(decorate).observe(list, { childList: true });
-  }).catch(function () {
-    new MutationObserver(decorate).observe(list, { childList: true });
-  });
+  if (window.EditorGitHub) {
+    window.EditorGitHub.onReady(async function () {
+      new MutationObserver(decorate).observe(list, { childList: true });
+      try {
+        await loadDeleted();
+      } catch (error) {
+        // A later deletion retries the read; never write using an unknown SHA.
+        loaded = true;
+        if (historyStatus) historyStatus.textContent = errorMessage(error);
+      }
+      decorate();
+    });
+  }
 }());
-

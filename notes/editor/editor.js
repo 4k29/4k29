@@ -726,6 +726,25 @@
     }
   });
 
+  window.addEventListener("notedraftdeleted", function () {
+    window.clearTimeout(saveTimer);
+    window.clearTimeout(githubSaveTimer);
+    saveTimer = null;
+    githubSaveTimer = null;
+    window.NoteDraftIdentity.reset();
+    window.NotePublishedEdit = null;
+    form.reset();
+    fields.slug.readOnly = false;
+    fields.date.value = jstDate();
+    slugTouched = false;
+    localUpdatedAt = "";
+    var publishButton = document.getElementById("publish-button");
+    publishButton.textContent = "公開";
+    delete publishButton.dataset.mode;
+    updatePreview();
+    status.textContent = "下書きを削除しました";
+  });
+
   document.getElementById("new-button").addEventListener("click", function () {
     if (!window.confirm("端末内とGitHubの現在の下書きを消して、新規作成しますか？")) return;
     window.clearTimeout(githubSaveTimer);
@@ -787,5 +806,6 @@
     window.EditorGitHub.onReady(connectGitHub);
   }
 })();
+
 
 
