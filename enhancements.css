@@ -186,7 +186,7 @@ nav a,
 }
 
 .article-body h2 {
-  margin: 44px 0 10px;
+  margin: var(--article-block-gap) 0;
   font-size: 1.25rem;
   font-weight: 600;
   line-height: 1.5;
@@ -377,7 +377,6 @@ nav a,
   }
 
   .article-body h2 {
-    margin-top: 36px;
     font-size: 1.125rem;
   }
 
@@ -742,4 +741,35 @@ a.row-item:active, .note-index-item > a:active {
   .memory-footer {
     margin-top: 28px;
   }
+}
+
+/* Shared article rhythm: media and h2 use the same outer spacing. */
+.article-body {
+  --article-block-gap: 24px;
+}
+.article-body > p:has(> img),
+.article-body > p:has(> video),
+.article-body .article-image,
+.article-body .youtube-embed,
+.article-body video {
+  margin: var(--article-block-gap) 0;
+}
+.article-body > p > img,
+.article-body > p > video,
+.article-body .article-image > video {
+  margin: 0;
+}
+
+/* Treat the image and caption as a single block. */
+.article-body > p:has(> img):has(+ p > em:only-child) {
+  margin-bottom: 0;
+}
+.article-body > p:has(> img) + p:has(> em:only-child) {
+  margin: 8px 0 var(--article-block-gap);
+}
+.article-body > p:has(> img) > em:last-child {
+  margin: 8px 0 0;
+}
+.article-image figcaption {
+  margin-top: 8px;
 }
