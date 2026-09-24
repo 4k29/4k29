@@ -21,7 +21,10 @@
     position: sticky !important;
     top: 0;
     z-index: 900;
-    height: 64px !important;
+    min-height: 64px;
+    height: auto !important;
+    flex-wrap: wrap;
+    gap: 0 12px;
     margin-top: 18px !important;
     border-bottom: 1px solid var(--line);
     display: flex !important;
@@ -62,7 +65,7 @@
     align-items: center;
     gap: 8px;
     font-family: inherit !important;
-    font-size: 12px !important;
+    font-size: .875rem !important;
     font-style: normal !important;
     font-weight: 560 !important;
     line-height: 1 !important;
@@ -72,14 +75,15 @@
   .global-header .global-nav {
     display: flex !important;
     align-items: center !important;
-    gap: 22px !important;
+    gap: 0 22px !important;
+    flex-wrap: wrap;
   }
 
   .global-header .global-nav a,
   .global-header .global-nav a[aria-current="page"] {
     color: var(--muted);
     font-family: inherit !important;
-    font-size: 11px !important;
+    font-size: .8125rem !important;
     font-style: normal !important;
     font-weight: 400 !important;
     line-height: 1 !important;
@@ -90,6 +94,22 @@
   .global-header .global-nav a[aria-current="page"] {
     color: var(--text);
   }
+
+  .global-header .global-brand,
+  .global-header .global-nav a {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .global-header .global-nav a[aria-current="page"] {
+    text-decoration: underline;
+    text-underline-offset: .45em;
+    text-decoration-thickness: 1px;
+  }
+
+  .global-header:focus-within { transform: none; }
 
   .note-hero h1,
   .article-body,
@@ -109,22 +129,22 @@
       width: calc(100% - var(--site-shell-gutter-mobile)) !important;
     }
 
-    .global-header .global-nav { gap: 14px !important; }
+    .global-header .global-nav { gap: 6px !important; }
 
     .global-header .global-nav a,
     .global-header .global-nav a[aria-current="page"] {
-      font-size: 10.5px !important;
+      font-size: .8125rem !important;
       font-weight: 400 !important;
     }
 
     .global-header .theme-toggle {
       position: static !important;
       z-index: auto !important;
-      width: 26px !important;
-      height: 26px !important;
-      margin: 0 -5px 0 -1px !important;
-      flex: 0 0 26px;
-      opacity: .82;
+      width: 44px !important;
+      height: 44px !important;
+      margin: 0 !important;
+      flex: 0 0 44px;
+      opacity: 1;
     }
 
     .global-header .theme-toggle:hover { background: transparent; }
@@ -135,6 +155,7 @@
     .global-header { transition: none !important; }
   }
 </style>
+<a class="skip-link" href="{% if page.url == '/' %}#top{% else %}#main-content{% endif %}">本文へスキップ</a>
 <header class="global-header">
   <a class="global-brand" href="{{ '/' | relative_url }}" aria-label="Tecirc Home">
     {% include tecirc-mark.html %}

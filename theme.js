@@ -211,6 +211,7 @@
     var header = document.querySelector(".global-header");
     if (!header) return;
 
+    var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     var lastY = Math.max(window.scrollY || 0, 0);
     var ticking = false;
     var topZone = 72;
@@ -220,7 +221,7 @@
       var currentY = Math.max(window.scrollY || 0, 0);
       header.classList.toggle("is-scrolled", currentY > 8);
 
-      if (currentY <= topZone) {
+      if (currentY <= topZone || reducedMotion.matches || header.contains(document.activeElement)) {
         header.classList.remove("is-hidden");
       } else if (currentY > lastY + delta) {
         header.classList.add("is-hidden");
@@ -232,6 +233,12 @@
       ticking = false;
     }
 
+    header.addEventListener("focusin", function () {
+      header.classList.remove("is-hidden");
+    });
+    if (typeof reducedMotion.addEventListener === "function") {
+      reducedMotion.addEventListener("change", updateHeader);
+    }
     updateHeader();
 
     window.addEventListener("scroll", function () {
@@ -241,9 +248,21 @@
     }, { passive: true });
   }
 
+  function followSystemTheme() {
+    var preference = window.matchMedia("(prefers-color-scheme: light)");
+    function sync() {
+      if (!storedTheme()) applyTheme(systemTheme());
+    }
+    if (typeof preference.addEventListener === "function") preference.addEventListener("change", sync);
+    window.addEventListener("storage", function (event) {
+      if (event.key === STORAGE_KEY || event.key === null) applyTheme(storedTheme() || systemTheme());
+    });
+  }
+
   function mountUi() {
     mountFavicon();
     mountToggle();
+    followSystemTheme();
     mountHeaderReveal();
     mountAnalytics();
   }
