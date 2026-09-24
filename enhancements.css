@@ -164,8 +164,12 @@ nav a,
   line-break: strict;
 }
 
+.note-hero {
+  padding-bottom: 32px;
+}
+
 .article-body {
-  padding-top: 58px;
+  padding-top: 32px;
 }
 
 .article-body > p,
@@ -178,18 +182,18 @@ nav a,
 }
 
 .article-body > p {
-  margin-bottom: 1.45em;
+  margin-bottom: 1.25em;
 }
 
 .article-body h2 {
-  margin: 58px 0 18px;
+  margin: 44px 0 10px;
   font-size: 1.25rem;
   font-weight: 600;
   line-height: 1.5;
 }
 
 .article-body h3 {
-  margin: 42px 0 15px;
+  margin: 32px 0 8px;
   font-size: 1.0625rem;
   font-weight: 600;
   line-height: 1.55;
@@ -357,8 +361,12 @@ nav a,
     line-height: 1.22;
   }
 
+  .note-hero {
+    padding-bottom: 24px;
+  }
+
   .article-body {
-    padding-top: 44px;
+    padding-top: 24px;
   }
 
   .article-body > p,
@@ -369,7 +377,7 @@ nav a,
   }
 
   .article-body h2 {
-    margin-top: 50px;
+    margin-top: 36px;
     font-size: 1.125rem;
   }
 
@@ -644,4 +652,39 @@ a.row-item:active, .note-index-item > a:active {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; }
   .global-header.is-hidden { transform: none; }
+}
+
+/* One separator per boundary; list rows supply only their internal rules. */
+#notes > .row-list {
+  border-top: 0;
+}
+#notes > .row-list > .row-item:last-child {
+  border-bottom: 0;
+}
+.archive-hero + .note-index-list {
+  margin-top: 0;
+  border-top: 0;
+}
+
+/* Keep the Links label and its 44px tap target on the same visual line. */
+#links {
+  align-items: center;
+}
+#links .section-heading {
+  justify-content: center;
+}
+@media (max-width: 560px) {
+  #links {
+    grid-template-columns: 112px minmax(0, 1fr);
+    gap: 28px;
+  }
+  #links .section-heading {
+    justify-content: flex-start;
+  }
+}
+
+/* A heading's following block should not add a second top margin. */
+.article-body h2 + p,
+.article-body h3 + p {
+  margin-top: 0;
 }
