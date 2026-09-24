@@ -105,7 +105,7 @@
       description: fields.description.value.trim(),
       image: normalizeOgImage(fields.image.value),
       imageAlt: fields.imageAlt.value.trim(),
-      tags: fields.tags.value.split(",").map(function (tag) {
+      tags: fields.tags.value.split(/[,、，]/).map(function (tag) {
         return tag.trim();
       }).filter(Boolean),
       body: fields.body.value.trim()

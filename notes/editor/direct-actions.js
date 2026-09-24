@@ -55,7 +55,7 @@
       description: fields.description.value.trim(),
       image: normalizeOgImage(fields.image.value),
       imageAlt: fields.imageAlt.value.trim(),
-      tags: fields.tags.value.split(",").map(function (tag) {
+      tags: fields.tags.value.split(/[,、，]/).map(function (tag) {
         return tag.trim();
       }).filter(Boolean),
       body: fields.body.value.trim()
@@ -189,8 +189,8 @@
       fields.slug.readOnly = true;
       publishButton.textContent = "更新";
       publishButton.dataset.mode = "update";
-      status.textContent = actionLabel + "しました";
-      window.alert(actionLabel + "しました。GitHub Pagesへの反映後、記事ページに表示されます。");
+      status.textContent = actionLabel + "内容を保存しました。サイトへの反映待ちです";
+      window.alert(actionLabel + "内容を保存しました。サイトの再生成後、ホーム・記事一覧・記事ページに反映されます。");
     } catch (error) {
       status.textContent = actionLabel + "できませんでした";
       window.alert(window.EditorPublicGitHub.permissionMessage(error));
