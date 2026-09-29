@@ -1,64 +1,53 @@
 from pathlib import Path
-from html import escape
-P=Path(__file__).parent
-for mode in ['dark','light']:
- dark=mode=='dark'
- bg,side,panel,line,fg,muted,selected=('#181818','#222222','#242424','#343434','#ececec','#929292','#343434') if dark else ('#ffffff','#f3f4f6','#f5f5f5','#e5e5e5','#242424','#828282','#e5e6e9')
- s=[f'''<svg xmlns="http://www.w3.org/2000/svg" width="900" height="650" viewBox="0 0 900 650" role="img" aria-labelledby="title desc"><title id="title">Codex — 4k29</title><desc id="desc">A Codex-inspired profile for 4k29: student and vibe coder building Tecirc with ChatGPT. The response stops at a fictional usage limit.</desc><style>text{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,'Hiragino Kaku Gothic ProN','Yu Gothic','Noto Sans CJK JP',sans-serif;fill:{fg}}}.mono{{font-family:'SFMono-Regular',Consolas,'Liberation Mono',monospace}}.cursor{{animation:blink 1.4s step-end infinite}}@keyframes blink{{0%,55%{{opacity:1}}56%,100%{{opacity:0}}}}@media(prefers-reduced-motion:reduce){{.cursor{{animation:none}}}}</style><defs><clipPath id="window"><rect x=".5" y=".5" width="899" height="649" rx="14"/></clipPath></defs><g clip-path="url(#window)"><rect width="900" height="650" fill="{side}"/><rect x="190" y="0" width="710" height="650" rx="14" fill="{bg}"/><path d="M190 14V636" stroke="{line}"/>''']
- def rect(x,y,w,h,r=0,fill=None,stroke=None):s.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{r}" fill="{fill or panel}"'+(f' stroke="{stroke}"' if stroke else '')+'/>')
- def text(x,y,value,size=16,color=None,extra=''):s.append(f'<text x="{x}" y="{y}" font-size="{size}" style="fill:{color or fg}" {extra}>{escape(value)}</text>')
- def path(d,color=None,width=1.4):s.append(f'<path d="{d}" fill="none" stroke="{color or muted}" stroke-width="{width}" stroke-linecap="round" stroke-linejoin="round"/>')
- def circle(x,y,r,color):s.append(f'<circle cx="{x}" cy="{y}" r="{r}" fill="{color}"/>')
- def chevron(x,y):path(f'm{x} {y} 3 3 3-3')
- def folder(x,y):path(f'M{x} {y+3}v10h14V{y+2}h-7l-2-2h-5v3h14')
- for x,c in [(22,'#ff5f57'),(42,'#febc2e'),(62,'#28c840')]:circle(x,24,5,c)
- rect(91,18,13,11,2,side,muted);path('M96 18v11');path('m123 20-4 4 4 4m-4-4h10m17-4 4 4-4 4m-6-4h10')
- text(16,66,'Codex',17,extra='font-weight="600"')
- for y,label,kind in [(100,'New chat','new'),(131,'Search','search'),(162,'Plugins','plugins'),(193,'Automations','clock')]:
-  text(42,y,label,14)
-  if kind=='new':path(f'M28 {y-6}v7H16v-12h7m-1 7 8-8 2 2-8 8h-3v-3')
-  elif kind=='search':s.append(f'<circle cx="21" cy="{y-5}" r="5" fill="none" stroke="{muted}" stroke-width="1.4"/>');path(f'm25 {y-1} 4 4')
-  elif kind=='plugins':
-   for xx,yy in [(17,y-11),(25,y-11),(17,y-3),(25,y-3)]:rect(xx,yy,5,5,1.5,side,muted)
-  else:s.append(f'<circle cx="23" cy="{y-5}" r="7" fill="none" stroke="{muted}" stroke-width="1.4"/>');path(f'M23 {y-10}v5l3 2')
- text(16,241,'Projects',12,muted)
- folder(18,258);text(42,272,'4k29',14);chevron(167,265)
- rect(10,284,170,32,6,selected);text(42,305,'GitHub profile',13);circle(166,300,3,muted)
- folder(18,333);text(42,347,'tecirc',14)
- text(16,394,'Chats',12,muted)
- text(23,422,'GitHub profile',13);text(23,451,'Tecirc',13,muted)
- text(16,625,'⚙',17,muted);text(42,625,'Settings',13)
- text(211,30,'GitHub profile',15,extra='font-weight="600"');text(321,30,'4k29',13,muted)
- rect(691,12,65,26,7,bg,line);text(708,30,'Open',12);chevron(742,23)
- rect(763,12,88,26,7,bg,line);text(776,30,'Commit',12);chevron(837,23)
- rect(868,20,13,11,2,bg,muted);path('M876 20v11')
- # Flat conversation: no avatar, terminal prompt, or oversized name heading.
- rect(242,76,614,52,12,panel)
- text(260,108,'このGitHub、いい感じにしといて。',20)
- text(242,170,"I'll take a look.",18)
- text(242,208,'Explored',14,muted);chevron(306,202)
- path('M247 224v63',line)
- for y,label in [(235,'Read profile'),(261,'Inspected repositories'),(287,'Checked recent activity')]:
-  path(f'm260 {y-6} 3 3 6-7');text(280,y,label,14,muted,extra='class="mono"')
- text(242,338,'4k29',24,extra='font-weight="600"')
- text(242,372,'Student. Vibe coder. Building Tecirc.',19)
- text(242,407,'Most of the code here was written with ChatGPT.',18)
- text(242,438,'The ideas, direction, complaints, and',18)
- text(242,468,'"なんか違',19)
- rect(328,451,1.5,21,0,muted);s[-1]=s[-1].replace('<rect ','<rect class="cursor" ')
- path('M242 490H856',line)
- text(242,517,"You've reached your usage limit",16,extra='font-weight="500"')
- text(242,539,'Try again later.',14,muted)
- # Composer and repository context tray, based on the official desktop layout.
- rect(224,551,650,85,15,panel)
- rect(224,551,650,64,15,bg,line)
- text(239,577,'Ask Codex anything...',15,muted)
- path('M241 594v12m-6-6h12')
- text(262,605,'Default permissions',11,muted);chevron(372,599)
- text(742,604,'Limit reached',12,muted,extra='text-anchor="end"')
- circle(850,600,10,selected);path('M850 605v-10m-4 4 4-4 4 4')
- folder(239,621);text(260,632,'4k29',11,muted);chevron(292,626)
- rect(319,623,11,7,1,panel,muted);path('M317 632h15');text(340,632,'Work locally',11,muted);chevron(414,626)
- path('M442 622v10m0-6h7v-4');text(460,632,'main',11,muted);chevron(489,626)
- s.append(f'</g><rect x=".5" y=".5" width="899" height="649" rx="14" fill="none" stroke="{line}"/></svg>')
- (P/f'card-{mode}.svg').write_text(''.join(s))
+
+P = Path(__file__).parent
+
+THEMES = {
+    "dark": {
+        "bg":"#111315","top":"#15181b","panel":"#1a1d20","line":"#2a2f34",
+        "fg":"#e7e9ea","muted":"#8b949e","subtle":"#22262a"
+    },
+    "light": {
+        "bg":"#ffffff","top":"#f8f9fa","panel":"#f3f4f6","line":"#d9dde2",
+        "fg":"#22262a","muted":"#6e7781","subtle":"#eceff2"
+    },
+}
+
+def svg(c):
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560" role="img" aria-labelledby="title desc">
+<title id="title">4k29 — agent session</title>
+<desc id="desc">A minimal AI coding-agent inspired GitHub profile for 4k29. The profile generation stops at a fictional usage limit.</desc>
+<style>
+text{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Kaku Gothic ProN','Yu Gothic','Noto Sans CJK JP',sans-serif;font-size:14px;fill:{c["fg"]}}}
+.muted{{fill:{c["muted"]}}}.medium{{font-weight:600}}
+.mono{{font-family:'SFMono-Regular',Menlo,Consolas,'Liberation Mono',monospace}}
+.cursor{{animation:blink 1.3s step-end infinite}}.pulse{{animation:pulse 1.8s ease-in-out infinite}}
+@keyframes blink{{0%,55%{{opacity:1}}56%,100%{{opacity:0}}}}
+@keyframes pulse{{0%,100%{{opacity:.35}}50%{{opacity:1}}}}
+@media(prefers-reduced-motion:reduce){{.cursor,.pulse{{animation:none}}}}
+</style>
+<rect x=".5" y=".5" width="899" height="559" rx="16" fill="{c["bg"]}" stroke="{c["line"]}"/>
+<path d="M1 48H899" stroke="{c["line"]}"/>
+<rect x="1" y="1" width="898" height="47" rx="15" fill="{c["top"]}"/>
+<rect x="1" y="33" width="898" height="15" fill="{c["top"]}"/>
+<circle cx="22" cy="24" r="5" fill="#ff5f57"/><circle cx="42" cy="24" r="5" fill="#febc2e"/><circle cx="62" cy="24" r="5" fill="#28c840"/>
+<text x="450" y="29" text-anchor="middle" class="muted">4k29 — agent session</text>
+<rect x="34" y="76" width="832" height="54" rx="12" fill="{c["panel"]}"/>
+<text x="52" y="109">このGitHub、いい感じにしといて。</text>
+<circle class="pulse" cx="40" cy="164" r="3" fill="{c["muted"]}"/><text x="52" y="169" class="medium">I’ll take a look.</text>
+<path d="M40 188V252" stroke="{c["line"]}" stroke-width="1.5"/>
+<path d="m52 193 3 3 6-7" fill="none" stroke="{c["muted"]}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="72" y="198" class="muted mono">Read profile</text>
+<path d="m52 219 3 3 6-7" fill="none" stroke="{c["muted"]}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="72" y="224" class="muted mono">Inspected repositories</text>
+<path d="m52 245 3 3 6-7" fill="none" stroke="{c["muted"]}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><text x="72" y="250" class="muted mono">Checked recent activity</text>
+<text x="34" y="292" class="medium">4k29</text>
+<text x="34" y="320">Student · Vibe coder · Building Tecirc</text>
+<text x="34" y="348">Most of the code here was written with ChatGPT.</text>
+<text x="34" y="376">The ideas, direction, complaints, and &quot;なんか違</text><rect class="cursor" x="365" y="363" width="1.5" height="17" fill="{c["muted"]}"/>
+<rect x="34" y="404" width="832" height="64" rx="12" fill="{c["subtle"]}" stroke="{c["line"]}"/>
+<text x="52" y="431" class="medium">Usage limit reached</text><text x="52" y="453" class="muted">Try again later.</text>
+<rect x="34" y="492" width="832" height="44" rx="12" fill="{c["panel"]}" stroke="{c["line"]}"/>
+<text x="52" y="520" class="muted">Ask anything…</text><text x="848" y="520" class="muted" text-anchor="end">Limit reached</text>
+</svg>'''
+
+for name, colors in THEMES.items():
+    (P / f"card-{name}.svg").write_text(svg(colors), encoding="utf-8")
