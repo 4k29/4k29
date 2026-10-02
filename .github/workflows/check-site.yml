@@ -1,0 +1,17 @@
+name: Check static profile
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --test tests/*.test.mjs
+      - run: node --check docs/app.js && node --check docs/boot.js && node --check docs/dialogue.js
