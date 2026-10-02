@@ -11,6 +11,10 @@ export async function startBoot(ready){
  const info=await collectDeviceInfo();
  const lines=['$ start personal-session','const device = readBrowserCapabilities();',...Object.entries(info).map(([key,value])=>`  ${key}: ${value}`),'[local] device information stays in this browser','[local] loading profile.json','[ready] personal session'];
  for(const line of lines){
+  if(line.startsWith('[ready]')&&!reduced){
+   const thinking=document.createElement('span');thinking.className='boot-thinking spinner';thinking.setAttribute('aria-label','Thinking');thinking.innerHTML='<i></i><i></i><i></i>';log.append(thinking);
+   await new Promise(resolve=>setTimeout(resolve,1400));thinking.remove();
+  }
   if(reduced){log.append(document.createTextNode(line+'\n'));continue;}
   const row=document.createTextNode('');log.append(row);
   for(let offset=0;offset<line.length;offset+=2){row.appendData(line.slice(offset,offset+2));await new Promise(resolve=>setTimeout(resolve,BOOT_CHARACTER_INTERVAL));}

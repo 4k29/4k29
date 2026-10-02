@@ -95,3 +95,13 @@ Client Hintsに加えて、Safari・Firefoxでも取得できるUser-Agent内の
 WindowsではClient Hintsの公開済みAPI契約バージョンを使い、13以上はWindows 11、1〜10はWindows 10と識別する。公開されていない場合はWindowsのみ表示し、NT 10.0だけで10/11を決めない。API契約値はPlatform versionとして分離して表示する。
 
 ドットはthinking表示と同様の真四角とし、白・黒・グレーのみを使用。描画位置を物理ピクセルに合わせ、角や輪郭がぼやけないようにする。％もモノクロで表示する。
+
+## 流れ場のドット・完了後のEnter・OSバージョン表示
+
+追加指示に合わせ、格子を上から埋める描画を廃止。モノクロの真四角が全画面の流れ場に沿って移動し、各粒子の速度目標を0.4〜2.4秒間隔でランダムに変えて滑らかに加減速する。描画負荷は最大1,800粒子・8濃度バッチに制限。上部に同じターミナルフォントで `loading… 0%`〜`loading… 100%` を表示。約12秒で100%になり、Enterまたは `Enter ↵` ボタンでメインへ進む。途中のEnterでは進まない。視覚効果を減らす設定では動画と待ち時間を省き、100%からの操作待ちは維持する。
+
+最初の端末画面は `[ready]` の直前に1.4秒の四角いthinking表示を追加。質問欄は改行できないinputへ変更し、PC・モバイルともEnterで送信する。Shift+Enterも送信、日本語IME変換中のEnterは送信処理から除外する。
+
+OSバージョンの誤表示を避けるため、User-AgentのOSトークンを実際のバージョンとして扱わない。Client Hintsで公開されたplatformVersionを優先し、未公開の場合はOS versionをUnknownにする。User-Agentに含まれる古い固定値はReported OS tokenとして分離。Safari等で正確なOSバージョンが公開されない制約を外部通信やブラウザバージョンからの推測で補わない。Windowsの10/11識別は公開API契約のマッピングを維持する。
+
+検証：Nodeの17テスト、ChromiumでPC/モバイル×ライト/ダークの操作、通常アニメーションでready前thinking・途中Enter無効・100%待機・2回目のEnter/タップ、実ブラウザChromium/Firefoxの端末取得、Safari/iOS/Edge識別子のDOMフォールバックを確認。Safari/iOSの実機検証は未実施。READMEとプロフィールSVGは変更しない。

@@ -37,8 +37,8 @@ form.addEventListener('submit',async e=>{e.preventDefault();const q=input.value.
 document.addEventListener('pointerdown',e=>{if(!input.contains(e.target))input.blur();});
 document.querySelector('#replay').addEventListener('click',()=>{if(busy)return;chat.replaceChildren();input.value='';chat.setAttribute('aria-busy','false');conversation?.reset();intro();});
 
-form.addEventListener('keydown',event=>{if(event.target===input&&event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&event.keyCode!==229&&!matchMedia('(pointer: coarse)').matches){event.preventDefault();form.requestSubmit();}});
-input.addEventListener('input',()=>{input.style.height='auto';input.style.height=Math.min(input.scrollHeight,160)+'px';});
+form.addEventListener('keydown',event=>{if(event.target===input&&event.key==='Enter'&&!event.isComposing&&event.keyCode!==229){event.preventDefault();form.requestSubmit();}});
+
 const themeButton=document.querySelector('#theme');
 let theme='auto';try{theme=localStorage.getItem('4k29.theme')||'auto';}catch{}
 if(!['auto','dark','light'].includes(theme))theme='auto';

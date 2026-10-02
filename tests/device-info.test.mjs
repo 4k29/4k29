@@ -45,3 +45,8 @@ test('Windows Client Hints contracts identify 10 and 11 without treating them as
  const win10=deviceInfo(nav,screen,viewport,{platformVersion:'10.0.0'});assert.equal(win10.OS,'Windows 10');assert.equal(win10['OS version'],'10');
  assert.equal(deviceInfo(nav,screen,viewport,{}).OS,'Windows');
 });
+test('frozen User-Agent OS versions are reported separately, never asserted as the actual OS',()=>{
+ for(const ua of ['Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Version/26.0 Safari/605.1.15','Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) Version/26.0 Safari/604.1','Mozilla/5.0 (Linux; Android 10) Chrome/153.0.0.0 Mobile Safari/537.36']){const info=report(ua);assert.equal(info['OS version'],'Unknown');assert.notEqual(info['Reported OS token'],'Unknown');}
+ const info=report('Mac OS X 10_15_7',{userAgentData:{platform:'macOS'}});assert.equal(info['OS version'],'Unknown');
+ assert.equal(deviceInfo({userAgentData:{platform:'macOS'}},screen,viewport,{platformVersion:'26.0.0'})['OS version'],'26.0.0');
+});
