@@ -13,7 +13,16 @@ for(const mobile of [false,true])for(const scheme of ['dark','light']){
  await input.fill('デザイン');await input.press('Shift+Enter');assert.match(await input.inputValue(),/\n/);await page.locator('button[type=submit]').click();await page.waitForFunction(()=>document.querySelectorAll('.chat-response').length===2&&document.querySelector('#chat').getAttribute('aria-busy')==='false');
  await input.fill('もっと');await page.locator('button[type=submit]').click();await page.waitForFunction(()=>document.querySelectorAll('.chat-response').length===3&&document.querySelector('#chat').getAttribute('aria-busy')==='false');assert.match(await page.locator('.chat-response').nth(2).innerText(),/デザイン|余白/);
  await input.fill('<img src=x onerror=alert(1)>');await page.locator('button[type=submit]').click();await page.waitForFunction(()=>document.querySelectorAll('.chat-response').length===4&&document.querySelector('#chat').getAttribute('aria-busy')==='false');assert.equal(await page.locator('#chat img').count(),0);
- for(let n=4;n<20;n++){await input.fill('興味は？');await page.locator('button[type=submit]').click();await page.waitForFunction(n=>document.querySelectorAll('.chat-response').length===n&&document.querySelector('#chat').getAttribute('aria-busy')==='false',n+1);}
+ await input.fill('Twitterのアカウント教えて');await page.locator('button[type=submit]').click();await page.waitForFunction(()=>document.querySelectorAll('.chat-response').length===5&&document.querySelector('#chat').getAttribute('aria-busy')==='false');
+ const accounts=page.locator('.chat-response').nth(4);
+ for(const [handle,url] of [['@p_horeer','https://x.com/p_horeer'],['@uma_4k','https://x.com/uma_4k']]){
+  const link=accounts.getByRole('link',{name:handle,exact:true});assert.equal(await link.getAttribute('href'),url);assert.equal(await link.getAttribute('rel'),'noopener noreferrer');
+  await ctx.route(url,route=>route.fulfill({contentType:'text/html',body:'Link navigation verified locally'}));
+  const popupReady=page.waitForEvent('popup');await link.click();const popup=await popupReady;await popup.waitForLoadState();assert.equal(popup.url(),url);await popup.close();
+ }
+ await input.fill('誕生日は？');await page.locator('button[type=submit]').click();await page.waitForFunction(()=>document.querySelectorAll('.chat-response').length===6&&document.querySelector('#chat').getAttribute('aria-busy')==='false');assert.equal(await page.locator('.chat-response').nth(5).innerText(),'すみません、よく分かりません');
+ await page.evaluate(async()=>{const {renderAnswer}=await import('./answer-view.js');const el=document.createElement('div');renderAnswer(el,{text:'<script>alert(1)</script> unsafe',links:[{label:'unsafe',url:'javascript:alert(1)'}]});if(el.querySelector('a,script')||el.textContent!=='<script>alert(1)</script> unsafe')throw Error('Unsafe answer rendering');});
+ for(let n=6;n<20;n++){await input.fill('興味は？');await page.locator('button[type=submit]').click();await page.waitForFunction(n=>document.querySelectorAll('.chat-response').length===n&&document.querySelector('#chat').getAttribute('aria-busy')==='false',n+1);}
  await input.fill('hello');await page.locator('button[type=submit]').click();await page.waitForFunction(()=>!document.querySelector('#limit').classList.contains('stage-hidden'));assert.match(await page.locator('#limit').innerText(),/Usage limit reached/);assert.equal(await page.locator('.chat-response').count(),20);
  await page.locator('#replay').click();await page.waitForFunction(()=>!document.querySelector('#prompt-form button').disabled);assert.equal(await page.locator('.chat-turn').count(),0);
  await input.fill('愛用製品は？');await page.locator('button[type=submit]').click();await page.waitForFunction(()=>document.querySelector('#chat').getAttribute('aria-busy')==='false');assert.match(await page.locator('.chat-response').innerText(),/Nothing Headphone/);
@@ -21,5 +30,18 @@ for(const mobile of [false,true])for(const scheme of ['dark','light']){
  await page.locator('#theme').click();assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');await page.locator('#theme').click();assert.equal(await page.locator('html').getAttribute('data-theme'),'light');
  await page.reload();await page.waitForFunction(()=>!document.querySelector('#prompt-form button').disabled);assert.equal(await page.locator('#boot').count(),0);assert.equal(await page.locator('#chat').innerText(),'');assert.deepEqual(errors,[]);assert.deepEqual(remote,[]);console.log(`PASS ${mobile?'mobile':'desktop'} ${scheme}: boot, intro, chat, multiline, follow-up, XSS, quota/replay, theme, reload, no external requests`);await ctx.close();
 }
-// Normal motion: observe boot, animated transition, thinking and incremental text.
-const ctx=await browser.newContext({reducedMotion:'no-preference'});const page=await ctx.newPage();await page.goto(base);await page.waitForFunction(()=>!document.querySelector('#boot-next').disabled);await page.locator('#boot-next').click();await page.waitForSelector('#transition:not(.stage-hidden)');assert.equal(await page.locator('#transition .spinner i').count(),3);await page.waitForSelector('.thinking');await page.waitForFunction(()=>document.querySelector('.reply:not(.stage-hidden) p')?.textContent.length>0);const partial=await page.locator('.reply p').innerText();assert.ok(partial.length<130);console.log('PASS normal motion: boot/transition/thinking/incremental typing');await ctx.close();await browser.close();})().catch(e=>{console.error(e);process.exit(1)});
+// Real-time motion: the boot reveals characters slowly and the full viewport animation lasts 12 seconds.
+for(const mobile of [false,true]){
+ const ctx=await browser.newContext({viewport:mobile?{width:390,height:844}:{width:1440,height:900},reducedMotion:'no-preference'});const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base);
+ await page.waitForTimeout(600);assert.equal(await page.locator('#boot-next').isDisabled(),true);assert.doesNotMatch(await page.locator('#boot-log').innerText(),/\[ready\]/);
+ assert.ok(await page.locator('#boot').evaluate(el=>el.getBoundingClientRect().height)>= (mobile?844:900)-24);
+ await page.waitForFunction(()=>!document.querySelector('#boot-next').disabled);await page.locator('#boot-next').click();await page.waitForSelector('#transition:not(.stage-hidden)');assert.equal(await page.locator('#transition .spinner i').count(),3);
+ await page.waitForTimeout(4500);assert.equal(await page.locator('#transition').isVisible(),true);
+ assert.deepEqual(await page.locator('#transition').evaluate(el=>({width:el.clientWidth,height:el.clientHeight})),mobile?{width:390,height:844}:{width:1440,height:900});
+ const pixels=await page.locator('#transition canvas').evaluate(canvas=>{const c=canvas.getContext('2d'),a=c.getImageData(0,0,canvas.width,canvas.height).data;const colors=new Set();for(let i=0;i<a.length;i+=64)colors.add(a.slice(i,i+3).join(','));return colors.size;});assert.ok(pixels>5);
+ await page.screenshot({path:`${captureDir}/transition-${mobile?'mobile':'desktop'}.png`});
+ if(mobile){await page.locator('#transition button').click();await page.waitForSelector('.thinking');}
+ else {const began=Date.now();await page.waitForSelector('.thinking');assert.ok(Date.now()-began>5500);await page.waitForFunction(()=>document.querySelector('.reply:not(.stage-hidden) p')?.textContent.length>0);const partial=await page.locator('.reply p').innerText();assert.ok(partial.length<130);}
+ assert.deepEqual(errors,[]);console.log(`PASS ${mobile?'mobile':'desktop'} normal motion: slow boot, full viewport geometric canvas, duration/skip, thinking/typing`);await ctx.close();
+}
+await browser.close();})().catch(e=>{console.error(e);process.exit(1)});
