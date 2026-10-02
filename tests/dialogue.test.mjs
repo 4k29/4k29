@@ -27,7 +27,7 @@ test('answers are assembled from editable facts',()=>{
  assert.match(new Conversation(clone).respond('名前は？').text,/テスト名/);
  const c=new Conversation(data);assert.notEqual(c.respond('design').text,c.respond('design').text);
 });
-test('device capabilities are reported without user-agent inference',()=>{
+test('device capabilities stay Unknown without structured browser identifiers',()=>{
  const unknown=deviceInfo({userAgent:'Mozilla Safari Windows'}, {}, {});
  assert.equal(unknown.OS,'Unknown');assert.equal(unknown.Browser,'Unknown');assert.equal(unknown.Device,'Unknown');assert.equal(unknown.Screen,'Unknown');
  const known=deviceInfo({language:'ja-JP',languages:['ja-JP'],userAgentData:{platform:'Windows',mobile:false,brands:[{brand:'Chromium',version:'153'}]}},{width:390,height:844},{innerWidth:390,innerHeight:700});

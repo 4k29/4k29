@@ -1,6 +1,6 @@
-import { createDotField, positionDot } from './dot-field.js';
+import { createDotPattern } from './dot-pattern.js';
 export const TRANSITION_DURATION=12000;
-// Dense geometric dot choreography with decorative progress.
+// Random pixels appear row by row from the top; no motif or wave movement.
 export async function playTransition(element,reduced){
  if(reduced){element.remove();return;}
  element.classList.remove('stage-hidden');
@@ -8,26 +8,26 @@ export async function playTransition(element,reduced){
  const percentage=element.querySelector('.transition-percentage');
  let width=0,height=0,frame=0,finished=false,lastPercent=-1,dots=[];
  const dark=()=>document.documentElement.dataset.theme==='dark'||document.documentElement.dataset.theme!=='light'&&!matchMedia('(prefers-color-scheme: light)').matches;
- function resize(){width=innerWidth;height=innerHeight;const ratio=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(width*ratio);canvas.height=Math.round(height*ratio);context?.setTransform(ratio,0,0,ratio,0,0);dots=createDotField(width,height);}
+ function resize(){width=innerWidth;height=innerHeight;const ratio=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(width*ratio);canvas.height=Math.round(height*ratio);context?.setTransform(ratio,0,0,ratio,0,0);dots=createDotPattern(width,height);}
  resize();window.addEventListener('resize',resize);
- const started=performance.now(),position={x:0,y:0};
+ const started=performance.now();
  function draw(now){
   if(finished)return;
-  const elapsed=now-started,progress=Math.min(elapsed/(TRANSITION_DURATION-300),1),t=elapsed/1000;
+  const elapsed=now-started,progress=Math.min(elapsed/(TRANSITION_DURATION-300),1);
   // Simulated progress reaches 100% just before the introduction appears.
-  const percent=progress===1?100:Math.floor(100*(.12*progress+.88*(1-Math.pow(1-progress,1.4))));
+  const coverage=progress===1?1:.12*progress+.88*(1-Math.pow(1-progress,1.4));
+  const percent=Math.floor(coverage*100);
   if(percent!==lastPercent){percentage.textContent=percent+'%';percentage.setAttribute('aria-valuenow',String(percent));lastPercent=percent;}
   if(context){
    const isDark=dark();context.fillStyle=isDark?'#181818':'#fafafa';context.fillRect(0,0,width,height);
-   const fade=Math.min(elapsed/400,1);
-   // Batch dots by opacity: only eight fill operations per frame, even at high density.
+   // Draw stable random shades; reveal order is top-to-bottom, left-to-right.
    for(let bucket=0;bucket<8;bucket++){
-    const opacity=(.25+bucket*.075)*fade,radius=1+bucket*.1;
+    const opacity=.16+bucket*.1;
     context.fillStyle=isDark?`rgba(205,221,194,${opacity})`:`rgba(65,88,58,${opacity})`;
     context.beginPath();
-    for(let index=bucket;index<dots.length;index+=8){
-     const {x,y}=positionDot(dots[index],t,width,height,position);
-     context.moveTo(x+radius,y);context.arc(x,y,radius,0,Math.PI*2);
+    for(const dot of dots){
+     if(dot.birth>coverage)break;
+     if(dot.bucket===bucket)context.rect(dot.x-dot.size/2,dot.y-dot.size/2,dot.size,dot.size);
     }
     context.fill();
    }
