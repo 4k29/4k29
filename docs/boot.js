@@ -1,3 +1,6 @@
+import { playTransition } from './transition.js';
+export const BOOT_CHARACTER_INTERVAL=28;
+export const BOOT_LINE_PAUSE=240;
 // Only report exposed browser values. User-Agent strings are deliberately not guessed.
 export function deviceInfo(nav=navigator,screenInfo=screen,viewport=window){
  const hints=nav.userAgentData;
@@ -17,10 +20,15 @@ export async function startBoot(ready){
  if(seen){boot.remove();await ready();return;}
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const lines=['$ start personal-session','const device = readBrowserCapabilities();',...Object.entries(deviceInfo()).map(([key,value])=>`  ${key}: ${value}`),'[local] device information stays in this browser','[local] loading profile.json','[ready] personal session'];
- for(const line of lines){log.append(document.createTextNode(line+'\n'));if(!reduced)await new Promise(resolve=>setTimeout(resolve,110));}
+ for(const line of lines){
+  if(reduced){log.append(document.createTextNode(line+'\n'));continue;}
+  const row=document.createTextNode('');log.append(row);
+  for(let offset=0;offset<line.length;offset+=2){row.appendData(line.slice(offset,offset+2));await new Promise(resolve=>setTimeout(resolve,BOOT_CHARACTER_INTERVAL));}
+  row.appendData('\n');await new Promise(resolve=>setTimeout(resolve,BOOT_LINE_PAUSE));
+ }
  next.disabled=false;status.textContent='準備完了。Enter またはボタンで次へ進みます。';next.focus();
  let continuing=false;
- async function proceed(){if(next.disabled||continuing)return;continuing=true;document.removeEventListener('keydown',key);try{localStorage.setItem('4k29.boot-seen','1');}catch{}boot.remove();transition.classList.remove('stage-hidden');if(!reduced)await new Promise(resolve=>setTimeout(resolve,900));transition.remove();await ready();}
+ async function proceed(){if(next.disabled||continuing)return;continuing=true;document.removeEventListener('keydown',key);try{localStorage.setItem('4k29.boot-seen','1');}catch{}boot.remove();await playTransition(transition,reduced);await ready();}
  function key(event){if(event.key==='Enter'&&!event.isComposing){event.preventDefault();proceed();}}
  next.addEventListener('click',proceed);document.addEventListener('keydown',key);
 }
