@@ -17,7 +17,7 @@ export function deviceInfo(nav=navigator,screenInfo=screen,viewport=window){
 export async function startBoot(ready){
  // A back/forward-cache restoration must also begin with a fresh boot screen.
  window.addEventListener('pageshow',event=>{if(event.persisted)window.location.reload();});
- const boot=document.querySelector('#boot'),next=document.querySelector('#boot-next'),status=document.querySelector('#boot-status'),log=document.querySelector('#boot-log'),transition=document.querySelector('#transition');
+ const boot=document.querySelector('#boot'),next=document.querySelector('#boot-next'),log=document.querySelector('#boot-log'),transition=document.querySelector('#transition');
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const lines=['$ start personal-session','const device = readBrowserCapabilities();',...Object.entries(deviceInfo()).map(([key,value])=>`  ${key}: ${value}`),'[local] device information stays in this browser','[local] loading profile.json','[ready] personal session'];
  for(const line of lines){
@@ -26,7 +26,7 @@ export async function startBoot(ready){
   for(let offset=0;offset<line.length;offset+=2){row.appendData(line.slice(offset,offset+2));await new Promise(resolve=>setTimeout(resolve,BOOT_CHARACTER_INTERVAL));}
   row.appendData('\n');await new Promise(resolve=>setTimeout(resolve,BOOT_LINE_PAUSE));
  }
- next.disabled=false;status.textContent='準備完了。Enter またはボタンで次へ進みます。';next.focus();
+ next.disabled=false;next.focus();
  let continuing=false;
  async function proceed(){if(next.disabled||continuing)return;continuing=true;document.removeEventListener('keydown',key);boot.remove();await playTransition(transition,reduced);await ready();}
  function key(event){if(event.key==='Enter'&&!event.isComposing){event.preventDefault();proceed();}}

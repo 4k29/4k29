@@ -5,7 +5,7 @@ require('node:fs').mkdirSync(captureDir,{recursive:true});
 (async()=>{const browser=await chromium.launch({headless:true,...(process.env.BROWSER_EXECUTABLE?{executablePath:process.env.BROWSER_EXECUTABLE}:{})});
 for(const mobile of [false,true])for(const scheme of ['dark','light']){
  const ctx=await browser.newContext({viewport:mobile?{width:390,height:844}:{width:1440,height:900},isMobile:mobile,hasTouch:mobile,colorScheme:scheme,reducedMotion:'reduce'});const page=await ctx.newPage();const errors=[],remote=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(!r.url().startsWith(base))remote.push(r.url())});
- await page.goto(base);await page.waitForFunction(()=>!document.querySelector('#boot-next').disabled);assert.match(await page.locator('#boot-log').innerText(),/OS:|Unknown/);
+ await page.goto(base);await page.waitForFunction(()=>!document.querySelector('#boot-next').disabled);assert.match(await page.locator('#boot-log').innerText(),/OS:|Unknown/);assert.equal(await page.locator('#boot-status').count(),0);assert.equal(await page.locator('#boot-next').innerText(),'↵');assert.doesNotMatch(await page.locator('#boot').innerText(),/端末情報を読み取|準備完了|次へ|続行/);
  if(mobile)await page.locator('#boot-next').click();else await page.keyboard.press('Enter');await page.waitForFunction(()=>document.querySelector('#profile:not(.stage-hidden)')&&!document.querySelector('#prompt-form button').disabled);
  assert.match(await page.locator('.reply').first().innerText(),/I'm しか/);assert.match(await page.locator('.events').innerText(),/Mostly AI-generated/);
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth),mobile?390:1440);
