@@ -17,9 +17,9 @@ export async function playTransition(element,reduced){
   if(context){
    const dark=document.documentElement.dataset.theme==='dark'||document.documentElement.dataset.theme!=='light'&&!matchMedia('(prefers-color-scheme: light)').matches;
    context.fillStyle=dark?'#181818':'#fafafa';context.fillRect(0,0,width,height);
-   const positions=dots.map(dot=>({...dotPosition(dot,clock.phase,width,height),size:dot.size}));
+   const positions=dots.map(dot=>({...dotPosition(dot,clock.phase),size:dot.size}));
    for(let bucket=0;bucket<8;bucket++){
-    context.fillStyle=`rgba(${dark?'235,235,235':'30,30,30'},${.1+bucket*.11})`;context.beginPath();
+    context.fillStyle=`rgba(${dark?'235,235,235':'30,30,30'},${.35+bucket*.65/7})`;context.beginPath();
     for(const point of positions){
      if(point.bucket!==bucket)continue;
      const side=Math.max(1,Math.round(point.size*ratio))/ratio;
