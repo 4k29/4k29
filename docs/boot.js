@@ -15,6 +15,8 @@ export function deviceInfo(nav=navigator,screenInfo=screen,viewport=window){
  };
 }
 export async function startBoot(ready){
+ // A back/forward-cache restoration must also begin with a fresh boot screen.
+ window.addEventListener('pageshow',event=>{if(event.persisted)window.location.reload();});
  const boot=document.querySelector('#boot'),next=document.querySelector('#boot-next'),status=document.querySelector('#boot-status'),log=document.querySelector('#boot-log'),transition=document.querySelector('#transition');
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const lines=['$ start personal-session','const device = readBrowserCapabilities();',...Object.entries(deviceInfo()).map(([key,value])=>`  ${key}: ${value}`),'[local] device information stays in this browser','[local] loading profile.json','[ready] personal session'];
