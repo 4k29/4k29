@@ -4,7 +4,7 @@ export function createDotPattern(width,height,random=Math.random){
  const sx=width/columns,sy=height/rows,dots=[];
  for(let row=0;row<rows;row++)for(let column=0;column<columns;column++){
   if(random()<.2)continue;
-  dots.push({x:(column+.5)*sx,y:(row+.5)*sy,bucket:Math.min(7,Math.floor(random()*8)),birth:(row+.8*column/columns)/rows,size:Math.max(2,gap*.25)});
+  dots.push({x:(column+.5)*sx,y:(row+.5)*sy,bucket:Math.min(7,Math.floor(random()*8)),birth:(row+.8*column/columns)/rows,size:Math.max(2,Math.round(gap*.25))});
  }
  return dots;
 }

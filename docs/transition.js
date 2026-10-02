@@ -6,9 +6,9 @@ export async function playTransition(element,reduced){
  element.classList.remove('stage-hidden');
  const canvas=element.querySelector('canvas'),context=canvas.getContext('2d');
  const percentage=element.querySelector('.transition-percentage');
- let width=0,height=0,frame=0,finished=false,lastPercent=-1,dots=[];
+ let width=0,height=0,frame=0,finished=false,lastPercent=-1,lastTheme=null,dots=[],ratio=1;
  const dark=()=>document.documentElement.dataset.theme==='dark'||document.documentElement.dataset.theme!=='light'&&!matchMedia('(prefers-color-scheme: light)').matches;
- function resize(){width=innerWidth;height=innerHeight;const ratio=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(width*ratio);canvas.height=Math.round(height*ratio);context?.setTransform(ratio,0,0,ratio,0,0);dots=createDotPattern(width,height);}
+ function resize(){width=innerWidth;height=innerHeight;ratio=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(width*ratio);canvas.height=Math.round(height*ratio);context?.setTransform(ratio,0,0,ratio,0,0);dots=createDotPattern(width,height);}
  resize();window.addEventListener('resize',resize);
  const started=performance.now();
  function draw(now){
@@ -19,15 +19,19 @@ export async function playTransition(element,reduced){
   const percent=Math.floor(coverage*100);
   if(percent!==lastPercent){percentage.textContent=percent+'%';percentage.setAttribute('aria-valuenow',String(percent));lastPercent=percent;}
   if(context){
-   const isDark=dark();context.fillStyle=isDark?'#181818':'#fafafa';context.fillRect(0,0,width,height);
+   const isDark=dark();if(lastTheme!==isDark){percentage.style.color=isDark?'#ededed':'#252525';lastTheme=isDark;}context.fillStyle=isDark?'#181818':'#fafafa';context.fillRect(0,0,width,height);
    // Draw stable random shades; reveal order is top-to-bottom, left-to-right.
    for(let bucket=0;bucket<8;bucket++){
     const opacity=.16+bucket*.1;
-    context.fillStyle=isDark?`rgba(205,221,194,${opacity})`:`rgba(65,88,58,${opacity})`;
+    context.fillStyle=isDark?`rgba(220,220,220,${opacity})`:`rgba(45,45,45,${opacity})`;
     context.beginPath();
     for(const dot of dots){
      if(dot.birth>coverage)break;
-     if(dot.bucket===bucket)context.rect(dot.x-dot.size/2,dot.y-dot.size/2,dot.size,dot.size);
+     if(dot.bucket===bucket){
+      const side=Math.max(1,Math.round(dot.size*ratio))/ratio;
+      const left=Math.round((dot.x-side/2)*ratio)/ratio,top=Math.round((dot.y-side/2)*ratio)/ratio;
+      context.rect(left,top,side,side);
+     }
     }
     context.fill();
    }
