@@ -4,10 +4,6 @@ import {composeAnswer} from './answer-composition.js';
 export class Conversation{
  constructor(data){this.data=data;this.reset();}
  reset(){this.history=[];this.lastTopics=[];this.lastFactIds=[];this.seen=new Map();this.lastReplies=[];this.turn=0;}
- recordExternal(question,answer){
-  this.history.push({question,answer:answer.text,topics:['search'],language:'ja',factIds:[]});
-  this.lastTopics=[];this.lastFactIds=[];
- }
  respond(question){
   const raw=normalizeQuestion(question),text=semanticText(raw),language=/[ぁ-んァ-ヶ一-龠]/.test(raw)?'ja':'en';
   const analyses=[],context={history:this.history,lastFactIds:this.lastFactIds,lastTopics:this.lastTopics,seen:this.seen};
