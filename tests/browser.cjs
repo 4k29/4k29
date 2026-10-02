@@ -35,12 +35,12 @@ for(const mobile of [false,true]){
  const ctx=await browser.newContext({viewport:mobile?{width:390,height:844}:{width:1440,height:900},reducedMotion:'no-preference'});const page=await ctx.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base);
  await page.waitForTimeout(600);assert.equal(await page.locator('#boot-next').isDisabled(),true);assert.doesNotMatch(await page.locator('#boot-log').innerText(),/\[ready\]/);
  assert.ok(await page.locator('#boot').evaluate(el=>el.getBoundingClientRect().height)>= (mobile?844:900)-24);
- await page.waitForFunction(()=>!document.querySelector('#boot-next').disabled);await page.locator('#boot-next').click();await page.waitForSelector('#transition:not(.stage-hidden)');assert.equal(await page.locator('#transition .spinner i').count(),3);
- await page.waitForTimeout(4500);assert.equal(await page.locator('#transition').isVisible(),true);
+ await page.waitForFunction(()=>!document.querySelector('#boot-next').disabled);await page.locator('#boot-next').click();await page.waitForSelector('#transition:not(.stage-hidden)');assert.equal(await page.locator('#transition button, #transition .spinner').count(),0);assert.match(await page.locator('#transition').innerText(),/^\d+%$/);
+ const firstPercent=Number(await page.locator('.transition-percentage').getAttribute('aria-valuenow'));await page.waitForTimeout(4500);assert.ok(Number(await page.locator('.transition-percentage').getAttribute('aria-valuenow'))>firstPercent);assert.equal(await page.locator('#transition').isVisible(),true);
  assert.deepEqual(await page.locator('#transition').evaluate(el=>({width:el.clientWidth,height:el.clientHeight})),mobile?{width:390,height:844}:{width:1440,height:900});
  const pixels=await page.locator('#transition canvas').evaluate(canvas=>{const c=canvas.getContext('2d'),a=c.getImageData(0,0,canvas.width,canvas.height).data;const colors=new Set();for(let i=0;i<a.length;i+=64)colors.add(a.slice(i,i+3).join(','));return colors.size;});assert.ok(pixels>5);
  await page.screenshot({path:`${captureDir}/transition-${mobile?'mobile':'desktop'}.png`});
- if(mobile){await page.locator('#transition button').click();await page.waitForSelector('.thinking');}
+ if(mobile){await page.keyboard.press('Enter');await page.waitForSelector('.thinking');}
  else {const began=Date.now();await page.waitForSelector('.thinking');assert.ok(Date.now()-began>5500);await page.waitForFunction(()=>document.querySelector('.reply:not(.stage-hidden) p')?.textContent.length>0);const partial=await page.locator('.reply p').innerText();assert.ok(partial.length<130);}
  assert.deepEqual(errors,[]);console.log(`PASS ${mobile?'mobile':'desktop'} normal motion: slow boot, full viewport geometric canvas, duration/skip, thinking/typing`);await ctx.close();
 }
