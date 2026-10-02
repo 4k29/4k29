@@ -1,8 +1,12 @@
+import {resolveEntities} from './answer-entities.js';
+import {retrieveIntent} from './intent-retrieval.js';
 import {semanticText,resolveSemanticIntent} from './intent-model.js';
 // Local retrieval only: query scopes and evidence come from the editable profile.
 export function normalizeQuestion(text){return String(text).normalize('NFKC').toLowerCase().replace(/[\s　]+/g,' ').trim();}
 export function matchesKeyword(text,word){
  word=normalizeQuestion(word);
+ if(word==='サブ'.toLowerCase())return /サブ(?:垢|アカ|のアカ|だけ|は|が|を|って|について|と|$)/i.test(text);
+ if(word==='メイン'.toLowerCase())return /メイン(?:垢|アカ|のアカ|だけ|は|が|を|って|について|と|$)/i.test(text);
  return /^[a-z0-9_ ]+$/.test(word)?new RegExp(`(?:^|[^a-z0-9_])${word.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}(?:$|[^a-z0-9_])`,'i').test(text):text.includes(word);
 }
 const followOnly=/^(?:それ|その話|そのこと|それについて|その話について)?(?:を|は)?(?:もっと|詳しく|もう少し|他には|ほかには|他は|ほかは|続き|続けて|教えて|聞かせて|説明して|知りたい|お願い|お願いし?ます|について|何|は|\s|[?？!！。])*$/;
@@ -14,6 +18,7 @@ export function splitQuestions(text,data){
  for(const sentence of sentences){
   // Split coordinated requests only if both sides independently identify a subject.
   // Preserve lexical compounds such as 人とコンピューター.
+  if(/(?:と|や).+以外|(?:and|or).+except/.test(sentence)){result.push(sentence);continue;}
   const pieces=sentence.split(/、|(?:それと|それから)|\s+and\s+|と(?=(?:あなた|君|きみ|趣味|名前|年齢|職業|誕生日|住所|好きな|愛用|サブ|メイン|写真|ランニング|開発|興味|プライバシー|このサイト))/);
   if(pieces.length>1&&pieces.every(p=>standalone(p,data)))result.push(...pieces.map(p=>p.trim()));else result.push(sentence);
  }
@@ -29,10 +34,14 @@ export function analyzeQuestion(text,data,context){
  }
  const referenceLink=/^(?:それ|その|さっき|前の).*(?:リンク|url|link)/.test(text);
  const follow=isFollowUp(text),overview=/^(?:こんにちは|こんばんは|おはよう|やあ|よろしく|hello|hi|hey|自己紹介(?:して)?|紹介して|あなたについて(?:教えて)?|どんな人(?:ですか)?|about you|introduce yourself)[!！?？。\s]*$/.test(text);
- const unsupportedSubject=/(?:私|僕|俺|わたし|友達|友人|先生)の(?:名前|趣味|職業|興味|仕事)|\bmy (?:name|job|hobbies|interests)\b/.test(text);
+ const unsupportedSubject=/(?:私|僕|俺|わたし|友達|友人|先生)の(?:名前|趣味|職業|興味|仕事|イヤホン|ヘッドホン|サブスク|契約|推し)|\bmy (?:name|job|hobbies|interests)\b/.test(text);
  const unsupportedRank=/(?:一番|いちばん|最も|一位|ランキング).*(?:好き|興味|関心|大切|重視)|(?:好き|興味|大切).*(?:一番|最も)|(?:どの会社で|どの会社に|どこの会社|勤務先|勤め先)/.test(text);
- const unknown=unsupportedSubject||unsupportedRank||data.unknownPatterns.some(pattern=>new RegExp(pattern,'i').test(text));
+ const unregisteredAudio=/イヤホン|earphones?|earbuds?|earpods?/i.test(text)&&!data.facts.some(f=>f.category==='earphones');
+ const unregisteredSubscriptions=/サブスク|subscription|契約.*(?:サービス|有料)/i.test(text)&&!data.facts.some(f=>f.topic==='subscriptions');
+ const unknown=unregisteredAudio||unregisteredSubscriptions||unsupportedSubject||unsupportedRank||data.unknownPatterns.some(pattern=>new RegExp(pattern,'i').test(text));
  if(unknown)return {factIds:[],topics:[],unknown:true};
+ const entity=resolveEntities(text,data,context,matchesKeyword);
+ if(entity)return entity;
  if(referenceLink){const facts=data.facts.filter(f=>context.lastFactIds.includes(f.id)&&f.url);return {factIds:facts.map(f=>f.id),topics:facts.map(f=>f.topic),unknown:!facts.length};}
  let search=text;
  const exclude=new Set();
@@ -53,7 +62,15 @@ export function analyzeQuestion(text,data,context){
  const routedTopics=new Set(selected.map(f=>f.topic));
  selected.push(...targeted.filter(f=>!routedTopics.has(f.topic)));
  const semantic=resolveSemanticIntent(search,context,targeted);
+ const retrieval=semantic.priority<60&&!targeted.length?retrieveIntent(search):null;
+ if(retrieval){semantic.factIds=retrieval.factIds;semantic.intent=retrieval.intent;semantic.priority=65;semantic.confidence=retrieval.confidence;}
+
  if(semantic.factIds.length&&(semantic.priority>=60||!selected.length||semantic.intent==='identity-overview'))selected=semantic.factIds.map(id=>data.facts.find(f=>f.id===id)).filter(Boolean);
+ if(/以外/.test(text)&&/活動|趣味|何(?:を)?して/.test(text)){
+  selected=data.facts.filter(f=>f.topic==='activities');
+  const excludedText=text.slice(0,text.indexOf('以外'));
+  for(const f of selected)if((f.aliases||[]).some(a=>matchesKeyword(excludedText,a)))exclude.add(f.id);
+ }
  if(overview&&!selected.length)selected=data.facts.filter(f=>['name','student','workflow','tecirc','web','photo','running'].includes(f.id));
  if(follow&&!selected.length){
   const last=new Set(context.lastFactIds);
@@ -61,7 +78,7 @@ export function analyzeQuestion(text,data,context){
   selected=urls?data.facts.filter(f=>last.has(f.id)&&f.url):[];
   if(!urls){
    const other=/他|ほか|else/.test(text);
-   const related=new Set(data.facts.filter(f=>last.has(f.id)).flatMap(f=>f.relatedFactIds||[]));
+   const related=new Set(data.facts.filter(f=>last.has(f.id)).flatMap(f=>f.relatedFactIds||[]).filter(id=>context.lastFactIds.length===1||context.lastTopics.includes(data.facts.find(f=>f.id===id)?.topic)));
    let candidates=data.facts.filter(f=>other?context.lastTopics.includes(f.topic)&&!last.has(f.id):related.has(f.id));
    if(!candidates.length&&context.lastFactIds.length>1&&!other)candidates=data.facts.filter(f=>last.has(f.id));
    candidates.sort((a,b)=>(context.seen.get(a.id)||0)-(context.seen.get(b.id)||0));selected.push(...candidates.slice(0,3));
@@ -76,5 +93,5 @@ export function analyzeQuestion(text,data,context){
  if(/ヘッドホン|ヘッドフォン|headphone|愛用|愛用品|使って|持って/.test(text)&&!/興味|関心|好き|interest|like/.test(text))selected=selected.filter(f=>f.topic!=='interests');
  if(semantic.concepts.has('social')&&selected.some(f=>f.topic==='social')&&semantic.intent!=='identity-name')selected=selected.filter(f=>f.id!=='name');
  if(semantic.mode==='brief')selected=selected.slice(0,3);
- return {factIds:[...new Set(selected.map(f=>f.id))],topics,unknown:!selected.length,intent:semantic.intent,mode:semantic.mode};
+ return {factIds:[...new Set(selected.map(f=>f.id))],topics,unknown:!selected.length,intent:semantic.intent,mode:semantic.mode,confidence:semantic.confidence};
 }

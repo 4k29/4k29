@@ -1,3 +1,4 @@
+import {canonicalReading} from './japanese-reading.js';
 // An explainable local intent model, not a language model. Every rule points to registered fact IDs.
 export const semanticModel={
  synonyms:[
@@ -37,7 +38,7 @@ export const semanticModel={
  },
  intents:[
   {id:'identity-name',patterns:[/^(?:ねえ?\s*|すみません\s*)?(?:あなた(?:って|は)?\s*)?誰(?:なの|なんだ|なんですか|なん|なんだよ|なんでしょうか|だ|だよ|だっけ|だったっけ|よ|やねん|です|ですか|でしょうか|か|なのか|なのかな|なのよ|様)?(?:教えて(?:ください)?|知りたい)?$/, /^(?:who (?:are|r) (?:you|u)|who is (?:しか|4k29|this)|who's this|tell me who you are|who you are)$/],facts:['name'],priority:100},
-  {id:'identity-name',patterns:[/(?:何|なん)(?:と|て)(?:お)?呼|お呼び|呼ばれ|呼び方|お名前|名前|ニックネーム|ハンドルネーム|\b(?:name|nickname|call you)\b/],none:['social'],facts:['name'],priority:70},
+  {id:'identity-name',patterns:[/(?:何|なん)(?:と|て)(?:お)?呼|お呼び|呼ばれ|呼び方|お名前|名前|ニックネーム|ハンドルネーム|\b(?:name|nickname|call you)\b/],none:['social','brand'],facts:['name'],priority:70},
   {id:'identity-overview',all:['overview'],facts:['name','student','workflow','tecirc','web','photo','running'],priority:40},
   {id:'identity-role',all:['role'],facts:['student'],priority:60},
   {id:'daily-activities',all:['activity'],facts:['tecirc','web','photo','running'],priority:30},
@@ -64,7 +65,7 @@ export const semanticModel={
  ]
 };
 export function semanticText(text){
- let result=text;
+ let result=canonicalReading(text);
  for(const [pattern,replacement] of semanticModel.synonyms)result=result.replace(new RegExp(pattern,'g'),replacement);
  return result.replace(/^[\s、,]*(?:ねえ|ねぇ|ちょっと|えっと|えーと)[\s、,]*/,'').replace(/[?？!！。]+$/,'').trim();
 }
