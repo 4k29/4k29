@@ -3,7 +3,7 @@ const base=process.env.SITE_URL||'http://localhost:8001/';
 (async()=>{
  for(const [name,engine] of [['chromium',chromium],['firefox',firefox]]){
   const options={headless:true};if(name==='chromium'&&process.env.BROWSER_EXECUTABLE)options.executablePath=process.env.BROWSER_EXECUTABLE;
-  const browser=await engine.launch(options),page=await browser.newPage({reducedMotion:'reduce'});await page.goto(base);await page.waitForFunction(()=>!document.querySelector('#boot-next').disabled);const log=await page.locator('#boot-log').innerText();assert.match(log,/OS: Linux/);assert.match(log,/Browser: (Chromium|Chrome|Firefox)/);await page.keyboard.press('Enter');await page.waitForFunction(()=>!document.querySelector('#prompt-form button').disabled);console.log(`PASS ${name}: actual browser-reported OS and browser`);await browser.close();
+  const browser=await engine.launch(options),page=await browser.newPage({reducedMotion:'reduce'});await page.goto(base);await page.waitForFunction(()=>!document.querySelector('#boot-next').disabled);const log=await page.locator('#boot-log').innerText();assert.match(log,/OS: Linux/);assert.match(log,/Browser: (Chromium|Chrome|Firefox)/);await page.keyboard.press('Enter');await page.locator('.transition-next').click();await page.waitForFunction(()=>!document.querySelector('#prompt-form button').disabled);console.log(`PASS ${name}: actual browser-reported OS and browser`);await browser.close();
  }
  const browser=await chromium.launch({headless:true,...(process.env.BROWSER_EXECUTABLE?{executablePath:process.env.BROWSER_EXECUTABLE}:{})});
  const cases=[

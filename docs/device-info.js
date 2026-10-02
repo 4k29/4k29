@@ -41,7 +41,8 @@ export function deviceInfo(nav=navigator,screenInfo=screen,viewport=window,entro
  if(os==='macOS'&&nav.maxTouchPoints>1&&!/\biPad\b/.test(first(nav.userAgent))){os='Unknown (browser reports macOS)';device='Unknown (desktop identity; touch-capable)';}
  if(!device&&typeof hints?.mobile==='boolean')device=hints.mobile?'Mobile (browser-reported)':'Non-mobile (browser-reported)';
  const browser=hintBrowser(hints,entropy)||parsed.browser;
- let osVersion=(platform?first(entropy.platformVersion):parsed.version)||UNKNOWN;
+ // User-Agent OS tokens can be frozen by privacy protections (including Safari).
+ let osVersion=(platform&&os===platformNames[platform]?first(entropy.platformVersion):'')||UNKNOWN;
  // Chromium's Windows platformVersion is an API contract, not a Windows release number.
  if(platform==='Windows'){
   const reported=first(entropy.platformVersion),major=/^\d+(?:\.\d+)*$/.test(reported)?Number(reported.split('.')[0]):-1;
@@ -55,6 +56,7 @@ export function deviceInfo(nav=navigator,screenInfo=screen,viewport=window,entro
   OS:os||UNKNOWN,
   'OS version':osVersion,
   'Platform version':first(entropy.platformVersion)||UNKNOWN,
+  'Reported OS token':parsed.version||UNKNOWN,
   Browser:browser||UNKNOWN,
   Device:device||UNKNOWN,
   Model:first(entropy.model)||UNKNOWN,
