@@ -1,27 +1,23 @@
-// Sample the existing icon into monochrome square pixels; reveal it from the centre along spirals.
-export function createDotPattern(pixels,columns,rows,random=Math.random){
- const dots=[],cx=(columns-1)/2,cy=(rows-1)/2;
- let maxRadius=1;
- for(let y=0;y<rows;y++)for(let x=0;x<columns;x++){
-  const index=(y*columns+x)*4,alpha=pixels[index+3]/255;
-  if(alpha<.18)continue;
-  const dx=x-cx,dy=y-cy,radius=Math.hypot(dx,dy),angle=Math.atan2(dy,dx);
-  const luminance=(pixels[index]*.2126+pixels[index+1]*.7152+pixels[index+2]*.0722)/255;
-  dots.push({dx,dy,radius,angle,alpha,bucket:Math.min(7,Math.floor(luminance*8)),duration:.14+random()*.08,turns:1+random(),frequency:1+Math.floor(random()*3)});
-  maxRadius=Math.max(maxRadius,radius);
- }
- for(const dot of dots){
-  const phase=(dot.angle+Math.PI)/(Math.PI*2);
-  dot.birth=.72*dot.radius/maxRadius+.05*phase;
- }
- return dots.sort((a,b)=>a.birth-b.birth);
+// A full-screen square lattice follows coherent waves; no image or motif is sampled.
+export function createDotPattern(width,height,random=Math.random){
+ const gap=width<600?14:20,columns=Math.max(1,Math.floor(width/gap)),rows=Math.max(1,Math.floor(height/gap)),dots=[];
+ for(let row=0;row<rows;row++)for(let column=0;column<columns;column++)dots.push({
+  x:(column+.5)*width/columns,y:(row+.5)*height/rows,
+  phase:(random()-.5)*.3,pace:.9+random()*.2,size:width<600?3:4
+ });
+ return dots;
 }
-export function dotPosition(dot,progress,cell,cx,cy){
- if(progress<dot.birth)return null;
- const raw=Math.min(1,Math.max(0,(progress-dot.birth)/dot.duration));
- // Random frequency and travel time vary acceleration; endpoints stay exact and motion stays forward.
- const paced=raw+.045/dot.frequency*Math.sin(raw*Math.PI*2*dot.frequency);
- const travel=1-Math.pow(1-paced,3),angle=dot.angle+(1-travel)*Math.PI*2*dot.turns;
- if(raw===1)return {x:cx+dot.dx*cell,y:cy+dot.dy*cell,opacity:dot.alpha};
- return {x:cx+Math.cos(angle)*dot.radius*cell*travel,y:cy+Math.sin(angle)*dot.radius*cell*travel,opacity:dot.alpha*Math.min(1,raw*5)};
+export function createWaveClock(){return {phase:0,speed:1,target:1,nextChange:0};}
+export function advanceWaveClock(clock,delta,time,random=Math.random){
+ const dt=Math.min(.05,Math.max(0,delta));
+ if(time>=clock.nextChange){clock.target=.6+random()*1.1;clock.nextChange=time+1+random()*2;}
+ clock.speed+=(clock.target-clock.speed)*Math.min(1,dt*1.8);clock.phase+=clock.speed*dt;
+}
+export function dotPosition(dot,phase,width,height){
+ const nx=dot.x/Math.max(1,width),ny=dot.y/Math.max(1,height),t=phase*dot.pace;
+ const a=nx*Math.PI*4+ny*Math.PI*1.2-t*1.9+dot.phase;
+ const b=ny*Math.PI*3-nx*Math.PI-t*1.1;
+ const amplitude=width<600?9:14;
+ return {x:dot.x+Math.sin(b)*amplitude*.35,y:dot.y+Math.sin(a)*amplitude,
+  bucket:Math.max(0,Math.min(7,Math.floor((.5+.32*Math.sin(a)+.18*Math.cos(b))*8)))};
 }

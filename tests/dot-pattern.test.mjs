@@ -1,19 +1,11 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import {createDotPattern,dotPosition} from '../docs/dot-pattern.js';
-const pixels=new Uint8ClampedArray(16*16*4);for(let i=0;i<pixels.length;i+=4){pixels[i]=pixels[i+1]=pixels[i+2]=230;pixels[i+3]=255;}
-test('icon sampling keeps source coordinates, excludes transparency and reveals centre first',()=>{
- const source=pixels.slice();source[3]=0;const dots=createDotPattern(source,16,16,()=>.5);assert.equal(dots.length,255);
- assert.ok(dots[0].radius<2);assert.ok(dots.at(-1).radius>9);
- assert.ok(dots.every(d=>d.bucket>=0&&d.bucket<=7&&d.birth+d.duration<1));assert.equal(dotPosition(dots.at(-1),0,4,100,200),null);
+import test from 'node:test';import assert from 'node:assert/strict';
+import {createDotPattern,createWaveClock,advanceWaveClock,dotPosition} from '../docs/dot-pattern.js';
+test('square lattice fills desktop and mobile with bounded responsive density',()=>{
+ for(const [w,h] of [[1440,900],[390,844]]){const dots=createDotPattern(w,h);assert.ok(dots.length>1500&&dots.length<4000);assert.ok(dots.every(d=>d.x>0&&d.x<w&&d.y>0&&d.y<h));}
 });
-test('every square settles exactly onto the original icon grid at completion',()=>{
- const dots=createDotPattern(pixels,16,16);
- for(const d of dots){const p=dotPosition(d,1,4,100,200);assert.deepEqual(p,{x:100+d.dx*4,y:200+d.dy*4,opacity:1});}
+test('wave displacement stays close to each grid cell and all eight monochrome shades are used',()=>{
+ const dots=createDotPattern(1440,900),buckets=new Set();for(const d of dots){const p=dotPosition(d,2,1440,900);assert.ok(Math.abs(p.x-d.x)<=5&&Math.abs(p.y-d.y)<=14);assert.notDeepEqual(p,dotPosition(d,4,1440,900));buckets.add(p.bucket);}assert.equal(buckets.size,8);
 });
-test('spiral motion starts at the centre and random timing changes the path, not the final icon',()=>{
- const a=createDotPattern(pixels,16,16,()=>.2),b=createDotPattern(pixels,16,16,()=>.8);const d=a.at(-1);
- const origin=dotPosition(d,d.birth,4,100,200);assert.equal(origin.x,100);assert.equal(origin.y,200);
- const halfway=dotPosition(d,d.birth+d.duration*.5,4,100,200);assert.ok(Math.hypot(halfway.x-100,halfway.y-200)>0);assert.ok(Math.hypot(halfway.x-100,halfway.y-200)<d.radius*4);
- assert.notEqual(a[0].duration,b[0].duration);assert.notEqual(a[0].turns,b[0].turns);assert.deepEqual(dotPosition(a[0],1,4,100,200),dotPosition(b[0],1,4,100,200));
+test('random wave tempo accelerates smoothly and handles long background frames',()=>{
+ const clock=createWaveClock();advanceWaveClock(clock,20,1,()=>.9);assert.ok(clock.speed>1&&clock.speed<clock.target);assert.ok(clock.phase>0&&clock.phase<.1);const phase=clock.phase;advanceWaveClock(clock,.02,5,()=>.1);assert.ok(clock.phase>phase);assert.ok(clock.target<1);
 });
