@@ -44,3 +44,8 @@ test('similar-question retrieval rejects unsupported subjects',async()=>{
 test('additional interests stay in the same topic instead of implying ownership',()=>{
  const c=new Conversation(data);c.respond('興味は？');const a=c.respond('もっと');assert.ok(a.factIds.length);assert.ok(a.factIds.every(id=>data.facts.find(f=>f.id===id).topic==='interests'));
 });
+
+
+test('removed weather and web-search requests do not return unrelated profile facts or links',()=>{
+ for(const q of ['今日の天気は？','東京の天気','OpenAIを検索して','検索: Apple']){const a=new Conversation(data).respond(q);assert.equal(a.text,data.unknownReply,q);assert.deepEqual(a.links,[]);}
+});

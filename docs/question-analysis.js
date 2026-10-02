@@ -25,6 +25,7 @@ export function splitQuestions(text,data){
  return result;
 }
 export function analyzeQuestion(text,data,context){
+ if(/^(?:検索|けんさく|search)\s*[:：\s]|(?:を|について)(?:検索|けんさく|ググって)|(?:検索|けんさく)して|\bsearch (?:for|the web)\b/i.test(text))return {factIds:[],topics:[],unknown:true};
  text=semanticText(text);
  const historyReference=text.match(/^(最初|(?:[1-9][0-9]*)つ前|(?:[1-9][0-9]*)回前)の(?:話|質問|回答|答え)(?:について)?(?:もう一度|もう一回|詳しく|教えて|は|を|何|\s)*$/);
  if(historyReference){
