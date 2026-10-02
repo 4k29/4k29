@@ -40,6 +40,7 @@ export function composeAnswer(facts,analyses,language,variant){
   const group=ordered[i],relation=group[0][language].relation;
   if(relation==='website'&&clauses.some(clause=>clause.includes(group[0][language].value)))continue;
   let clause=sentence(group,language,variant+i);
+  if(relation==='privacy'&&group[0][language].exception)clause+=' '+group[0][language].exception;
   if(language==='ja'&&relation==='interest'&&groups.has('interest:brands')&&groups.has('interest:fields'))clause=(group.some(f=>['apple','nothing','openai'].includes(f.id))?'企業やブランドでは、':'分野では、')+clause;
   if(language==='ja'&&relation==='preference'&&clauses.length&&ordered[i-1][0][language].relation==='preference')clause='また、'+clause;
   clauses.push(clause);
