@@ -15,9 +15,9 @@ export function deviceInfo(nav=navigator,screenInfo=screen,viewport=window){
  };
 }
 export async function startBoot(ready){
+ // A back/forward-cache restoration must also begin with a fresh boot screen.
+ window.addEventListener('pageshow',event=>{if(event.persisted)window.location.reload();});
  const boot=document.querySelector('#boot'),next=document.querySelector('#boot-next'),status=document.querySelector('#boot-status'),log=document.querySelector('#boot-log'),transition=document.querySelector('#transition');
- let seen=false;try{seen=localStorage.getItem('4k29.boot-seen')==='1';}catch{}
- if(seen){boot.remove();await ready();return;}
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const lines=['$ start personal-session','const device = readBrowserCapabilities();',...Object.entries(deviceInfo()).map(([key,value])=>`  ${key}: ${value}`),'[local] device information stays in this browser','[local] loading profile.json','[ready] personal session'];
  for(const line of lines){
@@ -28,7 +28,7 @@ export async function startBoot(ready){
  }
  next.disabled=false;status.textContent='準備完了。Enter またはボタンで次へ進みます。';next.focus();
  let continuing=false;
- async function proceed(){if(next.disabled||continuing)return;continuing=true;document.removeEventListener('keydown',key);try{localStorage.setItem('4k29.boot-seen','1');}catch{}boot.remove();await playTransition(transition,reduced);await ready();}
+ async function proceed(){if(next.disabled||continuing)return;continuing=true;document.removeEventListener('keydown',key);boot.remove();await playTransition(transition,reduced);await ready();}
  function key(event){if(event.key==='Enter'&&!event.isComposing){event.preventDefault();proceed();}}
  next.addEventListener('click',proceed);document.addEventListener('keydown',key);
 }
