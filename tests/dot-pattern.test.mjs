@@ -1,11 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createDotPattern,moveDots} from '../docs/dot-pattern.js';
-test('particles are monochrome square sizes with bounded responsive density',()=>{
- for(const [w,h] of [[1440,900],[390,844]]){const dots=createDotPattern(w,h);assert.ok(dots.length>=500&&dots.length<=1800);for(const d of dots){assert.ok(d.x>=0&&d.x<w&&d.y>=0&&d.y<h);assert.ok(d.bucket>=0&&d.bucket<8);assert.ok(d.size>=2&&d.size<=4);}}
+import {createDotPattern,dotPosition} from '../docs/dot-pattern.js';
+const pixels=new Uint8ClampedArray(16*16*4);for(let i=0;i<pixels.length;i+=4){pixels[i]=pixels[i+1]=pixels[i+2]=230;pixels[i+3]=255;}
+test('icon sampling keeps source coordinates, excludes transparency and reveals centre first',()=>{
+ const source=pixels.slice();source[3]=0;const dots=createDotPattern(source,16,16,()=>.5);assert.equal(dots.length,255);
+ assert.ok(dots[0].radius<2);assert.ok(dots.at(-1).radius>9);
+ assert.ok(dots.every(d=>d.bucket>=0&&d.bucket<=7&&d.birth+d.duration<1));assert.equal(dotPosition(dots.at(-1),0,4,100,200),null);
 });
-test('random targets change speed smoothly and motion stays bounded after long frames',()=>{
- const dots=createDotPattern(390,844,()=>.5),before={...dots[0]};moveDots(dots,390,844,3,10,()=>.9);
- assert.notEqual(dots[0].target,before.target);assert.ok(dots[0].speed>before.speed&&dots[0].speed<dots[0].target);assert.notEqual(dots[0].x,before.x);
- for(let i=0;i<1000;i++)moveDots(dots,390,844,i,.05);assert.ok(dots.every(d=>d.x>=0&&d.x<390&&d.y>=0&&d.y<844));
+test('every square settles exactly onto the original icon grid at completion',()=>{
+ const dots=createDotPattern(pixels,16,16);
+ for(const d of dots){const p=dotPosition(d,1,4,100,200);assert.deepEqual(p,{x:100+d.dx*4,y:200+d.dy*4,opacity:1});}
+});
+test('spiral motion starts at the centre and random timing changes the path, not the final icon',()=>{
+ const a=createDotPattern(pixels,16,16,()=>.2),b=createDotPattern(pixels,16,16,()=>.8);const d=a.at(-1);
+ const origin=dotPosition(d,d.birth,4,100,200);assert.equal(origin.x,100);assert.equal(origin.y,200);
+ const halfway=dotPosition(d,d.birth+d.duration*.5,4,100,200);assert.ok(Math.hypot(halfway.x-100,halfway.y-200)>0);assert.ok(Math.hypot(halfway.x-100,halfway.y-200)<d.radius*4);
+ assert.notEqual(a[0].duration,b[0].duration);assert.notEqual(a[0].turns,b[0].turns);assert.deepEqual(dotPosition(a[0],1,4,100,200),dotPosition(b[0],1,4,100,200));
 });
