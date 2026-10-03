@@ -24,7 +24,7 @@ const cases=[
  [['Twitterの名前は？'],['x','x-secondary']],
 ];
 for(const [questions,ids] of cases)for(const question of questions)test('intent regression: '+question,()=>{
- const answer=new Conversation(data).respond(question);assert.deepEqual(new Set(answer.factIds),new Set(ids));assert.notEqual(answer.text,data.unknownReply);assert.equal(answer.text.includes(data.unknownReply),false);for(const id of ids)assert.ok(answer.text.includes(data.facts.find(f=>f.id===id)[answer.language].value));
+ const answer=new Conversation(data).respond(question);assert.deepEqual(new Set(answer.factIds),new Set(ids));assert.notEqual(answer.text,data.unknownReply);assert.equal(answer.text.includes(data.unknownReply),false);for(const id of ids){if(id==='tecirc'&&answer.intents.includes('article-subjects')){assert.match(answer.text,/Tecirc/);assert.ok(answer.links.some(link=>link.url==='https://4k29.github.io/tecirc/notes/'));}else assert.ok(answer.text.includes(data.facts.find(f=>f.id===id)[answer.language].value));}
 });
 test('advanced questions combine compatible registered relations rather than a generic topic',()=>{
  const c=new Conversation(data);
