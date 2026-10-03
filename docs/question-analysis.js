@@ -1,6 +1,6 @@
-import {resolveEntities} from './answer-entities.js?v=20261003-answer-fix-2';
-import {retrieveIntent} from './intent-retrieval.js?v=20261003-answer-fix-2';
-import {semanticText,resolveSemanticIntent} from './intent-model.js?v=20261003-answer-fix-2';
+import {resolveEntities} from './answer-entities.js?v=20261003-answer-fix-3';
+import {retrieveIntent} from './intent-retrieval.js?v=20261003-answer-fix-3';
+import {semanticText,resolveSemanticIntent} from './intent-model.js?v=20261003-answer-fix-3';
 // Local retrieval only: query scopes and evidence come from the editable profile.
 export function normalizeQuestion(text){return String(text).normalize('NFKC').toLowerCase().replace(/[\s　]+/g,' ').trim();}
 export function matchesKeyword(text,word){

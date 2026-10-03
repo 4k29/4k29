@@ -40,6 +40,7 @@ export function composeAnswer(facts,analyses,language,variant){
  const clauses=[];
  for(let i=0;i<ordered.length;i++){
   const group=ordered[i],relation=group[0][language].relation;
+  if(relation==='activity'&&group.every(f=>f.id==='tecirc')&&!modes.includes('hobbies')&&analyses.some(a=>a.intent==='article-subjects')&&facts.some(f=>f[language].relation==='writing'))continue;
   if(relation==='website'&&clauses.some(clause=>clause.includes(group[0][language].value)))continue;
   let clause=sentence(group,language,variant+i);
   if(relation==='activity'&&modes.includes('hobbies')){const value=list(group.map(f=>f[language].value),language);clause=language==='ja'?['趣味は、'+value+'です。',value+'が趣味です。'][variant%2]:'My hobbies include '+value+'.';}
