@@ -1,0 +1,5 @@
+import fs from 'node:fs';import path from 'node:path';import {pathToFileURL} from 'node:url';
+const root=path.resolve(process.argv[2]||'.'),{Conversation}=await import(pathToFileURL(path.join(root,'docs/dialogue.js'))),data=JSON.parse(fs.readFileSync(path.join(root,'docs/profile.json'))),cases=JSON.parse(fs.readFileSync(new URL(process.argv[3]||'questions.json',import.meta.url)));
+const results=cases.map(row=>{const answer=new Conversation(data).respond(row.question),actual=[...answer.factIds].sort(),expected=[...row.facts].sort();return {...row,actual,correct:JSON.stringify(actual)===JSON.stringify(expected),answer:answer.text};});
+const known=results.filter(r=>r.facts.length),unknown=results.filter(r=>!r.facts.length);
+console.log(JSON.stringify({total:results.length,correct:results.filter(r=>r.correct).length,knownCorrect:known.filter(r=>r.correct).length,knownTotal:known.length,unknownRejected:unknown.filter(r=>r.correct).length,unknownTotal:unknown.length,failures:results.filter(r=>!r.correct)},null,2));

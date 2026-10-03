@@ -1,6 +1,6 @@
-import {resolveEntities} from './answer-entities.js?v=20261003-article-topics-4';
-import {retrieveIntent} from './intent-retrieval.js?v=20261003-article-topics-4';
-import {semanticText,resolveSemanticIntent} from './intent-model.js?v=20261003-article-topics-4';
+import {resolveEntities} from './answer-entities.js?v=20261003-weights-5';
+import {retrieveIntent} from './intent-retrieval.js?v=20261003-weights-5';
+import {semanticText,resolveSemanticIntent} from './intent-model.js?v=20261003-weights-5';
 // Local retrieval only: query scopes and evidence come from the editable profile.
 export function normalizeQuestion(text){return String(text).normalize('NFKC').toLowerCase().replace(/[\s　]+/g,' ').trim();}
 export function matchesKeyword(text,word){
@@ -36,12 +36,15 @@ export function analyzeQuestion(text,data,context){
  }
  const referenceLink=/^(?:それ|その|さっき|前の).*(?:リンク|url|link)/.test(text);
  const follow=isFollowUp(text),overview=/^(?:こんにちは|こんばんは|おはよう|やあ|よろしく|hello|hi|hey|自己紹介(?:して)?|紹介して|あなたについて(?:教えて)?|どんな人(?:ですか)?|about you|introduce yourself)[!！?？。\s]*$/.test(text);
- const unsupportedSubject=/(?:私|僕|俺|わたし|友達|友人|先生)の(?:名前|趣味|職業|興味|仕事|イヤホン|ヘッドホン|サブスク|契約|推し)|\bmy (?:name|job|hobbies|interests)\b/.test(text);
+ const unsupportedSubject=/(?:私|僕|俺|わたし|友達|友人|先生)の(?:名前|趣味|職業|興味|仕事|イヤホン|ヘッドホン|サブスク|契約|推し)|\bmy (?:name|job|hobbies|interests|earphones|earbuds|headphones|subscriptions|favou?rite person|account)\b/.test(text);
  const unsupportedRank=/(?:一番|いちばん|最も|一位|ランキング).*(?:好き|興味|関心|大切|重視)|(?:好き|興味|大切).*(?:一番|最も)|(?:どの会社で|どの会社に|どこの会社|勤務先|勤め先)/.test(text);
  const unregisteredAudio=/イヤホン|earphones?|earbuds?|earpods?/i.test(text)&&!data.facts.some(f=>f.category==='earphones');
  const unregisteredSubscriptions=/サブスク|subscription|契約.*(?:サービス|有料)/i.test(text)&&!data.facts.some(f=>f.topic==='subscriptions');
  const unregisteredRunningDetail=/(?:ランニング|ジョギング|走る|走って|running|\brun\b).*(?:どこ|どちら|場所|コース|ルート|何キロ|距離|ペース|何時|時間|大会)|(?:どこ|どちら|場所|コース|ルート).*(?:走|ランニング|ジョギング|running|\brun\b)/.test(text);
- const unknown=unregisteredRunningDetail||unregisteredAudio||unregisteredSubscriptions||unsupportedSubject||unsupportedRank||data.unknownPatterns.some(pattern=>new RegExp(pattern,'i').test(text));
+ const unsupportedEnglishPreference=/\b(?:like|love|enjoy|favou?rite|prefer)\b/.test(text)&&/\b(?:food|music|songs?|movies?|anime|games?|books?|sports?|drinks?|cars?)\b/.test(text)&&!/\b(?:article|articles|blog)\b/.test(text);
+ const unknownCompany=/^(?:what (?:is|are)|who founded) (?:openai|apple|nothing)(?: (?:company|inc))?$/.test(text);
+ const ownYouTube=/youtube|ユーチューブ|ゆーちゅーぶ/.test(text)&&/アカウント|チャンネル|\bid\b|account|channel|url|リンク/.test(text)&&!/推し|(?:好き|すき)な(?:人|ひと)|してはる|shiteharu|記事|ブログ|favou?rite (?:person|creator|youtuber)/.test(text)&&!(context.lastFactIds.includes('favorite-person')&&/^(?:それ|その|さっき|(?:their|his|her|that person's|what is (?:their|his|her))\b)/.test(text));
+ const unknown=unsupportedEnglishPreference||unknownCompany||ownYouTube||unregisteredRunningDetail||unregisteredAudio||unregisteredSubscriptions||unsupportedSubject||unsupportedRank||data.unknownPatterns.some(pattern=>new RegExp(pattern,'i').test(text));
  if(unknown)return {factIds:[],topics:[],unknown:true};
  const entity=resolveEntities(text,data,context,matchesKeyword);
  if(entity)return {...entity,learningEligible:!follow&&!referenceLink&&!/^(?:それ|その|さっき|前に|前の)/.test(text)&&!entity.unknown&&!entity.contextDependent};

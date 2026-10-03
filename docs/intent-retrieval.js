@@ -1,5 +1,5 @@
-import {intentExamples} from './intent-examples.js?v=20261003-article-topics-4';
-import {semanticText,semanticModel} from './intent-model.js?v=20261003-article-topics-4';
+import {intentExamples} from './intent-examples.js?v=20261003-weights-5';
+import {semanticText,semanticModel} from './intent-model.js?v=20261003-weights-5';
 const ignored=new Set(['あなた','君','知りたい','教えて','ください','説明','tell','me','you','your','what','which','how','do','does','the','a','an','is','are','about','to','for','in','of','can']);
 export function questionTokens(text){
  text=semanticText(text.normalize('NFKC').toLowerCase()).replace(/(?:教えて|知りたい|聞きたい|聞かせて|ください|あなた|ですか|ますか|について)/g,'');
@@ -29,13 +29,24 @@ function cosine(a,b){let dot=0;for(const [term,weight] of a.weights)dot+=weight*
 const documents=intentExamples.flatMap(intent=>intent.examples.map(example=>({intent,terms:questionTokens(example),meaning:meaningVector(example)})));
 const frequencies=new Map();for(const d of documents)for(const term of new Set(d.terms))frequencies.set(term,(frequencies.get(term)||0)+1);
 const idf=term=>Math.log((documents.length+1)/((frequencies.get(term)||0)+1))+1;
-function vector(terms){const counts=new Map();for(const t of terms)counts.set(t,(counts.get(t)||0)+1);const weights=new Map([...counts].map(([t,n])=>[t,(1+Math.log(n))*idf(t)]));const norm=Math.hypot(...weights.values());return {weights,norm};}
+function vector(terms){const counts=new Map();for(const t of terms)counts.set(t,(counts.get(t)||0)+1);const weights=new Map([...counts].map(([t,n])=>[t,(1+Math.log(Math.min(n,3)))*idf(t)*(t.startsWith('w:')?1.4:t.slice(2).length===3?1.35:1)]));const norm=Math.hypot(...weights.values());return {weights,norm};}
 for(const document of documents)document.vector=vector(document.terms);
+function scoreVectors(query,meaning,document){
+ const lexical=cosine(query,document.vector),semantic=cosine(meaning,document.meaning);
+ const focused=[...meaning.weights.keys()].some(key=>key.startsWith('request:'));
+ const semanticWeight=meaning.norm&&document.meaning.norm?(focused? .3 : .2):0;
+ let conflict=0;
+ for(const [a,b] of [['request:article-subject','request:article-read']]){
+  if(meaning.weights.has(a)&&!meaning.weights.has(b)&&document.meaning.weights.has(b)&&!document.meaning.weights.has(a)||meaning.weights.has(b)&&!meaning.weights.has(a)&&document.meaning.weights.has(a)&&!document.meaning.weights.has(b))conflict=.25;
+ }
+ return {score:Math.max(0,(1-semanticWeight)*lexical+semanticWeight*semantic-conflict),lexical,semantic,conflict};
+}
+export function scoreQuestionExample(question,example){return scoreVectors(vector(questionTokens(question)),meaningVector(question),{vector:vector(questionTokens(example)),meaning:meaningVector(example)});}
 export function retrieveIntent(text){
  const query=vector(questionTokens(text)),meaning=meaningVector(text);if(!query.norm)return null;
  const ranks=new Map();
- for(const document of documents){const lexical=cosine(query,document.vector),semantic=cosine(meaning,document.meaning);const score=(meaning.norm&&document.meaning.norm)? .8*lexical+.2*semantic : lexical;const list=ranks.get(document.intent)||[];list.push(score);ranks.set(document.intent,list);}
- const ranked=[...ranks].map(([intent,scores])=>{scores.sort((a,b)=>b-a);return {intent,score:scores[0]*.85+(scores[1]||0)*.15};}).sort((a,b)=>b.score-a.score);
- const best=ranked[0];if(!best||best.score<.46||best.score-(ranked[1]?.score||0)<.07)return null;
- return {factIds:best.intent.facts,intent:best.intent.id,confidence:best.score};
+ for(const document of documents){const evidence=scoreVectors(query,meaning,document);const list=ranks.get(document.intent)||[];list.push(evidence);ranks.set(document.intent,list);}
+ const ranked=[...ranks].map(([intent,scores])=>{scores.sort((a,b)=>b.score-a.score);return {intent,score:scores[0].score*.85+(scores[1]?.score||0)*.15,evidence:scores[0]};}).sort((a,b)=>b.score-a.score);
+ const best=ranked[0],margin=(best?.score||0)-(ranked[1]?.score||0);if(!best||best.score<.46||margin<.07||best.evidence.lexical<.2)return null;
+ return {factIds:best.intent.facts,intent:best.intent.id,confidence:best.score,margin,lexicalConfidence:best.evidence.lexical,semanticConfidence:best.evidence.semantic};
 }
