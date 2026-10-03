@@ -1,6 +1,6 @@
 // Link only registered answer metadata; never interpret user input as HTML.
 export function renderAnswer(element,{text,links=[]}){
- const allowed=links.filter(link=>{try{const url=new URL(link.url);return url.protocol==='https:'&&['x.com','4k29.github.io'].includes(url.hostname)&&typeof link.label==='string'&&link.label.length>0;}catch{return false;}});
+ const allowed=links.filter(link=>{try{const url=new URL(link.url);return url.protocol==='https:'&&['x.com','4k29.github.io','youtube.com','www.youtube.com','m.youtube.com','youtu.be'].includes(url.hostname)&&typeof link.label==='string'&&link.label.length>0;}catch{return false;}});
  element.replaceChildren();let cursor=0;
  while(cursor<text.length){
   let next=null;

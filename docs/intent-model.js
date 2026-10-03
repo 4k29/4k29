@@ -1,4 +1,4 @@
-import {canonicalReading} from './japanese-reading.js?v=20261003-boot-fix-1';
+import {canonicalReading} from './japanese-reading.js?v=20261003-answer-fix-2';
 // An explainable local intent model, not a language model. Every rule points to registered fact IDs.
 export const semanticModel={
  synonyms:[
@@ -25,7 +25,7 @@ export const semanticModel={
   design:/デザイン|余白|ui|ux|使い心地|\bdesign\b/,
   values:/こだわ|大切|大事|重視|意識|気を(?:つけ|付け)|心がけ|心掛け|使いやす|\b(?:value|priorit\w*|care about|matters|principles)\b/,
   article:/記事|執筆|tecirc|テサーク|ブログ|\b(?:articles?|writing|blog)\b/,
-  subject:/テーマ|内容|何(?:を|について)書|どんな記事|\b(?:topics?|about|cover)\b/,
+  subject:/テーマ|内容|何(?:を|について)?(?:書|か)|(?:何|なん)(?:の|についての)記事|どんな(?:記事|ブログ)|\b(?:topics?|about|cover)\b/,
   where:/どこ|どちら|場所|\bwhere\b/,
   link:/リンク|url|読め|読む|読ん|読みたい|行く|アクセス|\b(?:link|read|visit)\b/,
   social:/sns|twitter|ツイッター|(?:^|[^a-z0-9_])x(?:$|[^a-z0-9_])|アカウント|垢|フォロー|連絡|\b(?:social|account|contact|follow)\b/,

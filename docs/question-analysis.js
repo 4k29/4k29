@@ -1,6 +1,6 @@
-import {resolveEntities} from './answer-entities.js?v=20261003-boot-fix-1';
-import {retrieveIntent} from './intent-retrieval.js?v=20261003-boot-fix-1';
-import {semanticText,resolveSemanticIntent} from './intent-model.js?v=20261003-boot-fix-1';
+import {resolveEntities} from './answer-entities.js?v=20261003-answer-fix-2';
+import {retrieveIntent} from './intent-retrieval.js?v=20261003-answer-fix-2';
+import {semanticText,resolveSemanticIntent} from './intent-model.js?v=20261003-answer-fix-2';
 // Local retrieval only: query scopes and evidence come from the editable profile.
 export function normalizeQuestion(text){return String(text).normalize('NFKC').toLowerCase().replace(/[\s　]+/g,' ').trim();}
 export function matchesKeyword(text,word){
@@ -99,5 +99,6 @@ export function analyzeQuestion(text,data,context){
  if(/ヘッドホン|ヘッドフォン|headphone|愛用|愛用品|使って|持って/.test(text)&&!/興味|関心|好き|interest|like/.test(text))selected=selected.filter(f=>f.topic!=='interests');
  if(semantic.concepts.has('social')&&selected.some(f=>f.topic==='social')&&semantic.intent!=='identity-name')selected=selected.filter(f=>f.id!=='name');
  if(semantic.mode==='brief')selected=selected.slice(0,3);
+ if(/趣味|\bhobb(?:y|ies)\b/.test(text)&&selected.some(f=>f.ja.relation==='activity'))semantic.mode='hobbies';
  return {learningEligible:!follow&&!referenceLink&&!/^(?:それ|その|さっき|前に|前の)/.test(text)&&!learned&&!retrieval&&semantic.priority>=60&&selected.length>0,learned:!!learned,factIds:[...new Set(selected.map(f=>f.id))],topics,unknown:!selected.length,intent:semantic.intent,mode:semantic.mode,confidence:semantic.confidence};
 }
