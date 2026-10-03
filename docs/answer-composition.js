@@ -17,7 +17,8 @@ function sentence(facts,language,variant){
  if(relation==='product'&&facts.every(f=>f.category==='running-shoes'))return language==='ja'?value+'をランニングに使っています。':'I use '+value+' for running.';
  if(relation==='xMain')return language==='ja'?`X（Twitter）のメインアカウントは${value}です。`:`My main X (Twitter) account is ${value}.`;
  if(relation==='xSecondary')return language==='ja'?`サブアカウントは${value}です。`:`My secondary account is ${value}.`;
- if(relation==='website')return language==='ja'?`${value}で記事を読めます。`:`You can read my articles at ${value}.`;
+ if(relation==='articleLink')return language==='ja'?`「${value}」を読めます。`:`You can read “${value}”.`;
+ if(relation==='website')return language==='ja'?`${value}から記事を選んで読めます。`:`You can read my articles at ${value}.`;
  if(language==='en'){const parts=en[relation];if(relation==='product'&&variant%parts.length===1&&facts.length>1)return 'My go-to products are '+value+'.';return parts[variant%parts.length]+value+'.';}
  if(relation==='name')return ['名前は'+value+'です。',value+'といいます。',value+'です。','呼び名は'+value+'です。'][variant%4];
  if(relation==='role')return value+'です。';
@@ -41,6 +42,8 @@ export function composeAnswer(facts,analyses,language,variant){
   const group=ordered[i],relation=group[0][language].relation;
   if(relation==='website'&&clauses.some(clause=>clause.includes(group[0][language].value)))continue;
   let clause=sentence(group,language,variant+i);
+  if(relation==='activity'&&modes.includes('hobbies')){const value=list(group.map(f=>f[language].value),language);clause=language==='ja'?['趣味は、'+value+'です。',value+'が趣味です。'][variant%2]:'My hobbies include '+value+'.';}
+  if(relation==='favorite'){const links=(group[0].links||[]).filter(l=>modes.includes('favorite-youtube')?l.channel==='youtube':modes.includes('favorite-x')?l.channel==='x':true);if(links.length)clause+='\n'+links.map(l=>l.label).join(' / ');}
   if(relation==='privacy'&&group[0][language].storage)clause+=' '+group[0][language].storage;
   if(language==='ja'&&relation==='interest'&&groups.has('interest:brands')&&groups.has('interest:fields'))clause=(group.some(f=>['apple','nothing','openai'].includes(f.id))?'企業やブランドでは、':'分野では、')+clause;
   if(language==='ja'&&relation==='preference'&&clauses.length&&ordered[i-1][0][language].relation==='preference')clause='また、'+clause;

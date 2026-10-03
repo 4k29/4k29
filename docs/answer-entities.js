@@ -2,8 +2,10 @@
 export function resolveEntities(text,data,context,matches){
  const facts=data.facts,has=(id)=>facts.find(f=>f.id===id);
  const result=(selected,intent,mode=null)=>({factIds:selected.map(f=>f.id),topics:[...new Set(selected.map(f=>f.topic))],unknown:!selected.length,intent,mode});
+ const readArticle=/読(?:み|む|め)|読む|記事.*(?:リンク|url)|\bread\b/i.test(text);
+ if(readArticle){const articles=facts.filter(f=>f.ja.relation==='articleLink'&&(f.lookupTerms||[]).some(term=>matches(text,term)));if(articles.length===1)return result(articles,'article-read');}
  const favorite=has('favorite-person');
- if(/推し/.test(text)&&favorite)return result([favorite],'favorite-person',/だけ|only/.test(text)?'value-only':null);
+ if(/推し|(?:好き|すき)な(?:人物|人|ひと)|してはる|shiteharu/.test(text)&&favorite)return result([favorite],'favorite-person',/youtube|ユーチューブ|ゆーちゅーぶ/i.test(text)?'favorite-youtube':/twitter|ツイッター|(?:^|[^a-z])x(?:$|[^a-z])/i.test(text)?'favorite-x':/だけ|only/.test(text)?'value-only':null);
  const subscriptions=facts.filter(f=>f.topic==='subscriptions');
  const explicitSubscriptions=subscriptions.filter(f=>(f.aliases||[]).some(a=>matches(text,a)));
  const subscriptionQuestion=/サブスク|subscription|(?:契約|課金|加入).*(?:サービス|プラン)|(?:サービス|プラン).*(?:契約|課金|加入)/i.test(text)||explicitSubscriptions.length;
