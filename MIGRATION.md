@@ -163,3 +163,11 @@ japanese-reading.jsで既知語のひらがな表記を正規化する。intent-
 OS・OS version・Browserの概要をagent画面上部のdevice行に表示し、同じ画面の開閉式パネルにPlatform version・Reported OS token・Device・Model・Screen・Viewport・Language・Languagesを含む元の取得内容を保持。取得方法やUnknownの扱いを変更せず、外部送信も行わない。情報取得は短い遷移と並行し、表示後に短いthinkingを挟んでreadyを記録する。自己紹介・対話エンジン・注意書き・テーマ・READMEとSVGは維持。
 
 検証：130件のNodeテスト、全JavaScript構文、PC/モバイル×ライト/ダークのブラウザ回帰、1.8秒の遷移・途中Enter無効・100%操作待ち・再読み込みと戻る操作、中央3個のドット、agent内の端末情報、Chromium/Firefoxの実際の取得、Safari/iOS/Edge識別子のフォールバックを確認。会話と端末情報の外部通信はない。Safari/iOS実機は未検証。
+
+## 遷移画面の廃止と端末情報の文字生成
+
+ユーザーの追加指示により、loading画面・中央ドット・Enterゲートを完全に削除。最初からagent画面を表示し、開いたdeviceパネル内でOSなどの情報を2文字ずつ28ms間隔で生成する。取得方法やUnknownの扱いを保持し、情報を外部送信しない。ログの最後に600msのthinkingを挟んでreadyを生成し、同じ画面で既存の自己紹介へ自動で続く。入力とreplayは初期化中に無効とし、起動前の自己紹介が一瞬表示されることも防ぐ。視覚効果を減らす設定では文字生成と待機を省略する。
+
+追加の指示により、回答の誤りに関する注意書きを削除。登録情報・対話エンジン・通常チャットのthinking・テーマ・READMEとSVGは維持。遷移専用モジュール・CSS・テストは削除し、起動の回帰テストを新しい流れへ更新した。
+
+検証：127件のNodeテスト、JavaScript構文、PC/モバイル×ライト/ダークで遷移と注意書きの不在、端末情報の逐次文字生成、ready前のthinking、自己紹介・チャット・使用制限・再読み込み・外部通信なしを確認。Chromium/Firefox実ブラウザとSafari/iOS/Edge識別子の端末取得も確認。Safari/iOS実機は未検証。
