@@ -8,6 +8,7 @@ export function resolveEntities(text,data,context,matches){
   const articles=facts.filter(f=>f.ja.relation==='articleLink').map(f=>({fact:f,terms:(f.lookupTerms||[]).filter(term=>matches(text,term))})).filter(entry=>entry.terms.length);
   const specific=articles.filter(entry=>entry.terms.some(term=>!broad.has(term.normalize('NFKC').toLowerCase())));
   if(articles.length)return result((specific.length?specific:articles).map(entry=>entry.fact),'article-read');
+  if(/記事|ブログ|\b(?:articles?|blog)\b/.test(text)&&/読|見たい|read|リンク|url/.test(text))return result(facts.filter(f=>f.id==='tecirc-link'),'article-link');
  }
 
  const favorite=has('favorite-person');
@@ -20,9 +21,11 @@ export function resolveEntities(text,data,context,matches){
   const named=subscriptions.filter(f=>matches(text,f.en.value.split(/[ +]/)[0]));
   return result(explicitSubscriptions.length?explicitSubscriptions:named.length?named:subscriptions,'subscriptions',/名前だけ|一覧だけ/.test(text)?'value-only':null);
  }
+ const runningApp=/(?:ランニング|ジョギング|running).*(?:アプリ|app)|nrc|nike run club|ナイキランクラブ|ないきらんくらぶ/.test(text);
+ if(runningApp){if(/strava|ストラバ|ストラヴァ|adidas|アディダス|garmin|ガーミン|runkeeper/.test(text))return result([],'unregistered-running-app');return result(facts.filter(f=>f.category==='running-app'),'running-app');}
  const contextualRunning=context.lastFactIds.length===1&&context.lastFactIds[0]==='running'&&/^(?:それ(?:には|は)?|その時(?:は)?)?何(?:を)?使/.test(text);
  const runningGear=contextualRunning||/(?:ランニング|ジョギング|走る|走って|running|\brun\b)/.test(text)&&/何(?:を)?使|道具|装備|ギア|何(?:で|を)走|(?:what|which).*(?:use|gear|equipment)|gear|equipment/.test(text);
- if(runningGear){const shoes=facts.filter(f=>f.category==='running-shoes');if(/アプリ|時計|ウォッチ|イヤホン|ヘッドホン|ウェア|服|スマホ|app|watch|earphone|headphone|clothes|phone/.test(text))return result([],'unregistered-running-gear');return {...result(shoes,'running-gear'),contextDependent:contextualRunning};}
+ if(runningGear){const gear=facts.filter(f=>['running-shoes','running-app'].includes(f.category));if(/アプリ|時計|ウォッチ|イヤホン|ヘッドホン|ウェア|服|スマホ|app|watch|earphone|headphone|clothes|phone/.test(text))return result([],'unregistered-running-gear');return {...result(gear,'running-gear'),contextDependent:contextualRunning};}
  const kind=/靴|シューズ|履(?:く|いて)|shoes?|sneakers?/i.test(text)?'running-shoes':/イヤホン|earphones?|earbuds?|earpods?/i.test(text)?'earphones':/ヘッドホン|ヘッドフォン|headphones?/i.test(text)?'headphones':null;
  if(kind){
   const products=facts.filter(f=>f.ja.relation==='product');

@@ -1,5 +1,6 @@
 // Canonical readings for profile vocabulary; never rewrite unknown names or turn earphones into headphones.
 const readings={
+ 'ないきらんくらぶ':'Nike Run Club',
  'ちゃっとじーぴーてぃーぷらす':'ChatGPT Plus','あっぷるわん':'Apple One','あいくらうど':'iCloud','びーつふぃっとぷろ':'Beats Fit Pro','びーつ':'Beats','しーえむえふ':'CMF',
  'ちゃっとじーぴーてぃー':'ChatGPT','ちゃっとじーぴーてぃ':'ChatGPT','こーでっくす':'Codex','おーぷんえーあい':'OpenAI',
  'へっどふぉん':'ヘッドホン','へっどほん':'ヘッドホン','いやふぉん':'イヤホン','いやほん':'イヤホン',
