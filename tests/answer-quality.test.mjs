@@ -13,7 +13,7 @@ const cases=[
  ['推しは誰？',['favorite-person']],
  ['おしはだれ',['favorite-person']],
  ['あなたのなまえは',['name']],
- ['しゅみはなに',['tecirc','web','photo','running']],
+ ['しゅみはなに',['tecirc','photo','running']],
  ['さぶあかは',['x-secondary']],
  ['どういう風に開発してるの',['workflow','iteration','taste']],
  ['普段どんな技術を使ってる',['workflow']],

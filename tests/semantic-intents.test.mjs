@@ -3,17 +3,17 @@ import {Conversation} from '../docs/dialogue.js';import {semanticModel} from '..
 const data=JSON.parse(fs.readFileSync(new URL('../docs/profile.json',import.meta.url)));
 const cases=[
  [['あなた誰？','あなたは誰ですか？','君はだれ？','きみって誰なの？','あんた誰やねん？','誰？','誰なんだ？','誰ですか？','どなたでしょうか？','あなたは誰でしょうか？','ねぇ、君って誰なの？','誰なのか教えて','誰なのか知りたい','Who are you?','who r u?','Who is this?','Tell me who you are','What is your name?','なんてお呼びすればいい？','何と呼ぶの？'],['name']],
- [['あなたって何者なの？','どういう人なの？','あなたのこと教えて','Can you introduce yourself?','Tell me about yourself','どんな人ですか？'],['name','student','workflow','tecirc','web','photo','running']],
+ [['あなたって何者なの？','どういう人なの？','あなたのこと教えて','Can you introduce yourself?','Tell me about yourself','どんな人ですか？'],['name','student','workflow','tecirc','photo','running']],
  [['職業は何ですか？','あなた学生なの？','社会人なの？','会社員ですか？','What do you do for work?','あなた何してる人？'],['student']],
- [['普段何してる？','あなた何してる？','休日どう過ごす？','趣味って何？','What are your hobbies?','What do you do for fun?'],['tecirc','web','photo','running']],
+ [['普段何してる？','あなた何してる？','休日どう過ごす？','趣味って何？','What are your hobbies?','What do you do for fun?'],['tecirc','photo','running']],
  [['何に興味がありますか？','何が好き？','好きなものは？','What are your interests?','What do you like?','何に夢中？'],['apple','nothing','openai','tech','ui','design','hci','slm','context']],
  [['好きなメーカーは？','どんなブランドに興味がある？','What are your favorite brands?'],['apple','nothing','openai']],
  [['デザインに興味がある？','デザインが好き？'],['design']],
  [['UIとUXに関心ある？'],['ui']],
- [['サイトを作る時の流れを具体的に説明して','どうやってWebを作る？','制作をどんな手順で進める？','How do you build websites?','アイデアを形にするときはどう進める？'],['workflow','iteration','taste']],
+ [['作品を作る時の流れを具体的に説明して','どうやって作品を作る？','制作をどんな手順で進める？','How do you create things?','アイデアを形にするときはどう進める？'],['workflow','iteration','taste']],
  [['AIに全部任せてるの？自分では何をしてる？','AIと人間の役割分担を教えて','AIに丸投げなの？','人間側は何を担当する？','自分は何をしてる？'],['workflow','taste']],
- [['何を使って開発してる？','開発にはどのAIを使ってる？','Which tools do you use to build websites?'],['workflow']],
- [['学生だけど何を作ってる？','What do you make?','どんな作品を作る？'],['tecirc','web','photo']],
+ [['何を使って開発してる？','開発にはどのAIを使ってる？','Which tools do you use to develop?'],['workflow']],
+ [['学生だけど何を作ってる？','What do you make?','どんな作品を作る？'],['tecirc','photo']],
  [['このサイト誰が作った？','誰がこのサイトを作ったの？'],['name','workflow','taste']],
  [['UIを作るとき大切にしてるのは？','使いやすいデザインのために意識してることは？'],['defaults','spacing']],
  [['記事では何について書いてる？','What topics do your articles cover?'],['tecirc','tecirc-subjects','tecirc-link']],
@@ -34,7 +34,7 @@ test('advanced questions combine compatible registered relations rather than a g
 });
 test('context in the same question and a subsequent turn resolves registered antecedents',()=>{
  const c=new Conversation(data);let a=c.respond('サブ垢は？そのリンクは？');assert.deepEqual(a.factIds,['x-secondary']);assert.equal(a.links[0].url,'https://x.com/uma_4k');
- c.respond('Web制作する？');a=c.respond('それはどういう流れで作ってる？');assert.deepEqual(new Set(a.factIds),new Set(['workflow','iteration','taste']));
+ c.respond('制作の流れは？');a=c.respond('それはどういう流れで作ってる？');assert.deepEqual(new Set(a.factIds),new Set(['workflow','iteration','taste']));
 });
 test('brief requests shorten an introduction without discarding identity',()=>{
  const a=new Conversation(data).respond('あなたについて簡単に教えて');assert.deepEqual(a.factIds,['name','student','workflow']);
