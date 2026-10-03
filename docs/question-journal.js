@@ -1,6 +1,6 @@
 // Keep review records on this browser only. This module performs no network requests.
 export const JOURNAL_KEY='4k29.question-journal.v1';
-export const ENGINE_VERSION='2026-10-03.3';
+export const ENGINE_VERSION='2026-10-03.4';
 function browserStorage(){try{return globalThis.localStorage;}catch{return null;}}
 const id=()=>globalThis.crypto?.randomUUID?.()||Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
 function validRecord(record){

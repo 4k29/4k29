@@ -15,5 +15,7 @@ a=await ask('趣味は');assert.match(await a.innerText(),/趣味/);assert.doesN
 a=await ask('iPhone eシリーズの記事を読みたい');assert.equal(await a.locator('a').getAttribute('href'),'https://4k29.github.io/tecirc/notes/iPhone-e/');
 a=await ask('好きな人は？');assert.equal(await a.getByRole('link',{name:'YouTube',exact:true}).getAttribute('href'),'https://m.youtube.com/@shiteharu?ra=m');assert.equal(await a.getByRole('link',{name:'X（Twitter）',exact:true}).getAttribute('href'),'https://x.com/popico_pi');
 a=await ask('してはるのYouTube教えて');assert.equal(await a.locator('a').count(),1);assert.equal(await a.locator('a').getAttribute('href'),'https://m.youtube.com/@shiteharu?ra=m');
+a=await ask('Nothingの記事を読みたい');assert.equal(await a.locator('a').getAttribute('href'),'https://4k29.github.io/tecirc/notes/Nothing-Headphone-1/');a=await ask('AIの記事を読みたい');assert.equal(await a.locator('a').count(),3);
+a=await ask('ランニングは何使ってるの');assert.match(await a.innerText(),/ランニング用の靴は、NIKE PEGASUS TRAIL 5 GORE‑TEX/);assert.doesNotMatch(await a.innerText(),/取り組んで/);assert.match(await a.innerText(),/ランニング用のアプリは、Nike Run Club（NRC）/);
 assert.equal(await p.locator('.chat-disclaimer').count(),0);
 assert.deepEqual(errors,[]);assert.deepEqual(remote,[]);console.log('PASS real chat: who/identity, AI-human division, workflow, brief answer, unknown visitor identity, article link; no external requests');await b.close();})().catch(e=>{console.error(e);process.exit(1)});

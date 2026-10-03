@@ -1,6 +1,6 @@
-import {resolveEntities} from './answer-entities.js?v=20261003-answer-fix-3';
-import {retrieveIntent} from './intent-retrieval.js?v=20261003-answer-fix-3';
-import {semanticText,resolveSemanticIntent} from './intent-model.js?v=20261003-answer-fix-3';
+import {resolveEntities} from './answer-entities.js?v=20261003-article-topics-4';
+import {retrieveIntent} from './intent-retrieval.js?v=20261003-article-topics-4';
+import {semanticText,resolveSemanticIntent} from './intent-model.js?v=20261003-article-topics-4';
 // Local retrieval only: query scopes and evidence come from the editable profile.
 export function normalizeQuestion(text){return String(text).normalize('NFKC').toLowerCase().replace(/[\s　]+/g,' ').trim();}
 export function matchesKeyword(text,word){
@@ -44,7 +44,7 @@ export function analyzeQuestion(text,data,context){
  const unknown=unregisteredRunningDetail||unregisteredAudio||unregisteredSubscriptions||unsupportedSubject||unsupportedRank||data.unknownPatterns.some(pattern=>new RegExp(pattern,'i').test(text));
  if(unknown)return {factIds:[],topics:[],unknown:true};
  const entity=resolveEntities(text,data,context,matchesKeyword);
- if(entity)return {...entity,learningEligible:!follow&&!referenceLink&&!/^(?:それ|その|さっき|前に|前の)/.test(text)&&!entity.unknown};
+ if(entity)return {...entity,learningEligible:!follow&&!referenceLink&&!/^(?:それ|その|さっき|前に|前の)/.test(text)&&!entity.unknown&&!entity.contextDependent};
  if(referenceLink){const facts=data.facts.filter(f=>context.lastFactIds.includes(f.id)&&f.url);return {factIds:facts.map(f=>f.id),topics:facts.map(f=>f.topic),unknown:!facts.length};}
  let search=text;
  const exclude=new Set();

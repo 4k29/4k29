@@ -14,10 +14,11 @@ const en={name:['My name is ','You can call me '],role:['I am ','I am currently 
 function list(values,language){if(language==='ja')return values.length===2?values.join('と'):values.length>2?values.slice(0,-1).join('、')+'、'+values.at(-1):values[0]||'';if(values.length<2)return values[0]||'';return values.slice(0,-1).join(', ')+' and '+values.at(-1);}
 function sentence(facts,language,variant){
  const relation=facts[0][language].relation,value=list(facts.map(f=>f[language].value),language);
- if(relation==='product'&&facts.every(f=>f.category==='running-shoes'))return language==='ja'?value+'をランニングに使っています。':'I use '+value+' for running.';
+ if(relation==='product'&&facts.every(f=>f.category==='running-app'))return language==='ja'?'ランニング用のアプリは、'+value+'です。':'My running app is '+value+'.';
+ if(relation==='product'&&facts.every(f=>f.category==='running-shoes'))return language==='ja'?'ランニング用の靴は、'+value+'です。':'I use '+value+' for running.';
  if(relation==='xMain')return language==='ja'?`X（Twitter）のメインアカウントは${value}です。`:`My main X (Twitter) account is ${value}.`;
  if(relation==='xSecondary')return language==='ja'?`サブアカウントは${value}です。`:`My secondary account is ${value}.`;
- if(relation==='articleLink')return language==='ja'?`「${value}」を読めます。`:`You can read “${value}”.`;
+ if(relation==='articleLink')return facts.map(f=>language==='ja'?`「${f.ja.value}」を読めます。`:`You can read “${f.en.value}”.`).join('\n');
  if(relation==='website')return language==='ja'?`${value}から記事を選んで読めます。`:`You can read my articles at ${value}.`;
  if(language==='en'){const parts=en[relation];if(relation==='product'&&variant%parts.length===1&&facts.length>1)return 'My go-to products are '+value+'.';return parts[variant%parts.length]+value+'.';}
  if(relation==='name')return ['名前は'+value+'です。',value+'といいます。',value+'です。','呼び名は'+value+'です。'][variant%4];
@@ -33,7 +34,7 @@ export function composeAnswer(facts,analyses,language,variant){
  if(modes.length&&modes.every(mode=>mode==='value-only'))return facts.map(f=>f[language].value).join('\n');
  if(modes.length&&modes.every(mode=>mode==='url-only'))return facts.filter(f=>f.url).map(f=>f.url).join('\n');
  const groups=new Map();
- for(const fact of facts){let key=fact[language].relation;if(key==='interest'&&facts.filter(f=>f[language].relation==='interest').length>3)key+=':'+(['apple','nothing','openai'].includes(fact.id)?'brands':'fields');if(key==='preference'&&facts.length>1)key+=':'+fact.id;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(fact);}
+ for(const fact of facts){let key=fact[language].relation;if(key==='product'&&['running-shoes','running-app'].includes(fact.category))key+=':'+fact.category;if(key==='interest'&&facts.filter(f=>f[language].relation==='interest').length>3)key+=':'+(['apple','nothing','openai'].includes(fact.id)?'brands':'fields');if(key==='preference'&&facts.length>1)key+=':'+fact.id;if(!groups.has(key))groups.set(key,[]);groups.get(key).push(fact);}
  const ordered=[...groups.values()];
  // Answer article-content questions with their subject first, then the publication/link context.
  if(analyses.some(a=>a.intent==='article-subjects'))ordered.sort((a,b)=>(a[0][language].relation==='writing'?-1:0)-(b[0][language].relation==='writing'?-1:0));
