@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {Conversation} from '../docs/dialogue.js';
+const data=JSON.parse(fs.readFileSync(new URL('../docs/profile.json',import.meta.url)));
+for(const split of ['questions','validation','holdout','english','english-holdout'])for(const row of JSON.parse(fs.readFileSync(new URL('../evaluation/'+split+'.json',import.meta.url))))test('evaluation '+split+': '+row.question,()=>{const a=new Conversation(data).respond(row.question);assert.deepEqual([...a.factIds].sort(),[...row.facts].sort());if(!row.facts.length)assert.equal(a.text,data.unknownReply);});
