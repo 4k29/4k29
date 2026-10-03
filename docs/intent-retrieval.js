@@ -1,5 +1,5 @@
-import {intentExamples} from './intent-examples.js';
-import {semanticText} from './intent-model.js';
+import {intentExamples} from './intent-examples.js?v=20261003-boot-fix-1';
+import {semanticText} from './intent-model.js?v=20261003-boot-fix-1';
 const ignored=new Set(['あなた','君','知りたい','教えて','ください','説明','tell','me','you','your','what','which','how','do','does','the','a','an','is','are','about','to','for','in','of','can']);
 export function questionTokens(text){
  text=semanticText(text.normalize('NFKC').toLowerCase()).replace(/(?:教えて|知りたい|聞きたい|聞かせて|ください|あなた|ですか|ますか|について)/g,'');
