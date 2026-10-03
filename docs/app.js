@@ -12,7 +12,7 @@ function showError(message){clearTimeout(errorTimer);limit.lastElementChild.text
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const prompt=document.querySelector('.prompt'), promptText=prompt.lastElementChild;
 const reply=document.querySelector('.reply'), events=document.querySelector('.events'), working=document.querySelector('.working');
-let originalPrompt=promptText.textContent, originalReply=reply.lastElementChild.innerHTML;
+let originalPrompt=promptText.textContent, originalReply=reply.lastElementChild.querySelector('p').outerHTML;
 let originalFollowup='Tell me more.',introSummary='Mostly AI-generated. Personally nitpicked. The code is a conversation. The taste is mine.';
 const followup=document.querySelector('#followup'), followupText=followup.lastElementChild;
 let eventTemplates=Array.from(events.children, row=>row.lastElementChild.innerHTML);
