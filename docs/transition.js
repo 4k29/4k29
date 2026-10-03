@@ -1,5 +1,5 @@
 import {createDotPattern,createWaveClock,advanceWaveClock,dotPosition} from './dot-pattern.js';
-export const TRANSITION_DURATION=12000;
+export const TRANSITION_DURATION=1800;
 export async function playTransition(element,reduced){
  element.classList.remove('stage-hidden');
  const canvas=element.querySelector('canvas'),context=canvas.getContext('2d');
