@@ -99,5 +99,5 @@ export function analyzeQuestion(text,data,context){
  if(/ヘッドホン|ヘッドフォン|headphone|愛用|愛用品|使って|持って/.test(text)&&!/興味|関心|好き|interest|like/.test(text))selected=selected.filter(f=>f.topic!=='interests');
  if(semantic.concepts.has('social')&&selected.some(f=>f.topic==='social')&&semantic.intent!=='identity-name')selected=selected.filter(f=>f.id!=='name');
  if(semantic.mode==='brief')selected=selected.slice(0,3);
- return {learningEligible:!follow&&!referenceLink&&!learned&&!retrieval&&semantic.priority>=60&&selected.length>0,learned:!!learned,factIds:[...new Set(selected.map(f=>f.id))],topics,unknown:!selected.length,intent:semantic.intent,mode:semantic.mode,confidence:semantic.confidence};
+ return {learningEligible:!follow&&!referenceLink&&!/^(?:それ|その|さっき|前に|前の)/.test(text)&&!learned&&!retrieval&&semantic.priority>=60&&selected.length>0,learned:!!learned,factIds:[...new Set(selected.map(f=>f.id))],topics,unknown:!selected.length,intent:semantic.intent,mode:semantic.mode,confidence:semantic.confidence};
 }
