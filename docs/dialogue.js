@@ -3,11 +3,11 @@ import {normalizeQuestion,splitQuestions,analyzeQuestion} from './question-analy
 import {composeAnswer} from './answer-composition.js';
 import {unknownSubjects,missingFactsSentence} from './unknown-subjects.js';
 export class Conversation{
- constructor(data){this.data=data;this.reset();}
+ constructor(data,{learner=null}={}){this.data=data;this.learner=learner;this.reset();}
  reset(){this.history=[];this.lastTopics=[];this.lastFactIds=[];this.seen=new Map();this.lastReplies=[];this.turn=0;}
  respond(question){
   const raw=normalizeQuestion(question),text=semanticText(raw),language=/[ぁ-んァ-ヶ一-龠]/.test(raw)?'ja':'en';
-  const analyses=[],context={history:this.history,lastFactIds:this.lastFactIds,lastTopics:this.lastTopics,seen:this.seen};
+  const analyses=[],context={history:this.history,lastFactIds:this.lastFactIds,lastTopics:this.lastTopics,seen:this.seen,learner:this.learner};
   for(const clause of splitQuestions(text,this.data)){
    const analysis=analyzeQuestion(clause,this.data,context);analysis.unknownSubjects=analysis.unknown?unknownSubjects(clause):[];analyses.push(analysis);
    context.lastFactIds=analysis.factIds;context.lastTopics=[...new Set(analysis.factIds.map(id=>this.data.facts.find(f=>f.id===id)?.topic).filter(Boolean))];
@@ -27,6 +27,6 @@ export class Conversation{
   const urlOnly=analyses.filter(a=>!a.unknown).every(a=>a.mode==='url-only');
   const links=selected.filter(f=>f.url).map(f=>({label:urlOnly?f.url:f[language].value,url:f.url}));
   this.turn++;this.lastReplies.push(output);this.lastReplies=this.lastReplies.slice(-4);this.history.push({question,answer:output,topics,language,factIds:selected.map(f=>f.id)});
-  return {text:output,topics,language,links,unanswered:hasUnknown,unansweredSubjects:analyses.flatMap(a=>a.unknownSubjects),factIds:selected.map(f=>f.id),intents:analyses.map(a=>a.intent).filter(Boolean)};
+  return {learningEligible:analyses.length===1&&!hasUnknown&&analyses[0].learningEligible===true,learned:analyses.some(a=>a.learned),text:output,topics,language,links,unanswered:hasUnknown,unansweredSubjects:analyses.flatMap(a=>a.unknownSubjects),factIds:selected.map(f=>f.id),intents:analyses.map(a=>a.intent).filter(Boolean)};
  }
 }

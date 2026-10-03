@@ -1,3 +1,4 @@
+import {LocalLearning} from './local-learning.js';
 import { Conversation } from './dialogue.js';
 import { startBoot } from './boot.js';
 import { renderAnswer } from './answer-view.js';
@@ -6,7 +7,7 @@ import { mountHistory } from './history-view.js';
 import { japaneseIntro } from './ui-text.js';
 const journal=new QuestionJournal(),updateHistory=mountHistory(journal);
 let conversation=null;
-const dataReady=fetch(new URL('./profile.json',import.meta.url)).then(r=>{if(!r.ok)throw Error('profile unavailable');return r.json();}).then(data=>{conversation=new Conversation(data);}).catch(()=>showError('プロフィールデータを読み込めませんでした。再読み込みしてください。'));
+const dataReady=fetch(new URL('./profile.json',import.meta.url)).then(r=>{if(!r.ok)throw Error('profile unavailable');return r.json();}).then(data=>{conversation=new Conversation(data,{learner:new LocalLearning(data,()=>journal.records)});}).catch(()=>showError('プロフィールデータを読み込めませんでした。再読み込みしてください。'));
 function showError(message){clearTimeout(errorTimer);limit.lastElementChild.textContent=message;limit.classList.remove('stage-hidden');input.setAttribute('aria-invalid','true');input.setAttribute('aria-describedby','limit');errorTimer=setTimeout(()=>{limit.classList.add('stage-hidden');input.removeAttribute('aria-invalid');input.removeAttribute('aria-describedby');},4500);}
 
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;

@@ -44,7 +44,7 @@ export function analyzeQuestion(text,data,context){
  const unknown=unregisteredRunningDetail||unregisteredAudio||unregisteredSubscriptions||unsupportedSubject||unsupportedRank||data.unknownPatterns.some(pattern=>new RegExp(pattern,'i').test(text));
  if(unknown)return {factIds:[],topics:[],unknown:true};
  const entity=resolveEntities(text,data,context,matchesKeyword);
- if(entity)return entity;
+ if(entity)return {...entity,learningEligible:!follow&&!referenceLink&&!/^(?:それ|その|さっき|前に|前の)/.test(text)&&!entity.unknown};
  if(referenceLink){const facts=data.facts.filter(f=>context.lastFactIds.includes(f.id)&&f.url);return {factIds:facts.map(f=>f.id),topics:facts.map(f=>f.topic),unknown:!facts.length};}
  let search=text;
  const exclude=new Set();
@@ -66,6 +66,8 @@ export function analyzeQuestion(text,data,context){
  selected.push(...targeted.filter(f=>!routedTopics.has(f.topic)));
  const semantic=resolveSemanticIntent(search,context,targeted);
  const retrieval=semantic.priority<60&&!targeted.length?retrieveIntent(search):null;
+ const learned=!follow&&!referenceLink&&semantic.priority<60&&!targeted.length&&!retrieval?context.learner?.retrieve(search):null;
+ if(learned){semantic.factIds=learned.factIds;semantic.intent=learned.intent;semantic.priority=65;semantic.confidence=learned.confidence;}
  if(retrieval){semantic.factIds=retrieval.factIds;semantic.intent=retrieval.intent;semantic.priority=65;semantic.confidence=retrieval.confidence;}
 
  if(semantic.factIds.length&&(semantic.priority>=60||!selected.length||semantic.intent==='identity-overview'))selected=semantic.factIds.map(id=>data.facts.find(f=>f.id===id)).filter(Boolean);
@@ -97,5 +99,5 @@ export function analyzeQuestion(text,data,context){
  if(/ヘッドホン|ヘッドフォン|headphone|愛用|愛用品|使って|持って/.test(text)&&!/興味|関心|好き|interest|like/.test(text))selected=selected.filter(f=>f.topic!=='interests');
  if(semantic.concepts.has('social')&&selected.some(f=>f.topic==='social')&&semantic.intent!=='identity-name')selected=selected.filter(f=>f.id!=='name');
  if(semantic.mode==='brief')selected=selected.slice(0,3);
- return {factIds:[...new Set(selected.map(f=>f.id))],topics,unknown:!selected.length,intent:semantic.intent,mode:semantic.mode,confidence:semantic.confidence};
+ return {learningEligible:!follow&&!referenceLink&&!learned&&!retrieval&&semantic.priority>=60&&selected.length>0,learned:!!learned,factIds:[...new Set(selected.map(f=>f.id))],topics,unknown:!selected.length,intent:semantic.intent,mode:semantic.mode,confidence:semantic.confidence};
 }

@@ -3,7 +3,7 @@ export function mountHistory(journal){
  function update(){
   const review=journal.records.filter(r=>r.needsReview||r.unanswered).length;
   summary.textContent=`history / ${journal.records.length} saved${review?' · '+review+' review':''}`;
-  status.textContent=journal.persisted?'このブラウザに最新300件を保存します。外部には送信しません。':'保存を利用できないため、このページ内だけに記録しています。';
+  status.textContent=journal.persisted?'このブラウザに最新300件を保存します。回答できた質問の言い回しを学習します。見直し対象・未登録の回答は除外し、外部には送信しません。':'保存を利用できないため、このページ内だけに記録しています。';
   const opened=new Set(Array.from(list.querySelectorAll('details[open]'),row=>row.dataset.recordId));
   list.replaceChildren();
   if(!journal.records.length){const empty=document.createElement('p');empty.textContent='まだ質問の記録はありません。';list.append(empty);return;}
