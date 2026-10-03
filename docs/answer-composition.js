@@ -3,7 +3,7 @@ const ja={
  tool:['を制作に活用しています','を使って制作しています','を開発に使っています','を活用して開発しています'],
  responsibility:['は自分で担っています','を担当しています','は自分の担当です','を自分で行っています'],
  preference:['を大切にしています','を重視しています','を意識しています','を制作で大切にしています'],
- interest:['に関心があります','に興味があります','に興味を持っています','が関心のある分野です'],
+ interest:['に関心があります','に興味があります','に興味を持っています','に関心を持っています'],
  product:['を使っています','を愛用しています','を普段使っています','が愛用品です'],
  writing:['について記事を書いています','をテーマに執筆しています'],
  siteStack:['でこの自己紹介サイトを実装しています','がこのサイトの技術構成です'],
@@ -11,17 +11,18 @@ const ja={
  privacy:['は外部に送信しません','を外部に送らず、ブラウザ内で扱っています']
 };
 const en={name:['My name is ','You can call me '],role:['I am ','I am currently '],tool:['I develop with ','I make things with '],workflow:['My process is ','I work through '],responsibility:['I handle ','I take care of '],preference:['I care about ','I value '],interest:['I am interested in ','My interests include '],activity:['My activities include ','I spend time on '],product:['I use ','My go-to product is '],writing:['I write about ','My articles cover '],siteStack:['This profile site is built with ','This site uses '],siteEngine:['This chat composes answers with ','The dialogue engine uses '],privacy:['This site does not send outside the browser: ','This site keeps the following inside the browser: '],favorite:['My favorite is '],subscription:['My subscriptions are ']};
-function list(values,language){if(language==='ja')return values.join('、');if(values.length<2)return values[0]||'';return values.slice(0,-1).join(', ')+' and '+values.at(-1);}
+function list(values,language){if(language==='ja')return values.length===2?values.join('と'):values.length>2?values.slice(0,-1).join('、')+'、'+values.at(-1):values[0]||'';if(values.length<2)return values[0]||'';return values.slice(0,-1).join(', ')+' and '+values.at(-1);}
 function sentence(facts,language,variant){
  const relation=facts[0][language].relation,value=list(facts.map(f=>f[language].value),language);
+ if(relation==='product'&&facts.every(f=>f.category==='running-shoes'))return language==='ja'?value+'をランニングに使っています。':'I use '+value+' for running.';
  if(relation==='xMain')return language==='ja'?`X（Twitter）のメインアカウントは${value}です。`:`My main X (Twitter) account is ${value}.`;
  if(relation==='xSecondary')return language==='ja'?`サブアカウントは${value}です。`:`My secondary account is ${value}.`;
  if(relation==='website')return language==='ja'?`${value}で記事を読めます。`:`You can read my articles at ${value}.`;
- if(language==='en'){const parts=en[relation];return parts[variant%parts.length]+value+'.';}
+ if(language==='en'){const parts=en[relation];if(relation==='product'&&variant%parts.length===1&&facts.length>1)return 'My go-to products are '+value+'.';return parts[variant%parts.length]+value+'.';}
  if(relation==='name')return ['名前は'+value+'です。',value+'といいます。',value+'です。','呼び名は'+value+'です。'][variant%4];
  if(relation==='role')return value+'です。';
  if(relation==='workflow')return ['進め方は「'+value+'」です。',value+'の順で制作を進めます。',value+'という手順で制作します。',value+'の流れで試しながら改善しています。'][variant%4];
- if(relation==='activity')return ['活動は、'+value+'です。',value+'に取り組んでいます。',value+'をしています。','普段の活動は、'+value+'です。'][variant%4];
+ if(relation==='activity')return [value+'に取り組んでいます。',value+'をしています。','活動として'+value+'に取り組んでいます。','取り組んでいる活動は、'+value+'です。'][variant%4];
  if(relation==='favorite')return '推しは'+value+'です。';
  if(relation==='subscription')return facts.length===1?value+'を契約しています。':'契約しているサブスクは、'+value+'です。';
  const parts=ja[relation];return value+parts[variant%parts.length]+'。';
@@ -40,6 +41,7 @@ export function composeAnswer(facts,analyses,language,variant){
   const group=ordered[i],relation=group[0][language].relation;
   if(relation==='website'&&clauses.some(clause=>clause.includes(group[0][language].value)))continue;
   let clause=sentence(group,language,variant+i);
+  if(relation==='privacy'&&group[0][language].storage)clause+=' '+group[0][language].storage;
   if(language==='ja'&&relation==='interest'&&groups.has('interest:brands')&&groups.has('interest:fields'))clause=(group.some(f=>['apple','nothing','openai'].includes(f.id))?'企業やブランドでは、':'分野では、')+clause;
   if(language==='ja'&&relation==='preference'&&clauses.length&&ordered[i-1][0][language].relation==='preference')clause='また、'+clause;
   clauses.push(clause);

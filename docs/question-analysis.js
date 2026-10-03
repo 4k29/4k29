@@ -27,6 +27,7 @@ export function splitQuestions(text,data){
 export function analyzeQuestion(text,data,context){
  if(/^(?:検索|けんさく|search)\s*[:：\s]|(?:を|について)(?:検索|けんさく|ググって)|(?:検索|けんさく)して|\bsearch (?:for|the web)\b/i.test(text))return {factIds:[],topics:[],unknown:true};
  text=semanticText(text);
+ if(!/この(?:サイト|ページ|チャット)|自己紹介サイト|this (?:site|page|chat)/.test(text)&&(/web|ウェブ|ホームページ|website|サイト/.test(text)&&/開発|制作|作|build|make|develop/.test(text)||/^(?:web|ウェブ|website)$/.test(text)))return {factIds:[],topics:[],unknown:true};
  const historyReference=text.match(/^(最初|(?:[1-9][0-9]*)つ前|(?:[1-9][0-9]*)回前)の(?:話|質問|回答|答え)(?:について)?(?:もう一度|もう一回|詳しく|教えて|は|を|何|\s)*$/);
  if(historyReference){
   const index=historyReference[1]==='最初'?0:context.history.length-Number.parseInt(historyReference[1],10);
@@ -39,10 +40,11 @@ export function analyzeQuestion(text,data,context){
  const unsupportedRank=/(?:一番|いちばん|最も|一位|ランキング).*(?:好き|興味|関心|大切|重視)|(?:好き|興味|大切).*(?:一番|最も)|(?:どの会社で|どの会社に|どこの会社|勤務先|勤め先)/.test(text);
  const unregisteredAudio=/イヤホン|earphones?|earbuds?|earpods?/i.test(text)&&!data.facts.some(f=>f.category==='earphones');
  const unregisteredSubscriptions=/サブスク|subscription|契約.*(?:サービス|有料)/i.test(text)&&!data.facts.some(f=>f.topic==='subscriptions');
- const unknown=unregisteredAudio||unregisteredSubscriptions||unsupportedSubject||unsupportedRank||data.unknownPatterns.some(pattern=>new RegExp(pattern,'i').test(text));
+ const unregisteredRunningDetail=/(?:ランニング|ジョギング|走る|走って|running|\brun\b).*(?:どこ|どちら|場所|コース|ルート|何キロ|距離|ペース|何時|時間|大会)|(?:どこ|どちら|場所|コース|ルート).*(?:走|ランニング|ジョギング|running|\brun\b)/.test(text);
+ const unknown=unregisteredRunningDetail||unregisteredAudio||unregisteredSubscriptions||unsupportedSubject||unsupportedRank||data.unknownPatterns.some(pattern=>new RegExp(pattern,'i').test(text));
  if(unknown)return {factIds:[],topics:[],unknown:true};
  const entity=resolveEntities(text,data,context,matchesKeyword);
- if(entity)return entity;
+ if(entity)return {...entity,learningEligible:!follow&&!referenceLink&&!/^(?:それ|その|さっき|前に|前の)/.test(text)&&!entity.unknown};
  if(referenceLink){const facts=data.facts.filter(f=>context.lastFactIds.includes(f.id)&&f.url);return {factIds:facts.map(f=>f.id),topics:facts.map(f=>f.topic),unknown:!facts.length};}
  let search=text;
  const exclude=new Set();
@@ -64,6 +66,8 @@ export function analyzeQuestion(text,data,context){
  selected.push(...targeted.filter(f=>!routedTopics.has(f.topic)));
  const semantic=resolveSemanticIntent(search,context,targeted);
  const retrieval=semantic.priority<60&&!targeted.length?retrieveIntent(search):null;
+ const learned=!follow&&!referenceLink&&semantic.priority<60&&!targeted.length&&!retrieval?context.learner?.retrieve(search):null;
+ if(learned){semantic.factIds=learned.factIds;semantic.intent=learned.intent;semantic.priority=65;semantic.confidence=learned.confidence;}
  if(retrieval){semantic.factIds=retrieval.factIds;semantic.intent=retrieval.intent;semantic.priority=65;semantic.confidence=retrieval.confidence;}
 
  if(semantic.factIds.length&&(semantic.priority>=60||!selected.length||semantic.intent==='identity-overview'))selected=semantic.factIds.map(id=>data.facts.find(f=>f.id===id)).filter(Boolean);
@@ -72,7 +76,7 @@ export function analyzeQuestion(text,data,context){
   const excludedText=text.slice(0,text.indexOf('以外'));
   for(const f of selected)if((f.aliases||[]).some(a=>matchesKeyword(excludedText,a)))exclude.add(f.id);
  }
- if(overview&&!selected.length)selected=data.facts.filter(f=>['name','student','workflow','tecirc','web','photo','running'].includes(f.id));
+ if(overview&&!selected.length)selected=data.facts.filter(f=>['name','student','workflow','tecirc','photo','running'].includes(f.id));
  if(follow&&!selected.length){
   const last=new Set(context.lastFactIds);
   const urls=/リンク|url|link/.test(text);
@@ -89,10 +93,11 @@ export function analyzeQuestion(text,data,context){
  if(!selected.length){
   for(const fallback of data.generalQuestions||[])if(new RegExp(fallback.pattern,'i').test(search))selected.push(...data.facts.filter(f=>fallback.factIds.includes(f.id)));
  }
+ if(semantic.intent==='design-principles')selected=selected.filter(f=>f.ja.relation!=='interest');
  selected=selected.filter(f=>!exclude.has(f.id));
  if(!overview&&!['identity-overview','site-author'].includes(semantic.intent)&&!/名前|呼び|呼ん|呼べ|ニックネーム|name|nickname|何者|どんな人/.test(text)&&selected.length>1)selected=selected.filter(f=>f.id!=='name');
  if(/ヘッドホン|ヘッドフォン|headphone|愛用|愛用品|使って|持って/.test(text)&&!/興味|関心|好き|interest|like/.test(text))selected=selected.filter(f=>f.topic!=='interests');
  if(semantic.concepts.has('social')&&selected.some(f=>f.topic==='social')&&semantic.intent!=='identity-name')selected=selected.filter(f=>f.id!=='name');
  if(semantic.mode==='brief')selected=selected.slice(0,3);
- return {factIds:[...new Set(selected.map(f=>f.id))],topics,unknown:!selected.length,intent:semantic.intent,mode:semantic.mode,confidence:semantic.confidence};
+ return {learningEligible:!follow&&!referenceLink&&!/^(?:それ|その|さっき|前に|前の)/.test(text)&&!learned&&!retrieval&&semantic.priority>=60&&selected.length>0,learned:!!learned,factIds:[...new Set(selected.map(f=>f.id))],topics,unknown:!selected.length,intent:semantic.intent,mode:semantic.mode,confidence:semantic.confidence};
 }

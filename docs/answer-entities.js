@@ -12,7 +12,7 @@ export function resolveEntities(text,data,context,matches){
   const named=subscriptions.filter(f=>matches(text,f.en.value.split(/[ +]/)[0]));
   return result(explicitSubscriptions.length?explicitSubscriptions:named.length?named:subscriptions,'subscriptions',/名前だけ|一覧だけ/.test(text)?'value-only':null);
  }
- const kind=/イヤホン|earphones?|earbuds?|earpods?/i.test(text)?'earphones':/ヘッドホン|ヘッドフォン|headphones?/i.test(text)?'headphones':null;
+ const kind=/靴|シューズ|履(?:く|いて)|shoes?|sneakers?/i.test(text)?'running-shoes':/イヤホン|earphones?|earbuds?|earpods?/i.test(text)?'earphones':/ヘッドホン|ヘッドフォン|headphones?/i.test(text)?'headphones':null;
  if(kind){
   const products=facts.filter(f=>f.ja.relation==='product');
   const explicit=products.filter(f=>(f.aliases||[]).some(alias=>matches(text,alias)&&!/ヘッドホン|ヘッドフォン|イヤホン|愛用品|愛用製品|headphones?/i.test(alias)));
