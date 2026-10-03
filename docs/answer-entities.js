@@ -2,8 +2,14 @@
 export function resolveEntities(text,data,context,matches){
  const facts=data.facts,has=(id)=>facts.find(f=>f.id===id);
  const result=(selected,intent,mode=null)=>({factIds:selected.map(f=>f.id),topics:[...new Set(selected.map(f=>f.topic))],unknown:!selected.length,intent,mode});
- const readArticle=/読(?:み|む|め)|読む|記事.*(?:リンク|url)|\bread\b/i.test(text);
- if(readArticle){const articles=facts.filter(f=>f.ja.relation==='articleLink'&&(f.lookupTerms||[]).some(term=>matches(text,term)));if(articles.length===1)return result(articles,'article-read');}
+ const readArticle=/読(?:み|む|め)|記事|ブログ|notes?|執筆|\b(?:read|articles?|blog)\b/i.test(text);
+ if(readArticle){
+  const broad=new Set(['ai','生成ai','apple','iphone','テクノロジー','デザイン']);
+  const articles=facts.filter(f=>f.ja.relation==='articleLink').map(f=>({fact:f,terms:(f.lookupTerms||[]).filter(term=>matches(text,term))})).filter(entry=>entry.terms.length);
+  const specific=articles.filter(entry=>entry.terms.some(term=>!broad.has(term.normalize('NFKC').toLowerCase())));
+  if(articles.length)return result((specific.length?specific:articles).map(entry=>entry.fact),'article-read');
+ }
+
  const favorite=has('favorite-person');
  if(/推し|(?:好き|すき)な(?:人物|人|ひと)|してはる|shiteharu/.test(text)&&favorite)return result([favorite],'favorite-person',/youtube|ユーチューブ|ゆーちゅーぶ/i.test(text)?'favorite-youtube':/twitter|ツイッター|(?:^|[^a-z])x(?:$|[^a-z])/i.test(text)?'favorite-x':/だけ|only/.test(text)?'value-only':null);
  const subscriptions=facts.filter(f=>f.topic==='subscriptions');
@@ -14,6 +20,9 @@ export function resolveEntities(text,data,context,matches){
   const named=subscriptions.filter(f=>matches(text,f.en.value.split(/[ +]/)[0]));
   return result(explicitSubscriptions.length?explicitSubscriptions:named.length?named:subscriptions,'subscriptions',/名前だけ|一覧だけ/.test(text)?'value-only':null);
  }
+ const contextualRunning=context.lastFactIds.length===1&&context.lastFactIds[0]==='running'&&/^(?:それ(?:には|は)?|その時(?:は)?)?何(?:を)?使/.test(text);
+ const runningGear=contextualRunning||/(?:ランニング|ジョギング|走る|走って|running|\brun\b)/.test(text)&&/何(?:を)?使|道具|装備|ギア|何(?:で|を)走|(?:what|which).*(?:use|gear|equipment)|gear|equipment/.test(text);
+ if(runningGear){const shoes=facts.filter(f=>f.category==='running-shoes');if(/アプリ|時計|ウォッチ|イヤホン|ヘッドホン|ウェア|服|スマホ|app|watch|earphone|headphone|clothes|phone/.test(text))return result([],'unregistered-running-gear');return {...result(shoes,'running-gear'),contextDependent:contextualRunning};}
  const kind=/靴|シューズ|履(?:く|いて)|shoes?|sneakers?/i.test(text)?'running-shoes':/イヤホン|earphones?|earbuds?|earpods?/i.test(text)?'earphones':/ヘッドホン|ヘッドフォン|headphones?/i.test(text)?'headphones':null;
  if(kind){
   const products=facts.filter(f=>f.ja.relation==='product');

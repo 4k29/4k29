@@ -1,7 +1,7 @@
-import {semanticText} from './intent-model.js?v=20261003-answer-fix-3';
-import {normalizeQuestion,splitQuestions,analyzeQuestion} from './question-analysis.js?v=20261003-answer-fix-3';
-import {composeAnswer} from './answer-composition.js?v=20261003-answer-fix-3';
-import {unknownSubjects,missingFactsSentence} from './unknown-subjects.js?v=20261003-answer-fix-3';
+import {semanticText} from './intent-model.js?v=20261003-article-topics-4';
+import {normalizeQuestion,splitQuestions,analyzeQuestion} from './question-analysis.js?v=20261003-article-topics-4';
+import {composeAnswer} from './answer-composition.js?v=20261003-article-topics-4';
+import {unknownSubjects,missingFactsSentence} from './unknown-subjects.js?v=20261003-article-topics-4';
 export class Conversation{
  constructor(data,{learner=null}={}){this.data=data;this.learner=learner;this.reset();}
  reset(){this.history=[];this.lastTopics=[];this.lastFactIds=[];this.seen=new Map();this.lastReplies=[];this.turn=0;}

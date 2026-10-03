@@ -1,4 +1,4 @@
-import {questionTokens} from './intent-retrieval.js?v=20261003-answer-fix-3';
+import {questionTokens} from './intent-retrieval.js?v=20261003-article-topics-4';
 // Browser-local examples teach phrasing, never facts or finished answers.
 // Rebuild from the journal on each lookup so review/deletion applies immediately.
 export class LocalLearning{

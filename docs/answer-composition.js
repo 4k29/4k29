@@ -14,10 +14,10 @@ const en={name:['My name is ','You can call me '],role:['I am ','I am currently 
 function list(values,language){if(language==='ja')return values.length===2?values.join('と'):values.length>2?values.slice(0,-1).join('、')+'、'+values.at(-1):values[0]||'';if(values.length<2)return values[0]||'';return values.slice(0,-1).join(', ')+' and '+values.at(-1);}
 function sentence(facts,language,variant){
  const relation=facts[0][language].relation,value=list(facts.map(f=>f[language].value),language);
- if(relation==='product'&&facts.every(f=>f.category==='running-shoes'))return language==='ja'?value+'をランニングに使っています。':'I use '+value+' for running.';
+ if(relation==='product'&&facts.every(f=>f.category==='running-shoes'))return language==='ja'?'ランニング用の靴は、'+value+'です。':'I use '+value+' for running.';
  if(relation==='xMain')return language==='ja'?`X（Twitter）のメインアカウントは${value}です。`:`My main X (Twitter) account is ${value}.`;
  if(relation==='xSecondary')return language==='ja'?`サブアカウントは${value}です。`:`My secondary account is ${value}.`;
- if(relation==='articleLink')return language==='ja'?`「${value}」を読めます。`:`You can read “${value}”.`;
+ if(relation==='articleLink')return facts.map(f=>language==='ja'?`「${f.ja.value}」を読めます。`:`You can read “${f.en.value}”.`).join('\n');
  if(relation==='website')return language==='ja'?`${value}から記事を選んで読めます。`:`You can read my articles at ${value}.`;
  if(language==='en'){const parts=en[relation];if(relation==='product'&&variant%parts.length===1&&facts.length>1)return 'My go-to products are '+value+'.';return parts[variant%parts.length]+value+'.';}
  if(relation==='name')return ['名前は'+value+'です。',value+'といいます。',value+'です。','呼び名は'+value+'です。'][variant%4];
