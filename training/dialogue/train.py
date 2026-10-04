@@ -30,12 +30,18 @@ class DialogueDecoder(architecture.Decoder):
         if config.get('intents'):
             self.intent=torch.nn.Linear(config['dim'],len(config['intents']))
             self.initialize(self.intent)
+        if config.get('semanticTasks'):
+            self.semantic=torch.nn.ModuleDict({name:torch.nn.Linear(config['dim'],len(labels)) for name,labels in config['semanticTasks'].items()})
+            self.semantic.apply(self.initialize)
 
-    def forward(self,tokens,intent_positions=None):
+    def forward(self,tokens,intent_positions=None,semantic_positions=None):
         x=self.token(tokens)+self.position(torch.arange(tokens.shape[1],device=tokens.device))
         for block in self.blocks:x=block(x)
         x=self.norm(x)
         logits=F.linear(x,self.token.weight)
+        if semantic_positions is not None:
+            selected=x[torch.arange(len(tokens)),semantic_positions]
+            return logits,{name:head(selected) for name,head in self.semantic.items()}
         if intent_positions is None:return logits
         return logits,self.intent(x[torch.arange(len(tokens)),intent_positions])
 

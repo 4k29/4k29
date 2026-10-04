@@ -37,8 +37,10 @@ def main():
     p.add_argument('--length-buckets',action='store_true')
     p.add_argument('--own-pretrained-checkpoint')
     p.add_argument('--replay-weight',type=float,default=0.0)
+    p.add_argument('--semantic-weight',type=float,default=0.0)
     args=p.parse_args()
     if args.replay_weight<0:p.error('Replay weight must be nonnegative')
+    if args.semantic_weight<0:p.error('Semantic weight must be nonnegative')
     if args.own_pretrained_checkpoint and (args.resume or args.pretrain_steps):p.error('Own pretraining continuation needs --pretrain-steps 0 and cannot also resume')
     if args.pretrain_steps<0 or args.steps<1 or args.dim%4 or args.layers<1 or args.batch_size<1 or args.learning_rate<=0:p.error('Invalid training configuration')
     torch.set_num_threads(args.threads);torch.manual_seed(args.seed);torch.use_deterministic_algorithms(True)
@@ -46,9 +48,15 @@ def main():
     train=[r for r in corpus['rows'] if r['partition']=='train']
     valid=[r for r in corpus['rows'] if r['partition']=='validation']
     config=dict(vocabulary=len(corpus['tokenizer']['bytes']),dim=args.dim,heads=4,hidden=args.dim*2,layers=args.layers,context=128,dropout=0.12,epsilon=1e-5)
+    semantic_labels={}
+    if args.semantic_weight:
+        semantic_labels={name:sorted({r['semantic'][name] for r in train}) for name in ['subject','attribute']}
+        config['semanticTasks']=semantic_labels
     width=max(len(r['tokens'])-1 for r in train+valid+corpus['pretraining'])
     if width>=config['context']:raise ValueError('No truncation: sequence exceeds context')
     x,y=pack(train,SPECIALS['pad'],width);vx,vy=pack(valid,SPECIALS['pad'],width)
+    positions=torch.tensor([r['prefixLength']-1 for r in train])
+    semantic_targets=torch.tensor([[semantic_labels[name].index(r['semantic'][name]) for name in semantic_labels] for r in train],dtype=torch.long) if semantic_labels else None
     raw=[dict(tokens=r['tokens'],prefixLength=1) for r in corpus['pretraining']]
     rx,ry=pack(raw,SPECIALS['pad'],width)
     raw_validation=[dict(tokens=r['tokens'],prefixLength=1) for r in corpus.get('pretrainingValidation',[])]
@@ -66,6 +74,12 @@ def main():
     optimizer=torch.optim.AdamW(model.parameters(),lr=args.learning_rate,weight_decay=0.03)
     def objective(tokens,targets):return F.cross_entropy(model(tokens).reshape(-1,config['vocabulary']),targets.reshape(-1),label_smoothing=0.01)
     compiled=torch.compile(objective,dynamic=False) if args.compile_loss else objective
+    def semantic_objective(tokens,targets,prefix_positions,labels):
+        logits,heads=model(tokens,semantic_positions=prefix_positions)
+        language_loss=F.cross_entropy(logits.reshape(-1,config['vocabulary']),targets.reshape(-1),label_smoothing=0.01)
+        auxiliary=sum(F.cross_entropy(heads[name],labels[:,i]) for i,name in enumerate(semantic_labels))/len(semantic_labels)
+        return language_loss+args.semantic_weight*auxiliary
+    compiled_semantic=torch.compile(semantic_objective,dynamic=False) if args.compile_loss and semantic_labels else semantic_objective
     @torch.no_grad()
     def measure(tokens,targets):
         model.eval();total,count=0.0,0
@@ -75,6 +89,7 @@ def main():
             count+=labels.ne(-100).sum().item()
         return total/count
     settings={k:getattr(args,k) for k in ['pretrain_steps','steps','dim','layers','batch_size','seed','learning_rate','validation_every','length_buckets','replay_weight']}
+    settings['semantic_weight']=args.semantic_weight
     resume=0;history=[];best=None;rank=(-1,float('-inf'));best_step=0;elapsed_before=0
     raw_best=None;raw_best_loss=float('inf');raw_best_step=0
     inherited_pretraining=0;own_parent=None
@@ -89,6 +104,7 @@ def main():
     if args.resume:
         c=torch.load(args.resume,weights_only=False)
         previous_settings=dict(c['settings']);previous_settings.setdefault('length_buckets',False);previous_settings.setdefault('replay_weight',0.0)
+        previous_settings.setdefault('semantic_weight',0.0)
         if c['sourceSha256']!=corpus['sourceSha256'] or previous_settings!=settings:raise ValueError('Resume dataset/config mismatch')
         model.load_state_dict(c['model']);optimizer.load_state_dict(c['optimizer']);torch.set_rng_state(c['rng'])
         resume=c['step'];history=c['history'];best=c['best'];rank=c['rank'];best_step=c['bestStep'];elapsed_before=c['elapsedSeconds']
@@ -125,7 +141,8 @@ def main():
             index=torch.multinomial(weights,args.batch_size,replacement=True);inputs,targets=x[index],y[index]
         lr=args.learning_rate*min(1.0,local/100)*max(0.08,(1+math.cos(math.pi*local/length))/2)
         for g in optimizer.param_groups:g['lr']=lr
-        optimizer.zero_grad(set_to_none=True);loss=compiled(inputs,targets)
+        optimizer.zero_grad(set_to_none=True)
+        loss=compiled_semantic(inputs,targets,positions[index],semantic_targets[index]) if not pretraining and semantic_labels else compiled(inputs,targets)
         if not pretraining and args.replay_weight:
             raw_index=torch.randint(len(raw),(args.batch_size,))
             loss=loss+args.replay_weight*compiled(rx[raw_index,:raw_width],ry[raw_index,:raw_width])
