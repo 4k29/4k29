@@ -75,15 +75,15 @@ def generate(model,rows,tokenizer,batch_size=16):
             next_ids=logits[torch.arange(len(batch)),lengths-1].argmax(-1)
             for i,token in enumerate(next_ids.tolist()):
                 if ended[i]:continue
+                if lengths[i]>=width:
+                    ended[i]=True
+                    continue
                 if token==SPECIALS['eos']:
                     ended[i]=True
                     reached_eos[i]=True
                 else:outputs[i].append(token)
-                if lengths[i]>=width:
-                    ended[i]=True
-                else:
-                    tokens[i,lengths[i]]=token
-                    lengths[i]+=1
+                tokens[i,lengths[i]]=token
+                lengths[i]+=1
             if all(ended):break
         for row,output,finished in zip(batch,outputs,reached_eos):
             text=decode(output,tokenizer)

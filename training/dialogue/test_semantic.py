@@ -1,7 +1,7 @@
 """Train-only semantic heads cannot observe teacher-forced future answers."""
 import unittest
 import torch
-from train import DialogueDecoder
+from train import DialogueDecoder,generate
 
 class SemanticTrainingTests(unittest.TestCase):
     def setUp(self):
@@ -28,5 +28,15 @@ class SemanticTrainingTests(unittest.TestCase):
         loss.backward()
         self.assertGreater(self.model.token.weight.grad.abs().sum().item(),0)
         self.assertGreater(self.model.blocks[0].qkv.weight.grad.abs().sum().item(),0)
+    def test_ragged_generation_never_emits_past_each_rows_context_budget(self):
+        class NeverEnds(torch.nn.Module):
+            config={'context':8}
+            def forward(self,tokens):
+                logits=torch.zeros((*tokens.shape,262));logits[:,:,71]=1;return logits
+        tokenizer=dict(bytes=['']*6+[bytes([i]).hex() for i in range(256)])
+        rows=[dict(id=str(n),kind='test',question='test',history=[],answer='unused',prefixLength=n,tokens=[1]+[3]*(n-2)+[4,71,2]) for n in [3,7]]
+        result=generate(NeverEnds(),rows,tokenizer)
+        self.assertEqual([r['answer'] for r in result],['A'*5,'A'])
+        self.assertTrue(all(not r['eos'] for r in result))
 
 if __name__=='__main__':unittest.main()

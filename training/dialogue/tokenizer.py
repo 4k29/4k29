@@ -4,6 +4,7 @@ Vocabulary and merges are fitted on training strings only. Limiting pieces to
 12 bytes prevents frequent complete answers becoming a single answer token.
 """
 from collections import Counter
+import heapq
 import unicodedata
 
 SPECIALS = {'pad': 0, 'bos': 1, 'eos': 2, 'user': 3, 'assistant': 4, 'turn': 5}
@@ -51,6 +52,34 @@ def encode(text, tokenizer):
     for left, right, token in tokenizer['merges']:
         tokens = merge(tokens, (left, right), token)
     return tokens
+
+
+def encode_stream(text,tokenizer):
+    """Same learned BPE rules, using adjacent-pair updates for long articles.
+
+    Rank and original left position preserve the global rule order and its
+    left-to-right handling of overlapping equal pairs. No outside tokenizer.
+    """
+    values=[byte+len(SPECIALS) for byte in text.encode('utf-8')]
+    if not values:return []
+    ranks={(a,b):(rank,c) for rank,(a,b,c) in enumerate(tokenizer['merges'])}
+    previous=list(range(-1,len(values)-1));following=list(range(1,len(values)))+[-1]
+    alive=[True]*len(values);queue=[]
+    def enqueue(left):
+        if left<0 or not alive[left]:return
+        right=following[left]
+        if right<0:return
+        pair=(values[left],values[right])
+        if pair in ranks:
+            rank,result=ranks[pair];heapq.heappush(queue,(rank,left,right,*pair,result))
+    for index in range(len(values)-1):enqueue(index)
+    while queue:
+        _,left,right,a,b,result=heapq.heappop(queue)
+        if not alive[left] or not alive[right] or following[left]!=right or values[left]!=a or values[right]!=b:continue
+        values[left]=result;alive[right]=False;following[left]=following[right]
+        if following[right]>=0:previous[following[right]]=left
+        enqueue(previous[left]);enqueue(left)
+    return [value for value,keep in zip(values,alive) if keep]
 
 
 def decode(tokens, tokenizer):

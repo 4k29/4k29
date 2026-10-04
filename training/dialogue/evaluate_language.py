@@ -23,10 +23,11 @@ exported=json.loads(source.split('export const dialogueModel=',1)[1].strip().rem
 corpus=json.loads(pathlib.Path(args.corpus).read_text())
 if exported['training']['sourceSha256']!=corpus['sourceSha256']:raise ValueError('Frozen model/source mismatch')
 if exported['tokenizer']!=corpus['tokenizer']:raise ValueError('Vocabulary mismatch')
-seen={r['text'] for key in ['pretraining','pretrainingValidation'] for r in corpus[key]}
-excluded=[r for r in corpus['pretrainingTest'] if r['text'] in seen]
-held=[r for r in corpus['pretrainingTest'] if r['text'] not in seen]
-rows=[dict(tokens=r['tokens'],prefixLength=1) for r in held]
+def identity(row):return ('text',row['text']) if 'text' in row else ('tokens',tuple(row['tokens']),row.get('prefixLength',1))
+seen={identity(r) for key in ['pretraining','pretrainingValidation'] for r in corpus[key]}
+excluded=[r for r in corpus['pretrainingTest'] if identity(r) in seen]
+held=[r for r in corpus['pretrainingTest'] if identity(r) not in seen]
+rows=[dict(tokens=r['tokens'],prefixLength=r.get('prefixLength',1)) for r in held]
 if not rows:raise ValueError('No independent raw-language test chunks remain')
 x,y=pack(rows,SPECIALS['pad'],max(len(r['tokens'])-1 for r in rows))
 @torch.no_grad()
@@ -41,5 +42,5 @@ torch.manual_seed(exported['training']['seed'])
 model=DialogueDecoder(exported['config']);random_control=measure(model)
 model.load_state_dict({key:torch.tensor(t['data']).reshape(t['shape']) for key,t in exported['tensors'].items()})
 frozen=measure(model)
-report=dict(version=exported['version'],sourceSha256=corpus['sourceSha256'],samples=len(rows),documents=sorted({r['document'] for r in held}),excludedSharedChunks=[dict(document=r['document'],text=r['text']) for r in excluded],randomInitialization=random_control,frozenModel=frozen,note='Raw next-token objective on separate source pages. Complete passages were deduplicated before chunking; matching chunks after tokenization (including short common endings) are excluded here. Test articles never fit vocabulary, train weights or select checkpoints. This metric does not measure natural dialogue, facts or reasoning; different vocabularies are not directly compared.')
+report=dict(version=exported['version'],sourceSha256=corpus['sourceSha256'],samples=len(rows),documents=sorted({r['document'] for r in held}),excludedSharedChunks=[dict(document=r['document'],text=r.get('text'),start=r.get('start')) if 'text' not in r else dict(document=r['document'],text=r['text']) for r in excluded],randomInitialization=random_control,frozenModel=frozen,note='Raw next-token objective on separate source pages. Identical train/validation chunks are excluded. For continuous streams, overlapping lookback tokens condition prediction but are masked from loss, and only genuine document boundaries carry EOS. Test articles never fit vocabulary, train weights or select checkpoints. This metric does not measure natural dialogue, facts or reasoning; different vocabularies/stream constructions are not directly compared.')
 pathlib.Path(args.out).write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n');print(json.dumps(report,ensure_ascii=False))
