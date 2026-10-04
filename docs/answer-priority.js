@@ -12,7 +12,7 @@ export function answerEvidence(fact,analyses){
  const analysis=analyses[index]||{},relation=fact.ja.relation;
  const direct=analysis.factIds?.includes(fact.id)?100:0;
  const relevance=priorities[analysis.intent]?.[relation]||50;
- const focus=analysis.mode==='hobbies'&&relation==='activity'?40:0;
+ const focus=(analysis.mode==='hobbies'&&relation==='activity'?40:0)+(fact.category==='earphones'&&analysis.factIds?.includes('headphones')?1:0);
  return {clause:index<0?analyses.length:index,direct,relevance,focus,score:direct+relevance+focus};
 }
 export function rankAnswerFacts(facts,analyses){
@@ -23,14 +23,14 @@ function similarity(a,b){
  const left=grams(a),right=grams(b);let common=0;for(const g of left)if(right.has(g))common++;
  return common/(left.size+right.size-common||1);
 }
-export function chooseWording(compose,turn,previous){
+export function chooseWording(compose,turn,previous,{quality=()=>0}={}){
  if(!previous.length)return compose(turn);
  const unique=new Map();
  for(let i=0;i<24;i++){
   const text=compose(turn+i);if(unique.has(text))continue;
   const repeated=previous.includes(text)?1000:0;
   const similarityPenalty=previous.slice(-3).reduce((sum,reply,index)=>sum+similarity(text,reply)*(index+1),0);
-  unique.set(text,{text,score:repeated+similarityPenalty+i*.005});
+  unique.set(text,{text,score:repeated+similarityPenalty+i*.005-.3*quality(text)});
  }
  return [...unique.values()].sort((a,b)=>a.score-b.score)[0].text;
 }

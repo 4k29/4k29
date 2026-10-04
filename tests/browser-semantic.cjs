@@ -6,7 +6,7 @@ let n=0;async function ask(q){await p.locator('#prompt-input').fill(q);await p.l
 let a=await ask('あなた誰？');assert.match(await a.innerText(),/4k29/);a=await ask('AIに全部任せてるの？自分では何をしてる？');assert.match(await a.innerText(),/ChatGPT/);assert.match(await a.innerText(),/アイデア/);assert.doesNotMatch(await a.innerText(),/よく分かりません/);
 a=await ask('制作の流れを具体的に説明して');assert.match(await a.innerText(),/プロンプト.*プレビュー.*改善/);
 a=await ask('あなたについて簡単に教えて');assert.match(await a.innerText(),/4k29/);assert.match(await a.innerText(),/学生/);
-a=await ask('私の名前は？');assert.equal(await a.innerText(),'すみません、よく分かりません');a=await ask('記事は何処で読める？');assert.equal(await a.locator('a').getAttribute('href'),'https://4k29.github.io/tecirc/notes/');a=await ask('なんのいやほんつかってる');assert.match(await a.innerText(),/Beats Fit Pro/);assert.match(await a.innerText(),/CMF Buds/);assert.doesNotMatch(await a.innerText(),/Headphone/);
+a=await ask('私の名前は？');assert.equal(await a.innerText(),'すみません、よく分かりません');a=await ask('記事は何処で読める？');assert.equal(await a.locator('a').getAttribute('href'),'https://4k29.github.io/tecirc/notes/');a=await ask('なんのいやほんつかってる');assert.match(await a.innerText(),/Beats Fit Pro/);assert.match(await a.innerText(),/CMF Buds/);assert.match(await a.innerText(),/Nothing Headphone \(1\)/);
 a=await ask('けいやくしてるさぶすくは');assert.match(await a.innerText(),/ChatGPT Plus/);assert.match(await a.innerText(),/Apple One/);assert.match(await a.innerText(),/250GB/);assert.doesNotMatch(await a.innerText(),/uma_4k/);
 a=await ask('おしはだれ');assert.match(await a.innerText(),/してはる/);
 a=await ask('サブ垢は？');assert.equal(await a.locator('a').getAttribute('href'),'https://x.com/uma_4k');

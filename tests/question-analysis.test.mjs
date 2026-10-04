@@ -7,7 +7,7 @@ const unknown=data.unknownReply;
 test('compound requests retrieve each requested subject despite competing route priorities',()=>{
  const cases=[
   ['名前と年齢と趣味は？',['name','tecirc','photo','running'],true],
-  ['サブ垢は？好きなメーカーは？',['x-secondary','apple','nothing','openai'],false],
+  ['サブ垢は？好きなメーカーは？',['x-secondary','apple','nothing','openai','favorite-kyu'],false],
   ['名前は？年齢は？',['name'],true],
   ['好きな音楽は？趣味は？',['tecirc','photo','running'],true],
   ['メインとサブのアカウントは？',['x','x-secondary'],false],
@@ -28,7 +28,7 @@ test('pronouns expand only registered related facts and links refer to the previ
  c.respond('作り方は？');a=c.respond('もっと詳しく');assert.deepEqual(new Set(a.factIds),new Set(['workflow','taste']));
 });
 test('registered paraphrases compose grounded evidence without irrelevant identity or interests',()=>{
- const cases=[['なまえを教えて',['name']],['社会人ですか？',['student']],['普段使っているものは？',['headphones']],['制作の流れは？',['workflow','iteration','taste']],['このチャットはAIですか？',['site-engine']],['しかの趣味は？',['tecirc','photo','running']],['興味のある分野は？',['tech','ui','design','hci','slm','context']]];
+ const cases=[['なまえを教えて',['name']],['社会人ですか？',['student']],['普段使っているものは？',['earphones-beats','earphones-cmf','headphones']],['制作の流れは？',['workflow','iteration','taste']],['このチャットはAIですか？',['site-engine']],['しかの趣味は？',['tecirc','photo','running']],['興味のある分野は？',['tech','ui','design','hci','slm','context']]];
  for(const [q,ids] of cases){const a=new Conversation(data).respond(q);assert.deepEqual(new Set(a.factIds),new Set(ids),q);for(const id of a.factIds)assert.ok(a.text.includes(data.facts.find(f=>f.id===id).ja.value),q);}
 });
 test('answers and links always trace to registered facts, even with hostile or long inputs',()=>{

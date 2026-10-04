@@ -4,10 +4,10 @@ import fs from 'node:fs';
 import {Conversation} from '../docs/dialogue.js';
 const data=JSON.parse(fs.readFileSync(new URL('../docs/profile.json',import.meta.url)));
 const cases=[
- ['何のイヤホン使ってる',['earphones-beats','earphones-cmf']],
- ['なんのいやほんつかってる',['earphones-beats','earphones-cmf']],
- ['ヘッドホンは？',['headphones']],
- ['へっどほんはなに',['headphones']],
+ ['何のイヤホン使ってる',['earphones-beats','earphones-cmf','headphones']],
+ ['なんのいやほんつかってる',['earphones-beats','earphones-cmf','headphones']],
+ ['ヘッドホンは？',['earphones-beats','earphones-cmf','headphones']],
+ ['へっどほんはなに',['earphones-beats','earphones-cmf','headphones']],
  ['契約してるサブスクは？',['subscription-chatgpt','subscription-apple','subscription-icloud']],
  ['けいやくしてるさぶすくは',['subscription-chatgpt','subscription-apple','subscription-icloud']],
  ['推しは誰？',['favorite-person']],
@@ -22,9 +22,9 @@ for(const [q,ids] of cases)test('user question: '+q,()=>{
  const a=new Conversation(data).respond(q);assert.deepEqual(new Set(a.factIds),new Set(ids));
  for(const id of ids)assert.ok(a.text.includes(data.facts.find(f=>f.id===id).ja.value));
 });
-test('product name follow-up preserves product type',()=>{
+test('product name follow-up preserves the combined audio selection',()=>{
  const c=new Conversation(data);c.respond('イヤホンは？');const a=c.respond('それの名前だけ');
- assert.deepEqual(a.factIds,['earphones-beats','earphones-cmf']);assert.doesNotMatch(a.text,/4k29|Headphone/);
+ assert.deepEqual(a.factIds,['earphones-beats','earphones-cmf','headphones']);assert.doesNotMatch(a.text,/4k29/);assert.match(a.text,/Headphone/);
 });
 test('subscriptions never resolve to subaccount and retain supplied capacity',()=>{
  const a=new Conversation(data).respond('サブスクは？');assert.match(a.text,/250GB/);assert.doesNotMatch(a.text,/@|uma_4k|p_horeer/);
