@@ -1,13 +1,14 @@
-import {generationModel} from './generation-model.js?v=20261004-transformer-5';
-import {directVoicePath,conversationalJapanese} from './response-voice.js?v=20261004-transformer-5';
-import {favoriteGrammar} from './favorite-grammar.js?v=20261004-transformer-5';
-import {knowledgeGrammar} from './knowledge-grammar.js?v=20261004-transformer-5';
-import {predictNextTokens} from './next-token-model.js?v=20261004-transformer-5';
-import {predictNeuralNextTokens,neuralVersion,neuralArchitecture} from './neural-inference.js?v=20261004-transformer-5';
+import {generationModel} from './generation-model.js?v=20261004-transformer-5b';
+import {naturalGrammarPaths,conversationalJapanese} from './response-voice.js?v=20261004-transformer-5b';
+import {favoriteGrammar} from './favorite-grammar.js?v=20261004-transformer-5b';
+import {knowledgeGrammar} from './knowledge-grammar.js?v=20261004-transformer-5b';
+import {predictNextTokens} from './next-token-model.js?v=20261004-transformer-5b';
+import {predictNeuralNextTokens,neuralVersion,neuralArchitecture} from './neural-inference.js?v=20261004-transformer-5b';
 const tries=new Map(),searches=new Map();
 function grammarTrie(language,kind){
  const key=language+':'+kind;if(tries.has(key))return tries.get(key);
- const paths=kind==='knowledge'?knowledgeGrammar(language,generationModel.vocabulary):kind==='favoriteThing'?favoriteGrammar(language,generationModel.vocabulary):generationModel.paths.filter(p=>p.language===language&&p.kind===kind&&directVoicePath(p,generationModel.vocabulary)),root={next:new Map(),rows:[]};
+ const base=kind==='knowledge'?knowledgeGrammar(language,generationModel.vocabulary):kind==='favoriteThing'?favoriteGrammar(language,generationModel.vocabulary):generationModel.paths.filter(p=>p.language===language&&p.kind===kind);
+ const paths=naturalGrammarPaths(base,generationModel.vocabulary),root={next:new Map(),rows:[]};
  for(const row of paths){let node=root;for(const token of [...row.tokens,1]){if(!node.next.has(token))node.next.set(token,{next:new Map(),rows:[]});node=node.next.get(token);}node.rows.push(row);}
  const grammar={root,paths};tries.set(key,grammar);return grammar;
 }
@@ -49,12 +50,19 @@ export function generateCandidates(kind,language,values,options={}){
  let paths=completed.filter(c=>c.row.style===context.style);
  if(options.length==='detail'&&paths.some(c=>c.row.detail))paths=paths.filter(c=>c.row.detail);
  if(options.length==='brief')paths=paths.filter(c=>!c.row.detail);
+ if(options.length==='brief'){
+  const frameLength=c=>c.tokens.reduce((n,id)=>n+(/^[{<]/.test(generationModel.vocabulary[id])?0:generationModel.vocabulary[id].length),0);
+  paths=[...paths].sort((a,b)=>frameLength(a)-frameLength(b)).slice(0,Math.max(4,Math.ceil(paths.length/4)));
+ }
  const lengths=paths.map(c=>c.tokens.reduce((n,id)=>n+(/^[{<]/.test(generationModel.vocabulary[id])?0:generationModel.vocabulary[id].length),0)),min=Math.min(...lengths),max=Math.max(...lengths);
  const unique=new Map();
  for(const [index,candidate] of paths.entries()){
+  if(options.length==='brief'&&lengths[index]>min+(max-min)*.4)continue;
   const text=render(candidate.tokens,values,context),novelty=1-Math.max(0,...previous.map(p=>similarity(grams(text),p)));
   const features=[1,options.length==='brief'?1-(lengths[index]-min)/(max-min||1):0,options.length==='detail'?(candidate.row.detail?1:0):options.length==='brief'?(candidate.row.detail?-1:0):candidate.row.detail?-.5:0,focuses[kind]?.test(options.question||'')?(focuses[kind].test(text)?1:0):.5,Math.exp(candidate.logProbability/candidate.tokens.length),candidate.row.quality,novelty];
-  const score=features.reduce((n,f,i)=>n+f*generationModel.preferenceWeights[i],0),result={text,score,features,pathId:candidate.row.id,tokens:candidate.tokens,meanLogProbability:candidate.logProbability/candidate.tokens.length,transitions};
+  const ending=text.match(/(?:だよ|です|います|いる|ある|する)。(?:\s*)$/)?.[0];
+  const endingRepetition=ending?(options.previous||[]).slice(-3).filter(reply=>reply.trimEnd().endsWith(ending)).length:0;
+  const score=features.reduce((n,f,i)=>n+f*generationModel.preferenceWeights[i],0)-endingRepetition*.4-(ending==='だよ。'?.15:0),result={text,score,features,pathId:candidate.row.id,tokens:candidate.tokens,meanLogProbability:candidate.logProbability/candidate.tokens.length,transitions};
   if(!unique.has(text)||score>unique.get(text).score)unique.set(text,result);
  }
  return [...unique.values()].sort((a,b)=>b.score-a.score||a.pathId.localeCompare(b.pathId));

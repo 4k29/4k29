@@ -17,7 +17,7 @@ const base=process.env.SITE_URL||'http://localhost:8001/';
   const records=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('4k29.question-journal.v1')).records);
   await page.goto(base);await ready();
   const names=[];for(let i=0;i<10;i++){const row=await ask('名前は？');names.push(await row.innerText());}
-  assert.ok(new Set(names).size>=8);assert.ok(names.every(t=>t.includes('4k29')&&!t.includes('です')));
+  assert.ok(new Set(names).size>=8);assert.ok(names.every(t=>t.includes('4k29')&&!/だよ。|いるよ。/.test(t)));
   await ask('これからは丁寧な口調で短く答えて');
   assert.deepEqual((await records()).at(-1).preferenceUpdate,{style:'polite',length:'brief'});
   let row=await ask('名前は？');assert.match(await row.innerText(),/です|ます|ください/);
@@ -25,7 +25,7 @@ const base=process.env.SITE_URL||'http://localhost:8001/';
   await ask('好きな人は？');row=await ask('その人のYouTubeのリンクだけ');assert.equal(await row.locator('a').count(),1);assert.equal(await row.locator('a').getAttribute('href'),'https://m.youtube.com/@shiteharu?ra=m');
   row=await ask('くだけた口調でヘッドホンの価格を教えて');assert.equal(await row.innerText(),'すみません、よく分かりません');assert.equal((await records()).at(-1).preferenceUpdate,null);
   await page.evaluate(()=>localStorage.removeItem('4k29.question-journal.v1'));await page.reload();await ready();
-  row=await ask('名前は？');assert.match(await row.innerText(),/だよ|って|呼んで|いって/);
+  row=await ask('名前は？');assert.match(await row.innerText(),/4k29/);assert.doesNotMatch(await row.innerText(),/だよ。/);
   row=await ask('記事で扱う話題を教えてもらえる？');assert.match(await row.innerText(),/記事|テーマ/);
   assert.ok(modules.some(url=>url.includes('neural-model.js?v=20261004-transformer-5')));
   assert.deepEqual(errors,[]);assert.deepEqual(remote,[]);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);

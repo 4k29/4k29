@@ -45,3 +45,21 @@ test('liked camera specifications do not assert ownership; conflicted Beats tota
  const b=ask('Beats Fit Proの耐水性能は？');assert.match(b.text,/IPX4/);assert.match(b.text,/ケースは非対応/);
  assert.doesNotMatch(b.text,/はイヤホン本体は|はANCに対応だよ/);
 });
+test('a rating for earbuds cannot be presented as a charging-case rating',()=>{
+ assert.equal(ask('CMF Budsのケースは防水？').text,data.unknownReply);
+ assert.equal(ask('Nothing Headphone (1)のケースの耐水性能は？').text,data.unknownReply);
+ assert.match(ask('Beats Fit Proのケースは防水？').text,/ケースは非対応/);
+});
+test('a dual Bluetooth connection question asks about device count rather than version',()=>{
+ const a=ask('CMF BudsはBluetoothで2台同時接続できますか？');assert.deepEqual(a.factIds,['specification:earphones-cmf:multipoint']);assert.match(a.text,/2台同時接続.*Nothing X/);
+ const b=ask('Headphone 1はBluetoothで2台同時接続できますか？');assert.deepEqual(b.factIds,['specification:headphones:multipoint']);assert.match(b.text,/2台同時接続に対応/);
+});
+test('product specifications form a readable paragraph without repeated model names',()=>{
+ const a=ask('Headphone (1)のスペックは');
+ assert.equal(a.text.split('Nothing Headphone (1)').length-1,1);
+ assert.match(a.text,/Nothing.*ヘッドホン/);assert.match(a.text,/透明なイヤーカップ/);
+ assert.match(a.text,/40mm.*Bluetooth 5\.3.*IP52/);
+ assert.equal(a.text.includes('\n'),false);assert.equal(a.text.split('。').filter(Boolean).length,2);
+ assert.doesNotMatch(a.text,/だよ。|のドライバーは|のBluetoothは/);
+ const detail=ask('Nothing Headphone1のスペックを詳しく');assert.match(detail.text,/329g.*16Ω/);assert.match(detail.text,/AAC・ANCオン.*35時間.*LDAC・ANCオン.*30時間/);
+});

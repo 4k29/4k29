@@ -26,8 +26,7 @@ export function resolveEntities(text,data,context,matches){
   if(field&&namedLikes.every(f=>f.publicDetails?.[field]))return result(namedLikes,'favorite-public-detail','favorite-'+field);
   if(favoriteProducts.test(text)||missingFavoriteDetail.test(text)||/作者|\bauthor\b/.test(text)&&namedLikes.some(f=>!f.publicInfo?.author))return result([],'unregistered-favorite-detail');
   if(/リンク|url|\blink\b/.test(text))return result(namedLikes.filter(f=>f.url),'favorite-source',/だけ|only/.test(text)?'url-only':null);
-  const detail=/どんな|とは|って何|あらすじ|内容|ストーリー|物語|について|説明|紹介|詳しく|作者|主演|主人公|\b(?:what is|what's|describe|about|plot|author)\b/.test(text);
-  return result(namedLikes,'liked-things',/名前だけ|名称だけ|only.*name/.test(text)?'value-only':detail?'favorite-detail':null);
+  return result(namedLikes,'liked-things',/名前だけ|名称だけ|only.*name/.test(text)?'value-only':'favorite-detail');
  }
  const previousLikes=previous.filter(f=>f.ja.relation==='favoriteThing');
  if(previousLikes.length&&/^(?:それ|その(?:作品|ブランド|漫画|ドラマ))(?:を|について|は)?$/.test(text))return {...result(previousLikes,'liked-things','favorite-detail'),contextDependent:true};
