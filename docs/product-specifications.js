@@ -1,5 +1,5 @@
-import {neuralModel as model} from './neural-model.js?v=20261004-transformer-5b';
-import {neuralLogits} from './neural-inference.js?v=20261004-transformer-5b';
+import {neuralModel as model} from './neural-model.js?v=20261004-transformer-7';
+import {neuralLogits} from './neural-inference.js?v=20261004-transformer-7';
 export const specificationMemory=model.specificationMemory;
 export function unsupportedProductName(text){return /\bcmf\s*buds\s*(?:pro|2|plus)\b|\b(?:nothing\s*)?headphone\s*\(?\s*(?:a|[2-9]\d*|1\d+)\b|\bpowerbeats\s*fit\b/i.test(text);}
 const recallCache=new Map();

@@ -27,7 +27,7 @@ const base=process.env.SITE_URL||'http://localhost:8001/';
   await page.evaluate(()=>localStorage.removeItem('4k29.question-journal.v1'));await page.reload();await ready();
   row=await ask('名前は？');assert.match(await row.innerText(),/4k29/);assert.doesNotMatch(await row.innerText(),/だよ。/);
   row=await ask('記事で扱う話題を教えてもらえる？');assert.match(await row.innerText(),/記事|テーマ/);
-  assert.ok(modules.some(url=>url.includes('neural-model.js?v=20261004-transformer-5')));
+  assert.ok(modules.some(url=>url.includes('neural-model.js?v=20261004-transformer-7')));
   assert.deepEqual(errors,[]);assert.deepEqual(remote,[]);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   console.log(`PASS ${mobile?'mobile':'desktop'}: predictive model loads, 8+ grounded variations, preference persistence/reset, scoped links, unknowns, no external requests`);
   await context.close();

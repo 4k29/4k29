@@ -1,8 +1,8 @@
-import {rankAnswerFacts} from './answer-priority.js?v=20261004-transformer-5b';
-import {linksForFact} from './answer-links.js?v=20261004-transformer-5b';
-import {createSentenceRenderer} from './predictive-generator.js?v=20261004-transformer-5b';
-import {conversationalJapanese} from './response-voice.js?v=20261004-transformer-5b';
-import {specificationParagraph} from './product-specifications.js?v=20261004-transformer-5b';
+import {rankAnswerFacts} from './answer-priority.js?v=20261004-transformer-7';
+import {linksForFact} from './answer-links.js?v=20261004-transformer-7';
+import {createSentenceRenderer} from './predictive-generator.js?v=20261004-transformer-7';
+import {conversationalJapanese} from './response-voice.js?v=20261004-transformer-7';
+import {specificationParagraph} from './product-specifications.js?v=20261004-transformer-7';
 function list(values,language){
  if(language==='ja')return values.length===2?values.join('と'):values.length>2?values.join('、'):values[0]||'';
  return values.length<2?values[0]||'':values.slice(0,-1).join(', ')+' and '+values.at(-1);

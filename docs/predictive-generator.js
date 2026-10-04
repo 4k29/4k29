@@ -1,9 +1,9 @@
-import {generationModel} from './generation-model.js?v=20261004-transformer-5b';
-import {naturalGrammarPaths,conversationalJapanese} from './response-voice.js?v=20261004-transformer-5b';
-import {favoriteGrammar} from './favorite-grammar.js?v=20261004-transformer-5b';
-import {knowledgeGrammar} from './knowledge-grammar.js?v=20261004-transformer-5b';
-import {predictNextTokens} from './next-token-model.js?v=20261004-transformer-5b';
-import {predictNeuralNextTokens,neuralVersion,neuralArchitecture} from './neural-inference.js?v=20261004-transformer-5b';
+import {generationModel} from './generation-model.js?v=20261004-transformer-7';
+import {naturalGrammarPaths,conversationalJapanese} from './response-voice.js?v=20261004-transformer-7';
+import {favoriteGrammar} from './favorite-grammar.js?v=20261004-transformer-7';
+import {knowledgeGrammar} from './knowledge-grammar.js?v=20261004-transformer-7';
+import {predictNextTokens} from './next-token-model.js?v=20261004-transformer-7';
+import {predictNeuralNextTokens,neuralVersion,neuralArchitecture} from './neural-inference.js?v=20261004-transformer-7';
 const tries=new Map(),searches=new Map();
 function grammarTrie(language,kind){
  const key=language+':'+kind;if(tries.has(key))return tries.get(key);
