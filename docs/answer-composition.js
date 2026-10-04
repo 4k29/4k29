@@ -1,7 +1,8 @@
-import {rankAnswerFacts} from './answer-priority.js?v=20261004-transformer-5';
-import {linksForFact} from './answer-links.js?v=20261004-transformer-5';
-import {createSentenceRenderer} from './predictive-generator.js?v=20261004-transformer-5';
-import {conversationalJapanese} from './response-voice.js?v=20261004-transformer-5';
+import {rankAnswerFacts} from './answer-priority.js?v=20261004-transformer-5b';
+import {linksForFact} from './answer-links.js?v=20261004-transformer-5b';
+import {createSentenceRenderer} from './predictive-generator.js?v=20261004-transformer-5b';
+import {conversationalJapanese} from './response-voice.js?v=20261004-transformer-5b';
+import {specificationParagraph} from './product-specifications.js?v=20261004-transformer-5b';
 function list(values,language){
  if(language==='ja')return values.length===2?values.join('と'):values.length>2?values.join('、'):values[0]||'';
  return values.length<2?values[0]||'':values.slice(0,-1).join(', ')+' and '+values.at(-1);
@@ -42,7 +43,7 @@ export function composeAnswer(facts,analyses,language,variant=0,options={}){
   const requests=analyses.filter(a=>group.some(f=>a.factIds?.includes(f.id))),hobbies=requests.some(a=>a.mode==='hobbies');
   if(requests.some(a=>['favorite-actor','favorite-protagonist'].includes(a.mode))){
    const field=requests.some(a=>a.mode==='favorite-actor')?'actor':'protagonist';
-   for(const fact of group){const value=fact.publicDetails[field][language],label=language==='ja'?(field==='actor'?'主演':'主人公'):(field==='actor'?'lead actor':'protagonist');clauses.push(language==='ja'?fact[language].value+'の'+label+'は'+value+(options.style==='friendly'?'だよ。':'です。'):'The '+label+' of '+fact[language].value+' is '+value+'.');}
+   for(const fact of group){const value=fact.publicDetails[field][language],label=language==='ja'?(field==='actor'?'主演':'主人公'):(field==='actor'?'lead actor':'protagonist');clauses.push(language==='ja'?fact[language].value+'の'+label+'は'+value+'です。':'The '+label+' of '+fact[language].value+' is '+value+'.');}
    continue;
   }
   if(requests.some(a=>a.mode==='favorite-detail')&&group.every(f=>f[language].overview)){
@@ -53,6 +54,13 @@ export function composeAnswer(facts,analyses,language,variant=0,options={}){
    const detailed=options.length==='detail'||requests.some(a=>a.mode==='knowledge-detail');
    const audioCategories=new Set(group.filter(f=>f.specification).map(f=>f.category));let lastCategory=null;
    for(const fact of group){
+    if(fact.specification){
+     const productFacts=group.filter(f=>f.specification?.product===fact.specification.product);
+     if(productFacts[0]!==fact)continue;
+     if(audioCategories.has('earphones')&&audioCategories.has('headphones')&&fact.category!==lastCategory){clauses.push(language==='ja'?(fact.category==='earphones'?'イヤホン':'ヘッドホン'):(fact.category==='earphones'?'Earbuds':'Headphones'));lastCategory=fact.category;}
+     let text=specificationParagraph(productFacts,language);if(language==='ja'&&options.style==='friendly')text=conversationalJapanese(text);
+     clauses.push(renderer.render('knowledge',language,text,'',variant+i));continue;
+    }
     if(audioCategories.has('earphones')&&audioCategories.has('headphones')&&fact.category!==lastCategory){clauses.push(language==='ja'?(fact.category==='earphones'?'イヤホン':'ヘッドホン'):(fact.category==='earphones'?'Earbuds':'Headphones'));lastCategory=fact.category;}
     let text=fact[language][detailed?'detail':'answer'];if(language==='ja'&&options.style==='friendly')text=conversationalJapanese(text);clauses.push(renderer.render('knowledge',language,text,'',variant+i));
    }
@@ -61,7 +69,7 @@ export function composeAnswer(facts,analyses,language,variant=0,options={}){
   const favoriteType=group.find(f=>f.favoriteCategory)?.favoriteCategory||(['favorites','favorite-brands'].some(mode=>requests.some(a=>a.mode===mode))&&group.every(f=>['apple','nothing','openai'].includes(f.id))?'brand':null);
   if(relation==='activity'&&group.every(f=>f.id==='tecirc')&&!hobbies&&requests.some(a=>a.intent==='article-subjects')&&facts.some(f=>f[language].relation==='writing'))continue;
   if(relation==='activity'&&!hobbies&&group.some(f=>f.id==='tecirc')){
-   const text=language==='ja'?(options.style==='friendly'?'Tecircで記事を書いているよ。':'Tecircで記事を書いています。'):'I write articles at Tecirc.';
+   const text=language==='ja'?'Tecircで記事を書いています。':'I write articles at Tecirc.';
    clauses.push(renderer.render('knowledge',language,text,'',variant+i));
    const other=group.filter(f=>f.id!=='tecirc');if(other.length)clauses.push(sentence(other,language,variant+i,renderer,false));continue;
   }

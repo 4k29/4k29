@@ -1,14 +1,14 @@
-import {rankAnswerFacts,chooseWording} from './answer-priority.js?v=20261004-transformer-5';
-import {semanticText} from './intent-model.js?v=20261004-transformer-5';
-import {normalizeQuestion,splitQuestions,analyzeQuestion,isFollowUp} from './question-analysis.js?v=20261004-transformer-5';
-import {composeAnswer} from './answer-composition.js?v=20261004-transformer-5';
-import {unknownSubjects,missingFactsSentence} from './unknown-subjects.js?v=20261004-transformer-5';
-import {linksForFact} from './answer-links.js?v=20261004-transformer-5';
-import {createSentenceRenderer,generationVersion,generationArchitecture} from './predictive-generator.js?v=20261004-transformer-5';
-import {preferenceRequest,responsePreferences,preferenceAcknowledgement} from './response-preferences.js?v=20261004-transformer-5';
-import {withPublicKnowledge} from './knowledge-retrieval.js?v=20261004-transformer-5';
-import {calculateQuestion} from './calculator.js?v=20261004-transformer-5';
-import {withProductSpecifications} from './product-specifications.js?v=20261004-transformer-5';
+import {rankAnswerFacts,chooseWording} from './answer-priority.js?v=20261004-transformer-5b';
+import {semanticText} from './intent-model.js?v=20261004-transformer-5b';
+import {normalizeQuestion,splitQuestions,analyzeQuestion,isFollowUp} from './question-analysis.js?v=20261004-transformer-5b';
+import {composeAnswer} from './answer-composition.js?v=20261004-transformer-5b';
+import {unknownSubjects,missingFactsSentence} from './unknown-subjects.js?v=20261004-transformer-5b';
+import {linksForFact} from './answer-links.js?v=20261004-transformer-5b';
+import {createSentenceRenderer,generationVersion,generationArchitecture} from './predictive-generator.js?v=20261004-transformer-5b';
+import {preferenceRequest,responsePreferences,preferenceAcknowledgement} from './response-preferences.js?v=20261004-transformer-5b';
+import {withPublicKnowledge} from './knowledge-retrieval.js?v=20261004-transformer-5b';
+import {calculateQuestion} from './calculator.js?v=20261004-transformer-5b';
+import {withProductSpecifications} from './product-specifications.js?v=20261004-transformer-5b';
 export class Conversation{
  constructor(data,{learner=null,preferences={}}={}){this.data=withProductSpecifications(withPublicKnowledge(data));this.learner=learner;this.defaultPreferences={...data.responsePreferences,...preferences};this.reset();}
  reset(){this.history=[];this.lastTopics=[];this.lastFactIds=[];this.lastModes=[];this.seen=new Map();this.lastReplies=[];this.turn=0;this.preferenceEvents=[];}

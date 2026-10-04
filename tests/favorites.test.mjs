@@ -34,6 +34,18 @@ test('generic favorites preserve all existing interests and the creator',()=>{
  assert.deepEqual(new Set(a.factIds),new Set(expected));
  assert.deepEqual(a.text.split("\n"),a.factIds.map(id=>(data.facts.find(f=>f.id===id).ja.shortName||data.facts.find(f=>f.id===id).ja.value)));assert.doesNotMatch(a.text,/アオのハコ/);assert.match(a.text,/してはる/);
 });
+test('bare MER and VIVANT questions begin with the description instead of a favorite announcement',()=>{
+ for(const q of ['merは？','MERは？','VIVANTは？','kyuは？']){
+  const a=new Conversation(data).respond(q);assert.equal(a.unanswered,false);assert.doesNotMatch(a.text,/好きな(?:ドラマ|ブランド|もの)は/);
+ }
+ const mer=new Conversation(data).respond('merは？');assert.match(mer.text,/^TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場/);
+});
+test('audio answers omit explanatory filler while keeping both device categories',()=>{
+ const c=new Conversation(data);for(let i=0;i<16;i++){
+  const a=c.respond('なんのイヤホン使ってる？');assert.doesNotMatch(a.text,/については|として|が普段の|を普段の/);
+  for(const name of ['イヤホン','ヘッドホン','Beats Fit Pro','CMF Buds','Nothing Headphone (1)'])assert.ok(a.text.includes(name));
+ }
+});
 test('repeated answers stay in the first person and preserve audio categories',()=>{
  for(const q of ['名前は？','趣味は？','好きなドラマは？','好きなブランドは？','イヤホンは？','ヘッドホンは？']){
   const c=new Conversation(data);
@@ -41,5 +53,11 @@ test('repeated answers stay in the first person and preserve audio categories',(
    const a=c.respond(q);assert.doesNotMatch(a.text,/と述べ|本人は|挙げています|プロフィールでは|登録されています/);
    if(/ホン/.test(q)){assert.match(a.text,/イヤホン/);assert.match(a.text,/ヘッドホン/);assert.match(a.text,/Beats Fit Pro/);assert.match(a.text,/CMF Buds/);assert.match(a.text,/Nothing Headphone \(1\)/);}
   }
+ }
+});
+test('friendly answers use complete natural sentences without obligatory yo endings',()=>{
+ const c=new Conversation(data);
+ for(const q of ['merは？','趣味は何','なんのイヤホン使ってる？','VIVANTについて','Headphone (1)のスペックは']){
+  const a=c.respond(q);assert.equal(a.unanswered,false);assert.doesNotMatch(a.text,/だよ。|ているよ。|については|ヘッドホンとして/);
  }
 });

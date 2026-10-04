@@ -6,6 +6,7 @@ import {neuralModel} from '../docs/neural-model.js';
 import {generationGrammar} from '../docs/generation-grammar.js';
 import {nextTokenProbability,predictNextTokens,sequenceLikelihood} from '../docs/next-token-model.js';
 import {generateCandidates} from '../docs/predictive-generator.js';
+import {naturalGrammarPaths} from '../docs/response-voice.js';
 import {trainGeneration} from '../training/train-generation.mjs';
 import {Conversation} from '../docs/dialogue.js';
 import {LocalLearning} from '../docs/local-learning.js';
@@ -34,7 +35,8 @@ test('every grammar path preserves exactly one registered value slot',()=>{
  for(const language of ['ja','en'])for(const kind of new Set(model.paths.filter(p=>p.language===language).map(p=>p.kind))){
   const value='REGISTERED_VALUE <script>literal</script>',candidates=generateCandidates(kind,language,{value,label:'REGISTERED_TYPE'},{style:'friendly'});
   assert.ok(candidates.length>=4,language+':'+kind);
-  for(const c of candidates){assert.equal(c.text.split(value).length,2);assert.doesNotMatch(c.text,/\{(?:value|label)\}|<eos>|<bos>|undefined|NaN/);assert.ok(model.paths.some(p=>p.id===c.pathId&&JSON.stringify([...p.tokens,1])===JSON.stringify(c.tokens)));assert.ok(c.transitions>c.tokens.length);}
+  const paths=naturalGrammarPaths(model.paths,model.vocabulary);
+  for(const c of candidates){assert.equal(c.text.split(value).length,2);assert.doesNotMatch(c.text,/\{(?:value|label)\}|<eos>|<bos>|undefined|NaN/);assert.ok(paths.some(p=>p.id===c.pathId&&JSON.stringify([...p.tokens,1])===JSON.stringify(c.tokens)));assert.ok(c.transitions>c.tokens.length);}
  }
 });
 for(const question of ['名前は？','趣味は？','好きな人は？','サブスクは？','ランニングの靴は？','ランニングのアプリは？','記事では何について書いてる？'])test('expanded friendly answers keep evidence and links: '+question,()=>{
