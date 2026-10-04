@@ -1,9 +1,10 @@
-import {resolveEntities} from './answer-entities.js?v=20261004-transformer-4';
-import {retrieveIntent} from './intent-retrieval.js?v=20261004-transformer-4';
-import {semanticText,resolveSemanticIntent} from './intent-model.js?v=20261004-transformer-4';
-import {resolveKnowledge} from './knowledge-retrieval.js?v=20261004-transformer-4';
+import {resolveEntities} from './answer-entities.js?v=20261004-transformer-5';
+import {retrieveIntent} from './intent-retrieval.js?v=20261004-transformer-5';
+import {semanticText,resolveSemanticIntent} from './intent-model.js?v=20261004-transformer-5';
+import {resolveKnowledge} from './knowledge-retrieval.js?v=20261004-transformer-5';
+import {resolveProductSpecifications,unsupportedProductName} from './product-specifications.js?v=20261004-transformer-5';
 // Local retrieval only: query scopes and evidence come from the editable profile.
-export function normalizeQuestion(text){return String(text).normalize('NFKC').toLowerCase().replace(/[\s　]+/g,' ').trim();}
+export function normalizeQuestion(text){return String(text).normalize('NFKC').toLowerCase().replace(/headphone\s*(?:\(\s*1\s*\)|1(?!\d))/g,'headphone (1)').replace(/[\s　]+/g,' ').trim();}
 export function matchesKeyword(text,word){
  word=normalizeQuestion(word);
  if(word==='サブ'.toLowerCase())return /サブ(?:垢|アカ|のアカ|だけ|は|が|を|って|について|と|$)/i.test(text);
@@ -47,7 +48,7 @@ export function splitQuestions(text,data){
  return result;
 }
 export function analyzeQuestion(text,data,context){
- if(/^[\d(+-].*[+\-*/].*[a-z_]\w*\s*[.(]/i.test(text))return {factIds:[],topics:[],unknown:true};
+ if(unsupportedProductName(text)||/^[\d(+-].*[+\-*/].*[a-z_]\w*\s*[.(]/i.test(text))return {factIds:[],topics:[],unknown:true};
  if(/^(?:検索|けんさく|search)\s*[:：\s]|(?:を|について)(?:検索|けんさく|ググって)|(?:検索|けんさく)して|\bsearch (?:for|the web)\b/i.test(text))return {factIds:[],topics:[],unknown:true};
  text=semanticText(text);
  const knowledge=resolveKnowledge(text,data,context,matchesKeyword);if(knowledge)return knowledge;
@@ -70,6 +71,7 @@ export function analyzeQuestion(text,data,context){
  const ownYouTube=/youtube|ユーチューブ|ゆーちゅーぶ/.test(text)&&/アカウント|チャンネル|\bid\b|account|channel|url|リンク/.test(text)&&!/推し|(?:好き|すき)な(?:人|ひと)|してはる|shiteharu|記事|ブログ|favou?rite (?:person|creator|youtuber)/.test(text)&&!(context.lastFactIds.includes('favorite-person')&&/^(?:それ|その|さっき|(?:their|his|her|that person's|what is (?:their|his|her))\b)/.test(text));
  const missingAttribute=/(?:どこ|どちら|どの店|どのお店).*(?:買|購入)|(?:買|購入).*(?:場所|店)|\bwhere\b.*\b(?:buy|bought|purchase|purchased)\b|\bhow often\b|週に何|月に何/.test(text);
  const productMaker=/メーカー|製造元|\b(?:manufacturer|brand)\b/.test(text)&&(/イヤホン|ヘッドホン|靴|シューズ|earbuds?|earphones?|headphones?|shoes?/.test(text)||/^(?:それ|その|さっき|their\b|its\b)/.test(text));
+ if(!unsupportedSubject&&!missingAttribute&&!unsupportedRank){const specs=resolveProductSpecifications(text,data,context,matchesKeyword);if(specs)return specs;}
  // The newly registered manga category now has a grounded answer. Other
  // unsupported genres and personal attributes keep their existing guards.
  text=text.replace(/どうして(?:る|いる|います)/g,'どうやってしてる');
@@ -104,7 +106,7 @@ export function analyzeQuestion(text,data,context){
  if(retrieval){semantic.factIds=retrieval.factIds;semantic.intent=retrieval.intent;semantic.priority=65;semantic.confidence=retrieval.confidence;}
 
  if(semantic.factIds.length&&(semantic.priority>=60||!selected.length||semantic.intent==='identity-overview'))selected=semantic.factIds.map(id=>data.facts.find(f=>f.id===id)).filter(Boolean);
- if(/以外/.test(text)&&/活動|趣味|何(?:を)?して/.test(text)){
+ if(/以外/.test(text)&&(/活動|趣味|何(?:を)?して/.test(text)||context.lastModes?.includes('hobbies'))){
   selected=data.facts.filter(f=>f.topic==='activities');
   const excludedText=text.slice(0,text.indexOf('以外'));
   for(const f of selected)if((f.aliases||[]).some(a=>matchesKeyword(excludedText,a)))exclude.add(f.id);
@@ -132,6 +134,8 @@ export function analyzeQuestion(text,data,context){
  if(/ヘッドホン|ヘッドフォン|headphone|愛用|愛用品|使って|持って/.test(text)&&!/興味|関心|好き|interest|like/.test(text))selected=selected.filter(f=>f.topic!=='interests');
  if(semantic.concepts.has('social')&&selected.some(f=>f.topic==='social')&&semantic.intent!=='identity-name')selected=selected.filter(f=>f.id!=='name');
  if(semantic.mode==='brief')selected=selected.slice(0,3);
- if(/趣味|\bhobb(?:y|ies)\b/.test(text)&&selected.some(f=>f.ja.relation==='activity'))semantic.mode='hobbies';
+ if((/趣味|\bhobb(?:y|ies)\b|for fun|free time/.test(text)||context.lastModes?.includes('hobbies')&&(follow||/以外/.test(text)))&&selected.some(f=>f.ja.relation==='activity')){
+  selected=selected.filter(f=>f.id!=='tecirc');semantic.mode='hobbies';
+ }
  return {learningEligible:!follow&&!referenceLink&&!/^(?:それ|その|さっき|前に|前の)/.test(text)&&!learned&&!retrieval&&semantic.priority>=60&&selected.length>0,learned:!!learned,factIds:[...new Set(selected.map(f=>f.id))],topics,unknown:!selected.length,intent:semantic.intent,mode:semantic.mode,confidence:semantic.confidence};
 }

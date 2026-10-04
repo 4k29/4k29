@@ -1,16 +1,17 @@
-import {rankAnswerFacts,chooseWording} from './answer-priority.js?v=20261004-transformer-4';
-import {semanticText} from './intent-model.js?v=20261004-transformer-4';
-import {normalizeQuestion,splitQuestions,analyzeQuestion,isFollowUp} from './question-analysis.js?v=20261004-transformer-4';
-import {composeAnswer} from './answer-composition.js?v=20261004-transformer-4';
-import {unknownSubjects,missingFactsSentence} from './unknown-subjects.js?v=20261004-transformer-4';
-import {linksForFact} from './answer-links.js?v=20261004-transformer-4';
-import {createSentenceRenderer,generationVersion,generationArchitecture} from './predictive-generator.js?v=20261004-transformer-4';
-import {preferenceRequest,responsePreferences,preferenceAcknowledgement} from './response-preferences.js?v=20261004-transformer-4';
-import {withPublicKnowledge} from './knowledge-retrieval.js?v=20261004-transformer-4';
-import {calculateQuestion} from './calculator.js?v=20261004-transformer-4';
+import {rankAnswerFacts,chooseWording} from './answer-priority.js?v=20261004-transformer-5';
+import {semanticText} from './intent-model.js?v=20261004-transformer-5';
+import {normalizeQuestion,splitQuestions,analyzeQuestion,isFollowUp} from './question-analysis.js?v=20261004-transformer-5';
+import {composeAnswer} from './answer-composition.js?v=20261004-transformer-5';
+import {unknownSubjects,missingFactsSentence} from './unknown-subjects.js?v=20261004-transformer-5';
+import {linksForFact} from './answer-links.js?v=20261004-transformer-5';
+import {createSentenceRenderer,generationVersion,generationArchitecture} from './predictive-generator.js?v=20261004-transformer-5';
+import {preferenceRequest,responsePreferences,preferenceAcknowledgement} from './response-preferences.js?v=20261004-transformer-5';
+import {withPublicKnowledge} from './knowledge-retrieval.js?v=20261004-transformer-5';
+import {calculateQuestion} from './calculator.js?v=20261004-transformer-5';
+import {withProductSpecifications} from './product-specifications.js?v=20261004-transformer-5';
 export class Conversation{
- constructor(data,{learner=null,preferences={}}={}){this.data=withPublicKnowledge(data);this.learner=learner;this.defaultPreferences={...data.responsePreferences,...preferences};this.reset();}
- reset(){this.history=[];this.lastTopics=[];this.lastFactIds=[];this.seen=new Map();this.lastReplies=[];this.turn=0;this.preferenceEvents=[];}
+ constructor(data,{learner=null,preferences={}}={}){this.data=withProductSpecifications(withPublicKnowledge(data));this.learner=learner;this.defaultPreferences={...data.responsePreferences,...preferences};this.reset();}
+ reset(){this.history=[];this.lastTopics=[];this.lastFactIds=[];this.lastModes=[];this.seen=new Map();this.lastReplies=[];this.turn=0;this.preferenceEvents=[];}
  respond(question){
   const raw=normalizeQuestion(question),text=semanticText(raw),language=/[ぁ-んァ-ヶ一-龠]/.test(raw)?'ja':'en';
   const request=preferenceRequest(raw),follow=isFollowUp(text),temporaryPreference=/今回は|この回答だけ|this time|for this answer/i.test(raw);
@@ -21,13 +22,13 @@ export class Conversation{
    this.history.push({question,answer:output,topics:this.lastTopics,language,factIds:this.lastFactIds});
    return {text:output,topics:[],language,links:[],factIds:[],intents:[],unanswered:false,unansweredSubjects:[],learningEligible:false,learned:false,preferenceUpdate:temporaryPreference?null:request.update};
   }
-  const analyses=[],context={history:this.history,lastFactIds:this.lastFactIds,lastTopics:this.lastTopics,seen:this.seen,learner:this.learner};
+  const analyses=[],context={history:this.history,lastFactIds:this.lastFactIds,lastTopics:this.lastTopics,lastModes:this.lastModes,seen:this.seen,learner:this.learner,explanationRequested:request.update?.length==='detail'};
   const analyzedText=request.update&&!request.onlyInstruction?semanticText(request.remaining):text;
   for(const clause of splitQuestions(analyzedText,this.data)){
    const calculation=calculateQuestion(clause);
    if(calculation&&!this.data.facts.some(f=>f.id===calculation.id))this.data.facts.push(calculation);
    const analysis=calculation?{factIds:[calculation.id],topics:['calculation'],unknown:false,intent:'calculation',mode:'knowledge',learningEligible:false}:analyzeQuestion(clause,this.data,context);analysis.unknownSubjects=analysis.unknown?unknownSubjects(clause):[];analyses.push(analysis);
-   context.lastFactIds=analysis.factIds;context.lastTopics=[...new Set(analysis.factIds.map(id=>this.data.facts.find(f=>f.id===id)?.topic).filter(Boolean))];
+   context.lastFactIds=analysis.factIds;context.lastTopics=[...new Set(analysis.factIds.map(id=>this.data.facts.find(f=>f.id===id)?.topic).filter(Boolean))];context.lastModes=[analysis.mode].filter(Boolean);
   }
   const ids=new Set(analyses.flatMap(a=>a.factIds));
   let selected=[...ids].map(id=>this.data.facts.find(f=>f.id===id)).filter(Boolean),topics=[];
@@ -44,8 +45,8 @@ export class Conversation{
    generation={model:generationVersion,algorithm:generationArchitecture,style:preferences.style,length:preferences.length,method:renderer.trace.length?'constrained-next-token':'registered-value'};
    if(hasUnknown)output+='\n'+missingFactsSentence(analyses.flatMap(a=>a.unknownSubjects),language);
    for(const fact of selected)this.seen.set(fact.id,(this.seen.get(fact.id)||0)+1);
-   this.lastTopics=topics;this.lastFactIds=selected.map(f=>f.id);
-  }else{topics=[];this.lastTopics=[];this.lastFactIds=[];}
+   this.lastTopics=topics;this.lastFactIds=selected.map(f=>f.id);this.lastModes=analyses.filter(a=>!a.unknown).map(a=>a.mode).filter(Boolean);
+  }else{topics=[];this.lastTopics=[];this.lastFactIds=[];this.lastModes=[];}
   const urlOnly=analyses.filter(a=>!a.unknown).every(a=>a.mode==='url-only');
   const links=selected.flatMap(f=>{const requests=analyses.filter(a=>!a.unknown&&a.factIds.includes(f.id));return requests.every(a=>a.mode==='value-only')?[]:[...(f.url?[{label:urlOnly?f.url:f[language].value,url:f.url}]:[]),...linksForFact(f,analyses)];});
   this.turn++;this.lastReplies.push(output);this.lastReplies=this.lastReplies.slice(-8);this.history.push({question,answer:output,topics,language,factIds:selected.map(f=>f.id)});

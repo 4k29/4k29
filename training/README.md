@@ -2,7 +2,31 @@
 
 このサイトは小さなdecoder-only Transformerをブラウザ内で実行し、次の語句の予測、登録情報の検索、文法制約、好みに合う文章の順位付けを組み合わせる。ChatGPT自体の重みを変更する機能ではない。
 
-## 今回の追加学習
+## 現在：仕様値と日本語の文型の追加学習
+
+従来の600,000回に10,000回ずつ3段階を追加し、今回までの追加更新は630,000回、初期学習を含む採用経路は640,700回になった。すべて実際のAdamW更新。各段階の最終10,000更新を採用し、記録を `transformer-specifications-first-training.json`、`transformer-specifications-second-training.json`、`transformer-training.json` に保存した。以前の600,000回までの教師と記録は `transformer-600000-*` に残す。
+
+2層4 heads・37,984パラメーター。語彙は477から619へ追加し、以前のID・embedding行を保って初期化。文法718例を608訓練／110検証に分け、公式で確認した仕様33項目と本人指定のドラマ紹介2文について、日英・2口調の140例を訓練へ追加した。計858例。専用制御トークンに続く数値や語句そのものを次トークンの正解にし、仕様の制御トークン自体は損失に含めない。外部の学習済み重みは使用しない。
+
+`product-specifications.json` の値、ANC・codec・ケースの条件と出典を、生成器がそのまま `neuralModel.specificationMemory` に同梱する。質問を項目に対応付けて専用制御トークンから値を生成し、出典付きの値と完全一致したかを確認する。不一致時には確認済みモデル内メモリーを使い、数値を創作しない。
+
+最初の段階のgreedy値再現は日英66仕様中58、2段階目は65。3段階目はドラマ紹介4文を含め70/70完全一致。これは学習済み値の再現であり、未知の知識の正答率ではない。文法検証損失は1段階目1.479959、2段階目1.518081、3段階目1.427590。3段階目では以前の600,000回の自作モデルを別の凍結教師として使い、文法忘却を抑制した。仕様値の行に教師の疑似正解は使わない。
+
+不自然な趣味の文型、製品を主語として「が使っている」とする文型などを除外。Tecircを趣味に分類しない。文末の口調変換は確認した活用を扱い、単語途中の「います」を置換しない。語句の選択には学習した分布を使い、自然さ・本人の指定・数値の正確さには生成制約と回帰評価も併用する。
+
+再現例（PyTorch 2.6.0 CPU、build-only。ブラウザには不要）:
+
+```sh
+node training/prepare-transformer.mjs /tmp/spec-grammar.json --direct-only --extended
+node training/prepare-specifications.mjs /tmp/spec-grammar.json /tmp/spec-corpus.json
+python training/train-transformer.py --corpus /tmp/spec-corpus.json --initialize-model training/transformer-600000-teacher.js --expand-vocabulary --rounds 1 --updates-per-round 10000 --batch-size 16 --threads 1 --learning-rate 0.00015 --distill 2 --compile-loss --export-final --version 2026-10-04.transformer-5 --output /tmp/spec-first.js --artifacts-prefix /tmp/spec-first
+```
+
+続く2段階目は `transformer-specifications-first.js` から学習率0.00006、dropout0.05、distill1。3段階目は `transformer-specifications-second.js` から学習率0.00008、dropout0.03、distill8、`--distill-model training/transformer-600000-teacher.js`。評価と実測は `evaluation/specification-recall-results.json` と `evaluation/japanese-conversation-results.json`。
+
+10セット×100,000更新の長い追加学習には `--rounds 10 --updates-per-round 100000 --adaptive-learning-rate` を使う。`--export-final`を指定しない場合は、全セットを実行した上で文法検証損失が最良の重みを採用する。`completedSteps`（実行した回数）と`bestStep`（採用までの回数）を区別し、途中の採用重みを全更新後の重みとは表示しない。
+
+## 過去：50ラウンドの追加学習
 
 指定された50ラウンドを、各10,000回、合計500,000回の実際のAdamW更新で完了した。出発点は前回の10,700更新のモデルで、今回の最終チェックポイントまでの学習経路は累計510,700更新になる。最低回数を満たした途中の最良モデルに戻す方法は採らず、`--export-final` で全更新後の状態を配信する。途中の検証損失も診断用に保持する。
 
@@ -61,11 +85,11 @@ node evaluation/evaluate-prediction.mjs --out=evaluation/prediction-results.json
 
 500,000更新後の評価は回帰219/219、追加168/168、好きなもの22/22、Node749/749。ウォーム状態300回答の中央値1.12ms、p95 2.82ms。未見26文の損失は2.09178、perplexity 8.09930で、前回10,000更新の8.77137より下がった。この狭い句の評価での変化と、訓練中の検証損失の悪化は別の結果であり、一般の回答精度向上とは解釈しない。
 
-## 続く10ラウンドの追加学習と現在の状態
+## 過去：続く10ラウンドの追加学習
 
 その後の指示で10ラウンド×10,000更新をさらに実行し、合計600,000回の追加更新を完了した。採用重みの学習経路は累計610,700回。50万更新の最終重み `transformer-500000-teacher.js` から開始し、本人の口調の文法724例に、好きな種類の文法20例と説明用の保護された値の文法4例を追加した。748例のうち633例・553グループが訓練、115例・99グループが検証。新たな本人情報や説明内容そのものを重みの正解として学習したとは扱わない。
 
-50万更新の記録は `transformer-500000-training.json` / `transformer-500000-selection.json` に保存。現在の10万更新の記録は `transformer-training.json` / `transformer-selection.json`。モデル・optimizerの出発点は自作モデルだけで、外部の学習済みモデルは使わない。
+50万更新の記録は `transformer-500000-training.json` / `transformer-500000-selection.json` に保存。この10万更新の記録は `transformer-600000-training.json` / `transformer-600000-selection.json`。モデル・optimizerの出発点は自作モデルだけで、外部の学習済みモデルは使わない。
 
 再実行は上記の prepare-transformer に `--direct-only --extended` を指定し、初期化を `training/transformer-500000-teacher.js`、roundsを10、学習率を0.00001、versionを2026-10-04.transformer-4へ変える。出力は `/tmp/4k29-rounds10.js` と対応するJSON、選択の最小更新数は100000。
 

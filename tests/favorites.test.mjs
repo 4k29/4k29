@@ -14,8 +14,8 @@ for(const row of cases)test('favorite question: '+row.question,()=>{
 });
 test('brief introductions, detailed context and name-only replies answer different needs',()=>{
  const c=new Conversation(data),short=c.respond('TOKYO MERについて教えて'),detail=c.respond('もっと詳しく');
- assert.match(short.text,/医療ドラマ/);
- assert.match(detail.text,/鈴木亮平/);assert.match(detail.text,/喜多見幸太/);assert.match(detail.text,/手術室/);
+ assert.match(short.text,/TBSの日曜劇場/);
+ assert.match(detail.text,/鈴木亮平/);assert.doesNotMatch(detail.text,/喜多見幸太|手術室|ERカー/);
  assert.deepEqual(detail.factIds,short.factIds);
  const names=c.respond('名前だけ');assert.equal(names.text,'TOKYO MER');assert.deepEqual(names.links,[]);
 });
@@ -25,14 +25,14 @@ test('brand and drama introductions retain the supplied identity and public sour
  assert.doesNotMatch(kyu.text,/使っている|持っている|買った/);
  assert.equal(kyu.links[0].url,'https://kyu-core.com/');
  const mer=new Conversation(data).respond('TOKYO MERについて教えて');
- assert.match(mer.text,/鈴木亮平/);assert.match(mer.text,/ERカー/);assert.match(mer.text,/ドラマ/);
+ assert.match(mer.text,/鈴木亮平/);assert.match(mer.text,/TBSの日曜劇場/);assert.match(mer.text,/ドラマ/);
  assert.doesNotMatch(mer.text,/映画/);
 });
 test('generic favorites preserve all existing interests and the creator',()=>{
  const a=new Conversation(data).respond('好きなものは？');
  const expected=data.facts.filter(f=>f.ja.relation==='interest'||f.ja.relation==='favoriteThing'||f.id==='favorite-person').map(f=>f.id);
  assert.deepEqual(new Set(a.factIds),new Set(expected));
- assert.match(a.text,/ブランド/);assert.match(a.text,/ドラマ/);assert.doesNotMatch(a.text,/アオのハコ/);assert.match(a.text,/してはる/);
+ assert.deepEqual(a.text.split("\n"),a.factIds.map(id=>(data.facts.find(f=>f.id===id).ja.shortName||data.facts.find(f=>f.id===id).ja.value)));assert.doesNotMatch(a.text,/アオのハコ/);assert.match(a.text,/してはる/);
 });
 test('repeated answers stay in the first person and preserve audio categories',()=>{
  for(const q of ['名前は？','趣味は？','好きなドラマは？','好きなブランドは？','イヤホンは？','ヘッドホンは？']){

@@ -1,9 +1,10 @@
 // Supervised question examples for a small local TF-IDF intent retriever. These are questions, not canned answers.
-import {expandedIntentExamples} from './intent-expansion.js?v=20261004-transformer-4';
+import {expandedIntentExamples} from './intent-expansion.js?v=20261004-transformer-5';
 const coreIntentExamples=[
+ {id:'hobbies',facts:['photo','running'],examples:['趣味についてもう少し教えて','tell me about your hobbies']},
  {id:'interests',facts:['apple','nothing','openai','tech','ui','design','hci','slm','context'],examples:['どんなことにハマってる','今ハマっているものは','最近のマイブームは','どのようなことに関心を持っていますか','何に興味がある','関心のあるものを知りたい','熱中していることを教えて','what are you interested in','what catches your attention']},
  {id:'interest-fields',facts:['tech','ui','design','hci','slm','context'],examples:['気になっている分野について聞きたい','関心のある領域を教えて','興味のある分野は','what fields are you interested in']},
- {id:'activities',facts:['tecirc','photo','running'],examples:['普段の過ごし方を教えて','暇な時にやっていることは','日頃はどんな活動をしていますか','余暇には何をして過ごしていますか','趣味についてもう少し教えて','休日に楽しんでいる活動は','普段取り組んでいることが知りたい','what do you do in your spare time','tell me about your hobbies']},
+ {id:'activities',facts:['tecirc','photo','running'],examples:['普段の過ごし方を教えて','暇な時にやっていることは','日頃はどんな活動をしていますか','余暇には何をして過ごしていますか','休日に楽しんでいる活動は','普段取り組んでいることが知りたい','what do you do in your spare time']},
  {id:'creative-process',facts:['workflow','iteration','taste'],examples:['どういう風に開発してるの','どんなふうに作品を作っている','制作はどのように進めているの','アイデアから完成までの進め方を知りたい','ものづくりの進め方を説明して','制作の手順を順に教えて','開発を進める流れを知りたい','how do you approach creating things','walk me through your development process']},
  {id:'creative-tools',facts:['workflow'],examples:['普段どんな技術を使ってる','制作で使用するツールは何ですか','普段使っている開発ツールを教えて','開発に使うソフトを知りたい','ものづくりで何のツールを使う','どの生成AIを制作で利用していますか','what tools do you use for development']},
  {id:'creative-division',facts:['workflow','taste'],examples:['ものづくりではどこを自分で決めてる','開発ってAIに指示するだけ','全部AIに任せているのか本人の担当も知りたい','AIで制作するときあなたは何を考えるの','AIとの協力で自分は何をするの','作るとき本人が判断する部分は','AI任せではなく自分で担当することは','what is your own contribution when building with AI']},

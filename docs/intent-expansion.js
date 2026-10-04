@@ -1,9 +1,10 @@
 // Additional supervised phrasing examples. Labels refer only to registered
 // facts; these are development data, not the independent evaluation corpus.
 export const expandedIntentExamples=[
+ {id:'hobbies',facts:['photo','running'],examples:['趣味として何をやっている？','How do you spend your free time?','What hobbies do you have?']},
  {id:'identity-name',facts:['name'],examples:['呼び名を聞いてもいい？','どんな名前で活動してる？','なんて呼んだらいいかな','あなたのハンドルネームが知りたい','名前を紹介してもらえる？','What should I call you?','What name do you go by?','Could you tell me your nickname?']},
  {id:'identity-role',facts:['student'],examples:['現在の身分を教えて','今の立場はどんな感じ？','いま学生として過ごしてる？','仕事をしている人なの？','どういう職業なのか知りたい','Are you a student or working?','What is your occupation?','Tell me about your current role.']},
- {id:'activities',facts:['tecirc','photo','running'],examples:['空いている時間は何を楽しむ？','休日の過ごし方を聞かせて','趣味として何をやっている？','普段の活動をいくつか教えて','時間があるときに取り組むことは？','What do you enjoy in your spare time?','How do you spend your free time?','What hobbies do you have?']},
+ {id:'activities',facts:['tecirc','photo','running'],examples:['空いている時間は何を楽しむ？','休日の過ごし方を聞かせて','普段の活動をいくつか教えて','時間があるときに取り組むことは？','What do you enjoy in your spare time?']},
  {id:'interests',facts:['apple','nothing','openai','tech','ui','design','hci','slm','context'],examples:['最近関心を持っているものを知りたい','興味があることを挙げて','気になっていることは何かある？','関心事をいくつか聞かせて','興味のあるものを紹介して','What are you curious about?','What catches your interest?','Tell me what you are interested in.']},
  {id:'interest-brands',facts:['apple','nothing','openai','favorite-kyu'],examples:['関心のあるメーカーを挙げて','どんなブランドが好きなの？','What brands do you like?','Which brands catch your interest?']},
  {id:'interest-companies',facts:['apple','nothing','openai'],examples:['気になっている企業はある？','好きな企業は何社かある？','興味がある会社を教えて','Which companies interest you?']},
