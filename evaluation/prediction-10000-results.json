@@ -1,0 +1,846 @@
+{
+  "model": "2026-10-04.transformer-2",
+  "runtime": "v24.19.0",
+  "defaultPreferences": {
+    "style": "friendly",
+    "length": "normal"
+  },
+  "training": {
+    "sourceSha256": "4e32c63e8915894adea965a711e910e6cf8998d14b64f8c0f4a63f00e6e5c9f0",
+    "paths": 848,
+    "uniquePaths": 758,
+    "tokens": 10366,
+    "vocabulary": 449,
+    "contexts": 14761,
+    "pairs": 36,
+    "epochs": 600,
+    "initialPreferenceLoss": 0.693147,
+    "finalPreferenceLoss": 0.200342,
+    "corpusNote": "Engineer-authored synthetic contrastive feature pairs. These encode desired behavior, not observed human feedback or the user's writing samples. Features: styleMatch, brevityFit, detailFit, directness, fluency, naturalness, novelty."
+  },
+  "neuralTraining": {
+    "seed": 2941,
+    "optimizer": "AdamW",
+    "schedule": "1000-step warmup and cosine decay",
+    "peakLearningRate": 0.00002,
+    "batchSize": 64,
+    "gradientClip": 1,
+    "weightDecay": 0.02,
+    "requestedSteps": 10000,
+    "minimumSteps": 10000,
+    "completedSteps": 10000,
+    "bestStep": 10000,
+    "overallBestStep": 200,
+    "overallBestValidationLoss": 1.188300903904381,
+    "trainRows": 714,
+    "validationRows": 134,
+    "trainGroups": 639,
+    "validationGroups": 119,
+    "partition": "SHA256(language:kind:tokens) first 8 hex digits modulo 7; duplicates share a partition",
+    "initialTrainLoss": 0.4026807574861648,
+    "initialValidationLoss": 1.188519236003383,
+    "finalTrainLoss": 0.3774393940344881,
+    "finalValidationLoss": 1.191611075515382,
+    "parameters": 33440,
+    "elapsedSeconds": 552.65,
+    "pytorch": "2.6.0+cpu",
+    "sourceSha256": "8c9a2ab7089588f28da5f2f555c7c48a3a3befdb7e3bf4e05413b68db9ec56a8",
+    "baseSourceSha256": "4e32c63e8915894adea965a711e910e6cf8998d14b64f8c0f4a63f00e6e5c9f0",
+    "note": "Engineer-authored grammar. No user writing samples, generated chat replies, profile values, or external evaluation phrases were used as training targets.",
+    "initializedModelSha256": "4f585c1a69cad91ccd2a889694d91f0ec7cd038dcd4eb0fd60c5775063a60252",
+    "initialCheckpointStep": 700,
+    "distillationWeight": 2,
+    "distillationTemperature": 2,
+    "cumulativeCheckpointSteps": 10700
+  },
+  "preferenceWeights": {
+    "styleMatch": 2.3841498,
+    "brevityFit": 2.6306576,
+    "detailFit": 1.3408741,
+    "directness": 2.3913453,
+    "fluency": 1.90774,
+    "naturalness": 2.3487408,
+    "novelty": 2.2867608
+  },
+  "artifacts": {
+    "statisticalBytes": 550125,
+    "statisticalGzipBytes": 84457,
+    "neuralBytes": 356517,
+    "neuralGzipBytes": 138935
+  },
+  "baseline": {
+    "description": "Snapshot before this prediction-model change, includes the preceding answer-quality improvement.",
+    "snapshotSha256": "eb0239d2d2e32bbe25d3b182249e8f8270ff7a293961627036f14d6a9e636430",
+    "regression": {
+      "correct": 212,
+      "total": 219,
+      "failures": [
+        {
+          "question": "あなたの活動名を教えてもらえる？",
+          "expected": [
+            "name"
+          ],
+          "actual": [
+            "tecirc",
+            "photo",
+            "running"
+          ],
+          "answer": "Tecircでの記事執筆、写真・映像制作、ランニングに取り組んでいます。"
+        },
+        {
+          "question": "記事で扱う話題を教えてもらえる？",
+          "expected": [
+            "tecirc",
+            "tecirc-subjects",
+            "tecirc-link"
+          ],
+          "actual": [
+            "tecirc"
+          ],
+          "answer": "Tecircでの記事執筆に取り組んでいます。"
+        },
+        {
+          "question": "走るときに使ってるアプリを聞かせて",
+          "expected": [
+            "running-app"
+          ],
+          "actual": [
+            "running"
+          ],
+          "answer": "ランニングに取り組んでいます。"
+        },
+        {
+          "question": "その人のYouTubeのリンクだけ",
+          "expected": [
+            "favorite-person"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "その名前だけ",
+          "expected": [
+            "running-app"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "Reply in detail. What is your workflow?",
+          "expected": [
+            "workflow",
+            "iteration",
+            "taste"
+          ],
+          "actual": [
+            "site-engine"
+          ],
+          "answer": "This chat composes answers with registered profile facts and a JavaScript rule-based dialogue engine."
+        },
+        {
+          "question": "友達が使っているイヤホンは何？",
+          "expected": [],
+          "actual": [
+            "earphones-beats",
+            "earphones-cmf"
+          ],
+          "answer": "イヤホンは、Beats Fit ProとCMF Budsを使っています。"
+        }
+      ]
+    },
+    "expandedQuestions": {
+      "correct": 127,
+      "total": 168,
+      "failures": [
+        {
+          "question": "今の立場はどんな感じ？",
+          "expected": [
+            "student"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "Tell me about your current role.",
+          "expected": [
+            "student"
+          ],
+          "actual": [
+            "name",
+            "student",
+            "workflow",
+            "tecirc",
+            "photo",
+            "running"
+          ],
+          "answer": "My name is 4k29 (しか).\nI am currently a student.\nI develop with ChatGPT and Codex.\nI spend time on writing articles for Tecirc, making photographs and videos and running."
+        },
+        {
+          "question": "空いている時間は何を楽しむ？",
+          "expected": [
+            "tecirc",
+            "photo",
+            "running"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "普段の活動をいくつか教えて",
+          "expected": [
+            "tecirc",
+            "photo",
+            "running"
+          ],
+          "actual": [
+            "running-shoes"
+          ],
+          "answer": "ランニング用の靴は、NIKE PEGASUS TRAIL 5 GORE‑TEXです。"
+        },
+        {
+          "question": "時間があるときに取り組むことは？",
+          "expected": [
+            "tecirc",
+            "photo",
+            "running"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "How do you spend your free time?",
+          "expected": [
+            "tecirc",
+            "photo",
+            "running"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "最近関心を持っているものを知りたい",
+          "expected": [
+            "apple",
+            "nothing",
+            "openai",
+            "tech",
+            "ui",
+            "design",
+            "hci",
+            "slm",
+            "context"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "気になっていることは何かある？",
+          "expected": [
+            "apple",
+            "nothing",
+            "openai",
+            "tech",
+            "ui",
+            "design",
+            "hci",
+            "slm",
+            "context"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "関心事をいくつか聞かせて",
+          "expected": [
+            "apple",
+            "nothing",
+            "openai",
+            "tech",
+            "ui",
+            "design",
+            "hci",
+            "slm",
+            "context"
+          ],
+          "actual": [
+            "running-shoes"
+          ],
+          "answer": "ランニング用の靴は、NIKE PEGASUS TRAIL 5 GORE‑TEXです。"
+        },
+        {
+          "question": "What are you curious about?",
+          "expected": [
+            "apple",
+            "nothing",
+            "openai",
+            "tech",
+            "ui",
+            "design",
+            "hci",
+            "slm",
+            "context"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "Which companies interest you?",
+          "expected": [
+            "apple",
+            "nothing",
+            "openai"
+          ],
+          "actual": [
+            "apple",
+            "nothing",
+            "openai",
+            "tech",
+            "ui",
+            "design",
+            "hci",
+            "slm",
+            "context"
+          ],
+          "answer": "I am interested in Apple, Nothing and OpenAI.\nMy interests include technology, UI and UX, design, HCI, small language models and context-aware information experiences."
+        },
+        {
+          "question": "興味のある分野をいくつか知りたい",
+          "expected": [
+            "tech",
+            "ui",
+            "design",
+            "hci",
+            "slm",
+            "context"
+          ],
+          "actual": [
+            "running-shoes"
+          ],
+          "answer": "ランニング用の靴は、NIKE PEGASUS TRAIL 5 GORE‑TEXです。"
+        },
+        {
+          "question": "What topics are you curious about?",
+          "expected": [
+            "tech",
+            "ui",
+            "design",
+            "hci",
+            "slm",
+            "context"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "制作を進める段取りを教えて",
+          "expected": [
+            "workflow",
+            "iteration",
+            "taste"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "開発ではどんな順番で進める？",
+          "expected": [
+            "workflow",
+            "iteration",
+            "taste"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "How do you move from an idea to a result?",
+          "expected": [
+            "workflow",
+            "iteration",
+            "taste"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "開発を進める道具を知りたい",
+          "expected": [
+            "workflow"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "制作に使うAIの名前を教えて",
+          "expected": [
+            "workflow"
+          ],
+          "actual": [
+            "name"
+          ],
+          "answer": "名前は4k29（しか）です。"
+        },
+        {
+          "question": "制作におけるあなたの役割は？",
+          "expected": [
+            "workflow",
+            "taste"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "アイデアや方向性は自分で決める？",
+          "expected": [
+            "workflow",
+            "taste"
+          ],
+          "actual": [
+            "taste"
+          ],
+          "answer": "アイデアや方向性、細部の確認は自分で担っています。"
+        },
+        {
+          "question": "How do you divide the work with AI?",
+          "expected": [
+            "workflow",
+            "taste"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "使いやすさのために何を意識してる？",
+          "expected": [
+            "defaults",
+            "spacing"
+          ],
+          "actual": [
+            "defaults"
+          ],
+          "answer": "よい初期設定、少ない手順、考え抜かれたデザインを大切にしています。"
+        },
+        {
+          "question": "執筆する記事の話題を知りたい",
+          "expected": [
+            "tecirc",
+            "tecirc-subjects",
+            "tecirc-link"
+          ],
+          "actual": [
+            "tecirc"
+          ],
+          "answer": "Tecircでの記事執筆に取り組んでいます。"
+        },
+        {
+          "question": "記事にはどんなことを書いてる？",
+          "expected": [
+            "tecirc",
+            "tecirc-subjects",
+            "tecirc-link"
+          ],
+          "actual": [
+            "tecirc"
+          ],
+          "answer": "Tecircでの記事執筆に取り組んでいます。"
+        },
+        {
+          "question": "What subjects do you write about?",
+          "expected": [
+            "tecirc",
+            "tecirc-subjects",
+            "tecirc-link"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "あなたの文章を読みに行きたい",
+          "expected": [
+            "tecirc-link"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "あなたのブログを開きたい",
+          "expected": [
+            "tecirc-link"
+          ],
+          "actual": [
+            "tecirc",
+            "tecirc-subjects",
+            "tecirc-link"
+          ],
+          "answer": "Tecircでの記事執筆に取り組んでいます。\nテクノロジー、デザイン、製品の使い心地をテーマに執筆しています。\n記事はTecircのNotes一覧で探せます。"
+        },
+        {
+          "question": "耳に入れるタイプの愛用品は？",
+          "expected": [
+            "earphones-beats",
+            "earphones-cmf"
+          ],
+          "actual": [
+            "headphones"
+          ],
+          "answer": "ヘッドホンは、Nothing Headphone (1)を使っています。"
+        },
+        {
+          "question": "利用している有料サービスは何？",
+          "expected": [
+            "subscription-chatgpt",
+            "subscription-apple",
+            "subscription-icloud"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "好きなクリエイターは誰？",
+          "expected": [
+            "favorite-person"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "お気に入りの人物を聞かせて",
+          "expected": [
+            "favorite-person"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "走るときに使うアプリの名前を教えて",
+          "expected": [
+            "running-app"
+          ],
+          "actual": [
+            "name"
+          ],
+          "answer": "名前は4k29（しか）です。"
+        },
+        {
+          "question": "走るときのアプリを知りたい",
+          "expected": [
+            "running-app"
+          ],
+          "actual": [
+            "running"
+          ],
+          "answer": "ランニングに取り組んでいます。"
+        },
+        {
+          "question": "チャットの内部ではどう返答を作る？",
+          "expected": [
+            "site-engine"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "How are responses generated in this chat?",
+          "expected": [
+            "site-engine"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "Tell me how this dialogue engine works.",
+          "expected": [
+            "site-engine"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "このチャットの会話は端末内だけ？",
+          "expected": [
+            "site-privacy"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "このサイトの入力データは外に送る？",
+          "expected": [
+            "site-privacy"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "Do chat messages leave my browser?",
+          "expected": [
+            "site-privacy"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "How does this site handle my data?",
+          "expected": [
+            "site-privacy"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        },
+        {
+          "question": "Are conversations sent to a server?",
+          "expected": [
+            "site-privacy"
+          ],
+          "actual": [],
+          "answer": "すみません、よく分かりません"
+        }
+      ]
+    },
+    "diversity": [
+      {
+        "question": "名前は？",
+        "unique": 6,
+        "evidenceStable": true,
+        "examples": [
+          "名前は4k29（しか）です。",
+          "4k29（しか）といいます。",
+          "4k29（しか）という名前です。"
+        ]
+      },
+      {
+        "question": "趣味は？",
+        "unique": 6,
+        "evidenceStable": true,
+        "examples": [
+          "趣味は、Tecircでの記事執筆、写真・映像制作、ランニングです。",
+          "趣味としてTecircでの記事執筆、写真・映像制作、ランニングをしています。",
+          "趣味には、Tecircでの記事執筆、写真・映像制作、ランニングがあります。"
+        ]
+      },
+      {
+        "question": "好きな人は？",
+        "unique": 6,
+        "evidenceStable": true,
+        "examples": [
+          "推しはしてはるです。\nYouTube / X（Twitter）",
+          "好きな人として挙げているのはしてはるです。\nYouTube / X（Twitter）",
+          "してはるが推しです。\nYouTube / X（Twitter）"
+        ]
+      },
+      {
+        "question": "サブスクは？",
+        "unique": 6,
+        "evidenceStable": true,
+        "examples": [
+          "契約しているサブスクは、ChatGPT Plus、Apple One、iCloud+（250GB）です。",
+          "ChatGPT Plus、Apple One、iCloud+（250GB）をサブスクとして利用しています。",
+          "契約中のサービスは、ChatGPT Plus、Apple One、iCloud+（250GB）です。"
+        ]
+      },
+      {
+        "question": "ランニングの靴は？",
+        "unique": 4,
+        "evidenceStable": true,
+        "examples": [
+          "ランニング用の靴は、NIKE PEGASUS TRAIL 5 GORE‑TEXです。",
+          "ランニングでは、NIKE PEGASUS TRAIL 5 GORE‑TEXをシューズとして使っています。",
+          "NIKE PEGASUS TRAIL 5 GORE‑TEXがランニング用の靴です。"
+        ]
+      },
+      {
+        "question": "ランニングのアプリは？",
+        "unique": 4,
+        "evidenceStable": true,
+        "examples": [
+          "ランニング用のアプリは、Nike Run Club（NRC）です。",
+          "ランニング用のアプリとして、Nike Run Club（NRC）を使っています。",
+          "使っているランニングアプリは、Nike Run Club（NRC）です。"
+        ]
+      },
+      {
+        "question": "記事では何について書いてる？",
+        "unique": 11,
+        "evidenceStable": true,
+        "examples": [
+          "テクノロジー、デザイン、製品の使い心地について記事を書いています。\nTecircのNotes一覧に記事をまとめています。",
+          "テクノロジー、デザイン、製品の使い心地が記事で扱っているテーマです。\n記事はTecircのNotes一覧で探せます。",
+          "テクノロジー、デザイン、製品の使い心地についての記事を執筆しています。\n記事を読むなら、TecircのNotes一覧をご覧ください。"
+        ]
+      }
+    ],
+    "performance": {
+      "samples": 300,
+      "medianMs": 0.5522770000000037,
+      "p95Ms": 1.0346180000000231,
+      "maxMs": 1.48609399999998,
+      "note": "Warm Node CPU response time, excludes UI animations and network loading; hardware-dependent."
+    }
+  },
+  "current": {
+    "regression": {
+      "correct": 219,
+      "total": 219,
+      "failures": []
+    },
+    "expandedQuestions": {
+      "correct": 168,
+      "total": 168,
+      "failures": []
+    },
+    "diversity": [
+      {
+        "question": "名前は？",
+        "unique": 10,
+        "evidenceStable": true,
+        "examples": [
+          "名前は4k29（しか）だよ。",
+          "呼び名については、4k29（しか）という名前を使っているよ。",
+          "4k29（しか）っていう名前だよ。"
+        ]
+      },
+      {
+        "question": "趣味は？",
+        "unique": 11,
+        "evidenceStable": true,
+        "examples": [
+          "趣味としてTecircでの記事執筆、写真・映像制作、ランニングを楽しんでいるよ。",
+          "プロフィールに挙げている趣味はTecircでの記事執筆、写真・映像制作、ランニングだよ。",
+          "楽しんでいる趣味の活動には、Tecircでの記事執筆、写真・映像制作、ランニングがあります。"
+        ]
+      },
+      {
+        "question": "好きな人は？",
+        "unique": 10,
+        "evidenceStable": true,
+        "examples": [
+          "好きな人は「してはる」だよ。\nYouTube / X（Twitter）",
+          "推しについては、「してはる」を挙げているよ。\nYouTube / X（Twitter）",
+          "プロフィールで好きな人、推しとして挙げているのは、「してはる」だよ。\nYouTube / X（Twitter）"
+        ]
+      },
+      {
+        "question": "サブスクは？",
+        "unique": 9,
+        "evidenceStable": true,
+        "examples": [
+          "サブスクはChatGPT Plus、Apple One、iCloud+（250GB）を使っているよ。",
+          "契約中のサービスはChatGPT Plus、Apple One、iCloud+（250GB）だよ。",
+          "利用しているサブスクの一覧には、ChatGPT Plus、Apple One、iCloud+（250GB）があります。"
+        ]
+      },
+      {
+        "question": "ランニングの靴は？",
+        "unique": 9,
+        "evidenceStable": true,
+        "examples": [
+          "ランニングシューズにはNIKE PEGASUS TRAIL 5 GORE‑TEXを使っているよ。",
+          "ランニングの靴として挙げるのはNIKE PEGASUS TRAIL 5 GORE‑TEXだよ。",
+          "ランニング用の靴として、プロフィールにはNIKE PEGASUS TRAIL 5 GORE‑TEXを登録しているよ。"
+        ]
+      },
+      {
+        "question": "ランニングのアプリは？",
+        "unique": 11,
+        "evidenceStable": true,
+        "examples": [
+          "ランニングのアプリはNike Run Club（NRC）だよ。",
+          "ランニングで利用しているアプリとして、Nike Run Club（NRC）を挙げているよ。",
+          "ランニング用にはNike Run Club（NRC）というアプリを使っているよ。"
+        ]
+      },
+      {
+        "question": "記事では何について書いてる？",
+        "unique": 15,
+        "evidenceStable": true,
+        "examples": [
+          "テクノロジー、デザイン、製品の使い心地をテーマに記事を書いているよ。\n記事はTecircのNotes一覧で読めるよ。",
+          "記事で書いているのはテクノロジー、デザイン、製品の使い心地だよ。\n公開している記事の一覧は、TecircのNotes一覧だよ。ここから読む記事を選べるよ。",
+          "記事の内容としては、テクノロジー、デザイン、製品の使い心地について書いています。\n記事をまとめて読める場所は、TecircのNotes一覧だよ。リンクから一覧を確認できるよ。"
+        ]
+      }
+    ],
+    "performance": {
+      "samples": 300,
+      "medianMs": 1.184465999999702,
+      "p95Ms": 2.9920740000002297,
+      "maxMs": 6.603794000000107,
+      "note": "Warm Node CPU response time, excludes UI animations and network loading; hardware-dependent."
+    },
+    "coldPerformance": {
+      "moduleInitializationMs": 58.008283000000006,
+      "results": [
+        {
+          "question": "名前は？",
+          "firstMs": 45.146277,
+          "repeatedMs": 7.755056999999994,
+          "facts": [
+            "name"
+          ]
+        },
+        {
+          "question": "趣味は？",
+          "firstMs": 24.29183899999998,
+          "repeatedMs": 3.6236839999999972,
+          "facts": [
+            "tecirc",
+            "photo",
+            "running"
+          ]
+        },
+        {
+          "question": "制作の流れは？",
+          "firstMs": 74.316452,
+          "repeatedMs": 2.4846589999999935,
+          "facts": [
+            "workflow",
+            "iteration",
+            "taste"
+          ]
+        },
+        {
+          "question": "イヤホンとヘッドホンは？",
+          "firstMs": 19.460827999999992,
+          "repeatedMs": 1.7995840000000385,
+          "facts": [
+            "earphones-beats",
+            "earphones-cmf",
+            "headphones"
+          ]
+        },
+        {
+          "question": "ランニングの靴とアプリは？",
+          "firstMs": 43.13270799999998,
+          "repeatedMs": 2.0680150000000026,
+          "facts": [
+            "running-shoes",
+            "running-app"
+          ]
+        },
+        {
+          "question": "サブスクは？",
+          "firstMs": 18.89194599999996,
+          "repeatedMs": 0.8485199999999509,
+          "facts": [
+            "subscription-chatgpt",
+            "subscription-apple",
+            "subscription-icloud"
+          ]
+        }
+      ],
+      "note": "Fresh Node process, first use of each grammar. Excludes HTTP transfer and UI animations. Some later questions share previously initialized kinds."
+    }
+  },
+  "languageHoldout": {
+    "sentences": 26,
+    "tokens": 297,
+    "oovTokens": 13,
+    "statisticalMeanNegativeLogLikelihood": 2.102269002306898,
+    "statisticalPerplexity": 8.184720008083982,
+    "neuralMeanNegativeLogLikelihood": 2.171492893187119,
+    "neuralPerplexity": 8.77136898810026,
+    "uniformVocabularyNegativeLogLikelihood": 6.1675164908883415,
+    "uniformVocabularyPerplexity": 477,
+    "note": "Authored unseen phrases, evaluated after freezing weights. OOV is mapped to <unk>. Uniform vocabulary is a diagnostic reference, not the previous engine or a general language-model benchmark."
+  },
+  "scope": "Question datasets are fixed development/regression cases, including 44 new cases used for corrections. They are not an independent estimate of general question accuracy. Model paths and preference pairs are synthetic authored data, not observed user feedback."
+}

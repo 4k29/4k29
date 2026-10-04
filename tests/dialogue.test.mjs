@@ -61,7 +61,7 @@ test('personal-question paraphrases resolve to registered facts',()=>{
   ['愛用のヘッドフォンは？',/Nothing Headphone/],['お気に入りの製品は？',/Nothing Headphone/],
   ['どうやって作るの？',/ChatGPT/],['AIツールは何を使う？',/ChatGPT/],['本人の役割は？',/アイデア/],
   ['デザインで大切なことは？',/初期設定/],['余白へのこだわりは？',/余白/],
-  ['このサイトは何の言語で実装？',/HTML/],['このチャットの仕組みは？',/JavaScript/],['プライバシーは？',/外部に送信しません/],
+  ['このサイトは何の言語で実装？',/HTML/],['このチャットの仕組みは？',/JavaScript/],['プライバシーは？',/外部には?(?:送信しません|送らない|送りません)/],
   ['ツイッターは？',/@p_horeer/],['フォローしたい',/@uma_4k/]
  ];
  for(const [question,pattern] of cases)assert.match(new Conversation(data).respond(question).text,pattern,question);

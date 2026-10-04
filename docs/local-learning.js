@@ -1,4 +1,5 @@
-import {questionTokens} from './intent-retrieval.js?v=20261003-weights-5';
+import {questionTokens} from './intent-retrieval.js?v=20261004-transformer-4';
+import {ENGINE_VERSION} from './question-journal.js?v=20261004-transformer-4';
 // Browser-local examples teach phrasing, never facts or finished answers.
 // Rebuild from the journal on each lookup so review/deletion applies immediately.
 export class LocalLearning{
@@ -7,6 +8,7 @@ export class LocalLearning{
   const valid=new Set(this.data.facts.map(f=>f.id)),unique=new Map();
   for(const r of this.records()){
    if(!r.learningEligible||r.learned||r.needsReview||r.unanswered||!r.factIds?.length||!r.factIds.every(id=>valid.has(id)))continue;
+   if(r.engine&&r.engine!==ENGINE_VERSION)continue;
    const terms=new Set(questionTokens(r.question));if(terms.size<3)continue;
    const key=[...terms].sort().join('|'),label=[...r.factIds].sort().join('|');
    const previous=unique.get(key);

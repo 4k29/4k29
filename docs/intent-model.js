@@ -1,4 +1,4 @@
-import {canonicalReading} from './japanese-reading.js?v=20261003-weights-5';
+import {canonicalReading} from './japanese-reading.js?v=20261004-transformer-4';
 // An explainable local intent model, not a language model. Every rule points to registered fact IDs.
 export const semanticModel={
  synonyms:[
@@ -10,24 +10,25 @@ export const semanticModel={
  concepts:{
   self:/あなた|しか|4k29|\b(?:you|your|u)\b/,
   who:/誰|何者|どんな人|\bwho\b/,
-  overview:/自己紹介|どういう人|どんな(?:人|やつ|奴)|何者|プロフィール|あなた(?:のこと|について)|introduce|about (?:you|yourself)/,
-  role:/職業|仕事|学生|社会人|会社員|働いて|働く|何してる人|何やってる人|生業|\b(?:job|occupation|student)\b|do for (?:work|a living)/,
+  overview:/自己紹介|どういう人|どんな(?:人|やつ|奴)|何者|プロフィール|あなた(?:のこと|について)|introduce|about (?:you|yourself)\b/,
+  role:/職業|仕事|学生|社会人|会社員|働いて|働く|何してる人|何やってる人|生業|身分|立場|\b(?:job|occupation|student)\b|current role|do for (?:work|a living)/,
   activity:/活動|趣味|休日|暇|余暇|普段|日頃|何(?:を)?(?:して|やって|作)|制作物|作ってるもの|\b(?:hobb(?:y|ies)|activities)\b|do (?:for fun|in your free time)/,
   interest:/好き|興味|関心|気になる|注目|\b(?:interest(?:s|ed)?|like|love|favorite|favourite)\b/,
   broad:/何(?:が|に|を)|どんな(?:もの|こと|分野)|好きな(?:もの|物|分野)|どの(?:分野|メーカー|ブランド)|どれ|\b(?:what|which)\b/,
-  brand:/メーカー|ブランド|企業|会社|\bbrands?\b/,
+  brand:/メーカー|ブランド|企業|会社|\b(?:brands?|compan(?:y|ies)|manufacturers?)\b/,
+  tools:/ツール|ソフト|\b(?:tools?|software)\b/,
   create:/形に|アイデアから完成|ものづくり|作|制作|開発|プログラミング|コード|コーディング|\b(?:make|build|creat\w*|develop\w*|cod\w*)\b/,
   how:/どう(?:やって|いう流れ|進め|作|開発)|どう協力|どんな(?:手順|流れ|方法|工程)|手順|進め方|プロセス|工程|流れ|\b(?:how|process|workflow|steps)\b/,
   ai:/ai|chatgpt|codex|人工知能|生成ai/,
   human:/自分|本人|人間|あなた|人の|\b(?:you|human|yourself)\b/,
-  responsibility:/役割|担当|分担|任せ|丸投げ|協力|何(?:を)?(?:する|してる|している|考える)|\b(?:responsibility|division|role|delegate)\b/,
+  responsibility:/役割|担当|分担|任せ|丸投げ|協力|決め|判断|何(?:を)?(?:する|してる|している|考える)|\b(?:responsibility|division|role|delegate|handle|contribut\w*)\b|take care of/,
   web:/web|ウェブ|サイト|ホームページ|\bwebsite\b/,
-  design:/デザイン|余白|ui|ux|使い心地|\bdesign\b/,
+  design:/デザイン|余白|ui|ux|使い心地|使いやす|使い勝手|\bdesign\b/,
   values:/こだわ|大切|大事|重視|意識|気を(?:つけ|付け)|心がけ|心掛け|使いやす|\b(?:value|priorit\w*|care about|matters|principles)\b/,
   article:/記事|執筆|tecirc|テサーク|ブログ|\b(?:articles?|writing|blog)\b/,
-  subject:/テーマ|内容|何(?:を|について)?(?:書|か)|(?:何|なん)(?:の|についての)記事|どんな(?:記事|ブログ)|\b(?:topics?|about|cover)\b/,
+  subject:/テーマ|内容|話題|何(?:を|について)?(?:書|か)|どんな(?:こと|内容).*(?:書|か)|(?:何|なん)(?:の|についての)記事|どんな(?:記事|ブログ)|\b(?:topics?|about|cover)\b/,
   where:/どこ|どちら|場所|\bwhere\b/,
-  link:/リンク|url|読め|読む|読ん|読みたい|行く|アクセス|\b(?:link|read|visit)\b/,
+  link:/リンク|url|読め|読む|読ん|読みたい|行く|アクセス|開きたい|\b(?:link|read|visit|open|browse)\b/,
   social:/sns|twitter|ツイッター|(?:^|[^a-z0-9_])x(?:$|[^a-z0-9_])|アカウント|垢|フォロー|連絡|\b(?:social|account|contact|follow)\b/,
   chat:/この(?:サイト|チャット|会話|回答)|対話|回答|返答|返事|喋|しゃべ|会話|\b(?:this (?:site|website|page|chat)|answer|reply|chatbot)\b/,
   implementation:/言語|構成|実装|技術|スタック|\b(?:stack|language|implemented)\b/,
@@ -38,17 +39,22 @@ export const semanticModel={
  },
  intents:[
   {id:'identity-name',patterns:[/^(?:ねえ?\s*|すみません\s*)?(?:あなた(?:って|は)?\s*)?誰(?:なの|なんだ|なんですか|なん|なんだよ|なんでしょうか|だ|だよ|だっけ|だったっけ|よ|やねん|です|ですか|でしょうか|か|なのか|なのかな|なのよ|様)?(?:教えて(?:ください)?|知りたい)?$/, /^(?:who (?:are|r) (?:you|u)|who is (?:しか|4k29|this)|who's this|tell me who you are|who you are)$/],facts:['name'],priority:100},
-  {id:'identity-name',patterns:[/(?:何|なん)(?:と|て)(?:お)?呼|お呼び|呼ばれ|呼び方|お名前|名前|ニックネーム|ハンドルネーム|\b(?:name|nickname|call you)\b/],none:['social','brand'],facts:['name'],priority:70},
+  {id:'identity-name',patterns:[/(?:何|なん)(?:と|て)(?:お)?呼|お呼び|呼ばれ|呼び方|お名前|名前|活動名|ニックネーム|ハンドルネーム|\b(?:name|nickname|call you)\b/],none:['social','brand'],facts:['name'],priority:70},
   {id:'identity-overview',all:['overview'],facts:['name','student','workflow','tecirc','photo','running'],priority:40},
   {id:'identity-role',all:['role'],facts:['student'],priority:60},
   {id:'daily-activities',all:['activity'],facts:['tecirc','photo','running'],priority:30},
   {id:'daily-activities',patterns:[/^(?:あなた(?:は|って)?\s*)?何(?:を)?(?:してる|やってる)(?:の|んですか|人)?$/, /^what do you do(?: for fun| in your free time)?$/],facts:['tecirc','photo','running'],priority:35},
   {id:'interest-brands',all:['interest','brand'],facts:['apple','nothing','openai'],priority:60},
-  {id:'interest-general',all:['interest','broad'],none:['brand'],facts:['apple','nothing','openai','tech','ui','design','hci','slm','context'],priority:25},
+  {id:'interest-general',all:['interest','broad'],none:['brand'],facts:['apple','nothing','openai','tech','ui','design','hci','slm','context'],priority:60},
+  {id:'interest-fields',all:['interest'],none:['brand'],patterns:[/分野|領域|\b(?:fields?|areas?)\b/],facts:['tech','ui','design','hci','slm','context'],priority:70},
+  {id:'creative-tools',all:['create','tools'],none:['how','responsibility'],facts:['workflow'],priority:78},
+  {id:'creative-tools',all:['create','ai'],none:['how','responsibility','values'],patterns:[/使|\b(?:use|using|tools?)\b/],facts:['workflow'],priority:78},
   {id:'creative-tools',patterns:[/何(?:を)?使.*(?:作|開発|制作)|(?:開発|制作).*(?:何(?:を)?使|どのai)|which tools.*(?:make|build|develop)/],facts:['workflow'],priority:78},
   {id:'creative-output',patterns:[/何(?:を)?作|どんな(?:もの|作品|サイト).*作|what (?:do|have) you (?:make|build)|what are you (?:making|building)/],facts:['tecirc','photo'],priority:65},
   {id:'site-author',patterns:[/(?:このサイト|このページ|自己紹介サイト).*(?:誰.*作|誰.*制作|作者)|誰.*(?:このサイト|このページ).*(?:作|制作)/],facts:['name','workflow','taste'],priority:95},
+  {id:'creative-process',patterns:[/(?:コード|プログラム).*(?:どう|どんな方法).*(?:用意|作|書)|(?:どう|どんな方法).*(?:コード|プログラム).*(?:作|書|用意)/],facts:['workflow','iteration','taste'],priority:75},
   {id:'creative-process',all:['create','how'],facts:['workflow','iteration','taste'],priority:75},
+  {id:'creative-process',patterns:[/^(?:what(?: is|'s) (?:your|the)|tell me (?:about )?(?:your|the)) (?:creation )?workflow$/],facts:['workflow','iteration','taste'],priority:75},
   {id:'creative-process',patterns:[/制作スタイル|開発スタイル|制作方法|開発方法|バイブコーディング|vibe coding/],facts:['workflow','iteration','taste'],priority:65},
   {id:'creative-process',patterns:[/(?:制作|開発).*(?:考え方|スタンス)|(?:考え方|スタンス).*(?:制作|開発)|aiとの付き合い方/],facts:['workflow','iteration','taste'],priority:75},
   {id:'creative-division',all:['ai','responsibility'],facts:['workflow','taste'],priority:90,mode:'division'},
@@ -82,7 +88,7 @@ export function resolveSemanticIntent(text,context,targeted=[]){
  ).sort((a,b)=>b.priority-a.priority);
  let best=candidates[0];
  const namedInterests=targeted.filter(f=>f.ja.relation==='interest');
- if(concepts.has('interest')&&!concepts.has('values')&&!concepts.has('create')&&namedInterests.length&&(!best||best.priority<60))best={id:'interest-entity',facts:namedInterests.map(f=>f.id),priority:60};
+ if(concepts.has('interest')&&!concepts.has('values')&&!concepts.has('create')&&namedInterests.length&&(!best||best.priority<60||['interest-general','interest-fields','interest-brands'].includes(best.id)))best={id:'interest-entity',facts:namedInterests.map(f=>f.id),priority:60};
 
  const facts=[...(best?.facts||[])];
  if(best&&['creative-process','creative-division','human-contribution','design-principles'].includes(best.id)){
