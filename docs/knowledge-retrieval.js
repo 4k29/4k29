@@ -1,4 +1,4 @@
-import {knowledgeFacts} from './knowledge-data.js?v=20261004-transformer-4';
+import {knowledgeFacts} from './knowledge-data.js?v=20261004-transformer-5';
 const forbidden=/あなた|僕|俺|私|友達|先生|好き|推し|持って|所有|買った|契約して|最新|今日|ニュース|価格|値段|おすすめ|\b(?:your|my|you|own|bought|latest|today|price|recommend)\b/i;
 const request=/とは|って何|ってなに|何ですか|どんな|意味|説明|について|違い|比較|仕組み|具体例|例を|\b(?:what|explain|describe|meaning|difference|compare|how)\b/i;
 const removeRequests=/とは|って(?:何|なに|どんな(?:もの|こと|仕組み)?)|何ですか|何なの|何か|何|は何|ですか|について|教えて(?:ください|くれる|もらえる)?|説明(?:して(?:ください|くれる)?)?|意味|違い|比較|仕組み|具体例|例を|簡単に|わかりやすく|分かりやすく|ざっくり|詳しく|もう少し|短く|ひとことで|知りたい|お願い(?:します)?|ねえ|まず|の|と|を|は|って|及び|および|\b(?:what|is|are|a|an|the|explain|describe|meaning|difference|differences|between|and|compare|how|does|work|works|about|tell|me|please|briefly|simply|in|detail|with|examples?)\b|[\s、,\/?!？！。:：・（）()]/gi;
@@ -15,6 +15,6 @@ export function resolveKnowledge(text,data,context,matches){
  if(!candidates.length)return null;
  let rest=text;
  for(const alias of candidates.flatMap(f=>f.aliases||[]).sort((a,b)=>b.length-a.length))rest=rest.replaceAll(alias.toLowerCase(),'');
- if(!literal.length&&(rest.replace(removeRequests,'')||!request.test(text)))return null;
- return {factIds:candidates.map(f=>f.id),topics:['general-knowledge'],unknown:false,intent:'public-knowledge',mode:/詳しく|具体例|例を|違い|比較|\b(?:detail|example|difference|compare)\b/.test(text)?'knowledge-detail':'knowledge',learningEligible:false};
+ if(!literal.length&&(rest.replace(removeRequests,'')||!request.test(text)&&!context.explanationRequested))return null;
+ return {factIds:candidates.map(f=>f.id),topics:['general-knowledge'],unknown:false,intent:'public-knowledge',mode:context.explanationRequested||/詳しく|具体例|例を|違い|比較|\b(?:detail|example|difference|compare)\b/.test(text)?'knowledge-detail':'knowledge',learningEligible:false};
 }

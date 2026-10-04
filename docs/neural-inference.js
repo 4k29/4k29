@@ -1,4 +1,4 @@
-import {neuralModel as model} from './neural-model.js?v=20261004-transformer-4';
+import {neuralModel as model} from './neural-model.js?v=20261004-transformer-5';
 
 // GPT-style decoder inference: learned embeddings, causal multi-head attention,
 // residual connections, pre-layer normalization, GELU MLP and a tied softmax head.
@@ -48,14 +48,15 @@ function advance(state,token){
 }
 function put(key,state){cache.set(key,state);while(cache.size>limit)cache.delete(cache.keys().next().value);return state;}
 function stateFor(context,history){
- const id=context.language+':'+context.kind+':'+(context.style||'polite'),key=id+'|'+history.join(',');
+ const id=context.language+':'+context.kind+':'+(context.style||'polite')+':'+(context.specification??''),key=id+'|'+history.join(',');
  if(cache.has(key)){const state=cache.get(key);cache.delete(key);cache.set(key,state);return state;}
  if(history.length)return put(key,advance(stateFor(context,history.slice(0,-1)),history.at(-1)));
  const controls=[0,model.controls.language[context.language],model.controls.kind[context.kind],model.controls.style[context.style||'polite']];
+ if(context.specification!==undefined)controls.push(context.specification);
  let state=emptyState();for(const token of controls)state=advance(state,token);return put(key,state);
 }
 export function neuralLogits(context,history=[]){
- const state=stateFor(context,history.slice(-(model.config.context-4)));
+ const state=stateFor(context,history.slice(-(model.config.context-(context.specification===undefined?4:5))));
  if(!state.logits){
   const weight=parameter('token.weight').data,logits=new Float32Array(model.vocabulary.length);
   for(let token=0;token<logits.length;token++){let value=0;for(let i=0;i<D;i++)value+=weight[token*D+i]*state.hidden[i];logits[token]=value;}
@@ -64,7 +65,7 @@ export function neuralLogits(context,history=[]){
  return state.logits;
 }
 export function neuralDistribution(context,history=[]){
- const trimmed=history.slice(-(model.config.context-4)),state=stateFor(context,trimmed);
+ const trimmed=history.slice(-(model.config.context-(context.specification===undefined?4:5))),state=stateFor(context,trimmed);
  if(!state.probabilities)state.probabilities=softmax(neuralLogits(context,trimmed));return state.probabilities;
 }
 export function predictNeuralNextTokens(context,history,allowed){

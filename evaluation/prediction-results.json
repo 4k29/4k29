@@ -1,5 +1,5 @@
 {
-  "model": "2026-10-04.transformer-4",
+  "model": "2026-10-04.transformer-5",
   "runtime": "v24.19.0",
   "defaultPreferences": {
     "style": "friendly",
@@ -22,45 +22,49 @@
     "seed": 2941,
     "optimizer": "AdamW",
     "schedule": "1000-step warmup and cosine decay",
-    "peakLearningRate": 0.00001,
+    "peakLearningRate": 0.00008,
     "batchSize": 16,
     "gradientClip": 1,
     "weightDecay": 0.02,
-    "requestedSteps": 100000,
+    "requestedSteps": 10000,
     "minimumSteps": 10000,
-    "completedSteps": 100000,
-    "bestStep": 100000,
-    "overallBestStep": 78000,
-    "overallBestValidationLoss": 1.401614640813778,
-    "trainRows": 633,
-    "validationRows": 115,
-    "trainGroups": 553,
-    "validationGroups": 99,
+    "completedSteps": 10000,
+    "bestStep": 10000,
+    "overallBestStep": 10000,
+    "overallBestValidationLoss": 1.4275904357203186,
+    "trainRows": 748,
+    "validationRows": 110,
+    "trainGroups": 599,
+    "validationGroups": 94,
     "partition": "SHA256(language:kind:tokens) first 8 hex digits modulo 7; duplicates share a partition",
-    "initialTrainLoss": 0.4182436167371003,
-    "initialValidationLoss": 1.4021321009526022,
-    "finalTrainLoss": 0.3654870992204486,
-    "finalValidationLoss": 1.4024103668099441,
-    "parameters": 33440,
-    "elapsedSeconds": 602.79,
+    "initialTrainLoss": 0.26746464525378727,
+    "initialValidationLoss": 1.5180805456684363,
+    "finalTrainLoss": 0.30913688353772434,
+    "finalValidationLoss": 1.4275904357203186,
+    "parameters": 37984,
+    "elapsedSeconds": 89.44,
     "pytorch": "2.6.0+cpu",
-    "sourceSha256": "7bd12ce68ead3f1687816af38522d9be15a7b1fc216ddfaeca8d48df93ffd381",
+    "sourceSha256": "969dfdac7fbf3e5e306fe1fa5058bb7dc5c0a0b158701d7a0a6fe257ead821b8",
     "baseSourceSha256": "4e32c63e8915894adea965a711e910e6cf8998d14b64f8c0f4a63f00e6e5c9f0",
-    "note": "Engineer-authored grammar. No user writing samples, generated chat replies, profile values, or external evaluation phrases were used as training targets.",
-    "initializedModelSha256": "dcf1310c328eeeda6cadd68c5905981255d633d514ed79f3c701aff5c11f5539",
-    "initialCheckpointStep": 500000,
-    "distillationWeight": 2,
+    "note": "Own Transformer weights continued from 600,000 additional updates. Officially sourced product values and owner-approved drama descriptions are literal next-token training targets; source-backed memory is bundled in the same model artifact. Known-fact recall is memorization, not held-out factual generalization. Grammar validation groups remain separate. No external model or evaluation phrases used.",
+    "initializedModelSha256": "19a00012992950ba6e16e370f7d123bd0e35cfd8d5cd95e23a192d8256bb7dcc",
+    "initialCheckpointStep": 10000,
+    "distillationWeight": 8,
     "distillationTemperature": 2,
-    "cumulativeCheckpointSteps": 610700,
+    "cumulativeCheckpointSteps": 640700,
     "checkpointPolicy": "after-all-requested-updates",
     "resumedFromStep": 0,
     "compiled": false,
     "compiledLoss": true,
     "labelSmoothing": 0,
-    "adaptiveLearningRate": true,
-    "completedRounds": 10,
-    "requestedRounds": 10,
-    "updatesPerRound": 10000
+    "adaptiveLearningRate": false,
+    "completedRounds": 1,
+    "requestedRounds": 1,
+    "updatesPerRound": 10000,
+    "grammarTeacherSha256": "bc6e590dfb52282de9735420fe8b86787038219b7de246b9cf97792e50d7ded8",
+    "literalFactRows": 140,
+    "expandedVocabularyFrom": 619,
+    "specificationSourceSha256": "ba500737bff285bdce3c829c31ed39fba8cf507d30f63f6f36241890bc546516"
   },
   "preferenceWeights": {
     "styleMatch": 2.3841498,
@@ -74,1089 +78,10 @@
   "artifacts": {
     "statisticalBytes": 550125,
     "statisticalGzipBytes": 84457,
-    "neuralBytes": 356763,
-    "neuralGzipBytes": 138927
+    "neuralBytes": 426141,
+    "neuralGzipBytes": 163464
   },
-  "baseline": {
-    "description": "Snapshot before this prediction-model change, includes the preceding answer-quality improvement.",
-    "snapshotSha256": "eb0239d2d2e32bbe25d3b182249e8f8270ff7a293961627036f14d6a9e636430",
-    "regression": {
-      "correct": 197,
-      "total": 219,
-      "failures": [
-        {
-          "question": "何というイヤホンを使ってる？",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "earphones-beats",
-            "earphones-cmf"
-          ],
-          "answer": "イヤホンは、Beats Fit ProとCMF Budsを使っています。"
-        },
-        {
-          "question": "ヘッドフォンの機種を知りたい",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "headphones"
-          ],
-          "answer": "ヘッドホンは、Nothing Headphone (1)を使っています。"
-        },
-        {
-          "question": "普段使うイヤホンの名前は？",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "earphones-beats",
-            "earphones-cmf"
-          ],
-          "answer": "イヤホンは、Beats Fit ProとCMF Budsを使っています。"
-        },
-        {
-          "question": "Which brands interest you?",
-          "expected": [
-            "apple",
-            "nothing",
-            "openai",
-            "favorite-kyu"
-          ],
-          "actual": [
-            "apple",
-            "nothing",
-            "openai"
-          ],
-          "answer": "I am interested in Apple, Nothing and OpenAI."
-        },
-        {
-          "question": "What earbuds do you use?",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "earphones-beats",
-            "earphones-cmf"
-          ],
-          "answer": "I use Beats Fit Pro and CMF Buds as my earbuds."
-        },
-        {
-          "question": "Which headphones do you own?",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "headphones"
-          ],
-          "answer": "I use Nothing Headphone (1) as my headphones."
-        },
-        {
-          "question": "イヤホンとサブスクは？",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones",
-            "subscription-chatgpt",
-            "subscription-apple",
-            "subscription-icloud"
-          ],
-          "actual": [
-            "earphones-beats",
-            "earphones-cmf",
-            "subscription-chatgpt",
-            "subscription-apple",
-            "subscription-icloud"
-          ],
-          "answer": "イヤホンは、Beats Fit ProとCMF Budsを使っています。\nサブスクとしてChatGPT Plus、Apple One、iCloud+（250GB）を契約しています。"
-        },
-        {
-          "question": "イヤホンの機種と値段は？",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "earphones-beats",
-            "earphones-cmf"
-          ],
-          "answer": "イヤホンは、Beats Fit ProとCMF Budsを使っています。\n料金・価格は、まだ情報が登録されていません。"
-        },
-        {
-          "question": "名前とイヤホンと年齢は？",
-          "expected": [
-            "name",
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "name",
-            "earphones-beats",
-            "earphones-cmf"
-          ],
-          "answer": "名前は4k29（しか）です。\n使っているイヤホンは、Beats Fit ProとCMF Budsです。\n年齢は、まだ情報が登録されていません。"
-        },
-        {
-          "question": "名前だけ教えて",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "earphones-beats",
-            "earphones-cmf"
-          ],
-          "answer": "Beats Fit Pro\nCMF Buds"
-        },
-        {
-          "question": "あなたの活動名を教えてもらえる？",
-          "expected": [
-            "name"
-          ],
-          "actual": [
-            "tecirc",
-            "photo",
-            "running"
-          ],
-          "answer": "Tecircでの記事執筆、写真・映像制作、ランニングに取り組んでいます。"
-        },
-        {
-          "question": "記事で扱う話題を教えてもらえる？",
-          "expected": [
-            "tecirc",
-            "tecirc-subjects",
-            "tecirc-link"
-          ],
-          "actual": [
-            "tecirc"
-          ],
-          "answer": "Tecircでの記事執筆に取り組んでいます。"
-        },
-        {
-          "question": "普段つけてるイヤホンの機種を挙げて",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "earphones-beats",
-            "earphones-cmf"
-          ],
-          "answer": "イヤホンは、Beats Fit ProとCMF Budsを使っています。"
-        },
-        {
-          "question": "使ってるヘッドフォンの機種を聞かせて",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "headphones"
-          ],
-          "answer": "ヘッドホンは、Nothing Headphone (1)を使っています。"
-        },
-        {
-          "question": "走るときに使ってるアプリを聞かせて",
-          "expected": [
-            "running-app"
-          ],
-          "actual": [
-            "running"
-          ],
-          "answer": "ランニングに取り組んでいます。"
-        },
-        {
-          "question": "その人のYouTubeのリンクだけ",
-          "expected": [
-            "favorite-person"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "その名前だけ",
-          "expected": [
-            "running-app"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "名前とヘッドホンを聞かせて",
-          "expected": [
-            "name",
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "name",
-            "headphones"
-          ],
-          "answer": "名前は4k29（しか）です。\n使っているヘッドホンは、Nothing Headphone (1)です。"
-        },
-        {
-          "question": "使うイヤホンと契約サブスクを教えて",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones",
-            "subscription-chatgpt",
-            "subscription-apple",
-            "subscription-icloud"
-          ],
-          "actual": [
-            "earphones-beats",
-            "earphones-cmf",
-            "subscription-chatgpt",
-            "subscription-apple",
-            "subscription-icloud"
-          ],
-          "answer": "イヤホンは、Beats Fit ProとCMF Budsを使っています。\nサブスクとしてChatGPT Plus、Apple One、iCloud+（250GB）を契約しています。"
-        },
-        {
-          "question": "What headphones do you normally use?",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "headphones"
-          ],
-          "answer": "I use Nothing Headphone (1) as my headphones."
-        },
-        {
-          "question": "Reply in detail. What is your workflow?",
-          "expected": [
-            "workflow",
-            "iteration",
-            "taste"
-          ],
-          "actual": [
-            "site-engine"
-          ],
-          "answer": "This chat composes answers with registered profile facts and a JavaScript rule-based dialogue engine."
-        },
-        {
-          "question": "友達が使っているイヤホンは何？",
-          "expected": [],
-          "actual": [
-            "earphones-beats",
-            "earphones-cmf"
-          ],
-          "answer": "イヤホンは、Beats Fit ProとCMF Budsを使っています。"
-        }
-      ]
-    },
-    "expandedQuestions": {
-      "correct": 107,
-      "total": 168,
-      "failures": [
-        {
-          "question": "今の立場はどんな感じ？",
-          "expected": [
-            "student"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "Tell me about your current role.",
-          "expected": [
-            "student"
-          ],
-          "actual": [
-            "name",
-            "student",
-            "workflow",
-            "tecirc",
-            "photo",
-            "running"
-          ],
-          "answer": "My name is 4k29 (しか).\nI am currently a student.\nI develop with ChatGPT and Codex.\nI spend time on writing articles for Tecirc, making photographs and videos and running."
-        },
-        {
-          "question": "空いている時間は何を楽しむ？",
-          "expected": [
-            "tecirc",
-            "photo",
-            "running"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "普段の活動をいくつか教えて",
-          "expected": [
-            "tecirc",
-            "photo",
-            "running"
-          ],
-          "actual": [
-            "running-shoes"
-          ],
-          "answer": "ランニング用の靴は、NIKE PEGASUS TRAIL 5 GORE‑TEXです。"
-        },
-        {
-          "question": "時間があるときに取り組むことは？",
-          "expected": [
-            "tecirc",
-            "photo",
-            "running"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "How do you spend your free time?",
-          "expected": [
-            "tecirc",
-            "photo",
-            "running"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "最近関心を持っているものを知りたい",
-          "expected": [
-            "apple",
-            "nothing",
-            "openai",
-            "tech",
-            "ui",
-            "design",
-            "hci",
-            "slm",
-            "context"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "気になっていることは何かある？",
-          "expected": [
-            "apple",
-            "nothing",
-            "openai",
-            "tech",
-            "ui",
-            "design",
-            "hci",
-            "slm",
-            "context"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "関心事をいくつか聞かせて",
-          "expected": [
-            "apple",
-            "nothing",
-            "openai",
-            "tech",
-            "ui",
-            "design",
-            "hci",
-            "slm",
-            "context"
-          ],
-          "actual": [
-            "running-shoes"
-          ],
-          "answer": "ランニング用の靴は、NIKE PEGASUS TRAIL 5 GORE‑TEXです。"
-        },
-        {
-          "question": "興味のあるものを紹介して",
-          "expected": [
-            "apple",
-            "nothing",
-            "openai",
-            "tech",
-            "ui",
-            "design",
-            "hci",
-            "slm",
-            "context"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "What are you curious about?",
-          "expected": [
-            "apple",
-            "nothing",
-            "openai",
-            "tech",
-            "ui",
-            "design",
-            "hci",
-            "slm",
-            "context"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "関心のあるメーカーを挙げて",
-          "expected": [
-            "apple",
-            "nothing",
-            "openai",
-            "favorite-kyu"
-          ],
-          "actual": [
-            "apple",
-            "nothing",
-            "openai"
-          ],
-          "answer": "Apple、Nothing、OpenAIに関心があります。"
-        },
-        {
-          "question": "どんなブランドが好きなの？",
-          "expected": [
-            "apple",
-            "nothing",
-            "openai",
-            "favorite-kyu"
-          ],
-          "actual": [
-            "apple",
-            "nothing",
-            "openai"
-          ],
-          "answer": "Apple、Nothing、OpenAIに関心があります。"
-        },
-        {
-          "question": "What brands do you like?",
-          "expected": [
-            "apple",
-            "nothing",
-            "openai",
-            "favorite-kyu"
-          ],
-          "actual": [
-            "apple",
-            "nothing",
-            "openai"
-          ],
-          "answer": "I am interested in Apple, Nothing and OpenAI."
-        },
-        {
-          "question": "Which brands catch your interest?",
-          "expected": [
-            "apple",
-            "nothing",
-            "openai",
-            "favorite-kyu"
-          ],
-          "actual": [
-            "apple",
-            "nothing",
-            "openai"
-          ],
-          "answer": "I am interested in Apple, Nothing and OpenAI."
-        },
-        {
-          "question": "Which companies interest you?",
-          "expected": [
-            "apple",
-            "nothing",
-            "openai"
-          ],
-          "actual": [
-            "apple",
-            "nothing",
-            "openai",
-            "tech",
-            "ui",
-            "design",
-            "hci",
-            "slm",
-            "context"
-          ],
-          "answer": "I am interested in Apple, Nothing and OpenAI.\nMy interests include technology, UI and UX, design, HCI, small language models and context-aware information experiences."
-        },
-        {
-          "question": "興味のある分野をいくつか知りたい",
-          "expected": [
-            "tech",
-            "ui",
-            "design",
-            "hci",
-            "slm",
-            "context"
-          ],
-          "actual": [
-            "running-shoes"
-          ],
-          "answer": "ランニング用の靴は、NIKE PEGASUS TRAIL 5 GORE‑TEXです。"
-        },
-        {
-          "question": "What topics are you curious about?",
-          "expected": [
-            "tech",
-            "ui",
-            "design",
-            "hci",
-            "slm",
-            "context"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "制作を進める段取りを教えて",
-          "expected": [
-            "workflow",
-            "iteration",
-            "taste"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "開発ではどんな順番で進める？",
-          "expected": [
-            "workflow",
-            "iteration",
-            "taste"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "How do you move from an idea to a result?",
-          "expected": [
-            "workflow",
-            "iteration",
-            "taste"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "開発を進める道具を知りたい",
-          "expected": [
-            "workflow"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "制作に使うAIの名前を教えて",
-          "expected": [
-            "workflow"
-          ],
-          "actual": [
-            "name"
-          ],
-          "answer": "名前は4k29（しか）です。"
-        },
-        {
-          "question": "制作におけるあなたの役割は？",
-          "expected": [
-            "workflow",
-            "taste"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "アイデアや方向性は自分で決める？",
-          "expected": [
-            "workflow",
-            "taste"
-          ],
-          "actual": [
-            "taste"
-          ],
-          "answer": "アイデアや方向性、細部の確認は自分で担っています。"
-        },
-        {
-          "question": "How do you divide the work with AI?",
-          "expected": [
-            "workflow",
-            "taste"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "使いやすさのために何を意識してる？",
-          "expected": [
-            "defaults",
-            "spacing"
-          ],
-          "actual": [
-            "defaults"
-          ],
-          "answer": "よい初期設定、少ない手順、考え抜かれたデザインを大切にしています。"
-        },
-        {
-          "question": "執筆する記事の話題を知りたい",
-          "expected": [
-            "tecirc",
-            "tecirc-subjects",
-            "tecirc-link"
-          ],
-          "actual": [
-            "tecirc"
-          ],
-          "answer": "Tecircでの記事執筆に取り組んでいます。"
-        },
-        {
-          "question": "記事にはどんなことを書いてる？",
-          "expected": [
-            "tecirc",
-            "tecirc-subjects",
-            "tecirc-link"
-          ],
-          "actual": [
-            "tecirc"
-          ],
-          "answer": "Tecircでの記事執筆に取り組んでいます。"
-        },
-        {
-          "question": "What subjects do you write about?",
-          "expected": [
-            "tecirc",
-            "tecirc-subjects",
-            "tecirc-link"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "あなたの文章を読みに行きたい",
-          "expected": [
-            "tecirc-link"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "あなたのブログを開きたい",
-          "expected": [
-            "tecirc-link"
-          ],
-          "actual": [
-            "tecirc",
-            "tecirc-subjects",
-            "tecirc-link"
-          ],
-          "answer": "Tecircでの記事執筆に取り組んでいます。\nテクノロジー、デザイン、製品の使い心地をテーマに執筆しています。\n記事はTecircのNotes一覧で探せます。"
-        },
-        {
-          "question": "使っているイヤホンを挙げて",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "earphones-beats",
-            "earphones-cmf"
-          ],
-          "answer": "イヤホンは、Beats Fit ProとCMF Budsを使っています。"
-        },
-        {
-          "question": "耳に入れるタイプの愛用品は？",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "headphones"
-          ],
-          "answer": "ヘッドホンは、Nothing Headphone (1)を使っています。"
-        },
-        {
-          "question": "ワイヤレスのイヤホンは何を持ってる？",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "earphones-beats",
-            "earphones-cmf"
-          ],
-          "answer": "イヤホンは、Beats Fit ProとCMF Budsを使っています。"
-        },
-        {
-          "question": "普段のイヤホンの名前を知りたい",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "earphones-beats",
-            "earphones-cmf"
-          ],
-          "answer": "イヤホンは、Beats Fit ProとCMF Budsを使っています。"
-        },
-        {
-          "question": "イヤホンはどの機種を使う？",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "earphones-beats",
-            "earphones-cmf"
-          ],
-          "answer": "イヤホンは、Beats Fit ProとCMF Budsを使っています。"
-        },
-        {
-          "question": "What earbuds are you using?",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "earphones-beats",
-            "earphones-cmf"
-          ],
-          "answer": "I use Beats Fit Pro and CMF Buds as my earbuds."
-        },
-        {
-          "question": "Which earphones do you own?",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "earphones-beats",
-            "earphones-cmf"
-          ],
-          "answer": "I use Beats Fit Pro and CMF Buds as my earbuds."
-        },
-        {
-          "question": "Tell me the names of your earbuds.",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "earphones-beats",
-            "earphones-cmf"
-          ],
-          "answer": "I use Beats Fit Pro and CMF Buds as my earbuds."
-        },
-        {
-          "question": "耳を覆うタイプの愛用品は？",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "headphones"
-          ],
-          "answer": "ヘッドホンは、Nothing Headphone (1)を使っています。"
-        },
-        {
-          "question": "ヘッドフォンの製品名を教えて",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "headphones"
-          ],
-          "answer": "ヘッドホンは、Nothing Headphone (1)を使っています。"
-        },
-        {
-          "question": "使っているヘッドホンを知りたい",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "headphones"
-          ],
-          "answer": "ヘッドホンは、Nothing Headphone (1)を使っています。"
-        },
-        {
-          "question": "普段のヘッドホンは何？",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "headphones"
-          ],
-          "answer": "ヘッドホンは、Nothing Headphone (1)を使っています。"
-        },
-        {
-          "question": "ヘッドホンの名前を聞かせて",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "headphones"
-          ],
-          "answer": "ヘッドホンは、Nothing Headphone (1)を使っています。"
-        },
-        {
-          "question": "Which headphones are you using?",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "headphones"
-          ],
-          "answer": "I use Nothing Headphone (1) as my headphones."
-        },
-        {
-          "question": "What is the name of your headphones?",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "headphones"
-          ],
-          "answer": "I use Nothing Headphone (1) as my headphones."
-        },
-        {
-          "question": "Tell me about the headphones you use.",
-          "expected": [
-            "earphones-beats",
-            "earphones-cmf",
-            "headphones"
-          ],
-          "actual": [
-            "headphones"
-          ],
-          "answer": "I use Nothing Headphone (1) as my headphones."
-        },
-        {
-          "question": "利用している有料サービスは何？",
-          "expected": [
-            "subscription-chatgpt",
-            "subscription-apple",
-            "subscription-icloud"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "好きなクリエイターは誰？",
-          "expected": [
-            "favorite-person"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "お気に入りの人物を聞かせて",
-          "expected": [
-            "favorite-person"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "走るときに使うアプリの名前を教えて",
-          "expected": [
-            "running-app"
-          ],
-          "actual": [
-            "name"
-          ],
-          "answer": "名前は4k29（しか）です。"
-        },
-        {
-          "question": "走るときのアプリを知りたい",
-          "expected": [
-            "running-app"
-          ],
-          "actual": [
-            "running"
-          ],
-          "answer": "ランニングに取り組んでいます。"
-        },
-        {
-          "question": "チャットの内部ではどう返答を作る？",
-          "expected": [
-            "site-engine"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "How are responses generated in this chat?",
-          "expected": [
-            "site-engine"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "Tell me how this dialogue engine works.",
-          "expected": [
-            "site-engine"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "このチャットの会話は端末内だけ？",
-          "expected": [
-            "site-privacy"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "このサイトの入力データは外に送る？",
-          "expected": [
-            "site-privacy"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "Do chat messages leave my browser?",
-          "expected": [
-            "site-privacy"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "How does this site handle my data?",
-          "expected": [
-            "site-privacy"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        },
-        {
-          "question": "Are conversations sent to a server?",
-          "expected": [
-            "site-privacy"
-          ],
-          "actual": [],
-          "answer": "すみません、よく分かりません"
-        }
-      ]
-    },
-    "diversity": [
-      {
-        "question": "名前は？",
-        "unique": 6,
-        "evidenceStable": true,
-        "examples": [
-          "名前は4k29（しか）です。",
-          "4k29（しか）といいます。",
-          "4k29（しか）という名前です。"
-        ]
-      },
-      {
-        "question": "趣味は？",
-        "unique": 6,
-        "evidenceStable": true,
-        "examples": [
-          "趣味は、Tecircでの記事執筆、写真・映像制作、ランニングです。",
-          "趣味としてTecircでの記事執筆、写真・映像制作、ランニングをしています。",
-          "趣味には、Tecircでの記事執筆、写真・映像制作、ランニングがあります。"
-        ]
-      },
-      {
-        "question": "好きな人は？",
-        "unique": 6,
-        "evidenceStable": true,
-        "examples": [
-          "推しはしてはるです。\nYouTube / X（Twitter）",
-          "好きな人として挙げているのはしてはるです。\nYouTube / X（Twitter）",
-          "してはるが推しです。\nYouTube / X（Twitter）"
-        ]
-      },
-      {
-        "question": "サブスクは？",
-        "unique": 6,
-        "evidenceStable": true,
-        "examples": [
-          "契約しているサブスクは、ChatGPT Plus、Apple One、iCloud+（250GB）です。",
-          "ChatGPT Plus、Apple One、iCloud+（250GB）をサブスクとして利用しています。",
-          "契約中のサービスは、ChatGPT Plus、Apple One、iCloud+（250GB）です。"
-        ]
-      },
-      {
-        "question": "ランニングの靴は？",
-        "unique": 4,
-        "evidenceStable": true,
-        "examples": [
-          "ランニング用の靴は、NIKE PEGASUS TRAIL 5 GORE‑TEXです。",
-          "ランニングでは、NIKE PEGASUS TRAIL 5 GORE‑TEXをシューズとして使っています。",
-          "NIKE PEGASUS TRAIL 5 GORE‑TEXがランニング用の靴です。"
-        ]
-      },
-      {
-        "question": "ランニングのアプリは？",
-        "unique": 4,
-        "evidenceStable": true,
-        "examples": [
-          "ランニング用のアプリは、Nike Run Club（NRC）です。",
-          "ランニング用のアプリとして、Nike Run Club（NRC）を使っています。",
-          "使っているランニングアプリは、Nike Run Club（NRC）です。"
-        ]
-      },
-      {
-        "question": "記事では何について書いてる？",
-        "unique": 11,
-        "evidenceStable": true,
-        "examples": [
-          "テクノロジー、デザイン、製品の使い心地について記事を書いています。\nTecircのNotes一覧に記事をまとめています。",
-          "テクノロジー、デザイン、製品の使い心地が記事で扱っているテーマです。\n記事はTecircのNotes一覧で探せます。",
-          "テクノロジー、デザイン、製品の使い心地についての記事を執筆しています。\n記事を読むなら、TecircのNotes一覧をご覧ください。"
-        ]
-      }
-    ],
-    "performance": {
-      "samples": 300,
-      "medianMs": 0.5394820000000209,
-      "p95Ms": 1.0012279999999691,
-      "maxMs": 1.3629819999999881,
-      "note": "Warm Node CPU response time, excludes UI animations and network loading; hardware-dependent."
-    }
-  },
+  "baseline": null,
   "current": {
     "regression": {
       "correct": 219,
@@ -1186,12 +111,12 @@
       },
       {
         "question": "趣味は？",
-        "unique": 9,
+        "unique": 4,
         "evidenceStable": true,
         "examples": [
-          "趣味としてTecircでの記事執筆、写真・映像制作、ランニングを楽しんでいるよ。",
-          "Tecircでの記事執筆、写真・映像制作、ランニングが趣味だよ。",
-          "楽しんでいる趣味の活動には、Tecircでの記事執筆、写真・映像制作、ランニングがあります。"
+          "趣味は写真・映像制作とランニングだよ。",
+          "写真・映像制作とランニングが趣味だよ。",
+          "趣味でやっているのは写真・映像制作とランニングだよ。"
         ]
       },
       {
@@ -1201,7 +126,7 @@
         "examples": [
           "好きな人は「してはる」だよ。\nYouTube / X（Twitter）",
           "「してはる」を推しているよ。\nYouTube / X（Twitter）",
-          "推しの名前は「してはる」だよ。\nYouTube / X（Twitter）"
+          "「してはる」が好きな人だよ。\nYouTube / X（Twitter）"
         ]
       },
       {
@@ -1209,9 +134,9 @@
         "unique": 9,
         "evidenceStable": true,
         "examples": [
-          "契約しているのはChatGPT Plus、Apple One、iCloud+（250GB）だよ。",
           "ChatGPT Plus、Apple One、iCloud+（250GB）をサブスクとして利用しているよ。",
-          "ChatGPT Plus、Apple One、iCloud+（250GB）が契約中のサブスクだよ。"
+          "契約中のサービスはChatGPT Plus、Apple One、iCloud+（250GB）だよ。",
+          "利用しているサブスクの一覧には、ChatGPT Plus、Apple One、iCloud+（250GB）があるよ。"
         ]
       },
       {
@@ -1231,52 +156,51 @@
         "examples": [
           "使っているランニングアプリはNike Run Club（NRC）だよ。",
           "Nike Run Club（NRC）をランニング用のアプリにしているよ。",
-          "走るときに使うアプリはNike Run Club（NRC）だよ。"
+          "ランニング用にはNike Run Club（NRC）というアプリを使っているよ。"
         ]
       },
       {
         "question": "記事では何について書いてる？",
-        "unique": 15,
+        "unique": 14,
         "evidenceStable": true,
         "examples": [
           "テクノロジー、デザイン、製品の使い心地をテーマに記事を書いているよ。\n記事はTecircのNotes一覧で読めるよ。",
           "記事で扱う内容はテクノロジー、デザイン、製品の使い心地だよ。\nTecircのNotes一覧から記事を探してみてね。",
-          "記事の内容としては、テクノロジー、デザイン、製品の使い心地について書いています。\n記事をまとめて読める場所は、TecircのNotes一覧だよ。リンクから一覧を確認できるよ。"
+          "テクノロジー、デザイン、製品の使い心地が記事のテーマだよ。\n記事をまとめて読める場所は、TecircのNotes一覧だよ。リンクから一覧を確認できるよ。"
         ]
       }
     ],
     "performance": {
       "samples": 300,
-      "medianMs": 1.1559809999998834,
-      "p95Ms": 2.786585000000059,
-      "maxMs": 3.3675489999998263,
+      "medianMs": 1.1998509999998532,
+      "p95Ms": 3.0432379999997465,
+      "maxMs": 24.467507000000296,
       "note": "Warm Node CPU response time, excludes UI animations and network loading; hardware-dependent."
     },
     "coldPerformance": {
-      "moduleInitializationMs": 64.017606,
+      "moduleInitializationMs": 96.564907,
       "results": [
         {
           "question": "名前は？",
-          "firstMs": 40.121515,
-          "repeatedMs": 6.715339000000014,
+          "firstMs": 59.536297000000005,
+          "repeatedMs": 7.2914049999999975,
           "facts": [
             "name"
           ]
         },
         {
           "question": "趣味は？",
-          "firstMs": 19.31846999999999,
-          "repeatedMs": 2.760235000000023,
+          "firstMs": 12.740493999999984,
+          "repeatedMs": 3.3200630000000046,
           "facts": [
-            "tecirc",
             "photo",
             "running"
           ]
         },
         {
           "question": "制作の流れは？",
-          "firstMs": 66.327282,
-          "repeatedMs": 2.6598040000000083,
+          "firstMs": 101.12668500000001,
+          "repeatedMs": 3.9099689999999896,
           "facts": [
             "workflow",
             "iteration",
@@ -1285,8 +209,8 @@
         },
         {
           "question": "イヤホンとヘッドホンは？",
-          "firstMs": 17.339320999999984,
-          "repeatedMs": 2.0506169999999884,
+          "firstMs": 15.110210999999993,
+          "repeatedMs": 2.272660999999971,
           "facts": [
             "earphones-beats",
             "earphones-cmf",
@@ -1295,8 +219,8 @@
         },
         {
           "question": "ランニングの靴とアプリは？",
-          "firstMs": 34.87349500000002,
-          "repeatedMs": 1.7964039999999954,
+          "firstMs": 45.947227999999996,
+          "repeatedMs": 2.016607000000022,
           "facts": [
             "running-shoes",
             "running-app"
@@ -1304,8 +228,8 @@
         },
         {
           "question": "サブスクは？",
-          "firstMs": 15.655637000000013,
-          "repeatedMs": 0.8572409999999877,
+          "firstMs": 20.36171300000001,
+          "repeatedMs": 1.6639580000000365,
           "facts": [
             "subscription-chatgpt",
             "subscription-apple",
@@ -1322,10 +246,10 @@
     "oovTokens": 13,
     "statisticalMeanNegativeLogLikelihood": 2.102269002306898,
     "statisticalPerplexity": 8.184720008083982,
-    "neuralMeanNegativeLogLikelihood": 2.0962211420471837,
-    "neuralPerplexity": 8.13536934857965,
-    "uniformVocabularyNegativeLogLikelihood": 6.1675164908883415,
-    "uniformVocabularyPerplexity": 477,
+    "neuralMeanNegativeLogLikelihood": 2.135447383568415,
+    "neuralPerplexity": 8.460830896979902,
+    "uniformVocabularyNegativeLogLikelihood": 6.428105272684596,
+    "uniformVocabularyPerplexity": 619,
     "note": "Authored unseen phrases, evaluated after freezing weights. OOV is mapped to <unk>. Uniform vocabulary is a diagnostic reference, not the previous engine or a general language-model benchmark."
   },
   "scope": "Question datasets are fixed development/regression cases, including 44 new cases used for corrections. They are not an independent estimate of general question accuracy. Model paths and preference pairs are synthetic authored data, not observed user feedback."

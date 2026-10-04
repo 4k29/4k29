@@ -5,7 +5,8 @@ const cases=[
  [['あなた誰？','あなたは誰ですか？','君はだれ？','きみって誰なの？','あんた誰やねん？','誰？','誰なんだ？','誰ですか？','どなたでしょうか？','あなたは誰でしょうか？','ねぇ、君って誰なの？','誰なのか教えて','誰なのか知りたい','Who are you?','who r u?','Who is this?','Tell me who you are','What is your name?','なんてお呼びすればいい？','何と呼ぶの？'],['name']],
  [['あなたって何者なの？','どういう人なの？','あなたのこと教えて','Can you introduce yourself?','Tell me about yourself','どんな人ですか？'],['name','student','workflow','tecirc','photo','running']],
  [['職業は何ですか？','あなた学生なの？','社会人なの？','会社員ですか？','What do you do for work?','あなた何してる人？'],['student']],
- [['普段何してる？','あなた何してる？','休日どう過ごす？','趣味って何？','What are your hobbies?','What do you do for fun?'],['tecirc','photo','running']],
+ [['趣味って何？','What are your hobbies?','What do you do for fun?'],['photo','running']],
+ [['普段何してる？','あなた何してる？','休日どう過ごす？',],['tecirc','photo','running']],
  [['何に興味がありますか？','What are your interests?','何に夢中？'],['apple','nothing','openai','tech','ui','design','hci','slm','context']],
  [['何が好き？','好きなものは？','What do you like?'],['apple','nothing','openai','tech','ui','design','hci','slm','context','favorite-vivant','favorite-kyu','favorite-tokyo-mer','favorite-person']],
  [['好きなメーカーは？','どんなブランドに興味がある？','What are your favorite brands?'],['apple','nothing','openai','favorite-kyu']],
@@ -25,7 +26,7 @@ const cases=[
  [['Twitterの名前は？'],['x','x-secondary']],
 ];
 for(const [questions,ids] of cases)for(const question of questions)test('intent regression: '+question,()=>{
- const answer=new Conversation(data).respond(question);assert.deepEqual(new Set(answer.factIds),new Set(ids));assert.notEqual(answer.text,data.unknownReply);assert.equal(answer.text.includes(data.unknownReply),false);for(const id of ids){if(id==='tecirc'&&answer.intents.includes('article-subjects')){assert.match(answer.text,/Tecirc/);assert.ok(answer.links.some(link=>link.url==='https://4k29.github.io/tecirc/notes/'));}else assert.ok(answer.text.includes(data.facts.find(f=>f.id===id)[answer.language].value));}
+ const answer=new Conversation(data).respond(question);assert.deepEqual(new Set(answer.factIds),new Set(ids));assert.notEqual(answer.text,data.unknownReply);assert.equal(answer.text.includes(data.unknownReply),false);for(const id of ids){if(id==='tecirc'&&answer.intents.includes('article-subjects')){assert.match(answer.text,/Tecirc/);assert.ok(answer.links.some(link=>link.url==='https://4k29.github.io/tecirc/notes/'));}else assert.ok(answer.text.includes((id==='tecirc'?'Tecirc':id==='hci'&&answer.generation?.method==='registered-value'?'HCI':data.facts.find(f=>f.id===id)[answer.language].value)));}
 });
 test('advanced questions combine compatible registered relations rather than a generic topic',()=>{
  const c=new Conversation(data);

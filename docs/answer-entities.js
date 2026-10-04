@@ -22,6 +22,7 @@ export function resolveEntities(text,data,context,matches){
  const namedLikes=liked.filter(f=>(f.aliases||[]).some(alias=>matches(text,alias)));
  if(namedLikes.length){
   const field=/主演|\b(?:star|starring|lead actor)\b/.test(text)?'actor':/主人公|\bprotagonist\b/.test(text)?'protagonist':null;
+  if(field&&!namedLikes.every(f=>f.publicDetails?.[field]))return result([],'unregistered-favorite-detail');
   if(field&&namedLikes.every(f=>f.publicDetails?.[field]))return result(namedLikes,'favorite-public-detail','favorite-'+field);
   if(favoriteProducts.test(text)||missingFavoriteDetail.test(text)||/作者|\bauthor\b/.test(text)&&namedLikes.some(f=>!f.publicInfo?.author))return result([],'unregistered-favorite-detail');
   if(/リンク|url|\blink\b/.test(text))return result(namedLikes.filter(f=>f.url),'favorite-source',/だけ|only/.test(text)?'url-only':null);
@@ -29,13 +30,14 @@ export function resolveEntities(text,data,context,matches){
   return result(namedLikes,'liked-things',/名前だけ|名称だけ|only.*name/.test(text)?'value-only':detail?'favorite-detail':null);
  }
  const previousLikes=previous.filter(f=>f.ja.relation==='favoriteThing');
+ if(previousLikes.length&&/^(?:それ|その(?:作品|ブランド|漫画|ドラマ))(?:を|について|は)?$/.test(text))return {...result(previousLikes,'liked-things','favorite-detail'),contextDependent:true};
  if(previousLikes.length&&/^(?:それ|その(?:作品|ブランド|漫画|ドラマ)|もう少し|もっと)?(?:を|について)?(?:詳しく|どんなもの|説明して|教えて)|^(?:tell me more|more detail|describe (?:it|them))$/.test(text))return {...result(previousLikes,'liked-things','favorite-detail'),contextDependent:true};
- if(/(?:好き|お気に入り).*(?:作品)|(?:作品).*(?:好き|お気に入り)/.test(text))return result(liked.filter(f=>['drama','manga'].includes(f.favoriteCategory)),'liked-things',/名前だけ|名称だけ/.test(text)?'value-only':'favorites');
+ if(/(?:好き|お気に入り).*(?:作品)|(?:作品).*(?:好き|お気に入り)/.test(text))return result(liked.filter(f=>['drama','manga'].includes(f.favoriteCategory)),'liked-things','value-only');
  const category=/漫画|まんが|マンガ|\bmanga\b/.test(text)?'manga':/ドラマ|\b(?:dramas?|tv shows?)\b/.test(text)?'drama':/ブランド|メーカー|\b(?:brands?|manufacturers?)\b/.test(text)&&/好き|興味|関心|お気に入り|\b(?:like|interest|favou?rite)\b/.test(text)?'brand':null;
  const namedBrands=category==='brand'?facts.filter(f=>['apple','nothing','openai'].includes(f.id)&&(f.aliases||[]).some(alias=>matches(text,alias))):[];
- if(namedBrands.length)return result(namedBrands,'interest-entity','favorite-brands');
- if(category&&(/好き|お気に入り|何|どれ|名前|名称|興味|関心|見る|観る|見て|ハマ|はま|\b(?:like|favou?rite|what|which|names?)\b/.test(text)||/^(?:漫画|まんが|ドラマ|manga|dramas?)(?:は|を|について|教えて|\s)*$/.test(text)))return result([...facts.filter(f=>category==='brand'&&['apple','nothing','openai'].includes(f.id)),...liked.filter(f=>f.favoriteCategory===category)],'liked-things',/名前だけ|名称だけ|only.*name/.test(text)?'value-only':category==='brand'?'favorite-brands':'favorites');
- if(/(?:好き|すき)な(?:もの|物)|何(?:が|を)好き|お気に入りのもの|\bfavou?rite things\b|\bwhat (?:do you|are your) (?:like|love|favou?rites)\b/.test(text)&&!/分野|メーカー|ブランド|\b(?:field|brand|company)\b/.test(text))return result([...facts.filter(f=>f.ja.relation==='interest'),...liked,...(favorite?[favorite]:[])],'liked-things',/名前だけ|名称だけ|only.*name/.test(text)?'value-only':'favorites');
+ if(namedBrands.length)return result(namedBrands,'interest-entity','value-only');
+ if(category&&(/好き|お気に入り|何|どれ|名前|名称|興味|関心|見る|観る|見て|ハマ|はま|\b(?:like|favou?rite|what|which|names?)\b/.test(text)||/^(?:漫画|まんが|ドラマ|manga|dramas?)(?:は|を|について|教えて|\s)*$/.test(text)))return result([...facts.filter(f=>category==='brand'&&['apple','nothing','openai'].includes(f.id)),...liked.filter(f=>f.favoriteCategory===category)],'liked-things','value-only');
+ if(/(?:好き|すき)な(?:もの|物)|何(?:が|を)好き|お気に入りのもの|\bfavou?rite things\b|\bwhat (?:do you|are your) (?:like|love|favou?rites)\b/.test(text)&&!/分野|メーカー|ブランド|\b(?:field|brand|company)\b/.test(text))return result([...facts.filter(f=>f.ja.relation==='interest'),...liked,...(favorite?[favorite]:[])],'liked-things','value-only');
  const personReference=/^(?:その人|そのひと|その推し|その好きな人)|^(?:their|his|her|that person's|what is (?:their|his|her))\b/.test(text);
  const favoriteReference=context.lastFactIds.length===1&&context.lastFactIds[0]==='favorite-person'&&personReference;
  if(personReference&&!favoriteReference)return {...result([],'unknown-person-reference'),contextDependent:true};
@@ -62,7 +64,7 @@ export function resolveEntities(text,data,context,matches){
  const kind=/靴|シューズ|履(?:く|いて)|shoes?|sneakers?/i.test(text)?'running-shoes':/音楽.*(?:聴く|聞く).*(?:機器|道具|使|何で)|音を(?:聴く|聞く)機器|イヤホン|耳(?:に|へ)(?:入れ|つけ|着け)|earphones?|earbuds?|earpods?/i.test(text)?'earphones':/ヘッドホン|ヘッドフォン|耳(?:を|全体を)(?:覆|おお)|headphones?|愛用品|愛用製品|愛用しているもの|お気に入りの(?:製品|ガジェット)|普段使っているもの|よく使って(?:る|いる)ガジェット/i.test(text)?'headphones':null;
  if(kind){
   const products=facts.filter(f=>f.ja.relation==='product');
-  const explicit=products.filter(f=>matches(text,f.en.value.split(' ')[0])||(f.category!=='headphones'&&(f.aliases||[]).some(alias=>matches(text,alias)&&!/イヤホン|愛用品|愛用製品/i.test(alias)))||(f.category==='headphones'&&matches(text,'ナッシング')));
+  const explicit=products.filter(f=>matches(text,f.en.value.split(' ')[0])||(f.category!=='headphones'&&(f.aliases||[]).some(alias=>matches(text,alias)&&!/イヤホン|愛用品|愛用製品/i.test(alias)))||(f.category==='headphones'&&(matches(text,'ナッシング')||matches(text,'headphone (1)'))));
   const categories=kind==='running-shoes'?[kind]:['earphones','headphones'];
   const candidates=products.filter(f=>categories.includes(f.category)&&(!explicit.length||explicit.includes(f)));
   return result(candidates,kind,/名前だけ|名称だけ|機種だけ|only.*name/.test(text)?'value-only':null);

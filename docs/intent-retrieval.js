@@ -1,5 +1,5 @@
-import {intentExamples} from './intent-examples.js?v=20261004-transformer-4';
-import {semanticText,semanticModel} from './intent-model.js?v=20261004-transformer-4';
+import {intentExamples} from './intent-examples.js?v=20261004-transformer-5';
+import {semanticText,semanticModel} from './intent-model.js?v=20261004-transformer-5';
 const ignored=new Set(['あなた','君','知りたい','教えて','ください','説明','tell','me','you','your','what','which','how','do','does','the','a','an','is','are','about','to','for','in','of','can']);
 export function questionTokens(text){
  text=semanticText(text.normalize('NFKC').toLowerCase()).replace(/(?:教えて|知りたい|聞きたい|聞かせて|ください|あなた|ですか|ますか|について)/g,'');
@@ -45,7 +45,10 @@ export function scoreQuestionExample(question,example){return scoreVectors(vecto
 export function retrieveIntent(text){
  const query=vector(questionTokens(text)),meaning=meaningVector(text);if(!query.norm)return null;
  const ranks=new Map();
- for(const document of documents){const evidence=scoreVectors(query,meaning,document),label=[...document.intent.facts].sort().join('|');const group=ranks.get(label)||{scores:[],intent:document.intent,best:-1};group.scores.push(evidence);if(evidence.score>group.best){group.best=evidence.score;group.intent=document.intent;}ranks.set(label,group);}
+ for(const document of documents){
+  if(document.intent.id==='hobbies'&&!/趣味|しゅみ|\bhobb|for fun|free time/i.test(text))continue;
+  const evidence=scoreVectors(query,meaning,document),label=[...document.intent.facts].sort().join('|');const group=ranks.get(label)||{scores:[],intent:document.intent,best:-1};group.scores.push(evidence);if(evidence.score>group.best){group.best=evidence.score;group.intent=document.intent;}ranks.set(label,group);
+ }
  const ranked=[...ranks.values()].map(({intent,scores})=>{scores.sort((a,b)=>b.score-a.score);return {intent,score:scores[0].score*.85+(scores[1]?.score||0)*.15,evidence:scores[0]};}).sort((a,b)=>b.score-a.score);
  const best=ranked[0],margin=(best?.score||0)-(ranked[1]?.score||0);if(!best||best.score<.46||margin<.07||best.evidence.lexical<.2)return null;
  return {factIds:best.intent.facts,intent:best.intent.id,confidence:best.score,margin,lexicalConfidence:best.evidence.lexical,semanticConfidence:best.evidence.semantic};

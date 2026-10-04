@@ -81,7 +81,9 @@ def main():
     parser.add_argument('--minimum-steps', type=int, default=10000)
     parser.add_argument('--version', default='2026-10-04.transformer-2')
     parser.add_argument('--initialize-model')
+    parser.add_argument('--expand-vocabulary', action='store_true')
     parser.add_argument('--distill', type=float, default=0.0)
+    parser.add_argument('--distill-model', help='Optional frozen grammar teacher, separate from the continued checkpoint')
     parser.add_argument('--rounds', type=int, default=0)
     parser.add_argument('--updates-per-round', type=int, default=10000)
     parser.add_argument('--adaptive-learning-rate', action='store_true')
@@ -106,7 +108,7 @@ def main():
     torch.manual_seed(args.seed)
     torch.use_deterministic_algorithms(True)
     corpus = json.loads(pathlib.Path(args.corpus).read_text())
-    validation = lambda row: int(hashlib.sha256(row['group'].encode()).hexdigest()[:8], 16) % 7 == 0
+    validation = lambda row: not row.get('trainOnly', False) and int(hashlib.sha256(row['group'].encode()).hexdigest()[:8], 16) % 7 == 0
     train = [row for row in corpus['rows'] if not validation(row)]
     valid = [row for row in corpus['rows'] if validation(row)]
     assert not ({row['group'] for row in train} & {row['group'] for row in valid})
@@ -116,15 +118,24 @@ def main():
     if args.initialize_model:
         source = pathlib.Path(args.initialize_model).read_text()
         initialized_from = json.loads(source.split('export const neuralModel=',1)[1].strip().removesuffix(';'))
-        for key in ['dim','heads','hidden','layers','context','vocabulary']:
+        for key in ['dim','heads','hidden','layers','context']+([] if args.expand_vocabulary else ['vocabulary']):
             if initialized_from['config'][key] != config[key]:
                 raise ValueError('Warm-start architecture mismatch: '+key)
-        if initialized_from['vocabulary'] != corpus['vocabulary'] or initialized_from['training']['baseSourceSha256'] != corpus['baseSourceSha256']:
+        old_vocabulary=initialized_from['vocabulary']
+        vocabulary_matches=corpus['vocabulary'][:len(old_vocabulary)]==old_vocabulary if args.expand_vocabulary else old_vocabulary==corpus['vocabulary']
+        if not vocabulary_matches or initialized_from['training']['baseSourceSha256'] != corpus['baseSourceSha256']:
             raise ValueError('Warm-start vocabulary or base grammar mismatch')
-        model.load_state_dict({key:torch.tensor(tensor['data']).reshape(tensor['shape']) for key,tensor in initialized_from['tensors'].items()})
+        state={key:torch.tensor(tensor['data']).reshape(tensor['shape']) for key,tensor in initialized_from['tensors'].items()}
+        if args.expand_vocabulary:
+            expanded=model.token.weight.detach().clone()
+            expanded[:len(old_vocabulary)]=state['token.weight']
+            state['token.weight']=expanded
+        model.load_state_dict(state)
     if args.distill and initialized_from is None:
         parser.error('distill requires initialize-model')
     max_length = max(len(row['tokens']) for row in corpus['rows']) - 1
+    if max_length>config['context']:
+        raise ValueError('Training sequence exceeds context')
 
     def pack(rows):
         x = torch.full((len(rows), max_length), corpus['pad'], dtype=torch.long)
@@ -133,7 +144,7 @@ def main():
             tokens = torch.tensor(row['tokens'], dtype=torch.long)
             x[i, :len(tokens) - 1] = tokens[:-1]
             y[i, :len(tokens) - 1] = tokens[1:]
-            y[i, :3] = -100  # Only actual sentence tokens and EOS are targets.
+            y[i, :row.get('prefixLength',4)-1] = -100  # Sentence/value tokens and EOS only.
         return x, y
 
     train_x, train_y = pack(train)
@@ -142,8 +153,28 @@ def main():
     teacher_probabilities = None
     if args.distill:
         model.eval()
+        teacher_model=model
+        teacher_vocabulary=config['vocabulary']
+        if args.distill_model:
+            teacher_export=json.loads(pathlib.Path(args.distill_model).read_text().split('export const neuralModel=',1)[1].strip().removesuffix(';'))
+            teacher_vocabulary=len(teacher_export['vocabulary'])
+            if corpus['vocabulary'][:teacher_vocabulary]!=teacher_export['vocabulary']:
+                raise ValueError('Distillation teacher vocabulary prefix mismatch')
+            teacher_model=Decoder(config)
+            teacher_state={key:torch.tensor(tensor['data']).reshape(tensor['shape']) for key,tensor in teacher_export['tensors'].items()}
+            embeddings=torch.zeros_like(model.token.weight)
+            embeddings[:teacher_vocabulary]=teacher_state['token.weight']
+            teacher_state['token.weight']=embeddings
+            teacher_model.load_state_dict(teacher_state);teacher_model.eval()
         with torch.no_grad():
-            teacher_probabilities = torch.cat([F.softmax(model(train_x[start:start+64])/2.0,dim=-1) for start in range(0,len(train_x),64)])
+            pieces=[]
+            for start in range(0,len(train_x),64):
+                logits=teacher_model(train_x[start:start+64])/2.0
+                logits[:,:,teacher_vocabulary:]=-1e9
+                pieces.append(F.softmax(logits,dim=-1))
+            teacher_probabilities=torch.cat(pieces)
+            for i,row in enumerate(train):
+                if row.get('trainOnly',False):teacher_probabilities[i].zero_()  # New literal values have no pretrained teacher targets.
 
     @torch.no_grad()
     def measure(x, y):
@@ -260,8 +291,12 @@ def main():
         previous_steps=initialized_from['training'].get('cumulativeCheckpointSteps',initialized_from['training']['bestStep'])
         metadata.update(initializedModelSha256=hashlib.sha256(pathlib.Path(args.initialize_model).read_bytes()).hexdigest(),initialCheckpointStep=initialized_from['training']['bestStep'],distillationWeight=args.distill,distillationTemperature=2.0,cumulativeCheckpointSteps=previous_steps+best_step)
     metadata.update(checkpointPolicy='after-all-requested-updates' if args.export_final else 'best-validation-after-minimum-updates',elapsedSeconds=round(elapsed_offset+time.monotonic()-started,2),resumedFromStep=resume_step,batchSize=args.batch_size,compiled=args.compile,compiledLoss=args.compile_loss,labelSmoothing=args.label_smoothing,adaptiveLearningRate=args.adaptive_learning_rate,completedRounds=len(round_history),requestedRounds=args.rounds,updatesPerRound=args.updates_per_round if args.rounds else None)
+    if args.distill_model:metadata['grammarTeacherSha256']=hashlib.sha256(pathlib.Path(args.distill_model).read_bytes()).hexdigest()
     tensors = {key:dict(shape=list(value.shape),data=[round(v,7) for v in value.detach().reshape(-1).tolist()]) for key,value in model.state_dict().items()}
     exported = dict(schemaVersion=1,version=args.version,baseVersion=corpus['baseVersion'],config=config,controls=corpus['controls'],pad=corpus['pad'],vocabulary=corpus['vocabulary'],tensors=tensors,training=metadata)
+    if corpus.get('specificationMemory'):
+        exported['specificationMemory']=corpus['specificationMemory']
+        metadata.update(literalFactRows=sum(r.get('trainOnly',False) for r in train),expandedVocabularyFrom=len(initialized_from['vocabulary']),specificationSourceSha256=corpus['specificationMemory']['sourceSha256'],note='Own Transformer weights continued from 600,000 additional updates. Officially sourced product values and owner-approved drama descriptions are literal next-token training targets; source-backed memory is bundled in the same model artifact. Known-fact recall is memorization, not held-out factual generalization. Grammar validation groups remain separate. No external model or evaluation phrases used.')
     pathlib.Path(args.output).write_text('// Generated by training/train-transformer.py; do not edit weights by hand.\nexport const neuralModel='+json.dumps(exported,separators=(',',':'))+';\n')
     pathlib.Path(args.artifacts_prefix+'-training.json').write_text(json.dumps(dict(config=config,training=metadata,history=history,rounds=round_history),indent=2)+'\n')
     references=[]

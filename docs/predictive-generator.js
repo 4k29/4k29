@@ -1,9 +1,9 @@
-import {generationModel} from './generation-model.js?v=20261004-transformer-4';
-import {directVoicePath} from './response-voice.js?v=20261004-transformer-4';
-import {favoriteGrammar} from './favorite-grammar.js?v=20261004-transformer-4';
-import {knowledgeGrammar} from './knowledge-grammar.js?v=20261004-transformer-4';
-import {predictNextTokens} from './next-token-model.js?v=20261004-transformer-4';
-import {predictNeuralNextTokens,neuralVersion,neuralArchitecture} from './neural-inference.js?v=20261004-transformer-4';
+import {generationModel} from './generation-model.js?v=20261004-transformer-5';
+import {directVoicePath,conversationalJapanese} from './response-voice.js?v=20261004-transformer-5';
+import {favoriteGrammar} from './favorite-grammar.js?v=20261004-transformer-5';
+import {knowledgeGrammar} from './knowledge-grammar.js?v=20261004-transformer-5';
+import {predictNextTokens} from './next-token-model.js?v=20261004-transformer-5';
+import {predictNeuralNextTokens,neuralVersion,neuralArchitecture} from './neural-inference.js?v=20261004-transformer-5';
 const tries=new Map(),searches=new Map();
 function grammarTrie(language,kind){
  const key=language+':'+kind;if(tries.has(key))return tries.get(key);
@@ -13,7 +13,11 @@ function grammarTrie(language,kind){
 }
 function grams(text){return new Set(Array.from({length:Math.max(0,text.length-2)},(_,i)=>text.slice(i,i+3)));}
 function similarity(a,b){let common=0;for(const term of a)if(b.has(term))common++;return common/(a.size+b.size-common||1);}
-function render(tokens,values){return tokens.map(id=>{const token=generationModel.vocabulary[id];return token==='{value}'?values.value:token==='{label}'?values.label||'':id===1?'':token;}).join('');}
+function render(tokens,values,context){
+ let template=tokens.filter(id=>id!==1).map(id=>generationModel.vocabulary[id]).join('');
+ if(context.language==='ja'&&context.style==='friendly')template=conversationalJapanese(template);
+ return template.replace(/\{(value|label)\}/g,(_,key)=>values[key]||'');
+}
 const focuses={name:/名前|呼び|\bname\b/,role:/職業|身分|立場|\b(?:role|occupation)\b/,tool:/ツール|開発|制作|\b(?:tool|develop)\b/,workflow:/流れ|順|手順|\b(?:process|sequence|steps)\b/,responsibility:/担当|役割|自分|\b(?:handle|role|contribution)\b/,preference:/重視|大切|こだわ|\b(?:priorities|value|care)\b/,hobbies:/趣味|\bhobb/,audio:/イヤホン|ヘッドホン|\b(?:earbuds|headphones)\b/,runningApp:/アプリ|\bapp\b/,runningShoes:/靴|シューズ|\bshoes\b/,writing:/記事|テーマ|\b(?:article|topic)\b/,favorite:/推し|好きな人|\bfavou?rite\b/,subscription:/サブスク|契約|\bsubscri/};
 export function generateCandidates(kind,language,values,options={}){
  const context={kind:kind==='knowledge'?'writing':kind==='favoriteThing'?'favorite':kind,language,style:options.style||'polite'},grammar=grammarTrie(language,kind);
@@ -48,7 +52,7 @@ export function generateCandidates(kind,language,values,options={}){
  const lengths=paths.map(c=>c.tokens.reduce((n,id)=>n+(/^[{<]/.test(generationModel.vocabulary[id])?0:generationModel.vocabulary[id].length),0)),min=Math.min(...lengths),max=Math.max(...lengths);
  const unique=new Map();
  for(const [index,candidate] of paths.entries()){
-  const text=render(candidate.tokens,values),novelty=1-Math.max(0,...previous.map(p=>similarity(grams(text),p)));
+  const text=render(candidate.tokens,values,context),novelty=1-Math.max(0,...previous.map(p=>similarity(grams(text),p)));
   const features=[1,options.length==='brief'?1-(lengths[index]-min)/(max-min||1):0,options.length==='detail'?(candidate.row.detail?1:0):options.length==='brief'?(candidate.row.detail?-1:0):candidate.row.detail?-.5:0,focuses[kind]?.test(options.question||'')?(focuses[kind].test(text)?1:0):.5,Math.exp(candidate.logProbability/candidate.tokens.length),candidate.row.quality,novelty];
   const score=features.reduce((n,f,i)=>n+f*generationModel.preferenceWeights[i],0),result={text,score,features,pathId:candidate.row.id,tokens:candidate.tokens,meanLogProbability:candidate.logProbability/candidate.tokens.length,transitions};
   if(!unique.has(text)||score>unique.get(text).score)unique.set(text,result);

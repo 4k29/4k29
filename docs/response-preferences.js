@@ -8,7 +8,7 @@ export function preferenceRequest(question){
  const text=String(question).normalize('NFKC').toLowerCase().trim();let remaining=text,update={};
  const instructions=[
   ['style','friendly',/(?:もっと|少し|ちょっと)?(?:親しみやすい|くだけた|カジュアルな|フレンドリーな)(?:口調|言葉)(?:で(?:答えて|回答して|話して|お願い(?:します)?)?)?|親しみやすい(?=[、,]|$)|(?:ため口|タメ口|敬語なし)(?:で(?:答えて|話して|お願い(?:します)?)?)?|(?:use |in )(?:a )?(?:friendly|casual) (?:tone|style)/g],
-  ['style','polite',/(?:丁寧な|丁寧|ですます調の?)(?:口調|言葉)?で(?:答えて|回答して|話して|お願い(?:します)?)?|(?:use |in )(?:a )?(?:polite|formal) (?:tone|style)/g],
+  ['style','polite',/丁寧に(?:答えて|回答して|話して)|(?:丁寧な|丁寧|ですます調の?)(?:口調|言葉)?で(?:答えて|回答して|話して|お願い(?:します)?)?|(?:use |in )(?:a )?(?:polite|formal) (?:tone|style)/g],
   ['length','brief',/(?:もっと)?(?:短く|簡潔に|手短に)(?:答えて|回答して|説明して|教えて|お願い(?:します)?)?|\b(?:keep (?:it|answers|replies) |answer |reply )?(?:briefly|brief|concise)\b(?: please)?/g],
   ['length','detail',/(?:もっと)?(?:詳しく|詳しい説明で|詳しめに)(?:答えて|回答して|説明して|教えて|お願い(?:します)?)?|(?:answer |reply |explain )in detail/g],
   ['length','normal',/(?:普通の|通常の)(?:長さ|詳しさ)で(?:答えて|お願い(?:します)?)?|(?:use |in )(?:a )?normal (?:length|detail)/g]

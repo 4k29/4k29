@@ -4,9 +4,9 @@ import fs from 'node:fs';
 import {Conversation} from '../docs/dialogue.js';
 const data=JSON.parse(fs.readFileSync(new URL('../docs/profile.json',import.meta.url)));
 const examples=[
- ['好きな作品は？',['favorite-vivant','favorite-tokyo-mer'],/商社マン|医療ドラマ/],
- ['普段どんなドラマを見る？',['favorite-vivant','favorite-tokyo-mer'],/事故や災害/],
- ['VIVANTの主人公は？',['favorite-vivant'],/主人公は乃木憂助/],
+ ['好きな作品は？',['favorite-vivant','favorite-tokyo-mer'],/VIVANT|TOKYO MER/],
+ ['普段どんなドラマを見る？',['favorite-vivant','favorite-tokyo-mer'],/TOKYO MER/],
+ ['VIVANTの主演は？',['favorite-vivant'],/主演は堺雅人/],
  ['TOKYO MERの主演は誰？',['favorite-tokyo-mer'],/主演は鈴木亮平/],
  ['音楽を聴く機器は？',['earphones-beats','earphones-cmf','headphones'],/Beats Fit Pro/],
  ['入ってる有料プランは？',['subscription-chatgpt','subscription-apple','subscription-icloud'],/250GB/],
