@@ -222,7 +222,7 @@ def main():
         checkpoint=torch.load(args.resume,weights_only=False)
         if checkpoint['sourceSha256']!=corpus['sourceSha256']:
             raise ValueError('Resume corpus mismatch')
-        for key in ['steps','rounds','updates_per_round','seed','batch_size','learning_rate','distill','dropout','label_smoothing','warmup','minimum_steps']:
+        for key in ['steps','rounds','updates_per_round','seed','batch_size','learning_rate','distill','dropout','label_smoothing','warmup','minimum_steps','validation_every','adaptive_learning_rate','initialize_model','distill_model']:
             if checkpoint['args'][key]!=getattr(args,key):
                 raise ValueError('Resume training configuration mismatch: '+key)
         model.load_state_dict(checkpoint['model']);optimizer.load_state_dict(checkpoint['optimizer']);torch.set_rng_state(checkpoint['rng'])

@@ -1,5 +1,5 @@
 // Supervised question examples for a small local TF-IDF intent retriever. These are questions, not canned answers.
-import {expandedIntentExamples} from './intent-expansion.js?v=20261004-transformer-5b';
+import {expandedIntentExamples} from './intent-expansion.js?v=20261004-transformer-7';
 const coreIntentExamples=[
  {id:'hobbies',facts:['photo','running'],examples:['趣味についてもう少し教えて','tell me about your hobbies']},
  {id:'interests',facts:['apple','nothing','openai','tech','ui','design','hci','slm','context'],examples:['どんなことにハマってる','今ハマっているものは','最近のマイブームは','どのようなことに関心を持っていますか','何に興味がある','関心のあるものを知りたい','熱中していることを教えて','what are you interested in','what catches your attention']},

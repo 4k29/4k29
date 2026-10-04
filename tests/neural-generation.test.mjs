@@ -10,24 +10,41 @@ import {neuralLogits,neuralDistribution,neuralSequenceLikelihood,clearNeuralCach
 import {Conversation} from '../docs/dialogue.js';
 const reference=JSON.parse(fs.readFileSync(new URL('../training/transformer-reference.json',import.meta.url)));
 const trainingTrace=JSON.parse(fs.readFileSync(new URL('../training/transformer-training.json',import.meta.url)));
+const selection=JSON.parse(fs.readFileSync(new URL('../training/transformer-selection.json',import.meta.url)));
 test('shipped Transformer has real learned tensors, held-out validation and matching vocabulary',()=>{
+ assert.equal(createHash('sha256').update(fs.readFileSync(new URL('../docs/neural-model.js',import.meta.url))).digest('hex'),selection.modelSha256);
  assert.equal(model.config.layers,2);assert.equal(model.config.heads,4);assert.equal(model.training.parameters,37984);
- assert.equal(model.training.trainRows+model.training.validationRows,grammar.paths.filter(p=>directVoicePath(p,grammar.vocabulary)).length+24+140);
+ if(selection.trainingCorpus){
+  const corpus=JSON.parse(fs.readFileSync(new URL('../'+selection.trainingCorpus,import.meta.url)));
+  assert.equal(model.training.trainRows+model.training.validationRows,corpus.rows.length);
+  const validation=row=>!row.trainOnly&&parseInt(createHash('sha256').update(row.group).digest('hex').slice(0,8),16)%7===0;
+  const train=corpus.rows.filter(r=>!validation(r)),valid=corpus.rows.filter(validation),trainGroups=new Set(train.map(r=>r.group));
+  assert.equal(valid.length,model.training.validationRows);assert.equal(train.length,model.training.trainRows);
+  assert.ok(valid.every(r=>!trainGroups.has(r.group)));assert.equal(train.filter(r=>r.trainOnly).length,140);
+  const source={...corpus};delete source.sourceSha256;
+  assert.equal(createHash('sha256').update(JSON.stringify(source)).digest('hex'),model.training.sourceSha256);
+  assert.deepEqual(corpus.vocabulary,model.vocabulary);
+ }else assert.equal(model.training.trainRows+model.training.validationRows,grammar.paths.filter(p=>directVoicePath(p,grammar.vocabulary)).length+24+140);
  assert.equal(model.training.literalFactRows,140);assert.equal(model.vocabulary.length,619);
  if(model.training.initialCheckpointStep){
   assert.ok(model.training.finalValidationLoss<=model.training.initialValidationLoss*1.02);
   assert.ok(Math.max(...model.tensors['token.weight'].data.slice(0,teacher.tensors['token.weight'].data.length).map((v,i)=>Math.abs(v-teacher.tensors['token.weight'].data[i])))>1e-5);
  }else assert.ok(model.training.finalValidationLoss<model.training.initialValidationLoss*.4);
  assert.ok(model.training.bestStep<=model.training.completedSteps);
- assert.ok(model.training.completedSteps>=10000);assert.ok(model.training.bestStep>=10000);
+ assert.ok(model.training.completedSteps>=10000);assert.ok(model.training.bestStep>0);
  assert.deepEqual(model.vocabulary.slice(0,grammar.vocabulary.length),grammar.vocabulary);
  assert.equal(model.training.baseSourceSha256,grammar.training.sourceSha256);
  if(model.training.requestedRounds){
   assert.equal(model.training.requestedRounds,1);assert.equal(model.training.completedRounds,1);
   assert.equal(model.training.updatesPerRound,10000);assert.equal(model.training.completedSteps,10000);
-  assert.equal(model.training.bestStep,10000);assert.equal(model.training.cumulativeCheckpointSteps,640700);
-  assert.equal(model.training.checkpointPolicy,'after-all-requested-updates');
-  const initialFile=fs.readFileSync(new URL('../training/transformer-specifications-second.js',import.meta.url));
+  if(selection.trainingCorpus){
+   assert.equal(model.training.checkpointPolicy,'best-validation-after-minimum-updates');
+   assert.equal(model.training.cumulativeCheckpointSteps,selection.initializerCumulativeSteps+model.training.bestStep);
+   const million=JSON.parse(fs.readFileSync(new URL('../training/transformer-million-training.json',import.meta.url)));
+   assert.equal(million.training.completedSteps,1000000);assert.equal(million.training.completedRounds,10);assert.equal(million.training.updatesPerRound,100000);
+   assert.equal(million.rounds.length,10);for(const [index,round] of million.rounds.entries())assert.equal(round.updates,(index+1)*100000);
+  }else{assert.equal(model.training.bestStep,10000);assert.equal(model.training.cumulativeCheckpointSteps,640700);assert.equal(model.training.checkpointPolicy,'after-all-requested-updates');}
+  const initialFile=fs.readFileSync(new URL('../'+(selection.initializerFile||'training/transformer-specifications-second.js'),import.meta.url));
   assert.equal(model.training.initializedModelSha256,createHash('sha256').update(initialFile).digest('hex'));
   assert.equal(trainingTrace.rounds.length,1);
   for(const [index,round] of trainingTrace.rounds.entries()){assert.equal(round.round,index+1);assert.equal(round.updates,(index+1)*10000);assert.ok(Number.isFinite(round.validationLoss));}
