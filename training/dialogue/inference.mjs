@@ -31,7 +31,7 @@ export function createDialogueDecoder(model){
  }
  function logits(state){const embedding=p('token.weight').data,out=new Float32Array(model.config.vocabulary);for(let token=0;token<out.length;token++){let sum=0;for(let i=0;i<D;i++)sum+=embedding[token*D+i]*state.hidden[i];out[token]=sum;}return out;}
  function prefix(tokens){let state=empty();for(const token of tokens)state=advance(state,token);return state;}
- function generate(question,{history=[],maxNewTokens=96}={}){
+ function generate(question,{history=[],maxNewTokens=model.config.context}={}){
   const input=tokenizer.prompt(question,history);if(input.length>=model.config.context)throw RangeError('Question/history exceeds context');
   let state=prefix(input);const tokens=[];let eos=false;
   for(let step=0;step<Math.min(maxNewTokens,model.config.context-input.length);step++){

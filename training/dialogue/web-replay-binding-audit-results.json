@@ -1,0 +1,847 @@
+{
+  "version": "2026-10-04.dialogue-web-replay-1",
+  "training": {
+    "randomInitialization": true,
+    "externalWeights": false,
+    "externalInferenceAPIs": false,
+    "teacher": false,
+    "completedSteps": 10000,
+    "pretrainingUpdates": 0,
+    "dialogueUpdates": 10000,
+    "bestStep": 10000,
+    "seed": 429,
+    "parameters": 360288,
+    "sourceSha256": "92939638239c9a46477b15132a6d79d3ceda286a74a035e90feb061a6ec7f866",
+    "testSha256": "93350000550750c4daff680a49bfd20b89bdd05f1fde7beabd7610d1c112d7ad",
+    "validationExact": 149,
+    "validationLoss": 0.04377416989240913,
+    "trainRows": 3478,
+    "validationRows": 160,
+    "rawLanguageSamples": 1249,
+    "elapsedSeconds": 1188.09,
+    "pytorch": "2.6.0+cpu",
+    "settings": {
+      "pretrain_steps": 0,
+      "steps": 10000,
+      "dim": 96,
+      "layers": 3,
+      "batch_size": 16,
+      "seed": 429,
+      "learning_rate": 0.0003,
+      "validation_every": 1000,
+      "length_buckets": true,
+      "replay_weight": 0.15
+    },
+    "note": "Source-authored finite curriculum. Raw language next-token pretraining then answer-only SFT; validation-only selection, no outside weights or answer retrieval. This does not establish general dialogue or reasoning.",
+    "initialLanguageValidationLoss": 4.351762387214201,
+    "finalLanguageValidationLoss": 5.209471487242964,
+    "selectedPretrainingStep": 750,
+    "selectedPretrainingValidationLoss": 4.351762387214201,
+    "initializationKind": "own-raw-pretraining-continuation",
+    "inheritedOwnPretrainingUpdates": 750,
+    "ownPretrainingParent": {
+      "sourceSha256": "92939638239c9a46477b15132a6d79d3ceda286a74a035e90feb061a6ec7f866",
+      "selectedRawStep": 750,
+      "confirmedParentUpdates": 13000,
+      "checkpointSha256": "2fef42c82a875eb38f73ee14cbe6ac472a3bc7c3e23ccda03cd69ada7075e165"
+    }
+  },
+  "partition": "test",
+  "sourceSha256": "9d1d1861a6fbbd325aba1011141800ab233b3f608b6804926d53a3facf2cbef6",
+  "total": 60,
+  "exact": 31,
+  "contextOverflows": 0,
+  "unsupportedBoundary": {
+    "total": 12,
+    "abstained": 7,
+    "acceptedWording": [
+      "その情報は分かりません。",
+      "すみません、よく分かりません"
+    ]
+  },
+  "byKind": {
+    "context": {
+      "total": 4,
+      "exact": 1
+    },
+    "dialogue": {
+      "total": 2,
+      "exact": 2
+    },
+    "profile": {
+      "total": 36,
+      "exact": 21
+    },
+    "reasoning": {
+      "total": 2,
+      "exact": 0
+    },
+    "unknown": {
+      "total": 12,
+      "exact": 7
+    },
+    "web-knowledge": {
+      "total": 4,
+      "exact": 0
+    }
+  },
+  "rows": [
+    {
+      "id": "binding-audit:0",
+      "kind": "profile",
+      "question": "どう呼べばいいかな？",
+      "history": [],
+      "expected": "名前は4k29（しか）です。",
+      "answer": "名前は4k29（しか）です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:1",
+      "kind": "profile",
+      "question": "あなたはいま学生、それとも社会人？",
+      "history": [],
+      "expected": "学生です。",
+      "answer": "学生です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:2",
+      "kind": "profile",
+      "question": "仕事や活動とは別に、趣味を教えてもらえる？",
+      "history": [],
+      "expected": "趣味は写真・映像制作とランニングです。",
+      "answer": "趣味は写真・映像制作とランニングです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:3",
+      "kind": "profile",
+      "question": "何で音楽を聴くことが多い？",
+      "history": [],
+      "expected": "イヤホンはBeats Fit ProとCMF Buds、ヘッドホンはNothing Headphone (1)を使っています。",
+      "answer": "学生です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:4",
+      "kind": "profile",
+      "question": "使ってるヘッドホンやイヤホンの名前をまとめて知りたい。",
+      "history": [],
+      "expected": "イヤホンはBeats Fit ProとCMF Buds、ヘッドホンはNothing Headphone (1)を使っています。",
+      "answer": "イヤホンはBeats Fit ProとCMF Buds、ヘッドホンはNothing Headphone (1)を使っています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:5",
+      "kind": "profile",
+      "question": "気に入ってるもの、名前を並べてみて。",
+      "history": [],
+      "expected": "VIVANT、TOKYO MER、kyu、してはる",
+      "answer": "その情報は分かりません。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:6",
+      "kind": "profile",
+      "question": "Tecircとはどんな関わりがあるのかな？",
+      "history": [],
+      "expected": "Tecircで記事を書いています。",
+      "answer": "Tecircで記事を書いています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:7",
+      "kind": "profile",
+      "question": "Tecircで書く記事のジャンルを知りたいな。",
+      "history": [],
+      "expected": "Tecircの記事では、テクノロジー、デザイン、製品の使い心地を扱っています。",
+      "answer": "Tecircで記事を書いています。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:8",
+      "kind": "profile",
+      "question": "走る記録はどのアプリにつけてるの？",
+      "history": [],
+      "expected": "ランニングにはNike Run Club（NRC）を使っています。",
+      "answer": "ランニングにはNike Run Club（NRC）を使っています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:9",
+      "kind": "profile",
+      "question": "走るとき、足元はどんなシューズ？",
+      "history": [],
+      "expected": "ランニングではNIKE PEGASUS TRAIL 5 GORE‑TEXを履いています。",
+      "answer": "ランニングではNIKE PEGASUS TRAIL 5 GORE‑TEXを履いています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:10",
+      "kind": "profile",
+      "question": "merってどんなドラマだったっけ？",
+      "history": [],
+      "expected": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。",
+      "answer": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:11",
+      "kind": "profile",
+      "question": "vivantというドラマを紹介して。",
+      "history": [],
+      "expected": "VIVANTは、堺雅人さん主演のTBSの日曜劇場ドラマです。",
+      "answer": "VIVANTは、堺雅人さん主演のTBSの日曜劇場ドラマです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:12",
+      "kind": "profile",
+      "question": "VIVANTの主役を演じる人は誰？",
+      "history": [],
+      "expected": "堺雅人さんです。",
+      "answer": "堺雅人さんです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:13",
+      "kind": "profile",
+      "question": "TOKYO MERは何局の日曜劇場？",
+      "history": [],
+      "expected": "TBSの日曜劇場です。",
+      "answer": "TBSの日曜劇場です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:14",
+      "kind": "profile",
+      "question": "kyuというブランドについて説明して。",
+      "history": [],
+      "expected": "kyuは、何気ない日常を思い出として残すカメラやアプリを展開するブランドです。",
+      "answer": "kyuは、何気ない日常を思い出として残すカメラやアプリを展開するブランドです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:15",
+      "kind": "profile",
+      "question": "NothingのHeadphone1について、特徴をまとめてもらえる？",
+      "history": [],
+      "expected": "Nothing Headphone (1)はNothingのヘッドホンで、40mmダイナミックドライバーを搭載し、Bluetooth 5.3とIP52の防塵・防水性能に対応しています。",
+      "answer": "Nothing Headphone (1)はNothingのヘッドホンで、40mmダイナミックドライバーを搭載し、Bluetooth 5.3とIP52の防塵・防水性能に対応しています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:16",
+      "kind": "profile",
+      "question": "Headphone 1は重い？重量の数字を知りたい。",
+      "history": [],
+      "expected": "Nothing Headphone (1)の重さは329gです。",
+      "answer": "その情報は分かりません。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:17",
+      "kind": "profile",
+      "question": "nothing headphone1に入っているドライバーの仕様は？",
+      "history": [],
+      "expected": "Nothing Headphone (1)のドライバーは、40mmダイナミックです。",
+      "answer": "Nothing Headphone (1)のドライバーは、40mmダイナミックです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:18",
+      "kind": "profile",
+      "question": "Headphone1はどんなBluetoothのバージョンで接続する？",
+      "history": [],
+      "expected": "Nothing Headphone (1)のBluetoothは、5.3です。",
+      "answer": "Nothing Headphone (1)のBluetoothは、5.3です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:19",
+      "kind": "profile",
+      "question": "Nothing Headphone(1)は水やほこりにどこまで対応してる？",
+      "history": [],
+      "expected": "Nothing Headphone (1)はIP52の防塵・防水性能に対応しています。",
+      "answer": "Nothing Headphone (1)のドライバーは、40mmダイナミックです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:20",
+      "kind": "profile",
+      "question": "Headphone1で選べる音声コーデックは何がある？",
+      "history": [],
+      "expected": "Nothing Headphone (1)の音声コーデックは、AAC / SBC / LDACです。",
+      "answer": "Nothing Headphone (1)の音声コーデックは、AAC / SBC / LDACです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:21",
+      "kind": "profile",
+      "question": "AACでノイキャンを切って聴くと、Headphone1は何時間使える？",
+      "history": [],
+      "expected": "Nothing Headphone (1)の再生時間（AAC・ANCオフ）は、最大80時間です。",
+      "answer": "Nothing Headphone (1)の再生時間（AAC・ANCオフ）は、最大80時間です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:22",
+      "kind": "profile",
+      "question": "LDACでノイキャンを入れて聴くと、Headphone1は何時間もつ？",
+      "history": [],
+      "expected": "Nothing Headphone (1)の再生時間（LDAC・ANCオン）は、最大30時間です。",
+      "answer": "Nothing Headphone (1)の再生時間（LDAC・ANCオフ）は、最大54時間です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:23",
+      "kind": "profile",
+      "question": "CMF Budsのノイズキャンセルはどんな性能なのかな？",
+      "history": [],
+      "expected": "CMF Budsのノイズキャンセリングは、最大42dBのハイブリッドANCです。",
+      "answer": "CMF BudsのANCオフの再生時間は、単体最大8時間、ケース込み最大35.5時間です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:24",
+      "kind": "profile",
+      "question": "CMF Budsのノイキャンを無効にしたまま、どれくらい聴ける？",
+      "history": [],
+      "expected": "CMF Budsの再生時間（ANCオフ）は、単体最大8時間、ケース込み最大35.5時間です。",
+      "answer": "CMF Budsはワイヤレス充電に対応していません。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:25",
+      "kind": "profile",
+      "question": "ノイキャンを使いながら聴くと、CMF Budsは何時間もつ？",
+      "history": [],
+      "expected": "CMF Budsの再生時間（ANC・外音取り込みオン）は、単体最大5.6時間、ケース込み最大24時間です。",
+      "answer": "CMF Buds、ヘッドホンはNothing Headphone (1)を使っています。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:26",
+      "kind": "profile",
+      "question": "CMF Budsの電池の容量は、イヤホン側とケース側でそれぞれいくつ？",
+      "history": [],
+      "expected": "CMF Budsのバッテリー容量は、イヤホン45mAh、ケース460mAhです。",
+      "answer": "CMF Buds、ヘッドホンはNothing Headphone (1)は2台同時接続に対応しています。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:27",
+      "kind": "profile",
+      "question": "CMF Budsは充電台に置いて無線で充電できるの？",
+      "history": [],
+      "expected": "CMF Budsはワイヤレス充電に対応していません。",
+      "answer": "CMF Budsはワイヤレス充電に対応していません。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:28",
+      "kind": "profile",
+      "question": "CMF Budsで2台の機器に同時につなぐにはどうする？",
+      "history": [],
+      "expected": "CMF BudsはNothing Xアプリで設定すると2台同時接続が使えます。",
+      "answer": "CMF Buds、ヘッドホンはNothing Headphone (1)は2台同時接続に対応しています。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:29",
+      "kind": "profile",
+      "question": "Beats Fit Proは汗や水に対応してる？ケースも含めて知りたい。",
+      "history": [],
+      "expected": "Beats Fit Proのイヤホン本体はIPX4の耐汗・耐水性能に対応しています。ケースは非対応です。",
+      "answer": "Beats Fit Proのイヤホン本体はIPX4の耐水性能に対応しています。ケースは非対応です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:30",
+      "kind": "profile",
+      "question": "Beats Fit Proにはノイズキャンセルが付いてるかな？",
+      "history": [],
+      "expected": "Beats Fit ProはANCに対応しています。",
+      "answer": "Beats Fit ProはANCに対応しています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:31",
+      "kind": "profile",
+      "question": "Beats Fit Proを少しだけ充電したときは、どれくらい再生できる？",
+      "history": [],
+      "expected": "Beats Fit Proの急速充電は、5分充電で最大1時間再生です。",
+      "answer": "Beats Fit ProはANCに対応しています。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:32",
+      "kind": "profile",
+      "question": "kyuのカメラは記録用に何GB入っているの？",
+      "history": [],
+      "expected": "kyu cameraのストレージは、32GBです。",
+      "answer": "kyu cameraの重さは115gです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:33",
+      "kind": "profile",
+      "question": "kyu cameraは本体だけで何グラムくらい？",
+      "history": [],
+      "expected": "kyu cameraの重さは115gです。",
+      "answer": "kyu cameraの重さは115gです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:34",
+      "kind": "profile",
+      "question": "kyu cameraで前側の動画を撮るときの仕様を知りたい。",
+      "history": [],
+      "expected": "kyu cameraのフロント動画は、1080p、1:1、30fpsです。",
+      "answer": "kyu cameraの重さは115gです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:35",
+      "kind": "profile",
+      "question": "kyuのカメラを充電する端子って何？",
+      "history": [],
+      "expected": "kyu cameraの接続端子は、USB-Cです。",
+      "answer": "kyu cameraの接続端子は、USB-Cです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:36",
+      "kind": "context",
+      "question": "じゃあ、いま紹介した作品は誰が主演？",
+      "history": [
+        {
+          "question": "最初の紹介は？",
+          "answer": "VIVANTです。"
+        },
+        {
+          "question": "次の紹介は？",
+          "answer": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。"
+        }
+      ],
+      "expected": "鈴木亮平さんです。",
+      "answer": "感じ酸性です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:37",
+      "kind": "context",
+      "question": "直前の作品で主演しているのは誰？",
+      "history": [
+        {
+          "question": "最初の紹介は？",
+          "answer": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。"
+        },
+        {
+          "question": "次の紹介は？",
+          "answer": "VIVANTは、堺雅人さん主演のTBSの日曜劇場ドラマです。"
+        }
+      ],
+      "expected": "堺雅人さんです。",
+      "answer": "堺雅人さんです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:38",
+      "kind": "context",
+      "question": "最後の製品について、重さを教えて。",
+      "history": [
+        {
+          "question": "最初の紹介は？",
+          "answer": "CMF Budsです。"
+        },
+        {
+          "question": "次の紹介は？",
+          "answer": "Nothing Headphone (1)です。"
+        }
+      ],
+      "expected": "Nothing Headphone (1)の重さは329gです。",
+      "answer": "Nothing Headphone (1)はNothingのヘッドホンで、40mmダイナミックドライバーを搭載し、Bluetooth 5.3とIP52の防塵・防水性能に対応しています。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:39",
+      "kind": "context",
+      "question": "いまの製品のノイキャンの性能はどんな感じ？",
+      "history": [
+        {
+          "question": "最初の紹介は？",
+          "answer": "Nothing Headphone (1)です。"
+        },
+        {
+          "question": "次の紹介は？",
+          "answer": "CMF Budsです。"
+        }
+      ],
+      "expected": "CMF Budsのノイズキャンセリングは、最大42dBのハイブリッドANCです。",
+      "answer": "Nothing Headphone (1)はNothingのヘッドホンで、40mmダイナミックドライバーを搭載し、Bluetooth",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:40",
+      "kind": "unknown",
+      "question": "撮影するときのカメラはどのメーカーの何という機種？",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "Tecircで記事を書いています。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:41",
+      "kind": "unknown",
+      "question": "通っている学校の名称まで教えてくれる？",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "は約３時間」と設定置週週間で見えます。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:42",
+      "kind": "unknown",
+      "question": "誕生した年月日を知りたいな。",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "その情報は分かりません。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:43",
+      "kind": "unknown",
+      "question": "住んでいる番地を教えて。",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "その情報は分かりません。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:44",
+      "kind": "unknown",
+      "question": "今この瞬間の東京は晴れている？",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "その情報は分かりません。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:45",
+      "kind": "unknown",
+      "question": "あしたの大阪で傘は必要？",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "その情報は分かりません。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:46",
+      "kind": "unknown",
+      "question": "Nothing Headphone (4)の重さはどのくらい？",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "学生です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:47",
+      "kind": "unknown",
+      "question": "CMF Buds ProのANC性能を説明して。",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "その情報は分かりません。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:48",
+      "kind": "unknown",
+      "question": "Beats Fit Proの重量の数値を教えて。",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "Beats Fit ProはANCに対応しています。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:49",
+      "kind": "unknown",
+      "question": "CMF Budsには何GBのストレージがある？",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "CMF Budsはワイヤレス充電に対応していません。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:50",
+      "kind": "unknown",
+      "question": "使っているカメラを買った日付は？",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "その情報は分かりません。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:51",
+      "kind": "unknown",
+      "question": "友達が使っているイヤホンの製品名を教えて。",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "その情報は分かりません。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:52",
+      "kind": "web-knowledge",
+      "question": "雪が白色に見えるのはどういう光の作用なの？",
+      "history": [],
+      "expected": "雪の結晶自体は透明ですが、細かい結晶が重なって光が乱反射するため、白く見えます。",
+      "answer": "光には電波のように波長があり、物体によっては吸可能です。氷の結晶の色に収する波長を収らた場合もた場合があり、物体に効果によって可能性が氷の結晶加えると、光が残の色（波長と命効果によって反射効果によって可能です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:53",
+      "kind": "web-knowledge",
+      "question": "平均の風速と瞬間の風速は、測る時間がどう違う？",
+      "history": [],
+      "expected": "平均風速は10分間の平均で、瞬間風速はある瞬間の風速です。瞬間風速は平均風速の1.5〜3倍程度になることがあります。",
+      "answer": "アメダス充電は、比べきにおける分かっている日のある値は、毎去１２時０分ける寄１２時０００分までの間の平均Xを展例えるその�日の間に観測されるとなる日程��候���途入しては未満術しています。",
+      "exact": false,
+      "eos": true,
+      "validTokens": false,
+      "validUtf8": false
+    },
+    {
+      "id": "binding-audit:54",
+      "kind": "web-knowledge",
+      "question": "夏日、真夏日、猛暑日はそれぞれ何℃で区切るの？",
+      "history": [],
+      "expected": "最高気温が35℃以上の日が猛暑日、30℃以上が真夏日、25℃以上が夏日です。",
+      "answer": "その情報は分かりません。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:55",
+      "kind": "web-knowledge",
+      "question": "熱帯夜って、夜の温度がどうなっている場合？",
+      "history": [],
+      "expected": "熱帯夜は、夕方から翌朝までの最低気温が25℃以上になる夜です。",
+      "answer": "夏が低気圧分類していません。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:56",
+      "kind": "dialogue",
+      "question": "おはよう、よろしくね。",
+      "history": [],
+      "expected": "こんにちは。何について知りたい？",
+      "answer": "こんにちは。何について知りたい？",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:57",
+      "kind": "dialogue",
+      "question": "なるほど、教えてくれてありがとう！",
+      "history": [],
+      "expected": "どういたしまして。",
+      "answer": "どういたしまして。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:58",
+      "kind": "reasoning",
+      "question": "登録しているイヤホンの機種は合計いくつ？",
+      "history": [],
+      "expected": "2機種です。",
+      "answer": "イヤホンはBeats Fit ProとCMF Buds、ヘッドホンはNothing Headphone (1)を使っています。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "binding-audit:59",
+      "kind": "reasoning",
+      "question": "MERとVIVANTは同じ主演俳優なの？",
+      "history": [],
+      "expected": "主演は異なります。TOKYO MERは鈴木亮平さん、VIVANTは堺雅人さんです。",
+      "answer": "鈴木亮平さんです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    }
+  ],
+  "note": "Unconstrained full-answer argmax using the evaluated model's own tokenizer. Exact wording is strict and not the same as factual/semantic correctness. Unknown boundaries also accept the authorized previous unknown wording. Test families never fit the new curriculum or select its checkpoints; reused legacy test families remain development diagnostics. This finite authored test is not a general language benchmark."
+}
