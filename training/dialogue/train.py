@@ -81,8 +81,11 @@ def generate(model,rows,tokenizer,batch_size=16):
             if all(ended):break
         for row,output,finished in zip(batch,outputs,reached_eos):
             text=decode(output,tokenizer)
-            valid=all(token>=len(SPECIALS) for token in output)
-            results.append(dict(id=row['id'],kind=row['kind'],question=row['question'],history=row['history'],expected=row['answer'],answer=text,exact=text==row['answer'] and finished and valid,eos=finished,validTokens=valid))
+            valid_utf8=True
+            try:b''.join(bytes.fromhex(tokenizer['bytes'][t]) for t in output).decode('utf-8')
+            except UnicodeDecodeError:valid_utf8=False
+            valid=valid_utf8 and all(token>=len(SPECIALS) for token in output)
+            results.append(dict(id=row['id'],kind=row['kind'],question=row['question'],history=row['history'],expected=row['answer'],answer=text,exact=text==row['answer'] and finished and valid,eos=finished,validTokens=valid,validUtf8=valid_utf8))
     return results
 
 

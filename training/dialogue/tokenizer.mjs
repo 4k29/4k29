@@ -7,10 +7,10 @@ export function createTokenizer(config){
   for(const [left,right,token] of config.merges){const next=[];for(let i=0;i<tokens.length;i++){if(tokens[i]===left&&tokens[i+1]===right){next.push(token);i++;}else next.push(tokens[i]);}tokens=next;}
   return tokens;
  }
- function decode(tokens){
+ function decode(tokens,{fatal=false}={}){
   const length=tokens.reduce((n,id)=>n+pieces[id].length,0),bytes=new Uint8Array(length);let cursor=0;
   for(const id of tokens){bytes.set(pieces[id],cursor);cursor+=pieces[id].length;}
-  return new TextDecoder().decode(bytes);
+  return new TextDecoder('utf-8',{fatal}).decode(bytes);
  }
  function prompt(question,history=[]){
   const tokens=[specials.bos],normalize=q=>String(q).normalize('NFKC').toLowerCase();

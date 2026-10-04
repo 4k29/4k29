@@ -38,7 +38,8 @@ export function createDialogueDecoder(model){
    const scores=logits(state);let best=0;for(let i=1;i<scores.length;i++)if(scores[i]>scores[best])best=i;
    if(best===tokenizer.specials.eos){eos=true;break;}tokens.push(best);state=advance(state,best);
   }
-  return {text:tokenizer.decode(tokens),tokens,eos,validTokens:tokens.every(id=>id>=Object.keys(tokenizer.specials).length),inputTokens:input.length};
+  let validUtf8=true;try{tokenizer.decode(tokens,{fatal:true});}catch{validUtf8=false;}
+  return {text:tokenizer.decode(tokens),tokens,eos,validUtf8,validTokens:validUtf8&&tokens.every(id=>id>=Object.keys(tokenizer.specials).length),inputTokens:input.length};
  }
  return {tokenizer,generate,logits:tokens=>logits(prefix(tokens)),version:model.version};
 }
