@@ -1,12 +1,12 @@
-import {LocalLearning} from './local-learning.js?v=20261004-transformer-7';
-import { Conversation } from './dialogue.js?v=20261004-transformer-7';
-import { startBoot } from './boot.js?v=20261004-transformer-7';
-import { renderAnswer } from './answer-view.js?v=20261004-transformer-7';
-import { QuestionJournal } from './question-journal.js?v=20261004-transformer-7';
-import { japaneseIntro } from './ui-text.js?v=20261004-transformer-7';
+import {LocalLearning} from './local-learning.js?v=20261005-topic-language-1';
+import { Conversation } from './dialogue.js?v=20261005-topic-language-1';
+import { startBoot } from './boot.js?v=20261005-topic-language-1';
+import { renderAnswer } from './answer-view.js?v=20261005-topic-language-1';
+import { QuestionJournal } from './question-journal.js?v=20261005-topic-language-1';
+import { japaneseIntro } from './ui-text.js?v=20261005-topic-language-1';
 const journal=new QuestionJournal();
 let conversation=null;
-const dataReady=fetch(new URL('./profile.json?v=20261004-transformer-7',import.meta.url)).then(r=>{if(!r.ok)throw Error('profile unavailable');return r.json();}).then(data=>{conversation=new Conversation(data,{learner:new LocalLearning(data,()=>journal.records)});}).catch(()=>showError('プロフィールデータを読み込めませんでした。再読み込みしてください。'));
+const dataReady=fetch(new URL('./profile.json?v=20261005-topic-language-1',import.meta.url)).then(r=>{if(!r.ok)throw Error('profile unavailable');return r.json();}).then(data=>{conversation=new Conversation(data,{learner:new LocalLearning(data,()=>journal.records)});}).catch(()=>showError('プロフィールデータを読み込めませんでした。再読み込みしてください。'));
 function showError(message){clearTimeout(errorTimer);limit.lastElementChild.textContent=message;limit.classList.remove('stage-hidden');input.setAttribute('aria-invalid','true');input.setAttribute('aria-describedby','limit');errorTimer=setTimeout(()=>{limit.classList.add('stage-hidden');input.removeAttribute('aria-invalid');input.removeAttribute('aria-describedby');},4500);}
 
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;

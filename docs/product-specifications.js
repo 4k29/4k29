@@ -1,5 +1,5 @@
-import {neuralModel as model} from './neural-model.js?v=20261004-transformer-7';
-import {neuralLogits} from './neural-inference.js?v=20261004-transformer-7';
+import {neuralModel as model} from './neural-model.js?v=20261005-topic-language-1';
+import {neuralLogits} from './neural-inference.js?v=20261005-topic-language-1';
 export const specificationMemory=model.specificationMemory;
 export function unsupportedProductName(text){return /\bcmf\s*buds\s*(?:pro|2|plus)\b|\b(?:nothing\s*)?headphone\s*\(?\s*(?:a|[2-9]\d*|1\d+)\b|\bpowerbeats\s*fit\b/i.test(text);}
 const recallCache=new Map();
@@ -78,18 +78,23 @@ export function withProductSpecifications(data){
 }
 export function resolveProductSpecifications(text,data,context,matches){
  const trigger=/スペック|仕様|性能|バッテリー|電池|再生時間|何時間|防水|耐水|防塵|耐汗|ip[x\d]|bluetooth|ブルートゥース|コーデック|codec|ldac|aac|sbc|ドライバ|重さ|重量|何グラム|サイズ|寸法|容量|ストレージ|充電|ノイ(?:ズ)?キャン|anc|インピーダンス|何mm|接続|端子|解像度|fps|\b(?:specs?|specifications?|battery|waterproof|weight|charging|driver|storage|dimensions|playback)\b/i;
- if(!trigger.test(text))return null;
+ const products=specificationMemory?.products||[],named=products.filter(p=>p.aliases.some(a=>matches(text,a)));
+ const previous=products.filter(p=>context.lastFactIds.includes(p.id)||context.lastFactIds.some(id=>id.startsWith('specification:'+p.id+':')));
+ const detail=/詳しく|詳細|特徴|紹介|説明|について教えて|\b(?:details?|describe|explain)\b|tell me (?:more )?about/.test(text)||context.explanationRequested;
+ const referring=/^(?:それ|その|さっき|もっと|詳しく|(?:its|their|those|that|it)\b|tell me more|more details)/.test(text);
+ // A brand introduction is separate from a request about its camera.
+ const descriptive=detail&&(named.some(p=>p.owner||/camera|カメラ/.test(text))||referring&&previous.some(p=>p.owner||context.lastFactIds.some(id=>id.startsWith('specification:'+p.id+':'))));
+ if(!trigger.test(text)&&!descriptive)return null;
  const unknown=()=>({factIds:[],topics:[],unknown:true,intent:'unsupported-product-specification'});
  if(/買|購入|価格|値段|いくら|好きな理由|なぜ|どうして|感想|何年|何月|いつ|\b(?:bought|purchase|price|cost|why|review)\b/.test(text))return null;
  if(unsupportedProductName(text)||/powerbeats|airpods|sony|bose|ソニー|ボーズ|WH-/i.test(text))return unknown();
- const products=specificationMemory?.products||[],named=products.filter(p=>p.aliases.some(a=>matches(text,a)));
  let selected=named;
  if(!selected.length&&/イヤホン|ヘッドホン|ヘッドフォン|earbuds?|earphones?|headphones?/.test(text))selected=products.filter(p=>p.owner&&['earphones','headphones'].includes(p.category));
- if(!selected.length&&/^(?:それ|その|さっき|もっと|詳しく|(?:its|their|those|that|it)\b)/.test(text))selected=products.filter(p=>context.lastFactIds.includes(p.id)||context.lastFactIds.some(id=>id.startsWith('specification:'+p.id+':')));
+ if(!selected.length&&referring)selected=previous;
  if(!selected.length)return null;
  if(/使って|持って|愛用|\b(?:use|own)\b/.test(text)&&selected.some(p=>!p.owner))return unknown();
  if(/ケース|charging case|\bcase\b/.test(text)&&/防水|耐水|防塵|耐汗|waterproof/.test(text)&&selected.some(p=>p.id!=='earphones-beats'))return unknown();
- const broad=/スペック|仕様|性能|\bspec/.test(text);
+ const broad=descriptive||/スペック|仕様|性能|\bspec/.test(text);
  const fields=[];
  for(const product of selected.sort((a,b)=>['earphones','headphones','brand'].indexOf(a.category)-['earphones','headphones','brand'].indexOf(b.category))){
   let keys=null;

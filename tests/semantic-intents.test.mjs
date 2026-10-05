@@ -8,7 +8,7 @@ const cases=[
  [['趣味って何？','What are your hobbies?','What do you do for fun?'],['photo','running']],
  [['普段何してる？','あなた何してる？','休日どう過ごす？',],['tecirc','photo','running']],
  [['何に興味がありますか？','What are your interests?','何に夢中？'],['apple','nothing','openai','tech','ui','design','hci','slm','context']],
- [['何が好き？','好きなものは？','What do you like?'],['apple','nothing','openai','tech','ui','design','hci','slm','context','favorite-vivant','favorite-kyu','favorite-tokyo-mer','favorite-person']],
+ [['何が好き？','好きなものは？','What do you like?'],['apple','nothing','openai','tech','ui','design','favorite-vivant','favorite-kyu','favorite-tokyo-mer','favorite-person']],
  [['好きなメーカーは？','どんなブランドに興味がある？','What are your favorite brands?'],['apple','nothing','openai','favorite-kyu']],
  [['デザインに興味がある？','デザインが好き？'],['design']],
  [['UIとUXに関心ある？'],['ui']],

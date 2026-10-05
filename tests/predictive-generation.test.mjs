@@ -83,7 +83,11 @@ test('ordinary replies, unknown inputs and unverified records do not reinforce s
  const c=new Conversation(data);assert.equal(c.respond('くだけた口調で住所は？').text,data.unknownReply);
  assert.equal(c.respond('名前は？').generation.style,'friendly');
  const learner=new LocalLearning(data,()=>[{engine:'obsolete',learningEligible:true,question:'日々の耳元のお供を聞かせて',factIds:['earphones-beats'],intents:['earphones']}]);assert.equal(learner.retrieve('日々の耳元のお供を聞かせて'),null);
- assert.equal(ENGINE_VERSION,neuralModel.version);assert.equal(neuralModel.baseVersion,model.version);
+ // Intent/classification updates invalidate old journal labels even when the
+ // numerical model weights are unchanged.
+ const previousEngine=new LocalLearning(data,()=>[{engine:neuralModel.version,learningEligible:true,question:'日々の耳元のお供を聞かせて',factIds:['earphones-beats'],intents:['earphones']}]);
+ assert.equal(previousEngine.retrieve('日々の耳元のお供を聞かせて'),null);
+ assert.notEqual(ENGINE_VERSION,neuralModel.version);assert.equal(neuralModel.baseVersion,model.version);
 });
 test('value-only, URL-only and unknown responses bypass predictive wording',()=>{
  const c=new Conversation(data);c.respond('イヤホンは？');const names=c.respond('それの名前だけ');assert.equal(names.generation.method,'registered-value');assert.equal(names.text,names.factIds.map(id=>data.facts.find(f=>f.id===id).ja.value).join('\n'));
