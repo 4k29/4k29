@@ -40,4 +40,3 @@ test('inference answers depend on generating weights without training-only label
  const full=createDialogueDecoder(model),bare=createDialogueDecoder(stripped),fast=createDialogueDecoder(stripped,{tokenizerAlgorithm:'adjacent-heap'});
  for(const q of ['Apple','好きなものは何','Nothing Headphone (1)について詳しく教えて','興味のあるものは何']){const answer=full.generate(q);assert.deepEqual(bare.generate(q),answer);assert.deepEqual(fast.generate(q),answer);}
 });
-
