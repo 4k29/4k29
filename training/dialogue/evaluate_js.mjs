@@ -18,8 +18,8 @@ const rows=corpus.rows.filter(r=>r.partition==='test').map(row=>{
   const started=performance.now();
   const result=generate(row.question,{history:row.history});
   const generationMs=performance.now()-started;corpusTimes.push(generationMs);
-  return {id:row.id,kind:row.kind,question:row.question,answer:result.text,expected:row.answer,eos:result.eos,validTokens:result.validTokens,exact:result.eos&&result.validTokens&&result.text===row.answer,inputTokens:result.inputTokens,generatedTokens:result.tokens.length,generationMs};
- }catch(error){if(!(error instanceof RangeError))throw error;return {id:row.id,kind:row.kind,question:row.question,answer:null,exact:false,error:'context-overflow'};}
+  return {id:row.id,kind:row.kind,question:row.question,history:row.history,answer:result.text,expected:row.answer,eos:result.eos,validTokens:result.validTokens,exact:result.eos&&result.validTokens&&result.text===row.answer,inputTokens:result.inputTokens,generatedTokens:result.tokens.length,generationMs};
+ }catch(error){if(!(error instanceof RangeError))throw error;return {id:row.id,kind:row.kind,question:row.question,history:row.history,expected:row.answer,answer:null,eos:false,validTokens:false,exact:false,error:'context-overflow'};}
 });
 const questions=['MERは？','趣味は何？','Headphone (1)の重さは？'];
 for(let i=0;i<20;i++)generate(questions[i%questions.length]);
@@ -28,6 +28,7 @@ for(let i=0;i<90;i++){const start=performance.now();generate(questions[i%questio
 times.sort((a,b)=>a-b);
 corpusTimes.sort((a,b)=>a-b);
 const report={version:dialogueModel.version,sourceSha256:corpus.sourceSha256,total:rows.length,exact:rows.filter(r=>r.exact).length,benchmark:{samples:times.length,medianMs:times[Math.floor(times.length/2)],p95Ms:times[Math.floor(times.length*.95)],scope:'Warm local CPU generation, three profile questions, no model download, UI or network. Training contention can affect timing.'},corpusBenchmark:{samples:corpusTimes.length,medianMs:corpusTimes[Math.floor(corpusTimes.length/2)],p95Ms:corpusTimes[Math.floor(corpusTimes.length*.95)],maximumMs:corpusTimes.at(-1),scope:'One sequential pass over all evaluated questions and histories after model parsing. Includes initially cold execution and failures up to the context cap; excludes model download, parsing, UI and network. Not a browser guarantee.'},rows};
+report.training=dialogueModel.training;
 if(beamSize>1){
  report.decoding={method:'beam',beamSize,lengthPenalty,scope:'Full vocabulary search with at most this many active branches. EOS paths may finish at any step. No factual or grammatical constraints; not a global optimum guarantee.'};
  report.training=dialogueModel.training;
