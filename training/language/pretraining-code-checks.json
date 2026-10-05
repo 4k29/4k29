@@ -1,18 +1,45 @@
 {
   "node": {
-    "passed": 899,
+    "passed": 910,
     "failed": 0,
-    "command": "node --test --test-concurrency=2 tests/*.test.mjs"
+    "runs": [
+      {
+        "passed": 903,
+        "excludedFinalModelFiles": 2,
+        "command": "node --test --test-concurrency=2 all existing test files except the two finalized model files",
+        "logSha256": "a6cef1b15aabbbc2803a503fd230612a98bad25975a424106bdf0147b0cd36c6"
+      },
+      {
+        "passed": 7,
+        "command": "node --test --test-concurrency=2 tests/raw-language-model.test.mjs tests/raw-language-paragraph-model.test.mjs",
+        "logSha256": "3c80f2a0cdf190b69a3da789c2d22dc1e9ef035536734e0e5da337b3e71ae9e1"
+      }
+    ]
   },
   "pythonDialogue": {
     "passed": 18,
     "failed": 0,
-    "command": "python -m unittest discover -s training/dialogue -p test_*.py"
+    "command": "PYTHONPATH=/tmp/4k29-torch-training:training/dialogue python -m unittest discover -s training/dialogue -p 'test_*.py'"
   },
-  "pythonRawModel": {
-    "passed": 3,
+  "note": "All910 Node tests and23 Python tests passed. Initial complete checks then seven finalized-model checks cover every current test file. CI runs the full set independently. Test success verifies accounting/inference/data/score logic, not a language gate pass.",
+  "publicJapanese": {
+    "questions": 43,
+    "replies": 2580,
+    "passed": 2580,
     "failed": 0,
-    "command": "python training/language/test_model.py"
+    "command": "node evaluation/evaluate-japanese.mjs"
   },
-  "note": "Completed before million-parameter training finished. Final model checks will be recorded separately."
+  "pythonRawAndDropout": {
+    "passed": 5,
+    "failed": 0,
+    "command": "PYTHONPATH=/tmp/4k29-torch-training python -m unittest discover -s training/language -p 'test_*.py'"
+  },
+  "publicBrowser": {
+    "passed": 4,
+    "failed": 0,
+    "mobileWidth": 390,
+    "desktopWidth": 1440,
+    "questions": 2,
+    "report": "public-owner-detail-check.json"
+  }
 }

@@ -1,7 +1,7 @@
 """Held raw document likelihood and unrestricted continuations; no QA prompt.
 Test cannot select weights/vocabulary. Greedy full vocabulary, no repair/filter.
 """
-import argparse,hashlib,json,pathlib,time
+import argparse,gzip,hashlib,json,pathlib,time
 import torch
 from model import Decoder
 from train import read,write,load_partition,measure
@@ -11,7 +11,8 @@ from tokenizer import SPECIALS,encode_stream,decode
 ROOT=pathlib.Path(__file__).resolve().parent
 
 def load_model(path):
-    export=json.loads(path.read_text().split('export const dialogueModel=',1)[1].strip().removesuffix(';'))
+    source=gzip.decompress(path.read_bytes()).decode() if path.suffix=='.gz' else path.read_text()
+    export=json.loads(source.split('export const dialogueModel=',1)[1].strip().removesuffix(';'))
     config={k:v for k,v in export['config'].items() if k!='semanticTasks'};model=Decoder(config)
     model.load_state_dict({k:torch.tensor(t['data']).reshape(t['shape']) for k,t in export['tensors'].items() if not k.startswith('semantic.')});model.eval();return model,export
 @torch.no_grad()
@@ -29,21 +30,22 @@ def generate(model,opening,tokenizer,max_new=128):
 def repetition(text):
     # Diagnostic only. No decoding penalty/output changes; manual review remains primary.
     repeated=[]
-    for width in [4,8,16,32]:
+    for width in range(2,97):
         for start in range(max(0,len(text)-width*3+1)):
             piece=text[start:start+width]
-            if piece.strip() and text[start:start+width*3]==piece*3:
+            if text[start:start+width*3]==piece*3:
                 repeated.append(dict(start=start,width=width,piece=piece));break
     return repeated
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--model',type=pathlib.Path,required=True);parser.add_argument('--partition',choices=['validation','test'],required=True);parser.add_argument('--out',type=pathlib.Path,required=True);parser.add_argument('--likelihood',action='store_true');parser.add_argument('--reference',action='store_true');args=parser.parse_args()
-    torch.set_num_threads(2);model,export=load_model(args.model);policy=read(ROOT/'generation-policy.json');begun=time.monotonic()
-    report=dict(modelVersion=export['version'],modelFileSha256=hashlib.sha256(args.model.read_bytes()).hexdigest(),config=export['config'],training=export['training'],partition=args.partition,policySha256=hashlib.sha256((ROOT/'generation-policy.json').read_bytes()).hexdigest(),rows=[])
+    parser=argparse.ArgumentParser();parser.add_argument('--model',type=pathlib.Path,required=True);parser.add_argument('--partition',choices=['validation','test'],required=True);parser.add_argument('--out',type=pathlib.Path,required=True);parser.add_argument('--likelihood',action='store_true');parser.add_argument('--reference',action='store_true');parser.add_argument('--threads',type=int,default=1);args=parser.parse_args()
+    if args.threads<1:parser.error('threads must be positive')
+    torch.set_num_threads(args.threads);model,export=load_model(args.model);policy=read(ROOT/'generation-policy.json');begun=time.monotonic()
+    report=dict(modelVersion=export['version'],modelFileSha256=hashlib.sha256(args.model.read_bytes()).hexdigest(),config=export['config'],training=export['training'],partition=args.partition,evaluationThreads=args.threads,policySha256=hashlib.sha256((ROOT/'generation-policy.json').read_bytes()).hexdigest(),rows=[])
     if args.likelihood:
-        merges=len(export['tokenizer']['merges']);directory=ROOT/f'bpe-{merges}'
+        merges=len(export['tokenizer']['merges']);kind='paragraph-bpe' if export['training'].get('paragraphSelectionsSha256') else 'bpe';directory=ROOT/f'{kind}-{merges}'
         if export['tokenizer']!=read(directory/'tokenizer.json'):raise ValueError('Tokenizer mismatch')
-        info,values=load_partition(directory,args.partition);report['likelihood']=measure(model,info,values)
+        info,values=load_partition(directory,args.partition);report['likelihood']=measure(model,info,values);report['likelihoodUnit']=info.get('unit','Whole source document, continuous masked-overlap windows');report['likelihoodDataDirectory']=directory.name
     for row in policy['probes'][args.partition]:
         t=time.monotonic();result=generate(model,row['prefix'],export['tokenizer'],policy['generation']['maxNewTokens'])
         joined=row['prefix']+result['text'];first_stop=result['text'].find('。')
