@@ -57,6 +57,21 @@ def pack(rows,pad,width):
     return x,y
 
 
+def answer_prefix_loss(logits,targets,positions,prefix_weight=1.0,prefix_tokens=8):
+    """Emphasize initial answer tokens while keeping all answer targets.
+
+    Positions are the final prompt index, whose logit predicts the first answer
+    token. Ignored prompt/padding positions never contribute to the denominator.
+    Raw-language loss and inference do not use this weighting.
+    """
+    vocabulary=logits.shape[-1]
+    if prefix_weight==1:return F.cross_entropy(logits.reshape(-1,vocabulary),targets.reshape(-1),label_smoothing=0.01)
+    losses=F.cross_entropy(logits.reshape(-1,vocabulary),targets.reshape(-1),label_smoothing=0.01,reduction='none').reshape(targets.shape)
+    offset=torch.arange(targets.shape[1],device=targets.device)[None,:]-positions[:,None]
+    weights=torch.where((offset>=0)&(offset<prefix_tokens),prefix_weight,1.0)*targets.ne(-100)
+    return (losses*weights).sum()/weights.sum()
+
+
 @torch.no_grad()
 def generate(model,rows,tokenizer,batch_size=16):
     model.eval()
