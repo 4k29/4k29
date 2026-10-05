@@ -1,0 +1,1849 @@
+{
+  "version": "2026-10-05.dialogue-switch-1",
+  "training": {
+    "randomInitialization": true,
+    "externalWeights": false,
+    "externalInferenceAPIs": false,
+    "teacher": false,
+    "completedSteps": 11000,
+    "pretrainingUpdates": 1000,
+    "dialogueUpdates": 10000,
+    "bestStep": 9000,
+    "seed": 429,
+    "parameters": 609778,
+    "sourceSha256": "23f999e661397ebc79d417cc4ac337b733b040823df85b418f99d95518f8d384",
+    "testSha256": "32307f9112484a5e2fc7dcee3925d2c749dc7b9565f1b4488e5139910f5f757a",
+    "validationExact": 482,
+    "validationLoss": 0.02716111393951493,
+    "trainRows": 21721,
+    "validationRows": 512,
+    "rawLanguageSamples": 1825,
+    "elapsedSeconds": 3374.54,
+    "pytorch": "2.6.0+cpu",
+    "settings": {
+      "pretrain_steps": 1000,
+      "steps": 10000,
+      "dim": 128,
+      "layers": 3,
+      "batch_size": 16,
+      "seed": 429,
+      "learning_rate": 0.0006,
+      "validation_every": 1000,
+      "length_buckets": true,
+      "replay_weight": 0.15,
+      "semantic_weight": 0.3,
+      "context": 256,
+      "answer_prefix_weight": 1.0,
+      "answer_prefix_tokens": 8,
+      "validation_limit": 512
+    },
+    "note": "Source-authored finite curriculum. Raw language next-token pretraining then answer-only SFT; validation-only selection, no outside weights or answer retrieval. This does not establish general dialogue or reasoning.",
+    "initialLanguageValidationLoss": 7.1731418774182005,
+    "finalLanguageValidationLoss": 3.6250842264330214,
+    "selectedPretrainingStep": 1000,
+    "selectedPretrainingValidationLoss": 3.7496713354272027,
+    "initializationKind": "random",
+    "inheritedOwnPretrainingUpdates": 0,
+    "ownPretrainingParent": null,
+    "fullValidationRows": 2776,
+    "validationSelectionSha256": "9a917452ec177622af116c28ecab1f5fba0c61dce29003ce98e4e573570897e2"
+  },
+  "partition": "test",
+  "sourceSha256": "9376acc48511b74992090c6850aa368a78f774aa356a9d32b51c30fdcc74d442",
+  "total": 120,
+  "exact": 83,
+  "contextOverflows": 0,
+  "unsupportedBoundary": {
+    "total": 16,
+    "abstained": 9,
+    "acceptedWording": [
+      "その情報は分かりません。",
+      "すみません、よく分かりません"
+    ]
+  },
+  "byKind": {
+    "context": {
+      "total": 40,
+      "exact": 26
+    },
+    "dialogue": {
+      "total": 4,
+      "exact": 4
+    },
+    "profile": {
+      "total": 32,
+      "exact": 24
+    },
+    "reasoning": {
+      "total": 12,
+      "exact": 5
+    },
+    "unknown": {
+      "total": 16,
+      "exact": 9
+    },
+    "web-knowledge": {
+      "total": 16,
+      "exact": 15
+    }
+  },
+  "rows": [
+    {
+      "id": "switch-audit:0",
+      "kind": "profile",
+      "question": "名乗るときの表記とふりがなを教えてくれるかな。",
+      "history": [],
+      "expected": "名前は4k29（しか）です。",
+      "answer": "名前は4k29（しか）です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:1",
+      "kind": "profile",
+      "question": "今は学生なのか、仕事をしているのか聞きたいな。",
+      "history": [],
+      "expected": "学生です。",
+      "answer": "学生です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:2",
+      "kind": "profile",
+      "question": "空いた時間は、趣味としてどんなことに取り組むの？",
+      "history": [],
+      "expected": "趣味は写真・映像制作とランニングです。",
+      "answer": "趣味は写真・映像制作とランニングです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:3",
+      "kind": "profile",
+      "question": "音楽を楽しむときに愛用している機器を挙げてくれる？",
+      "history": [],
+      "expected": "イヤホンはBeats Fit ProとCMF Buds、ヘッドホンはNothing Headphone (1)を使っています。",
+      "answer": "イヤホンはBeats Fit ProとCMF Buds、ヘッドホンはNothing Headphone (1)を使っています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:4",
+      "kind": "profile",
+      "question": "気に入っているものを、名前のみで教えてくれるかな。",
+      "history": [],
+      "expected": "VIVANT、TOKYO MER、kyu、してはる",
+      "answer": "VIVANT、TOKYO MER、kyu、してはる",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:5",
+      "kind": "profile",
+      "question": "Tecircで取り組んでいることを一言で聞かせて。",
+      "history": [],
+      "expected": "Tecircで記事を書いています。",
+      "answer": "Tecircで記事を書いています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:6",
+      "kind": "profile",
+      "question": "執筆している記事では、どんな題材を取り上げるのかな。",
+      "history": [],
+      "expected": "Tecircの記事では、テクノロジー、デザイン、製品の使い心地を扱っています。",
+      "answer": "Tecircの記事では、テクノロジー、デザイン、製品の使い心地を扱っています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:7",
+      "kind": "profile",
+      "question": "走った記録を残すときは、どのアプリを開くの？",
+      "history": [],
+      "expected": "ランニングにはNike Run Club（NRC）を使っています。",
+      "answer": "ランニングにはNike Run Club（NRC）を使っています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:8",
+      "kind": "profile",
+      "question": "ランニングのときに履いている靴を製品名で聞かせて。",
+      "history": [],
+      "expected": "ランニングではNIKE PEGASUS TRAIL 5 GORE‑TEXを履いています。",
+      "answer": "ランニングではNIKE PEGASUS TRAIL 5 GORE‑TEXを履いています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:9",
+      "kind": "profile",
+      "question": "TOKYO MERって、誰が主演でどの放送枠なのかな。",
+      "history": [],
+      "expected": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。",
+      "answer": "鈴木亮平さんです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:10",
+      "kind": "profile",
+      "question": "VIVANTという作品の主演と放送枠をまとめて聞きたいな。",
+      "history": [],
+      "expected": "VIVANTは、堺雅人さん主演のTBSの日曜劇場ドラマです。",
+      "answer": "VIVANTは、堺雅人さんです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:11",
+      "kind": "profile",
+      "question": "kyuがどんなブランドなのか、一言で説明できる？",
+      "history": [],
+      "expected": "kyuは、何気ない日常を思い出として残すカメラやアプリを展開するブランドです。",
+      "answer": "kyuは、何気ない日常を思い出として残すカメラやアプリを展開するブランドです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:12",
+      "kind": "profile",
+      "question": "Headphone1という製品を、主な仕様も含めて紹介できる？",
+      "history": [],
+      "expected": "Nothing Headphone (1)はNothingのヘッドホンで、40mmダイナミックドライバーを搭載し、Bluetooth 5.3とIP52の防塵・防水性能に対応しています。",
+      "answer": "Nothing Headphone (1)はNothingのヘッドホンで、40mmダイナミックドライバーを搭載し、Bluetooth 5.3とIP52の防塵・防水性能に対応しています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:13",
+      "kind": "profile",
+      "question": "Nothing Headphone1は何グラムの重さがあるのかな。",
+      "history": [],
+      "expected": "Nothing Headphone (1)の重さは329gです。",
+      "answer": "Nothing Headphone (1)の重さは329gです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:14",
+      "kind": "profile",
+      "question": "Headphone (1)にはどんな口径のどんなドライバーが入ってる？",
+      "history": [],
+      "expected": "Nothing Headphone (1)のドライバーは、40mmダイナミックです。",
+      "answer": "Nothing Headphone (1)のドライバーは、40mmダイナミックです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:15",
+      "kind": "profile",
+      "question": "Headphone1のBluetoothの版を数字で聞かせて。",
+      "history": [],
+      "expected": "Nothing Headphone (1)のBluetoothは、5.3です。",
+      "answer": "Nothing Headphone (1)のBluetoothは、5.3です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:16",
+      "kind": "profile",
+      "question": "Headphone1で利用できるコーデックを全部聞かせて。",
+      "history": [],
+      "expected": "Nothing Headphone (1)の音声コーデックは、AAC / SBC / LDACです。",
+      "answer": "Nothing Headphone (1)の音声コーデックは、AAC / SBC / LDACです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:17",
+      "kind": "profile",
+      "question": "Headphone1の防水防塵は、どの等級までなのかな。",
+      "history": [],
+      "expected": "Nothing Headphone (1)はIP52の防塵・防水性能に対応しています。",
+      "answer": "Nothing Headphone (1)はIP52の防塵・防水性能に対応しています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:18",
+      "kind": "profile",
+      "question": "AACを使ってノイキャンも作動させたHeadphone1は、何時間聴けるのかな。",
+      "history": [],
+      "expected": "Nothing Headphone (1)の再生時間（AAC・ANCオン）は、最大35時間です。",
+      "answer": "Nothing Headphone (1)の再生時間（AAC・ANCオフ）は、最大80時間です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:19",
+      "kind": "profile",
+      "question": "AAC接続でノイキャンを止めたHeadphone1は、最大どれくらい聴けるのかな。",
+      "history": [],
+      "expected": "Nothing Headphone (1)の再生時間（AAC・ANCオフ）は、最大80時間です。",
+      "answer": "Nothing Headphone (1)の再生時間（AAC・ANCオン）は、最大35時間です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:20",
+      "kind": "profile",
+      "question": "LDACを使いノイキャンを作動させたHeadphone1の再生時間を聞きたいな。",
+      "history": [],
+      "expected": "Nothing Headphone (1)の再生時間（LDAC・ANCオン）は、最大30時間です。",
+      "answer": "Nothing Headphone (1)の再生時間（LDAC・ANCオン）は、最大30時間です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:21",
+      "kind": "profile",
+      "question": "LDAC接続でノイキャンを止めたHeadphone1は、最長どれくらい聴けるのかな。",
+      "history": [],
+      "expected": "Nothing Headphone (1)の再生時間（LDAC・ANCオフ）は、最大54時間です。",
+      "answer": "Nothing Headphone (1)の再生時間（LDAC・ANCオン）は、最大30時間です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:22",
+      "kind": "profile",
+      "question": "CMF Budsのノイキャンは、方式と強さがどうなってるのかな。",
+      "history": [],
+      "expected": "CMF Budsのノイズキャンセリングは、最大42dBのハイブリッドANCです。",
+      "answer": "CMF Budsのノイズキャンセリングは、最大42dBのハイブリッドANCです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:23",
+      "kind": "profile",
+      "question": "CMF Budsをノイキャンなしで使うと、単体とケースで何時間ずつ聴けるのかな。",
+      "history": [],
+      "expected": "CMF Budsの再生時間（ANCオフ）は、単体最大8時間、ケース込み最大35.5時間です。",
+      "answer": "CMF Budsの再生時間（ANCオフ）は、単体最大8時間、ケース込み最大35.5時間です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:24",
+      "kind": "profile",
+      "question": "CMF Budsでノイキャンを使うと、単体とケースで何時間ずつ聴けるのかな。",
+      "history": [],
+      "expected": "CMF Budsの再生時間（ANC・外音取り込みオン）は、単体最大5.6時間、ケース込み最大24時間です。",
+      "answer": "CMF Budsの再生時間（ANC・外音取り込みオン）は、単体最大5.6時間、ケース込み最大24時間です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:25",
+      "kind": "profile",
+      "question": "CMF Budsのイヤホンとケースには、何mAhずつの電池があるのかな。",
+      "history": [],
+      "expected": "CMF Budsのバッテリー容量は、イヤホン45mAh、ケース460mAhです。",
+      "answer": "CMF BudsはNothing Xアプリで設定すると2台同時接続が使えます。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:26",
+      "kind": "profile",
+      "question": "Beats Fit Proは、ケースもイヤホンも水に対応しているのかな。",
+      "history": [],
+      "expected": "Beats Fit Proのイヤホン本体はIPX4の耐汗・耐水性能に対応しています。ケースは非対応です。",
+      "answer": "Beats Fit ProはANCに対応しています。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:27",
+      "kind": "profile",
+      "question": "Beats Fit Proで短時間の充電をすると、どれくらい聴けるのかな。",
+      "history": [],
+      "expected": "Beats Fit Proの急速充電は、5分充電で最大1時間再生です。",
+      "answer": "Beats Fit Proの急速充電は、5分充電で最大1時間再生です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:28",
+      "kind": "profile",
+      "question": "kyu cameraというカメラの重量をグラムで聞かせて。",
+      "history": [],
+      "expected": "kyu cameraの重さは115gです。",
+      "answer": "kyu cameraの重さは115gです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:29",
+      "kind": "profile",
+      "question": "kyu cameraのフロント動画は、解像度などがどうなってるのかな。",
+      "history": [],
+      "expected": "kyu cameraのフロント動画は、1080p、1:1、30fpsです。",
+      "answer": "kyu cameraのフロント動画は、1080p、1:1、30fpsです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:30",
+      "kind": "profile",
+      "question": "kyu cameraは、何GBの内部保存領域を持っているのかな。",
+      "history": [],
+      "expected": "kyu cameraのストレージは、32GBです。",
+      "answer": "kyu cameraのバック動画は、720p、1:1、30fpsです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:31",
+      "kind": "profile",
+      "question": "kyu cameraを充電するときの端子の種類を聞きたいな。",
+      "history": [],
+      "expected": "kyu cameraの接続端子は、USB-Cです。",
+      "answer": "kyu cameraの接続端子は、USB-Cです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:32",
+      "kind": "context",
+      "question": "名乗るときの表記とふりがなを教えてくれるかな。",
+      "history": [
+        {
+          "question": "初めに立場を聞いてもいい？",
+          "answer": "学生です。"
+        },
+        {
+          "question": "VIVANTの紹介を先に聞こう。",
+          "answer": "VIVANTは、堺雅人さん主演のTBSの日曜劇場ドラマです。"
+        },
+        {
+          "question": "説明してくれてありがとう。",
+          "answer": "どういたしまして。"
+        }
+      ],
+      "expected": "名前は4k29（しか）です。",
+      "answer": "名前は4k29（しか）です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:33",
+      "kind": "context",
+      "question": "今は学生なのか、仕事をしているのか聞きたいな。",
+      "history": [
+        {
+          "question": "趣味を先に聞こう。",
+          "answer": "趣味は写真・映像制作とランニングです。"
+        }
+      ],
+      "expected": "学生です。",
+      "answer": "学生です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:34",
+      "kind": "context",
+      "question": "空いた時間は、趣味としてどんなことに取り組むの？",
+      "history": [
+        {
+          "question": "名前を先に聞こう。",
+          "answer": "名前は4k29（しか）です。"
+        }
+      ],
+      "expected": "趣味は写真・映像制作とランニングです。",
+      "answer": "趣味は写真・映像制作とランニングです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:35",
+      "kind": "context",
+      "question": "音楽を楽しむときに愛用している機器を挙げてくれる？",
+      "history": [
+        {
+          "question": "初めに立場を聞いてもいい？",
+          "answer": "学生です。"
+        },
+        {
+          "question": "先にkyuを紹介して。",
+          "answer": "kyuは、何気ない日常を思い出として残すカメラやアプリを展開するブランドです。"
+        }
+      ],
+      "expected": "イヤホンはBeats Fit ProとCMF Buds、ヘッドホンはNothing Headphone (1)を使っています。",
+      "answer": "kyuは、何気ない日常を思い出として残すカメラやアプリを展開するブランドです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:36",
+      "kind": "context",
+      "question": "気に入っているものを、名前のみで教えてくれるかな。",
+      "history": [
+        {
+          "question": "まずHeadphone1を紹介して。",
+          "answer": "Nothing Headphone (1)はNothingのヘッドホンで、40mmダイナミックドライバーを搭載し、Bluetooth 5.3とIP52の防塵・防水性能に対応しています。"
+        },
+        {
+          "question": "説明してくれてありがとう。",
+          "answer": "どういたしまして。"
+        }
+      ],
+      "expected": "VIVANT、TOKYO MER、kyu、してはる",
+      "answer": "VIVANT、TOKYO MER、kyu、してはる",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:37",
+      "kind": "context",
+      "question": "Tecircで取り組んでいることを一言で聞かせて。",
+      "history": [
+        {
+          "question": "こんばんは。",
+          "answer": "こんばんは。何について知りたい？"
+        }
+      ],
+      "expected": "Tecircで記事を書いています。",
+      "answer": "Tecircで記事を書いています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:38",
+      "kind": "context",
+      "question": "執筆している記事では、どんな題材を取り上げるのかな。",
+      "history": [
+        {
+          "question": "初めに立場を聞いてもいい？",
+          "answer": "学生です。"
+        },
+        {
+          "question": "MERのことを先に聞こう。",
+          "answer": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。"
+        }
+      ],
+      "expected": "Tecircの記事では、テクノロジー、デザイン、製品の使い心地を扱っています。",
+      "answer": "Tecircの記事では、テクノロジー、デザイン、製品の使い心地を扱っています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:39",
+      "kind": "context",
+      "question": "走った記録を残すときは、どのアプリを開くの？",
+      "history": [
+        {
+          "question": "VIVANTの紹介を先に聞こう。",
+          "answer": "VIVANTは、堺雅人さん主演のTBSの日曜劇場ドラマです。"
+        }
+      ],
+      "expected": "ランニングにはNike Run Club（NRC）を使っています。",
+      "answer": "ランニングにはNike Run Club（NRC）を使っています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:40",
+      "kind": "context",
+      "question": "ランニングのときに履いている靴を製品名で聞かせて。",
+      "history": [
+        {
+          "question": "趣味を先に聞こう。",
+          "answer": "趣味は写真・映像制作とランニングです。"
+        },
+        {
+          "question": "説明してくれてありがとう。",
+          "answer": "どういたしまして。"
+        }
+      ],
+      "expected": "ランニングではNIKE PEGASUS TRAIL 5 GORE‑TEXを履いています。",
+      "answer": "ランニングではNIKE PEGASUS TRAIL 5 GORE‑TEXを履いています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:41",
+      "kind": "context",
+      "question": "TOKYO MERって、誰が主演でどの放送枠なのかな。",
+      "history": [
+        {
+          "question": "初めに立場を聞いてもいい？",
+          "answer": "学生です。"
+        },
+        {
+          "question": "名前を先に聞こう。",
+          "answer": "名前は4k29（しか）です。"
+        }
+      ],
+      "expected": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。",
+      "answer": "鈴木亮平さんです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:42",
+      "kind": "context",
+      "question": "VIVANTという作品の主演と放送枠をまとめて聞きたいな。",
+      "history": [
+        {
+          "question": "先にkyuを紹介して。",
+          "answer": "kyuは、何気ない日常を思い出として残すカメラやアプリを展開するブランドです。"
+        }
+      ],
+      "expected": "VIVANTは、堺雅人さん主演のTBSの日曜劇場ドラマです。",
+      "answer": "VIVANTは、堺雅人さんです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:43",
+      "kind": "context",
+      "question": "kyuがどんなブランドなのか、一言で説明できる？",
+      "history": [
+        {
+          "question": "まずHeadphone1を紹介して。",
+          "answer": "Nothing Headphone (1)はNothingのヘッドホンで、40mmダイナミックドライバーを搭載し、Bluetooth 5.3とIP52の防塵・防水性能に対応しています。"
+        }
+      ],
+      "expected": "kyuは、何気ない日常を思い出として残すカメラやアプリを展開するブランドです。",
+      "answer": "kyuは、何気ない日常を思い出として残すカメラやアプリを展開するブランドです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:44",
+      "kind": "context",
+      "question": "Headphone1という製品を、主な仕様も含めて紹介できる？",
+      "history": [
+        {
+          "question": "初めに立場を聞いてもいい？",
+          "answer": "学生です。"
+        },
+        {
+          "question": "こんばんは。",
+          "answer": "こんばんは。何について知りたい？"
+        },
+        {
+          "question": "説明してくれてありがとう。",
+          "answer": "どういたしまして。"
+        }
+      ],
+      "expected": "Nothing Headphone (1)はNothingのヘッドホンで、40mmダイナミックドライバーを搭載し、Bluetooth 5.3とIP52の防塵・防水性能に対応しています。",
+      "answer": "Nothing Headphone (1)はNothingのヘッドホンで、40mmダイナミックドライバーを搭載し、Bluetooth 5.3とIP52の防塵・防水性能に対応しています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:45",
+      "kind": "context",
+      "question": "Nothing Headphone1は何グラムの重さがあるのかな。",
+      "history": [
+        {
+          "question": "MERのことを先に聞こう。",
+          "answer": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。"
+        }
+      ],
+      "expected": "Nothing Headphone (1)の重さは329gです。",
+      "answer": "Nothing Headphone (1)の重さは329gです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:46",
+      "kind": "context",
+      "question": "Headphone (1)にはどんな口径のどんなドライバーが入ってる？",
+      "history": [
+        {
+          "question": "VIVANTの紹介を先に聞こう。",
+          "answer": "VIVANTは、堺雅人さん主演のTBSの日曜劇場ドラマです。"
+        }
+      ],
+      "expected": "Nothing Headphone (1)のドライバーは、40mmダイナミックです。",
+      "answer": "Nothing Headphone (1)のドライバーは、40mmダイナミックです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:47",
+      "kind": "context",
+      "question": "Headphone1のBluetoothの版を数字で聞かせて。",
+      "history": [
+        {
+          "question": "初めに立場を聞いてもいい？",
+          "answer": "学生です。"
+        },
+        {
+          "question": "趣味を先に聞こう。",
+          "answer": "趣味は写真・映像制作とランニングです。"
+        }
+      ],
+      "expected": "Nothing Headphone (1)のBluetoothは、5.3です。",
+      "answer": "Nothing Headphone (1)のBluetoothは、5.3です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:48",
+      "kind": "context",
+      "question": "Headphone1で利用できるコーデックを全部聞かせて。",
+      "history": [
+        {
+          "question": "名前を先に聞こう。",
+          "answer": "名前は4k29（しか）です。"
+        },
+        {
+          "question": "説明してくれてありがとう。",
+          "answer": "どういたしまして。"
+        }
+      ],
+      "expected": "Nothing Headphone (1)の音声コーデックは、AAC / SBC / LDACです。",
+      "answer": "Nothing Headphone (1)の音声コーデックは、AAC / SBC / LDACです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:49",
+      "kind": "context",
+      "question": "Headphone1の防水防塵は、どの等級までなのかな。",
+      "history": [
+        {
+          "question": "先にkyuを紹介して。",
+          "answer": "kyuは、何気ない日常を思い出として残すカメラやアプリを展開するブランドです。"
+        }
+      ],
+      "expected": "Nothing Headphone (1)はIP52の防塵・防水性能に対応しています。",
+      "answer": "Nothing Headphone (1)はIP52の防塵・防水性能に対応しています。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:50",
+      "kind": "context",
+      "question": "AACを使ってノイキャンも作動させたHeadphone1は、何時間聴けるのかな。",
+      "history": [
+        {
+          "question": "初めに立場を聞いてもいい？",
+          "answer": "学生です。"
+        },
+        {
+          "question": "まずHeadphone1を紹介して。",
+          "answer": "Nothing Headphone (1)はNothingのヘッドホンで、40mmダイナミックドライバーを搭載し、Bluetooth 5.3とIP52の防塵・防水性能に対応しています。"
+        }
+      ],
+      "expected": "Nothing Headphone (1)の再生時間（AAC・ANCオン）は、最大35時間です。",
+      "answer": "Nothing Headphone (1)の再生時間（AAC・ANCオフ）は、最大80時間です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:51",
+      "kind": "context",
+      "question": "AAC接続でノイキャンを止めたHeadphone1は、最大どれくらい聴けるのかな。",
+      "history": [
+        {
+          "question": "こんばんは。",
+          "answer": "こんばんは。何について知りたい？"
+        }
+      ],
+      "expected": "Nothing Headphone (1)の再生時間（AAC・ANCオフ）は、最大80時間です。",
+      "answer": "Nothing Headphone (1)の再生時間（AAC・ANCオン）は、最大35時間です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:52",
+      "kind": "context",
+      "question": "LDACを使いノイキャンを作動させたHeadphone1の再生時間を聞きたいな。",
+      "history": [
+        {
+          "question": "MERのことを先に聞こう。",
+          "answer": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。"
+        },
+        {
+          "question": "説明してくれてありがとう。",
+          "answer": "どういたしまして。"
+        }
+      ],
+      "expected": "Nothing Headphone (1)の再生時間（LDAC・ANCオン）は、最大30時間です。",
+      "answer": "Nothing Headphone (1)の再生時間（LDAC・ANCオン）は、最大30時間です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:53",
+      "kind": "context",
+      "question": "LDAC接続でノイキャンを止めたHeadphone1は、最長どれくらい聴けるのかな。",
+      "history": [
+        {
+          "question": "初めに立場を聞いてもいい？",
+          "answer": "学生です。"
+        },
+        {
+          "question": "VIVANTの紹介を先に聞こう。",
+          "answer": "VIVANTは、堺雅人さん主演のTBSの日曜劇場ドラマです。"
+        }
+      ],
+      "expected": "Nothing Headphone (1)の再生時間（LDAC・ANCオフ）は、最大54時間です。",
+      "answer": "Nothing Headphone (1)の再生時間（LDAC・ANCオン）は、最大30時間です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:54",
+      "kind": "context",
+      "question": "CMF Budsのノイキャンは、方式と強さがどうなってるのかな。",
+      "history": [
+        {
+          "question": "趣味を先に聞こう。",
+          "answer": "趣味は写真・映像制作とランニングです。"
+        }
+      ],
+      "expected": "CMF Budsのノイズキャンセリングは、最大42dBのハイブリッドANCです。",
+      "answer": "CMF Budsのノイズキャンセリングは、最大42dBのハイブリッドANCです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:55",
+      "kind": "context",
+      "question": "CMF Budsをノイキャンなしで使うと、単体とケースで何時間ずつ聴けるのかな。",
+      "history": [
+        {
+          "question": "名前を先に聞こう。",
+          "answer": "名前は4k29（しか）です。"
+        }
+      ],
+      "expected": "CMF Budsの再生時間（ANCオフ）は、単体最大8時間、ケース込み最大35.5時間です。",
+      "answer": "CMF Budsの再生時間（ANCオフ）は、単体最大8時間、ケース込み最大35.5時間です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:56",
+      "kind": "context",
+      "question": "CMF Budsでノイキャンを使うと、単体とケースで何時間ずつ聴けるのかな。",
+      "history": [
+        {
+          "question": "初めに立場を聞いてもいい？",
+          "answer": "学生です。"
+        },
+        {
+          "question": "先にkyuを紹介して。",
+          "answer": "kyuは、何気ない日常を思い出として残すカメラやアプリを展開するブランドです。"
+        },
+        {
+          "question": "説明してくれてありがとう。",
+          "answer": "どういたしまして。"
+        }
+      ],
+      "expected": "CMF Budsの再生時間（ANC・外音取り込みオン）は、単体最大5.6時間、ケース込み最大24時間です。",
+      "answer": "CMF Budsの再生時間（ANC・外音取り込みオン）は、単体最大5.6時間、ケース込み最大24時間です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:57",
+      "kind": "context",
+      "question": "CMF Budsのイヤホンとケースには、何mAhずつの電池があるのかな。",
+      "history": [
+        {
+          "question": "まずHeadphone1を紹介して。",
+          "answer": "Nothing Headphone (1)はNothingのヘッドホンで、40mmダイナミックドライバーを搭載し、Bluetooth 5.3とIP52の防塵・防水性能に対応しています。"
+        }
+      ],
+      "expected": "CMF Budsのバッテリー容量は、イヤホン45mAh、ケース460mAhです。",
+      "answer": "CMF Budsのイヤホン本体はIP54の防塵・防水性能に対応しています。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:58",
+      "kind": "context",
+      "question": "Beats Fit Proは、ケースもイヤホンも水に対応しているのかな。",
+      "history": [
+        {
+          "question": "こんばんは。",
+          "answer": "こんばんは。何について知りたい？"
+        }
+      ],
+      "expected": "Beats Fit Proのイヤホン本体はIPX4の耐汗・耐水性能に対応しています。ケースは非対応です。",
+      "answer": "Beats Fit Proの急速充電で最大1時間再生です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:59",
+      "kind": "context",
+      "question": "Beats Fit Proで短時間の充電をすると、どれくらい聴けるのかな。",
+      "history": [
+        {
+          "question": "初めに立場を聞いてもいい？",
+          "answer": "学生です。"
+        },
+        {
+          "question": "MERのことを先に聞こう。",
+          "answer": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。"
+        }
+      ],
+      "expected": "Beats Fit Proの急速充電は、5分充電で最大1時間再生です。",
+      "answer": "Beats Fit Proの急速充電は、5分充電で最大1時間再生です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:60",
+      "kind": "context",
+      "question": "2つの作品で、一番初めに聞いたほうの主演だけ聞かせてくれる？",
+      "history": [
+        {
+          "question": "MERを先に紹介して。",
+          "answer": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。"
+        },
+        {
+          "question": "VIVANTを先に紹介して。",
+          "answer": "VIVANTは、堺雅人さん主演のTBSの日曜劇場ドラマです。"
+        }
+      ],
+      "expected": "鈴木亮平さんです。",
+      "answer": "堺雅人さんです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:61",
+      "kind": "context",
+      "question": "2つの作品で、一番初めに聞いたほうは何局の何という放送枠なのかな。",
+      "history": [
+        {
+          "question": "MERを先に紹介して。",
+          "answer": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。"
+        },
+        {
+          "question": "VIVANTを先に紹介して。",
+          "answer": "VIVANTは、堺雅人さん主演のTBSの日曜劇場ドラマです。"
+        }
+      ],
+      "expected": "TBSの日曜劇場です。",
+      "answer": "TBSの日曜劇場です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:62",
+      "kind": "context",
+      "question": "2つの作品で、後から聞いたほうの主演だけ聞かせてくれる？",
+      "history": [
+        {
+          "question": "MERを先に紹介して。",
+          "answer": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。"
+        },
+        {
+          "question": "VIVANTを先に紹介して。",
+          "answer": "VIVANTは、堺雅人さん主演のTBSの日曜劇場ドラマです。"
+        }
+      ],
+      "expected": "堺雅人さんです。",
+      "answer": "堺雅人さんです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:63",
+      "kind": "context",
+      "question": "2つの作品で、後から聞いたほうは何局の何という放送枠なのかな。",
+      "history": [
+        {
+          "question": "MERを先に紹介して。",
+          "answer": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。"
+        },
+        {
+          "question": "VIVANTを先に紹介して。",
+          "answer": "VIVANTは、堺雅人さん主演のTBSの日曜劇場ドラマです。"
+        }
+      ],
+      "expected": "TBSの日曜劇場です。",
+      "answer": "VIVANTは、堺雅人さんです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:64",
+      "kind": "context",
+      "question": "2つの作品で、一番初めに聞いたほうの主演だけ聞かせてくれる？",
+      "history": [
+        {
+          "question": "VIVANTを先に紹介して。",
+          "answer": "VIVANTは、堺雅人さん主演のTBSの日曜劇場ドラマです。"
+        },
+        {
+          "question": "MERを先に紹介して。",
+          "answer": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。"
+        }
+      ],
+      "expected": "堺雅人さんです。",
+      "answer": "鈴木亮平さんです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:65",
+      "kind": "context",
+      "question": "2つの作品で、一番初めに聞いたほうは何局の何という放送枠なのかな。",
+      "history": [
+        {
+          "question": "VIVANTを先に紹介して。",
+          "answer": "VIVANTは、堺雅人さん主演のTBSの日曜劇場ドラマです。"
+        },
+        {
+          "question": "MERを先に紹介して。",
+          "answer": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。"
+        }
+      ],
+      "expected": "TBSの日曜劇場です。",
+      "answer": "TBSの日曜劇場です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:66",
+      "kind": "context",
+      "question": "2つの作品で、後から聞いたほうの主演だけ聞かせてくれる？",
+      "history": [
+        {
+          "question": "VIVANTを先に紹介して。",
+          "answer": "VIVANTは、堺雅人さん主演のTBSの日曜劇場ドラマです。"
+        },
+        {
+          "question": "MERを先に紹介して。",
+          "answer": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。"
+        }
+      ],
+      "expected": "鈴木亮平さんです。",
+      "answer": "鈴木亮平さんです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:67",
+      "kind": "context",
+      "question": "2つの作品で、後から聞いたほうは何局の何という放送枠なのかな。",
+      "history": [
+        {
+          "question": "VIVANTを先に紹介して。",
+          "answer": "VIVANTは、堺雅人さん主演のTBSの日曜劇場ドラマです。"
+        },
+        {
+          "question": "MERを先に紹介して。",
+          "answer": "TOKYO MERは、鈴木亮平さん主演のTBSの日曜劇場ドラマです。"
+        }
+      ],
+      "expected": "TBSの日曜劇場です。",
+      "answer": "TBSの日曜劇場ドラマです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:68",
+      "kind": "context",
+      "question": "2つの製品のうち、最初に紹介したほうは何gなのかな。",
+      "history": [
+        {
+          "question": "Headphone1を紹介して。",
+          "answer": "Nothing Headphone (1)はNothingのヘッドホンで、40mmダイナミックドライバーを搭載し、Bluetooth 5.3とIP52の防塵・防水性能に対応しています。"
+        },
+        {
+          "question": "kyu cameraを紹介して。",
+          "answer": "kyu cameraの重さは115gです。"
+        }
+      ],
+      "expected": "Nothing Headphone (1)の重さは329gです。",
+      "answer": "kyu cameraの重さは115gです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:69",
+      "kind": "context",
+      "question": "2つの製品のうち、最後に紹介したほうは何gなのかな。",
+      "history": [
+        {
+          "question": "Headphone1を紹介して。",
+          "answer": "Nothing Headphone (1)はNothingのヘッドホンで、40mmダイナミックドライバーを搭載し、Bluetooth 5.3とIP52の防塵・防水性能に対応しています。"
+        },
+        {
+          "question": "kyu cameraを紹介して。",
+          "answer": "kyu cameraの重さは115gです。"
+        }
+      ],
+      "expected": "kyu cameraの重さは115gです。",
+      "answer": "kyu cameraの重さは115gです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:70",
+      "kind": "context",
+      "question": "2つの製品のうち、最初に紹介したほうは何gなのかな。",
+      "history": [
+        {
+          "question": "kyu cameraを紹介して。",
+          "answer": "kyu cameraの重さは115gです。"
+        },
+        {
+          "question": "Headphone1を紹介して。",
+          "answer": "Nothing Headphone (1)はNothingのヘッドホンで、40mmダイナミックドライバーを搭載し、Bluetooth 5.3とIP52の防塵・防水性能に対応しています。"
+        }
+      ],
+      "expected": "kyu cameraの重さは115gです。",
+      "answer": "kyu cameraの重さは115gです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:71",
+      "kind": "context",
+      "question": "2つの製品のうち、最後に紹介したほうは何gなのかな。",
+      "history": [
+        {
+          "question": "kyu cameraを紹介して。",
+          "answer": "kyu cameraの重さは115gです。"
+        },
+        {
+          "question": "Headphone1を紹介して。",
+          "answer": "Nothing Headphone (1)はNothingのヘッドホンで、40mmダイナミックドライバーを搭載し、Bluetooth 5.3とIP52の防塵・防水性能に対応しています。"
+        }
+      ],
+      "expected": "Nothing Headphone (1)の重さは329gです。",
+      "answer": "kyu cameraの重さは115gです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:72",
+      "kind": "unknown",
+      "question": "好きな映画を正式な作品名で聞かせてくれる？",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "その情報は分かりません。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:73",
+      "kind": "unknown",
+      "question": "愛読する小説のタイトルを聞かせてくれる？",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "ットテクノロジー、デザイン、��は通、約最大�ですが、約１８０７～０晶のため、３０％の量になることをいいます。",
+      "exact": false,
+      "eos": true,
+      "validTokens": false,
+      "validUtf8": false
+    },
+    {
+      "id": "switch-audit:74",
+      "kind": "unknown",
+      "question": "音楽で気に入っている歌手を、名前で教えてくれるかな。",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "VIVANT、TOKYO MER",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:75",
+      "kind": "unknown",
+      "question": "お気に入りの楽曲名を具体的に聞きたいな。",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "その情報は分かりません。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:76",
+      "kind": "unknown",
+      "question": "普段のパソコンの機種を型番で聞かせてくれる？",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "その情報は分かりません。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:77",
+      "kind": "unknown",
+      "question": "携帯電話の機種を型番で聞かせてくれる？",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "指定するプロパティです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:78",
+      "kind": "unknown",
+      "question": "写真撮影にいつも使うカメラは、どの機種なのかな。",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "その情報は分かりません。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:79",
+      "kind": "unknown",
+      "question": "通っている学校の正式名称を聞かせてくれる？",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "その情報は分かりません。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:80",
+      "kind": "unknown",
+      "question": "Nothing Headphone (7)の重量をグラムで聞かせて。",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "その情報は分かりません。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:81",
+      "kind": "unknown",
+      "question": "Nothing Headphone (3)のBluetoothを聞かせて。",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "Nothing Headphone (1)のBluetoothは、5.3です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:82",
+      "kind": "unknown",
+      "question": "CMF Buds Pro 5のノイキャン性能を聞かせて。",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "その情報は分かりません。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:83",
+      "kind": "unknown",
+      "question": "CMF Buds Pro 4の電池の容量を聞かせて。",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "CMF Budsのバッテリー容量は、イヤホン455mAh、ケース460mAhです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:84",
+      "kind": "unknown",
+      "question": "Beats Fit Proの本体が何gか、確認した数値で聞かせて。",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "145=360なので、合わせて21個です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:85",
+      "kind": "unknown",
+      "question": "CMF Budsの内蔵SSDは何GBか聞かせて。",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "CMF Budsのノイズキャンセリングは、最大42dBのハイブリッドANCです。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:86",
+      "kind": "unknown",
+      "question": "今この瞬間の仙台の気温を聞かせてくれる？",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "その情報は分かりません。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:87",
+      "kind": "unknown",
+      "question": "今この瞬間に福岡では雨が降っているのかな。",
+      "history": [],
+      "expected": "その情報は分かりません。",
+      "answer": "その情報は分かりません。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:88",
+      "kind": "web-knowledge",
+      "question": "constで宣言すると、再代入はどうなるのかな。",
+      "history": [],
+      "expected": "constは、再代入できない変数を宣言します。オブジェクトのプロパティは変更できます。",
+      "answer": "constは、再代入できない変数を宣言します。オブジェクトのプロパティは変更できます。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:89",
+      "kind": "web-knowledge",
+      "question": "letが作る変数について、性質を聞かせて。",
+      "history": [],
+      "expected": "letは、再代入できるブロックスコープの変数を宣言します。",
+      "answer": "letは、再代入できるブロックスコープの変数を宣言します。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:90",
+      "kind": "web-knowledge",
+      "question": "JavaScriptのArrayは、どんなデータを扱うのかな。",
+      "history": [],
+      "expected": "Arrayは、複数の値を順番に並べて扱うJavaScriptの配列です。",
+      "answer": "Arrayは、複数の値を順番に並べて扱うJavaScriptの配列です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:91",
+      "kind": "web-knowledge",
+      "question": "Stringは、JavaScriptで何を扱うためのものなのかな。",
+      "history": [],
+      "expected": "Stringは、文字の並びを表したり操作したりするJavaScriptのオブジェクトです。",
+      "answer": "Stringは、文字の並びを表したり操作したりするJavaScriptのオブジェクトです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:92",
+      "kind": "web-knowledge",
+      "question": "Mapは、JavaScriptでどんな組を保管するのかな。",
+      "history": [],
+      "expected": "Mapは、キーと値の組を保存するJavaScriptのコレクションです。",
+      "answer": "Mapは、キーと値の組を保存するJavaScriptのコレクションです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:93",
+      "kind": "web-knowledge",
+      "question": "Setは、JavaScriptでどんな値を保管するのかな。",
+      "history": [],
+      "expected": "Setは、重複しない値を保存するJavaScriptのコレクションです。",
+      "answer": "Setは、重複しない値を保存するJavaScriptのコレクションです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:94",
+      "kind": "web-knowledge",
+      "question": "typeofで調べると、どんな値が返ってくるのかな。",
+      "history": [],
+      "expected": "typeofは、値の型を示す文字列を返すJavaScriptの演算子です。",
+      "answer": "typeofは、値の型を示す文字列を返すJavaScriptの演算子です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:95",
+      "kind": "web-knowledge",
+      "question": "Promiseが表す状態を、短く聞かせて。",
+      "history": [],
+      "expected": "Promiseは、非同期処理の完了または失敗を表すJavaScriptのオブジェクトです。",
+      "answer": "Promiseは、非同期処理の完了または失敗を表すJavaScriptのオブジェクトです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:96",
+      "kind": "web-knowledge",
+      "question": "HTMLのinputは、どんな入力部品を作るのかな。",
+      "history": [],
+      "expected": "inputは、入力用のフォーム部品を作るHTML要素です。type属性で入力の種類を選べます。",
+      "answer": "inputは、入力の種類を選べます。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:97",
+      "kind": "web-knowledge",
+      "question": "HTMLのtextareaは、どんな入力に使うのかな。",
+      "history": [],
+      "expected": "textareaは、複数行のテキストを入力するHTML要素です。",
+      "answer": "textareaは、複数行のテキストを入力するHTML要素です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:98",
+      "kind": "web-knowledge",
+      "question": "CSSのcolorでは、どこの色を指定するのかな。",
+      "history": [],
+      "expected": "CSSのcolorは、文字などの前景色を指定するプロパティです。",
+      "answer": "CSSのcolorは、文字などの前景色を指定するプロパティです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:99",
+      "kind": "web-knowledge",
+      "question": "CSSのfont-familyは、どんな順で何を指定するのかな。",
+      "history": [],
+      "expected": "font-familyは、使用するフォントを優先順に指定するCSSプロパティです。",
+      "answer": "font-familyは、使用するフォントを優先順に指定するCSSプロパティです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:100",
+      "kind": "web-knowledge",
+      "question": "JavaScriptのObjectは、どんな組み合わせを表すのかな。",
+      "history": [],
+      "expected": "Objectは、キーと値の組み合わせを持つJavaScriptのオブジェクトを表します。",
+      "answer": "Objectは、キーと値の組み合わせを持つJavaScriptのオブジェクトを表します。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:101",
+      "kind": "web-knowledge",
+      "question": "JavaScriptの関数は、どんなまとまりのコードなのかな。",
+      "history": [],
+      "expected": "関数は、引数を受け取って処理を行い、値を返すことができるコードのまとまりです。",
+      "answer": "関数は、引数を受け取って処理を行い、値を返すことができるコードのまとまりです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:102",
+      "kind": "web-knowledge",
+      "question": "JavaScriptのモジュールは、どのようにコードを分けるのかな。",
+      "history": [],
+      "expected": "モジュールは、コードを別のファイルへ分割し、importやexportで機能を共有する仕組みです。",
+      "answer": "モジュールは、コードを別のファイルへ分割し、importやexportで機能を共有する仕組みです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:103",
+      "kind": "web-knowledge",
+      "question": "CSSのoverflow-wrapは、長い単語にどう作用するのかな。",
+      "history": [],
+      "expected": "overflow-wrapは、長い単語などが枠からはみ出すときの折り返しを制御するCSSプロパティです。",
+      "answer": "overflow-wrapは、長い単語などが枠からはみ出すときの折り返しを制御するCSSプロパティです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:104",
+      "kind": "reasoning",
+      "question": "普段使うイヤホンは、製品名で数えると何種類になるのかな。",
+      "history": [],
+      "expected": "2機種です。",
+      "answer": "2機種です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:105",
+      "kind": "reasoning",
+      "question": "普段使うヘッドホンは、製品名で数えると何種類になるのかな。",
+      "history": [],
+      "expected": "1機種です。",
+      "answer": "1機種です。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:106",
+      "kind": "reasoning",
+      "question": "イヤホンもヘッドホンもまとめて数えると、何機種になるのかな。",
+      "history": [],
+      "expected": "3機種です。",
+      "answer": "2機種です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:107",
+      "kind": "reasoning",
+      "question": "TOKYO MERとVIVANTでは、主演は同じ人物なのかな。名前も聞かせて。",
+      "history": [],
+      "expected": "主演は異なります。TOKYO MERは鈴木亮平さん、VIVANTは堺雅人さんです。",
+      "answer": "主演は異なります。TOKYO MERは鈴木亮平さん、VIVANTは堺雅人さんです。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:108",
+      "kind": "reasoning",
+      "question": "TOKYO MERとVIVANTでは、放送局と放送枠が同じなのかな。",
+      "history": [],
+      "expected": "どちらもTBSの日曜劇場ドラマです。",
+      "answer": "TBSの日曜劇場です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:109",
+      "kind": "reasoning",
+      "question": "Headphone1とkyu cameraは、重いほうと重さの差がどうなるのかな。",
+      "history": [],
+      "expected": "Nothing Headphone (1)のほうが重く、329gと115gで214gの差があります。",
+      "answer": "Nothing Headphone (1)のほうが重く、329gと115gで214gの差があります。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:110",
+      "kind": "reasoning",
+      "question": "CMF BudsとHeadphone1では、Bluetoothの版がそろっているのかな。",
+      "history": [],
+      "expected": "どちらもBluetooth 5.3です。",
+      "answer": "CMF BudsのBluetoothは、5.3です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:111",
+      "kind": "reasoning",
+      "question": "好きなドラマのタイトルを、ドラマだけに絞って聞かせてくれる？",
+      "history": [],
+      "expected": "VIVANT、TOKYO MER",
+      "answer": "VIVANT、TOKYO MER",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:112",
+      "kind": "reasoning",
+      "question": "箱に8個を入れました。さらに18個を入れたら、合計何個になるのかな。",
+      "history": [],
+      "expected": "8+18=26なので、合わせて26個です。",
+      "answer": "18+18なので、合わせて23個です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:113",
+      "kind": "reasoning",
+      "question": "箱に7個を入れました。さらに15個を入れたら、合計何個になるのかな。",
+      "history": [],
+      "expected": "7+15=22なので、合わせて22個です。",
+      "answer": "18+8なので、合わせて2個です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:114",
+      "kind": "reasoning",
+      "question": "箱に4個を入れました。さらに4個を入れたら、合計何個になるのかな。",
+      "history": [],
+      "expected": "4+4=8なので、合わせて8個です。",
+      "answer": "16+6なので、合わせて2個です。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:115",
+      "kind": "reasoning",
+      "question": "箱に12個を入れました。さらに18個を入れたら、合計何個になるのかな。",
+      "history": [],
+      "expected": "12+18=30なので、合わせて30個です。",
+      "answer": "その情報は分かりません。",
+      "exact": false,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:116",
+      "kind": "dialogue",
+      "question": "こんにちは。これから少し聞かせてもらいたいな。",
+      "history": [],
+      "expected": "こんにちは。何について知りたい？",
+      "answer": "こんにちは。何について知りたい？",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:117",
+      "kind": "dialogue",
+      "question": "こんばんは。今から話を聞かせてくれるかな。",
+      "history": [],
+      "expected": "こんばんは。何について知りたい？",
+      "answer": "こんばんは。何について知りたい？",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:118",
+      "kind": "dialogue",
+      "question": "おはようございます。これから質問してもいいかな。",
+      "history": [],
+      "expected": "おはよう。何について知りたい？",
+      "answer": "おはよう。何について知りたい？",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    },
+    {
+      "id": "switch-audit:119",
+      "kind": "dialogue",
+      "question": "分かりやすく答えてくれて、ありがとう。",
+      "history": [],
+      "expected": "どういたしまして。",
+      "answer": "どういたしまして。",
+      "exact": true,
+      "eos": true,
+      "validTokens": true,
+      "validUtf8": true
+    }
+  ],
+  "note": "Unconstrained full-answer argmax using the evaluated model's own tokenizer. Exact wording is strict and not the same as factual/semantic correctness. Unknown boundaries also accept the authorized previous unknown wording. Test families never fit the new curriculum or select its checkpoints; reused legacy test families remain development diagnostics. This finite authored test is not a general language benchmark."
+}

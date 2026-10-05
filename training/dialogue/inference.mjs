@@ -1,6 +1,7 @@
 // Standalone own Transformer inference. Questions and answers are token sequences;
 // no profile, answer catalogue, grammar paths, or external API is read here.
 import {createTokenizer} from './tokenizer.mjs';
+import {beamSearch} from './beam_search.mjs';
 export function createDialogueDecoder(model,{cachePrefixes=false}={}){
  const tokenizer=createTokenizer(model.tokenizer),D=model.config.dim,heads=model.config.heads,headDim=D/heads;
  const tensors=Object.fromEntries(Object.entries(model.tensors).map(([name,t])=>[name,{shape:t.shape,data:Float32Array.from(t.data)}]));
@@ -52,5 +53,12 @@ export function createDialogueDecoder(model,{cachePrefixes=false}={}){
   let validUtf8=true;try{tokenizer.decode(tokens,{fatal:true});}catch{validUtf8=false;}
   return {text:tokenizer.decode(tokens),tokens,eos,validUtf8,validTokens:validUtf8&&tokens.every(id=>id>=Object.keys(tokenizer.specials).length),inputTokens:input.length};
  }
- return {tokenizer,generate,logits:tokens=>logits(prefix(tokens)),version:model.version,clearCache,cacheStats:()=>({enabled:cachePrefixes,reusedPrefixTokens:lastPrefixReused,storedTokens:cachedTokens.length,storedStates:cachedStates.length})};
+ function generateBeam(question,{history=[],beamSize=4,lengthPenalty=.6,maxNewTokens=model.config.context}={}){
+  if(beamSize===1)return generate(question,{history,maxNewTokens});
+  const input=tokenizer.prompt(question,history);if(input.length>=model.config.context)throw RangeError('Question/history exceeds context');
+  const result=beamSearch({state:prefix(input),logits,advance,eos:tokenizer.specials.eos,beamSize,lengthPenalty,maxSteps:Math.min(maxNewTokens,model.config.context-input.length)});
+  let validUtf8=true;try{tokenizer.decode(result.tokens,{fatal:true});}catch{validUtf8=false;}
+  return {text:tokenizer.decode(result.tokens),tokens:result.tokens,eos:result.eos,validUtf8,validTokens:validUtf8&&result.tokens.every(id=>id>=Object.keys(tokenizer.specials).length),inputTokens:input.length,beamSize,lengthPenalty,logProbability:result.logProbability,score:result.score};
+ }
+ return {tokenizer,generate,generateBeam,logits:tokens=>logits(prefix(tokens)),version:model.version,clearCache,cacheStats:()=>({enabled:cachePrefixes,reusedPrefixTokens:lastPrefixReused,storedTokens:cachedTokens.length,storedStates:cachedStates.length})};
 }
