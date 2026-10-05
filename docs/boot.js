@@ -1,5 +1,5 @@
-import { collectDeviceInfo } from './device-info.js?v=20261004-transformer-7';
-export { deviceInfo } from './device-info.js?v=20261004-transformer-7';
+import { collectDeviceInfo } from './device-info.js?v=20261005-topic-language-1';
+export { deviceInfo } from './device-info.js?v=20261005-topic-language-1';
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 export async function startBoot(ready){
  window.addEventListener('pageshow',event=>{if(event.persisted)window.location.reload();});

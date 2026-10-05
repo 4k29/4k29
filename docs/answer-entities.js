@@ -36,7 +36,7 @@ export function resolveEntities(text,data,context,matches){
  const namedBrands=category==='brand'?facts.filter(f=>['apple','nothing','openai'].includes(f.id)&&(f.aliases||[]).some(alias=>matches(text,alias))):[];
  if(namedBrands.length)return result(namedBrands,'interest-entity','value-only');
  if(category&&(/好き|お気に入り|何|どれ|名前|名称|興味|関心|見る|観る|見て|ハマ|はま|\b(?:like|favou?rite|what|which|names?)\b/.test(text)||/^(?:漫画|まんが|ドラマ|manga|dramas?)(?:は|を|について|教えて|\s)*$/.test(text)))return result([...facts.filter(f=>category==='brand'&&['apple','nothing','openai'].includes(f.id)),...liked.filter(f=>f.favoriteCategory===category)],'liked-things','value-only');
- if(/(?:好き|すき)な(?:もの|物)|何(?:が|を)好き|お気に入りのもの|\bfavou?rite things\b|\bwhat (?:do you|are your) (?:like|love|favou?rites)\b/.test(text)&&!/分野|メーカー|ブランド|\b(?:field|brand|company)\b/.test(text))return result([...facts.filter(f=>f.ja.relation==='interest'),...liked,...(favorite?[favorite]:[])],'liked-things','value-only');
+ if(/(?:好き|すき)な(?:もの|物)|何(?:が|を)好き|お気に入りのもの|\bfavou?rite things\b|\bwhat (?:do you|are your) (?:like|love|favou?rites)\b/.test(text)&&!/分野|メーカー|ブランド|\b(?:field|brand|company)\b/.test(text))return result([...facts.filter(f=>f.ja.relation==='interest'&&!f.interestOnly),...liked,...(favorite?[favorite]:[])],'liked-things','value-only');
  const personReference=/^(?:その人|そのひと|その推し|その好きな人)|^(?:their|his|her|that person's|what is (?:their|his|her))\b/.test(text);
  const favoriteReference=context.lastFactIds.length===1&&context.lastFactIds[0]==='favorite-person'&&personReference;
  if(personReference&&!favoriteReference)return {...result([],'unknown-person-reference'),contextDependent:true};

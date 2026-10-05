@@ -1,19 +1,23 @@
-import {rankAnswerFacts,chooseWording} from './answer-priority.js?v=20261004-transformer-7';
-import {semanticText} from './intent-model.js?v=20261004-transformer-7';
-import {normalizeQuestion,splitQuestions,analyzeQuestion,isFollowUp} from './question-analysis.js?v=20261004-transformer-7';
-import {composeAnswer} from './answer-composition.js?v=20261004-transformer-7';
-import {unknownSubjects,missingFactsSentence} from './unknown-subjects.js?v=20261004-transformer-7';
-import {linksForFact} from './answer-links.js?v=20261004-transformer-7';
-import {createSentenceRenderer,generationVersion,generationArchitecture} from './predictive-generator.js?v=20261004-transformer-7';
-import {preferenceRequest,responsePreferences,preferenceAcknowledgement} from './response-preferences.js?v=20261004-transformer-7';
-import {withPublicKnowledge} from './knowledge-retrieval.js?v=20261004-transformer-7';
-import {calculateQuestion} from './calculator.js?v=20261004-transformer-7';
-import {withProductSpecifications} from './product-specifications.js?v=20261004-transformer-7';
+import {rankAnswerFacts,chooseWording} from './answer-priority.js?v=20261005-topic-language-1';
+import {semanticText} from './intent-model.js?v=20261005-topic-language-1';
+import {normalizeQuestion,splitQuestions,analyzeQuestion,isFollowUp} from './question-analysis.js?v=20261005-topic-language-1';
+import {composeAnswer} from './answer-composition.js?v=20261005-topic-language-1';
+import {unknownSubjects,missingFactsSentence} from './unknown-subjects.js?v=20261005-topic-language-1';
+import {linksForFact} from './answer-links.js?v=20261005-topic-language-1';
+import {createSentenceRenderer,generationVersion,generationArchitecture} from './predictive-generator.js?v=20261005-topic-language-1';
+import {preferenceRequest,responsePreferences,preferenceAcknowledgement} from './response-preferences.js?v=20261005-topic-language-1';
+import {withPublicKnowledge} from './knowledge-retrieval.js?v=20261005-topic-language-1';
+import {calculateQuestion} from './calculator.js?v=20261005-topic-language-1';
+import {withProductSpecifications} from './product-specifications.js?v=20261005-topic-language-1';
 export class Conversation{
  constructor(data,{learner=null,preferences={}}={}){this.data=withProductSpecifications(withPublicKnowledge(data));this.learner=learner;this.defaultPreferences={...data.responsePreferences,...preferences};this.reset();}
  reset(){this.history=[];this.lastTopics=[];this.lastFactIds=[];this.lastModes=[];this.seen=new Map();this.lastReplies=[];this.turn=0;this.preferenceEvents=[];}
  respond(question){
-  const raw=normalizeQuestion(question),text=semanticText(raw),language=/[ぁ-んァ-ヶ一-龠]/.test(raw)?'ja':'en';
+  const raw=normalizeQuestion(question),text=semanticText(raw);
+  // A Latin product/brand name is a topic, not an English-language request.
+  const topic=raw.replace(/[?!。.!]+$/,'').trim();
+  const namedTopic=this.data.facts.some(f=>[...(f.aliases||[]),...(f.tags||[]),f.ja.value,f.en.value].some(name=>name&&normalizeQuestion(name)===topic));
+  const language=/[ぁ-んァ-ヶ一-龠]/.test(raw)?'ja':namedTopic?(this.history.at(-1)?.language||'ja'):'en';
   const request=preferenceRequest(raw),follow=isFollowUp(text),temporaryPreference=/今回は|この回答だけ|this time|for this answer/i.test(raw);
   const preferences={...responsePreferences([...(this.learner?.records?.()||[]),...this.preferenceEvents],this.defaultPreferences),...request.update};
   if(request.update&&request.onlyInstruction&&!follow){

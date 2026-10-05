@@ -1,4 +1,4 @@
-import {knowledgeFacts} from './knowledge-data.js?v=20261004-transformer-7';
+import {knowledgeFacts} from './knowledge-data.js?v=20261005-topic-language-1';
 const forbidden=/あなた|僕|俺|私|友達|先生|好き|推し|持って|所有|買った|契約して|最新|今日|ニュース|価格|値段|おすすめ|\b(?:your|my|you|own|bought|latest|today|price|recommend)\b/i;
 const request=/とは|って何|ってなに|何ですか|どんな|意味|説明|について|違い|比較|仕組み|具体例|例を|\b(?:what|explain|describe|meaning|difference|compare|how)\b/i;
 const removeRequests=/とは|って(?:何|なに|どんな(?:もの|こと|仕組み)?)|何ですか|何なの|何か|何|は何|ですか|について|教えて(?:ください|くれる|もらえる)?|説明(?:して(?:ください|くれる)?)?|意味|違い|比較|仕組み|具体例|例を|簡単に|わかりやすく|分かりやすく|ざっくり|詳しく|もう少し|短く|ひとことで|知りたい|お願い(?:します)?|ねえ|まず|の|と|を|は|って|及び|および|\b(?:what|is|are|a|an|the|explain|describe|meaning|difference|differences|between|and|compare|how|does|work|works|about|tell|me|please|briefly|simply|in|detail|with|examples?)\b|[\s、,\/?!？！。:：・（）()]/gi;

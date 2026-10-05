@@ -28,9 +28,9 @@ test('brand and drama introductions retain the supplied identity and public sour
  assert.match(mer.text,/鈴木亮平/);assert.match(mer.text,/TBSの日曜劇場/);assert.match(mer.text,/ドラマ/);
  assert.doesNotMatch(mer.text,/映画/);
 });
-test('generic favorites preserve all existing interests and the creator',()=>{
+test('generic favorites exclude interest-only fields and preserve other favorites and the creator',()=>{
  const a=new Conversation(data).respond('好きなものは？');
- const expected=data.facts.filter(f=>f.ja.relation==='interest'||f.ja.relation==='favoriteThing'||f.id==='favorite-person').map(f=>f.id);
+ const expected=data.facts.filter(f=>f.ja.relation==='interest'&&!f.interestOnly||f.ja.relation==='favoriteThing'||f.id==='favorite-person').map(f=>f.id);
  assert.deepEqual(new Set(a.factIds),new Set(expected));
  assert.deepEqual(a.text.split("\n"),a.factIds.map(id=>(data.facts.find(f=>f.id===id).ja.shortName||data.facts.find(f=>f.id===id).ja.value)));assert.doesNotMatch(a.text,/アオのハコ/);assert.match(a.text,/してはる/);
 });
