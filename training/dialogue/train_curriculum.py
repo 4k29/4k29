@@ -16,6 +16,55 @@ from train import DialogueDecoder,pack,generate,answer_prefix_loss
 from tokenizer import SPECIALS
 
 HERE=pathlib.Path(__file__).resolve().parent
+def load_own_initial_model(model,parent,parent_corpus,corpus):
+    """Load the selected exported OWN decoder, preserving vocabulary identity.
+
+    This is a new optimizer/run on a revised corpus, never a checkpoint resume.
+    Training-only semantic labels retain matching rows by name; newly added
+    labels keep the seeded initialization. All generating tensors must match.
+    """
+    previous=parent['training']
+    if previous.get('externalWeights') is not False or previous.get('externalInferenceAPIs') is not False or previous.get('teacher') is not False:
+        raise ValueError('Parent is not recorded as an own, teacher-free model')
+    if not (previous.get('randomInitialization') is True or previous.get('ownInitialModel') or previous.get('ownPretrainingParent')):
+        raise ValueError('Missing own initialization lineage')
+    if previous['sourceSha256']!=parent_corpus['sourceSha256']:
+        raise ValueError('Own parent/source mismatch')
+    if corpus.get('provenance',{}).get('parentCorpusSha256')!=parent_corpus['sourceSha256']:
+        raise ValueError('Revised corpus does not declare this own parent')
+    if parent['tokenizer']!=corpus['tokenizer'] or parent['tokenizer']!=parent_corpus['tokenizer']:
+        raise ValueError('Own continuation must preserve the exact tokenizer')
+    extension=corpus.get('provenance',{}).get('architectureChange',{}).get('extendedPositionEmbeddings')
+    extend=bool(extension and extension['parent']==parent['config']['context'] and extension['current']==model.config['context'] and model.config['context']>parent['config']['context'])
+    if not extend and parent['config']['context']!=model.config['context']:raise ValueError('Own parent context mismatch without declared extension')
+    for key in ['vocabulary','dim','heads','hidden','layers','epsilon','dropout']:
+        if parent['config'][key]!=model.config[key]:raise ValueError('Own parent architecture mismatch: '+key)
+    state=model.state_dict();copied=[];new_labels={}
+    for key,value in state.items():
+        if key.startswith('semantic.'):
+            name=key.split('.')[1]
+            old_labels=parent['config'].get('semanticTasks',{}).get(name,[])
+            new_labels[name]=[label for label in model.config['semanticTasks'][name] if label not in old_labels]
+            if key not in parent['tensors']:continue
+            old=torch.tensor(parent['tensors'][key]['data']).reshape(parent['tensors'][key]['shape'])
+            if old.shape[0]!=len(old_labels) or old.shape[1:]!=value.shape[1:]:raise ValueError('Invalid parent semantic head')
+            for index,label in enumerate(model.config['semanticTasks'][name]):
+                if label in old_labels:value[index].copy_(old[old_labels.index(label)])
+            continue
+        if key not in parent['tensors']:raise ValueError('Missing own generating tensor: '+key)
+        entry=parent['tensors'][key]
+        if key=='position.weight' and extend:
+            if entry['shape']!=[parent['config']['context'],model.config['dim']]:raise ValueError('Invalid own parent position shape')
+            tensor=torch.tensor(entry['data']).reshape(entry['shape'])
+            if not torch.isfinite(tensor).all():raise ValueError('Nonfinite own parent positions')
+            value[:parent['config']['context']].copy_(tensor);copied.append(key);continue
+        if list(value.shape)!=entry['shape']:raise ValueError('Own generating tensor shape mismatch: '+key)
+        tensor=torch.tensor(entry['data']).reshape(entry['shape'])
+        if not torch.isfinite(tensor).all():raise ValueError('Nonfinite own parent tensor')
+        value.copy_(tensor);copied.append(key)
+    model.load_state_dict(state)
+    return dict(version=parent['version'],sourceSha256=previous['sourceSha256'],completedParentUpdates=previous['completedSteps'],selectedParentStep=previous['bestStep'],generatingTensorsCopied=len(copied),extendedPositionEmbeddings=extension if extend else None,newSemanticLabels=new_labels,externalWeights=False,optimizerReused=False,note='Selected own exported weights, including the rounded numerical values used in JS. Parent executed updates and selected lineage are counted separately from this run. Declared position extension keeps old rows and newly seeded rows, with no outside parameters.')
+
 def select_validation(rows,limit,seed=429):
     """Fixed training-side validation subset, never a test-driven selection.
 
@@ -61,6 +110,8 @@ def main():
     p.add_argument('--version',default='2026-10-04.dialogue-curriculum-1')
     p.add_argument('--length-buckets',action='store_true')
     p.add_argument('--own-pretrained-checkpoint')
+    p.add_argument('--own-initial-model')
+    p.add_argument('--parent-corpus')
     p.add_argument('--replay-weight',type=float,default=0.0)
     p.add_argument('--semantic-weight',type=float,default=0.0)
     p.add_argument('--answer-prefix-weight',type=float,default=1.0)
@@ -72,6 +123,8 @@ def main():
     if args.answer_prefix_weight<1 or args.answer_prefix_tokens<1:p.error('Invalid answer-prefix weighting')
     if args.validation_limit<0:p.error('Validation limit must be nonnegative')
     if args.own_pretrained_checkpoint and (args.resume or args.pretrain_steps):p.error('Own pretraining continuation needs --pretrain-steps 0 and cannot also resume')
+    if bool(args.own_initial_model)!=bool(args.parent_corpus):p.error('Own model continuation requires its parent corpus')
+    if args.own_initial_model and (args.resume or args.own_pretrained_checkpoint):p.error('Own model initialization cannot also resume or use a raw checkpoint')
     if args.pretrain_steps<0 or args.steps<1 or args.dim%4 or args.layers<1 or args.batch_size<1 or args.learning_rate<=0 or args.context<16:p.error('Invalid training configuration')
     torch.set_num_threads(args.threads);torch.manual_seed(args.seed);torch.use_deterministic_algorithms(True)
     corpus=json.loads(pathlib.Path(args.corpus).read_text())
@@ -97,7 +150,7 @@ def main():
     raw_weights=torch.tensor([r.get('weight',1) for r in corpus['pretraining']]) if any('weight' in r for r in corpus['pretraining']) else None
     def raw_indices():
         return torch.multinomial(raw_weights,args.batch_size,replacement=True) if raw_weights is not None else torch.randint(len(raw),(args.batch_size,))
-    bucket_widths=sorted({min(n,width) for n in [72,96,128,192,args.context]})
+    bucket_widths=sorted({min(n,width) for n in [72,96,128,192,256,args.context]})
     bucket_indices=[];bucket_masses=[]
     for bucket_width in bucket_widths:
         previous=max([n for n in bucket_widths if n<bucket_width],default=0)
@@ -134,6 +187,13 @@ def main():
     resume=0;history=[];best=None;rank=(-1,float('-inf'));best_step=0;elapsed_before=0
     raw_best=None;raw_best_loss=float('inf');raw_best_step=0
     inherited_pretraining=0;own_parent=None
+    own_initial=None
+    if args.own_initial_model:
+        parent_path=pathlib.Path(args.own_initial_model)
+        parent=json.loads(parent_path.read_text().split('export const dialogueModel=',1)[1].strip().removesuffix(';'))
+        parent_corpus=json.loads(pathlib.Path(args.parent_corpus).read_text())
+        own_initial=load_own_initial_model(model,parent,parent_corpus,corpus)
+        own_initial['modelFileSha256']=hashlib.sha256(parent_path.read_bytes()).hexdigest()
     if args.own_pretrained_checkpoint:
         parent=torch.load(args.own_pretrained_checkpoint,weights_only=False)
         if parent['sourceSha256']!=corpus['sourceSha256'] or parent.get('rawBest') is None:raise ValueError('Own pretraining/source lineage mismatch')
@@ -154,12 +214,13 @@ def main():
         resume=c['step'];history=c['history'];best=c['best'];rank=c['rank'];best_step=c['bestStep'];elapsed_before=c['elapsedSeconds']
         raw_best=c.get('rawBest');raw_best_loss=c.get('rawBestLoss',float('inf'));raw_best_step=c.get('rawBestStep',0)
         inherited_pretraining=c.get('inheritedPretraining',0);own_parent=c.get('ownParent')
+        own_initial=c.get('ownInitialModel')
     started=time.monotonic()
     initial_language_validation=c.get('initialLanguageValidationLoss') if args.resume else measure(rvx,rvy) if raw_validation else None
     total_steps=args.pretrain_steps+args.steps
     def save(step):
         dst=pathlib.Path(args.checkpoint);tmp=dst.with_suffix('.tmp')
-        torch.save(dict(step=step,model=model.state_dict(),optimizer=optimizer.state_dict(),rng=torch.get_rng_state(),history=history,best=best,rank=rank,bestStep=best_step,rawBest=raw_best,rawBestLoss=raw_best_loss,rawBestStep=raw_best_step,inheritedPretraining=inherited_pretraining,ownParent=own_parent,settings=settings,sourceSha256=corpus['sourceSha256'],initialLanguageValidationLoss=initial_language_validation,elapsedSeconds=elapsed_before+time.monotonic()-started),tmp);tmp.replace(dst)
+        torch.save(dict(step=step,model=model.state_dict(),optimizer=optimizer.state_dict(),rng=torch.get_rng_state(),history=history,best=best,rank=rank,bestStep=best_step,rawBest=raw_best,rawBestLoss=raw_best_loss,rawBestStep=raw_best_step,inheritedPretraining=inherited_pretraining,ownParent=own_parent,ownInitialModel=own_initial,settings=settings,sourceSha256=corpus['sourceSha256'],initialLanguageValidationLoss=initial_language_validation,elapsedSeconds=elapsed_before+time.monotonic()-started),tmp);tmp.replace(dst)
     print(json.dumps(dict(event='start',parameters=sum(t.numel() for t in model.parameters()),config=config,trainRows=len(train),validationRows=len(valid),rawSamples=len(raw),width=width,settings=settings,resumeStep=resume)),flush=True)
     for step in range(resume+1,total_steps+1):
         pretraining=step<=args.pretrain_steps
@@ -206,12 +267,13 @@ def main():
         elif step%250==0:save(step)
     model.load_state_dict(best);model.eval()
     test_sha=hashlib.sha256(json.dumps([r for r in corpus['rows'] if r['partition']=='test'],ensure_ascii=False,separators=(',',':')).encode()).hexdigest()
-    training=dict(randomInitialization=True,externalWeights=False,externalInferenceAPIs=False,teacher=False,completedSteps=total_steps,pretrainingUpdates=args.pretrain_steps,dialogueUpdates=args.steps,bestStep=best_step,seed=args.seed,parameters=sum(t.numel() for t in model.parameters()),sourceSha256=corpus['sourceSha256'],testSha256=test_sha,validationExact=rank[0],validationLoss=-rank[1],trainRows=len(train),validationRows=len(valid),rawLanguageSamples=len(raw),elapsedSeconds=round(elapsed_before+time.monotonic()-started,2),pytorch=torch.__version__,settings=settings,note='Source-authored finite curriculum. Raw language next-token pretraining then answer-only SFT; validation-only selection, no outside weights or answer retrieval. This does not establish general dialogue or reasoning.')
+    training=dict(randomInitialization=own_initial is None,externalWeights=False,externalInferenceAPIs=False,teacher=False,completedSteps=total_steps,pretrainingUpdates=args.pretrain_steps,dialogueUpdates=args.steps,bestStep=best_step,seed=args.seed,parameters=sum(t.numel() for t in model.parameters()),sourceSha256=corpus['sourceSha256'],testSha256=test_sha,validationExact=rank[0],validationLoss=-rank[1],trainRows=len(train),validationRows=len(valid),rawLanguageSamples=len(raw),elapsedSeconds=round(elapsed_before+time.monotonic()-started,2),pytorch=torch.__version__,settings=settings,note='Source-authored finite curriculum. Raw language next-token pretraining then answer-only SFT; validation-only selection, no outside weights or answer retrieval. This does not establish general dialogue or reasoning.')
     training['initialLanguageValidationLoss']=initial_language_validation
     training['finalLanguageValidationLoss']=measure(rvx,rvy) if raw_validation else None
     training['selectedPretrainingStep']=raw_best_step if raw_best is not None else args.pretrain_steps
     training['selectedPretrainingValidationLoss']=raw_best_loss if raw_best is not None else None
-    training['initializationKind']='own-raw-pretraining-continuation' if own_parent else 'random'
+    training['initializationKind']='own-dialogue-model-continuation' if own_initial else 'own-raw-pretraining-continuation' if own_parent else 'random'
+    training['ownInitialModel']=own_initial
     training['inheritedOwnPretrainingUpdates']=inherited_pretraining
     training['ownPretrainingParent']=own_parent
     training['fullValidationRows']=len(full_valid)

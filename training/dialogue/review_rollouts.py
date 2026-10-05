@@ -28,6 +28,6 @@ for c in report['rows']:
     rows.append(dict(id=c['id'],allPass=all(r['passed'] for r in turns),rows=turns))
 turns=[r for c in rows for r in c['rows']]
 summary=dict(conversations=len(rows),turns=len(turns),exact=sum(r['exact'] for r in turns),passed=sum(r['passed'] for r in turns),allPassConversations=sum(c['allPass'] for c in rows),equivalentNonExact=[r['id'] for r in turns if r['passed'] and not r['exact']])
-result=dict(version=report['version'],sourceSha256=report['sourceSha256'],policySha256=hashlib.sha256(policy_path.read_bytes()).hexdigest(),reviewer='Implementation assistant; not an independent human review.',scope='Twelve frozen conversations, actual generated history; no gold replacement or corrected outputs. Finite authored test, not representative general dialogue.',summary=summary,rows=rows)
+result=dict(version=report['version'],sourceSha256=report['sourceSha256'],policySha256=hashlib.sha256(policy_path.read_bytes()).hexdigest(),reviewer='Implementation assistant; not an independent human review.',scope=f'{len(rows)} frozen conversations, actual generated history; no gold replacement or corrected outputs. Finite authored test, not representative general dialogue.',summary=summary,rows=rows)
 (root/(args.stem+'-rollout-quality-review.json')).write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
 print(json.dumps(summary))

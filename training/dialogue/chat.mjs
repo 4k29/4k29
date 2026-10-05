@@ -10,7 +10,7 @@ const beamSize=argv.includes('--beam-size')?Number(value('--beam-size')):1;
 const lengthPenalty=argv.includes('--length-penalty')?Number(value('--length-penalty')):.6;
 if(!Number.isInteger(beamSize)||beamSize<1||beamSize>16||!Number.isFinite(lengthPenalty)||lengthPenalty<0)throw RangeError('Invalid beam settings');
 const {dialogueModel}=await import(pathToFileURL(path.resolve(file)).href);
-const decoder=createDialogueDecoder(dialogueModel,{cachePrefixes:!argv.includes('--no-cache')});
+const decoder=createDialogueDecoder(dialogueModel,{cachePrefixes:!argv.includes('--no-cache'),tokenizerAlgorithm:argv.includes('--fast-tokenizer')?'adjacent-heap':'rank-loop'});
 const generate=(q,options={})=>beamSize===1?decoder.generate(q,options):decoder.generateBeam(q,{...options,beamSize,lengthPenalty});
 const question=value('--question');
 if(question!==undefined){

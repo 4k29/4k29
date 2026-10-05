@@ -2,8 +2,8 @@
 // no profile, answer catalogue, grammar paths, or external API is read here.
 import {createTokenizer} from './tokenizer.mjs';
 import {beamSearch} from './beam_search.mjs';
-export function createDialogueDecoder(model,{cachePrefixes=false}={}){
- const tokenizer=createTokenizer(model.tokenizer),D=model.config.dim,heads=model.config.heads,headDim=D/heads;
+export function createDialogueDecoder(model,{cachePrefixes=false,tokenizerAlgorithm='rank-loop'}={}){
+ const tokenizer=createTokenizer(model.tokenizer,{algorithm:tokenizerAlgorithm}),D=model.config.dim,heads=model.config.heads,headDim=D/heads;
  const tensors=Object.fromEntries(Object.entries(model.tensors).map(([name,t])=>[name,{shape:t.shape,data:Float32Array.from(t.data)}]));
  const p=name=>{if(!tensors[name])throw Error('Missing tensor '+name);return tensors[name];};
  function linear(input,name){const w=p(name+'.weight'),b=p(name+'.bias').data,out=new Float32Array(w.shape[0]);for(let i=0;i<out.length;i++){let value=b[i];for(let j=0;j<input.length;j++)value+=w.data[i*input.length+j]*input[j];out[i]=value;}return out;}
@@ -60,5 +60,18 @@ export function createDialogueDecoder(model,{cachePrefixes=false}={}){
   let validUtf8=true;try{tokenizer.decode(result.tokens,{fatal:true});}catch{validUtf8=false;}
   return {text:tokenizer.decode(result.tokens),tokens:result.tokens,eos:result.eos,validUtf8,validTokens:validUtf8&&result.tokens.every(id=>id>=Object.keys(tokenizer.specials).length),inputTokens:input.length,beamSize,lengthPenalty,logProbability:result.logProbability,score:result.score};
  }
- return {tokenizer,generate,generateBeam,logits:tokens=>logits(prefix(tokens)),version:model.version,clearCache,cacheStats:()=>({enabled:cachePrefixes,reusedPrefixTokens:lastPrefixReused,storedTokens:cachedTokens.length,storedStates:cachedStates.length})};
+ function generateRaw(opening,{maxNewTokens=128}={}){
+  // Preserve the original text exactly. No question roles, normalization or answer repair.
+  const input=[tokenizer.specials.bos,...tokenizer.encode(opening)];
+  if(input.length>=model.config.context)throw RangeError('Raw opening exceeds context');
+  let state=prefix(input);const tokens=[];let eos=false;
+  for(let step=0;step<Math.min(maxNewTokens,model.config.context-input.length);step++){
+   const scores=logits(state);let best=0;for(let i=1;i<scores.length;i++)if(scores[i]>scores[best])best=i;
+   if(best===tokenizer.specials.eos){eos=true;break;}tokens.push(best);state=advance(state,best);
+   if(cachePrefixes){cachedTokens.push(best);cachedStates.push(state);}
+  }
+  let validUtf8=true;try{tokenizer.decode(tokens,{fatal:true});}catch{validUtf8=false;}
+  return {text:tokenizer.decode(tokens),tokens,eos,validUtf8,validTokens:validUtf8&&tokens.every(id=>id>=Object.keys(tokenizer.specials).length),inputTokens:input.length};
+ }
+ return {tokenizer,generate,generateBeam,generateRaw,logits:tokens=>logits(prefix(tokens)),version:model.version,clearCache,cacheStats:()=>({enabled:cachePrefixes,reusedPrefixTokens:lastPrefixReused,storedTokens:cachedTokens.length,storedStates:cachedStates.length})};
 }
