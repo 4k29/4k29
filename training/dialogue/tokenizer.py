@@ -35,6 +35,65 @@ def fit(texts, merges=384, max_piece_bytes=12):
     return dict(schemaVersion=1, specials=SPECIALS, bytes=[piece.hex() for piece in vocabulary], merges=rules, maxPieceBytes=max_piece_bytes, note='Fitted on training strings only; no external tokenizer or vocabulary.')
 
 
+def fit_fast(texts,merges=384,max_piece_bytes=12,numeric_boundaries=False):
+    """Own weighted BPE with local occurrence/count updates.
+
+    Frequency ties and overlapping merges match fit() exactly. Optional numeric
+    boundaries keep ASCII digits separate from units/words without injecting
+    a vocabulary or reserving any answer. Only training text supplies counts.
+    """
+    vocabulary=[b'']*len(SPECIALS)+[bytes([i]) for i in range(256)]
+    numeric=[False]*len(SPECIALS)+[48<=i<=57 for i in range(256)]
+    sequences=Counter(tuple(byte+len(SPECIALS) for byte in text.encode('utf-8')) for text in texts)
+    values=[];previous=[];following=[];weights=[]
+    for sequence,weight in sequences.items():
+        start=len(values);values.extend(sequence);weights.extend([weight]*len(sequence))
+        previous.extend([-1]+list(range(start,start+len(sequence)-1)) if sequence else [])
+        following.extend(list(range(start+1,start+len(sequence)))+[-1] if sequence else [])
+    alive=[True]*len(values);occurrences={};counts=Counter();dirty=set()
+    def pair_at(left):
+        if left<0 or not alive[left]:return None
+        right=following[left]
+        if right<0:return None
+        a,b=values[left],values[right]
+        if len(vocabulary[a])+len(vocabulary[b])>max_piece_bytes:return None
+        if numeric_boundaries and numeric[a]!=numeric[b]:return None
+        return a,b
+    def add(left):
+        pair=pair_at(left)
+        if pair is None:return
+        occurrences.setdefault(pair,set()).add(left);counts[pair]+=weights[left];dirty.add(pair)
+    def remove(left):
+        pair=pair_at(left)
+        if pair is None:return
+        occurrences[pair].remove(left);counts[pair]-=weights[left];dirty.add(pair)
+    for left in range(len(values)):add(left)
+    queue=[(-frequency,*pair) for pair,frequency in counts.items() if frequency>=2]
+    heapq.heapify(queue);dirty.clear();rules=[]
+    for _ in range(merges):
+        while queue:
+            negative,a,b=heapq.heappop(queue)
+            if counts[(a,b)]==-negative:break
+        else:break
+        token=len(vocabulary);vocabulary.append(vocabulary[a]+vocabulary[b]);numeric.append(numeric[a] and numeric[b])
+        rules.append([a,b,token])
+        for left in sorted(occurrences[(a,b)]):
+            if pair_at(left)!=(a,b):continue
+            right=following[left];before=previous[left];after=following[right]
+            remove(before);remove(left);remove(right)
+            values[left]=token;alive[right]=False;following[left]=after
+            if after>=0:previous[after]=left
+            add(before);add(left)
+        for pair in dirty:
+            if counts[pair]>=2:heapq.heappush(queue,(-counts[pair],*pair))
+        dirty.clear()
+        if len(queue)>4*max(1,len(counts)):
+            queue=[(-frequency,*pair) for pair,frequency in counts.items() if frequency>=2];heapq.heapify(queue)
+    result=dict(schemaVersion=1,specials=SPECIALS,bytes=[piece.hex() for piece in vocabulary],merges=rules,maxPieceBytes=max_piece_bytes,note='Fitted on training strings only; no external tokenizer or vocabulary.')
+    if numeric_boundaries:result['numericBoundaries']=True
+    return result
+
+
 def merge(tokens, pair, token):
     result, index = [], 0
     while index < len(tokens):

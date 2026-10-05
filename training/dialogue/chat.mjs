@@ -5,9 +5,9 @@ import {createInterface} from 'node:readline/promises';
 import {stdin,stdout} from 'node:process';
 import {createDialogueDecoder} from './inference.mjs';
 const argv=process.argv.slice(2),value=flag=>{const i=argv.indexOf(flag);return i<0?undefined:argv[i+1];};
-const file=value('--model')||'training/dialogue/web-replay-candidate.js';
+const file=value('--model')||'training/dialogue/prefix-corrected-candidate.js';
 const {dialogueModel}=await import(pathToFileURL(path.resolve(file)).href);
-const decoder=createDialogueDecoder(dialogueModel);
+const decoder=createDialogueDecoder(dialogueModel,{cachePrefixes:!argv.includes('--no-cache')});
 const question=value('--question');
 if(question!==undefined){
  const result=decoder.generate(question);stdout.write(result.text+'\n');
@@ -19,7 +19,7 @@ if(question!==undefined){
   while(true){
    const q=(await rl.question('質問 > ')).trim();if(!q)continue;
    if(['/quit','/exit'].includes(q))break;
-   if(q==='/reset'){history.length=0;stdout.write('会話を消去しました。\n');continue;}
+   if(q==='/reset'){history.length=0;decoder.clearCache();stdout.write('会話を消去しました。\n');continue;}
    try{
     const result=decoder.generate(q,{history});stdout.write(result.text+'\n');
     if(result.eos&&result.validTokens)history.push({question:q,answer:result.text});

@@ -1,7 +1,7 @@
 // Standalone own Transformer inference. Questions and answers are token sequences;
 // no profile, answer catalogue, grammar paths, or external API is read here.
 import {createTokenizer} from './tokenizer.mjs';
-export function createDialogueDecoder(model){
+export function createDialogueDecoder(model,{cachePrefixes=false}={}){
  const tokenizer=createTokenizer(model.tokenizer),D=model.config.dim,heads=model.config.heads,headDim=D/heads;
  const tensors=Object.fromEntries(Object.entries(model.tensors).map(([name,t])=>[name,{shape:t.shape,data:Float32Array.from(t.data)}]));
  const p=name=>{if(!tensors[name])throw Error('Missing tensor '+name);return tensors[name];};
@@ -30,16 +30,27 @@ export function createDialogueDecoder(model){
   return {length:state.length+1,keys,values,hidden:norm(x,'norm')};
  }
  function logits(state){const embedding=p('token.weight').data,out=new Float32Array(model.config.vocabulary);for(let token=0;token<out.length;token++){let sum=0;for(let i=0;i<D;i++)sum+=embedding[token*D+i]*state.hidden[i];out[token]=sum;}return out;}
- function prefix(tokens){let state=empty();for(const token of tokens)state=advance(state,token);return state;}
+ let cachedTokens=[],cachedStates=[empty()],lastPrefixReused=0;
+ function clearCache(){cachedTokens=[];cachedStates=[empty()];lastPrefixReused=0;}
+ function prefix(tokens){
+  if(tokens.length>model.config.context)throw RangeError('Context exhausted; never truncate a question');
+  for(const token of tokens)if(!Number.isInteger(token)||token<0||token>=model.config.vocabulary)throw RangeError('Invalid token');
+  if(!cachePrefixes){let state=empty();for(const token of tokens)state=advance(state,token);return state;}
+  let shared=0;while(shared<tokens.length&&shared<cachedTokens.length&&tokens[shared]===cachedTokens[shared])shared++;
+  lastPrefixReused=shared;let state=cachedStates[shared];cachedStates=cachedStates.slice(0,shared+1);cachedTokens=tokens.slice();
+  for(let i=shared;i<tokens.length;i++){state=advance(state,tokens[i]);cachedStates.push(state);}
+  return state;
+ }
  function generate(question,{history=[],maxNewTokens=model.config.context}={}){
   const input=tokenizer.prompt(question,history);if(input.length>=model.config.context)throw RangeError('Question/history exceeds context');
   let state=prefix(input);const tokens=[];let eos=false;
   for(let step=0;step<Math.min(maxNewTokens,model.config.context-input.length);step++){
    const scores=logits(state);let best=0;for(let i=1;i<scores.length;i++)if(scores[i]>scores[best])best=i;
    if(best===tokenizer.specials.eos){eos=true;break;}tokens.push(best);state=advance(state,best);
+   if(cachePrefixes){cachedTokens.push(best);cachedStates.push(state);}
   }
   let validUtf8=true;try{tokenizer.decode(tokens,{fatal:true});}catch{validUtf8=false;}
   return {text:tokenizer.decode(tokens),tokens,eos,validUtf8,validTokens:validUtf8&&tokens.every(id=>id>=Object.keys(tokenizer.specials).length),inputTokens:input.length};
  }
- return {tokenizer,generate,logits:tokens=>logits(prefix(tokens)),version:model.version};
+ return {tokenizer,generate,logits:tokens=>logits(prefix(tokens)),version:model.version,clearCache,cacheStats:()=>({enabled:cachePrefixes,reusedPrefixTokens:lastPrefixReused,storedTokens:cachedTokens.length,storedStates:cachedStates.length})};
 }

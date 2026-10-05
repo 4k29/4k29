@@ -12,7 +12,7 @@ import pathlib
 import time
 import torch
 from torch.nn import functional as F
-from train import DialogueDecoder,pack,generate
+from train import DialogueDecoder,pack,generate,answer_prefix_loss
 from tokenizer import SPECIALS
 
 HERE=pathlib.Path(__file__).resolve().parent
@@ -39,9 +39,12 @@ def main():
     p.add_argument('--own-pretrained-checkpoint')
     p.add_argument('--replay-weight',type=float,default=0.0)
     p.add_argument('--semantic-weight',type=float,default=0.0)
+    p.add_argument('--answer-prefix-weight',type=float,default=1.0)
+    p.add_argument('--answer-prefix-tokens',type=int,default=8)
     args=p.parse_args()
     if args.replay_weight<0:p.error('Replay weight must be nonnegative')
     if args.semantic_weight<0:p.error('Semantic weight must be nonnegative')
+    if args.answer_prefix_weight<1 or args.answer_prefix_tokens<1:p.error('Invalid answer-prefix weighting')
     if args.own_pretrained_checkpoint and (args.resume or args.pretrain_steps):p.error('Own pretraining continuation needs --pretrain-steps 0 and cannot also resume')
     if args.pretrain_steps<0 or args.steps<1 or args.dim%4 or args.layers<1 or args.batch_size<1 or args.learning_rate<=0 or args.context<16:p.error('Invalid training configuration')
     torch.set_num_threads(args.threads);torch.manual_seed(args.seed);torch.use_deterministic_algorithms(True)
@@ -80,10 +83,13 @@ def main():
     compiled=torch.compile(objective,dynamic=False) if args.compile_loss else objective
     def semantic_objective(tokens,targets,prefix_positions,labels):
         logits,heads=model(tokens,semantic_positions=prefix_positions)
-        language_loss=F.cross_entropy(logits.reshape(-1,config['vocabulary']),targets.reshape(-1),label_smoothing=0.01)
+        language_loss=answer_prefix_loss(logits,targets,prefix_positions,args.answer_prefix_weight,args.answer_prefix_tokens)
         auxiliary=sum(F.cross_entropy(heads[name],labels[:,i]) for i,name in enumerate(semantic_labels))/len(semantic_labels)
         return language_loss+args.semantic_weight*auxiliary
     compiled_semantic=torch.compile(semantic_objective,dynamic=False) if args.compile_loss and semantic_labels else semantic_objective
+    def prefix_objective(tokens,targets,prefix_positions):
+        return answer_prefix_loss(model(tokens),targets,prefix_positions,args.answer_prefix_weight,args.answer_prefix_tokens)
+    compiled_prefix=torch.compile(prefix_objective,dynamic=False) if args.compile_loss and args.answer_prefix_weight!=1 and not semantic_labels else prefix_objective
     @torch.no_grad()
     def measure(tokens,targets):
         model.eval();total,count=0.0,0
@@ -95,6 +101,8 @@ def main():
     settings={k:getattr(args,k) for k in ['pretrain_steps','steps','dim','layers','batch_size','seed','learning_rate','validation_every','length_buckets','replay_weight']}
     settings['semantic_weight']=args.semantic_weight
     settings['context']=args.context
+    settings['answer_prefix_weight']=args.answer_prefix_weight
+    settings['answer_prefix_tokens']=args.answer_prefix_tokens
     resume=0;history=[];best=None;rank=(-1,float('-inf'));best_step=0;elapsed_before=0
     raw_best=None;raw_best_loss=float('inf');raw_best_step=0
     inherited_pretraining=0;own_parent=None
@@ -111,6 +119,7 @@ def main():
         previous_settings=dict(c['settings']);previous_settings.setdefault('length_buckets',False);previous_settings.setdefault('replay_weight',0.0)
         previous_settings.setdefault('semantic_weight',0.0)
         previous_settings.setdefault('context',128)
+        previous_settings.setdefault('answer_prefix_weight',1.0);previous_settings.setdefault('answer_prefix_tokens',8)
         if c['sourceSha256']!=corpus['sourceSha256'] or previous_settings!=settings:raise ValueError('Resume dataset/config mismatch')
         model.load_state_dict(c['model']);optimizer.load_state_dict(c['optimizer']);torch.set_rng_state(c['rng'])
         resume=c['step'];history=c['history'];best=c['best'];rank=c['rank'];best_step=c['bestStep'];elapsed_before=c['elapsedSeconds']
@@ -148,7 +157,7 @@ def main():
         lr=args.learning_rate*min(1.0,local/100)*max(0.08,(1+math.cos(math.pi*local/length))/2)
         for g in optimizer.param_groups:g['lr']=lr
         optimizer.zero_grad(set_to_none=True)
-        loss=compiled_semantic(inputs,targets,positions[index],semantic_targets[index]) if not pretraining and semantic_labels else compiled(inputs,targets)
+        loss=compiled_semantic(inputs,targets,positions[index],semantic_targets[index]) if not pretraining and semantic_labels else compiled_prefix(inputs,targets,positions[index]) if not pretraining and args.answer_prefix_weight!=1 else compiled(inputs,targets)
         if not pretraining and args.replay_weight:
             raw_index=raw_indices()
             loss=loss+args.replay_weight*compiled(rx[raw_index,:raw_width],ry[raw_index,:raw_width])
