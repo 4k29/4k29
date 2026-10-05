@@ -1,6 +1,6 @@
 # 質問から全文を生成する独自Transformerの実験
 
-このページは最初の2候補の記録。追加の原文・対話学習は [CURRICULUM.md](CURRICULUM.md)、対象と仕様項目の学習は [BINDING.md](BINDING.md)、文書の連続処理とMDNを使う実験は [CONTINUOUS.md](CONTINUOUS.md)、語頭・数値・会話の参照を改善する最新の実験は [PREFIX.md](PREFIX.md) を参照する。各実験の実行回数・検証・公開判断は個別に記録し、以前の更新を新しい実行へ重複計上しない。
+このページは最初の2候補の記録。追加の原文・対話学習は [CURRICULUM.md](CURRICULUM.md)、対象と仕様項目の学習は [BINDING.md](BINDING.md)、文書の連続処理とMDNを使う実験は [CONTINUOUS.md](CONTINUOUS.md)、語頭・数値・会話の参照の実験は [PREFIX.md](PREFIX.md)、明示的な話題の切り替えと自然な質問の最新の実験は [SWITCH.md](SWITCH.md)、最終目標は [GOAL.md](GOAL.md) を参照する。各実験の実行回数・検証・公開判断は個別に記録し、以前の更新を新しい実行へ重複計上しない。
 
 公開中の文型選択用Transformerとは別の、質問と直前の会話を入力し、回答文を最初から最後まで次トークン生成する実験。回答の検索、文型への値の挿入、外部API、学習済みモデル・外部トークナイザーは生成時に使用しない。重みを乱数から初期化し、実際のAdamW更新を10,000回ずつ2候補で実行した。
 

@@ -6,13 +6,16 @@ import {performance} from 'node:perf_hooks';
 import {createDialogueDecoder} from './inference.mjs';
 const argv=process.argv.slice(2),value=flag=>argv[argv.indexOf(flag)+1];
 for(const flag of ['--model','--corpus','--out'])if(!argv.includes(flag))throw Error('Required '+flag);
+const beamSize=argv.includes('--beam-size')?Number(value('--beam-size')):1;
+const lengthPenalty=argv.includes('--length-penalty')?Number(value('--length-penalty')):0.6;
+if(!Number.isInteger(beamSize)||beamSize<1||beamSize>16||!Number.isFinite(lengthPenalty)||lengthPenalty<0)throw Error('Invalid beam settings');
 const {dialogueModel}=await import(pathToFileURL(path.resolve(value('--model'))).href);
 const corpus=JSON.parse(fs.readFileSync(value('--corpus'),'utf8'));
 const plain=createDialogueDecoder(dialogueModel),cached=createDialogueDecoder(dialogueModel,{cachePrefixes:true});
 const conversations=[],plainTimes=[],cacheTimes=[];
 function answer(decoder,question,history){
  const start=performance.now();
- try{const generated=decoder.generate(question,{history});return {...generated,milliseconds:performance.now()-start};}
+ try{const generated=beamSize===1?decoder.generate(question,{history}):decoder.generateBeam(question,{history,beamSize,lengthPenalty});return {...generated,milliseconds:performance.now()-start};}
  catch(error){if(!(error instanceof RangeError))throw error;return {text:null,tokens:[],eos:false,validTokens:false,inputTokens:decoder.tokenizer.prompt(question,history).length,error:'context-overflow',milliseconds:performance.now()-start};}
 }
 for(const conversation of corpus.conversations){
@@ -31,4 +34,5 @@ for(const conversation of corpus.conversations){
 const timing=values=>{const sorted=values.toSorted((a,b)=>a-b);return {samples:sorted.length,medianMs:sorted[Math.floor(sorted.length/2)],p95Ms:sorted[Math.floor(sorted.length*.95)],totalMs:values.reduce((a,b)=>a+b,0)};};
 const rows=conversations.flatMap(c=>c.rows);
 const report={version:dialogueModel.version,sourceSha256:corpus.sourceSha256,conversations:conversations.length,turns:rows.length,exact:rows.filter(r=>r.exact).length,allExactConversations:conversations.filter(c=>c.allExact).length,lastExactConversations:conversations.filter(c=>c.lastExact).length,contextOverflows:rows.filter(r=>r.error==='context-overflow').length,cacheParity:true,timing:{uncached:timing(plainTimes),cached:timing(cacheTimes),scope:'One interleaved uncached/cached sequential pass, actual generated history, including initially cold execution and failures. Order can favor the second run; no causal latency or browser guarantee. Download, parsing, UI and network excluded.'},rows:conversations};
+if(beamSize>1)report.decoding={method:'beam',beamSize,lengthPenalty,scope:'Full vocabulary search. Greedy and beam are separate runs and can produce different histories.'};
 fs.writeFileSync(value('--out'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(Object.fromEntries(Object.entries(report).filter(([key])=>key!=='rows'))));

@@ -16,6 +16,30 @@ from train import DialogueDecoder,pack,generate,answer_prefix_loss
 from tokenizer import SPECIALS
 
 HERE=pathlib.Path(__file__).resolve().parent
+def select_validation(rows,limit,seed=429):
+    """Fixed training-side validation subset, never a test-driven selection.
+
+    Balance subject/field/history strata and reserve up to32 unknown boundaries.
+    The full validation partition is retained for post-selection diagnostics.
+    """
+    if not limit or limit>=len(rows):return rows
+    import collections
+    rank=lambda r:hashlib.sha256(f'{seed}:selection:{r["id"]}'.encode()).hexdigest()
+    chosen=[];used=set();unknown=sorted((r for r in rows if r['kind']=='unknown'),key=rank)
+    for row in unknown[:min(32,limit//8)]:chosen.append(row);used.add(row['id'])
+    groups=collections.defaultdict(list)
+    for row in sorted(rows,key=rank):
+        if row['id'] in used:continue
+        s=row.get('semantic',{})
+        groups[(s.get('subject',row['kind']),s.get('attribute',row['kind']),bool(row['history']))].append(row)
+    keys=sorted(groups);offset=0
+    while len(chosen)<limit:
+        for key in keys:
+            if offset<len(groups[key]):chosen.append(groups[key][offset])
+            if len(chosen)==limit:break
+        offset+=1
+    selected={r['id'] for r in chosen};return [r for r in rows if r['id'] in selected]
+
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('--corpus',default=str(HERE/'generalization-corpus.json'))
@@ -41,16 +65,19 @@ def main():
     p.add_argument('--semantic-weight',type=float,default=0.0)
     p.add_argument('--answer-prefix-weight',type=float,default=1.0)
     p.add_argument('--answer-prefix-tokens',type=int,default=8)
+    p.add_argument('--validation-limit',type=int,default=0)
     args=p.parse_args()
     if args.replay_weight<0:p.error('Replay weight must be nonnegative')
     if args.semantic_weight<0:p.error('Semantic weight must be nonnegative')
     if args.answer_prefix_weight<1 or args.answer_prefix_tokens<1:p.error('Invalid answer-prefix weighting')
+    if args.validation_limit<0:p.error('Validation limit must be nonnegative')
     if args.own_pretrained_checkpoint and (args.resume or args.pretrain_steps):p.error('Own pretraining continuation needs --pretrain-steps 0 and cannot also resume')
     if args.pretrain_steps<0 or args.steps<1 or args.dim%4 or args.layers<1 or args.batch_size<1 or args.learning_rate<=0 or args.context<16:p.error('Invalid training configuration')
     torch.set_num_threads(args.threads);torch.manual_seed(args.seed);torch.use_deterministic_algorithms(True)
     corpus=json.loads(pathlib.Path(args.corpus).read_text())
     train=[r for r in corpus['rows'] if r['partition']=='train']
-    valid=[r for r in corpus['rows'] if r['partition']=='validation']
+    full_valid=[r for r in corpus['rows'] if r['partition']=='validation']
+    valid=select_validation(full_valid,args.validation_limit,args.seed)
     config=dict(vocabulary=len(corpus['tokenizer']['bytes']),dim=args.dim,heads=4,hidden=args.dim*2,layers=args.layers,context=args.context,dropout=0.12,epsilon=1e-5)
     semantic_labels={}
     if args.semantic_weight:
@@ -103,6 +130,7 @@ def main():
     settings['context']=args.context
     settings['answer_prefix_weight']=args.answer_prefix_weight
     settings['answer_prefix_tokens']=args.answer_prefix_tokens
+    settings['validation_limit']=args.validation_limit
     resume=0;history=[];best=None;rank=(-1,float('-inf'));best_step=0;elapsed_before=0
     raw_best=None;raw_best_loss=float('inf');raw_best_step=0
     inherited_pretraining=0;own_parent=None
@@ -120,6 +148,7 @@ def main():
         previous_settings.setdefault('semantic_weight',0.0)
         previous_settings.setdefault('context',128)
         previous_settings.setdefault('answer_prefix_weight',1.0);previous_settings.setdefault('answer_prefix_tokens',8)
+        previous_settings.setdefault('validation_limit',0)
         if c['sourceSha256']!=corpus['sourceSha256'] or previous_settings!=settings:raise ValueError('Resume dataset/config mismatch')
         model.load_state_dict(c['model']);optimizer.load_state_dict(c['optimizer']);torch.set_rng_state(c['rng'])
         resume=c['step'];history=c['history'];best=c['best'];rank=c['rank'];best_step=c['bestStep'];elapsed_before=c['elapsedSeconds']
@@ -185,6 +214,8 @@ def main():
     training['initializationKind']='own-raw-pretraining-continuation' if own_parent else 'random'
     training['inheritedOwnPretrainingUpdates']=inherited_pretraining
     training['ownPretrainingParent']=own_parent
+    training['fullValidationRows']=len(full_valid)
+    training['validationSelectionSha256']=hashlib.sha256(json.dumps([r['id'] for r in valid],separators=(',',':')).encode()).hexdigest()
     tensors={k:dict(shape=list(v.shape),data=[round(x,7) for x in v.flatten().tolist()]) for k,v in model.state_dict().items()}
     exported=dict(schemaVersion=1,version=args.version,config=config,tokenizer=corpus['tokenizer'],tensors=tensors,training=training)
     pathlib.Path(args.output).write_text('// Own experimental curriculum Transformer; not the production model.\nexport const dialogueModel='+json.dumps(exported,separators=(',',':'))+';\n')
