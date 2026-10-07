@@ -1,0 +1,110 @@
+"""Attributable official explanatory prose for a future frozen experiment."""
+from html.parser import HTMLParser
+import concurrent.futures,datetime,gzip,hashlib,json,pathlib,re,sys,urllib.parse,urllib.request,urllib.robotparser
+ROOT=pathlib.Path(__file__).resolve().parent
+USER_AGENT='4k29-own-transformer-language-research/1.0'
+VOID={'area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'}
+EXCLUDE={'script','style','nav','header','footer','aside','pre','table','li','blockquote','code','figure','iframe','form','rt','rp'}
+SITES={
+ 'stat':dict(host='www.stat.go.jp',author='総務省統計局',prefixes=['/naruhodo/','/naruhodokids/','/data/guide/'],seeds=['https://www.stat.go.jp/naruhodo/sitemap.html','https://www.stat.go.jp/naruhodokids/index.html','https://www.stat.go.jp/data/guide/index.html'],policy='https://www.stat.go.jp/info/riyou.html',limit=400),
+ 'bunka':dict(host='www.bunka.go.jp',author='文化庁',prefixes=['/seisaku/'],seeds=['https://www.bunka.go.jp/seisaku/'],policy='https://www.mext.go.jp/b_menu/1351168.htm',limit=400)
+}
+def sha(b):return hashlib.sha256(b).hexdigest()
+def write(p,v):p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n')
+def decode(raw):
+ try:return raw.decode('utf-8'),'utf-8'
+ except UnicodeDecodeError:return raw.decode('cp932'),'cp932'
+def canonical(url):
+ p=urllib.parse.urlsplit(url);return urllib.parse.unquote(urllib.parse.urlunsplit((p.scheme,p.netloc,p.path,'',''))).casefold()
+def accepted(site,url):
+ p=urllib.parse.urlsplit(url);spec=SITES[site]
+ return p.scheme=='https' and p.hostname==spec['host'] and not p.query and any(p.path.startswith(v) for v in spec['prefixes']) and (p.path.endswith(('.html','.htm')) or p.path.endswith('/'))
+class Prose(HTMLParser):
+ def __init__(self):super().__init__(convert_charrefs=True);self.stack=[];self.blocks=[];self.links=[];self.title=[];self.block=None;self.blockIndex=0
+ def scoped(self):return any(t=='main' or a.get('id') in ['main_content','contents','content','main'] for t,a in self.stack)
+ def excluded(self):
+  return any(t in EXCLUDE or re.search(r'nav|breadcrumb|sidebar|sidemenu|footer|header',a.get('class','')+' '+a.get('id',''),re.I) for t,a in self.stack)
+ def handle_starttag(self,tag,attrs):
+  a=dict(attrs)
+  if tag not in VOID:self.stack.append((tag,a))
+  if self.scoped() and not self.excluded():
+   if tag=='a' and a.get('href'):self.links.append(a['href'])
+   if tag=='p' and self.block is None:self.block=['p',len(self.stack),[],self.blockIndex];self.blockIndex+=1
+ def handle_endtag(self,tag):
+  if self.block and tag=='p' and len(self.stack)==self.block[1]:
+   text=re.sub(r'\s+',' ',''.join(self.block[2])).strip()
+   if text:self.blocks.append(dict(tag='p',text=text,originalBlockIndex=self.block[3]))
+   self.block=None
+  for i in range(len(self.stack)-1,-1,-1):
+   if self.stack[i][0]==tag:del self.stack[i:];break
+ def handle_data(self,text):
+  if any(t=='title' for t,_ in self.stack):self.title.append(text)
+  if self.block and not self.excluded():self.block[2].append(text)
+def parse(raw):
+ html,encoding=decode(raw);p=Prose();p.feed(html);return p,encoding
+CONTACT=re.compile(r'お問い合わせ|お問合せ|問合せ先|電話番号|FAX|Copyright|All rights|このページの先頭|JavaScript|更新日|利用規約',re.I)
+THIRD_PARTY=re.compile(r'転載|寄稿|執筆者|監修者|文責|無断|使用許諾|©|著作者|出典[：:]|出所[：:]|引用元')
+def selected(page):
+ if any(THIRD_PARTY.search(b['text']) for b in page.blocks):return [],'Page has possible third-party attribution/restriction in scoped prose'
+ blocks=[b for b in page.blocks if len(b['text'])>=40 and re.search(r'[。！？」]$',b['text']) and not CONTACT.search(b['text']) and len(re.findall(r'[一-龯ぁ-ゖァ-ヺ]',b['text']))/len(b['text'])>=.2]
+ text='\n'.join(b['text'] for b in blocks)
+ return blocks,None if len(text)>=200 else 'Insufficient whole Japanese prose'
+def fetch(site,url,robot):
+ if not accepted(site,url):return dict(site=site,url=url,error='Outside declared source scope')
+ if not robot.can_fetch(USER_AGENT,url):return dict(site=site,url=url,error='robots.txt disallows source')
+ try:
+  req=urllib.request.Request(url,headers={'User-Agent':USER_AGENT})
+  with urllib.request.urlopen(req,timeout=20) as response:
+   if not accepted(site,response.url):raise ValueError('Redirect outside declared source scope')
+   content=response.headers.get('Content-Type','');raw=response.read(4*1024*1024+1)
+   if len(raw)>4*1024*1024:raise ValueError('HTML too large')
+   if 'html' not in content.lower():raise ValueError('Not HTML')
+   headers=dict(finalUrl=response.url,lastModified=response.headers.get('Last-Modified'),contentType=content)
+  page,encoding=parse(raw);blocks,skip=selected(page);links=sorted(set(urllib.parse.urljoin(headers['finalUrl'],u).split('#',1)[0] for u in page.links));links=[u for u in links if accepted(site,u)]
+  return dict(site=site,url=url,raw=raw,page=page,blocks=blocks,skip=skip,links=links,encoding=encoding,headers=headers,retrievedAt=datetime.datetime.now(datetime.timezone.utc).isoformat())
+ except Exception as error:return dict(site=site,url=url,error=str(error))
+def main():
+ policy=read_policy= json.loads((ROOT/'source-policy/index.json').read_text())
+ for row in policy['files']:assert sha((ROOT/row['path']).read_bytes())==row['sha256']
+ for key in ['stat','bunka']:
+  item=policy['terms'][key];html=decode((ROOT/item['path']).read_bytes())[0]
+  assert 'CC BY' in html and '第三者' in html and '自由に利用' in html
+ old={canonical(json.loads(line)['url']) for line in (ROOT.parent/'round8/documents.jsonl').read_text().splitlines()}
+ robots={}
+ for site in SITES:
+  robot=urllib.robotparser.RobotFileParser();robot.parse((ROOT/policy['robots'][site]['path']).read_text().splitlines());robots[site]=robot
+ attempted={site:set() for site in SITES};queue={site:list(spec['seeds']) for site,spec in SITES.items()};docs=[];credits=[];attempts=[];seen_final=set();seen_text=set();archive=ROOT/'html';archive.mkdir(exist_ok=True)
+ with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+  while any(queue[s] and len(attempted[s])<SITES[s]['limit'] for s in SITES):
+   batch=[]
+   for site in SITES:
+    while queue[site] and sum(s==site for s,u in batch)<2 and len(attempted[site])<SITES[site]['limit']:
+     u=queue[site].pop(0);key=canonical(u)
+     if key in attempted[site]:continue
+     attempted[site].add(key)
+     if key in old:attempts.append(dict(site=site,url=u,skipped='Canonical URL already in frozen round8'));continue
+     batch.append((site,u))
+   if not batch:continue
+   rows=list(pool.map(lambda args:fetch(args[0],args[1],robots[args[0]]),batch))
+   for row in rows:
+    site=row['site'];url=row['url'];record=dict(site=site,url=url)
+    if 'error' in row:record['error']=row['error'];attempts.append(record);continue
+    for link in row['links']:
+     if canonical(link) not in attempted[site] and link not in queue[site]:queue[site].append(link)
+    final=row['headers']['finalUrl'];raw=row['raw'];page=row['page'];blocks=row['blocks'];text='\n'.join(b['text'] for b in blocks);digest=sha(text.encode())
+    record.update(finalUrl=final,htmlSha256=sha(raw),encoding=row['encoding'],retrievedAt=row['retrievedAt'],discoveredLinks=len(row['links']))
+    if row['skip']:record['skipped']=row['skip']
+    elif canonical(final) in old or canonical(final) in seen_final:record['skipped']='Duplicate canonical final URL'
+    elif digest in seen_text:record['skipped']='Identical extracted prose'
+    else:
+     name=site+'-'+sha(url.encode())[:24]+'.html.gz';(archive/name).write_bytes(gzip.compress(raw,mtime=0));uid=site+':url:'+sha(final.encode())[:16]
+     d=dict(id=uid,site=site,url=final,author=SITES[site]['author'],title=''.join(page.title).strip(),blocks=blocks,text=text,textSha256=digest,htmlArchive='html/'+name,htmlSha256=sha(raw),encoding=row['encoding'],retrievedAt=row['retrievedAt']);docs.append(d)
+     credits.append(dict(id=uid,author=d['author'],title=d['title'],url=final,requestedUrl=url,license='CC BY4.0',licenseUrl='https://creativecommons.org/licenses/by/4.0/',compatiblePublicDataTerms='PDL1.0',policyUrl=SITES[site]['policy'],attribution=f"出典：{d['author']}ホームページ（{final}）を加工して作成。",modifications='Whole main-content p blocks only; whitespace collapsed; code/tables/lists/images/blockquote/ruby readings/navigation/contact omitted. No paraphrases or teacher generations. No training split assigned.',htmlSha256=d['htmlSha256'],textSha256=digest,htmlArchive=d['htmlArchive'],encoding=d['encoding'],retrievedAt=d['retrievedAt'],**row['headers']))
+     record.update(accepted=True,id=uid,characters=len(text));seen_final.add(canonical(final));seen_text.add(digest)
+    attempts.append(record)
+   if len(attempts)%20<4:print(json.dumps(dict(attempts=len(attempts),documents=len(docs),characters=sum(len(d['text']) for d in docs),perSite={s:len(attempted[s]) for s in SITES})),flush=True)
+ (ROOT/'documents.jsonl').write_text(''.join(json.dumps(d,ensure_ascii=False,separators=(',',':'))+'\n' for d in docs))
+ write(ROOT/'sources.json',dict(schemaVersion=1,status='UNASSIGNED and UNTRAINED source snapshot for future experiments',actualOptimizerUpdates=0,tokenizerTraining=False,documents=len(docs),characters=sum(len(d['text']) for d in docs),utf8Bytes=sum(len(d['text'].encode()) for d in docs),sites={s:dict(documents=sum(d['site']==s for d in docs),characters=sum(len(d['text']) for d in docs if d['site']==s),attempted=len(attempted[s]),queuedRemaining=len(queue[s])) for s in SITES},retrievedAt=datetime.datetime.now(datetime.timezone.utc).isoformat(),license='CC BY4.0',licenseUrl='https://creativecommons.org/licenses/by/4.0/',policySnapshotSha256=sha((ROOT/'source-policy/index.json').read_bytes()),collectorSourceSha256=sha(pathlib.Path(__file__).read_bytes()),sources=credits,excludedSources=['Wikipedia','pretrained weights','external tokenizers','generative AI APIs','teacher-generated text']))
+ write(ROOT/'attempts.json',dict(sources=SITES,attempts=attempts,limitsReached={s:len(attempted[s])>=SITES[s]['limit'] for s in SITES},allFailuresAndSkipsRetained=True))
+ print(json.dumps(dict(completed=True,attempts=len(attempts),documents=len(docs),characters=sum(len(d['text']) for d in docs))),flush=True)
+if __name__=='__main__':main()
