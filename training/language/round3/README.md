@@ -16,7 +16,7 @@
 
 本学習はseed1429、dim192、8層、4heads、5,231,616パラメーター、context256、causal lookback32、追加QAのない原文next-token prediction。CPU2コア・8 GiB、PyTorch2.6.0+cpuを計算に使う。activationはBF16、重み・optimizer・検証・最終推論はFP32。genre抽出は文学55%、情報通信10%、環境10%、気象15%、MDN5%、農林水産省5%。原文単位をcanonicalに符号化して、同じ対象tokenを長さ64／128／256のbatchで保持する。
 
-予定は10,000更新。現時点の実完了数はrunのcheckpointとmetrics/resultで確認し、予定数を完了数としない。学習中に `main_train.py` と `batching.py` を変更しない。実物の1,000更新checkpointも保存し、全学習後に最終候補をVAL byte損失だけで選ぶ。まず同じ開発VALの1,000更新snapshotと最終候補を生成し、自然さ・破綻・ループを手動採点する。開発生成の基準が十分に成立するまで新規TESTを開かず保持する。基準が成立した後に、同じ新規TESTのsnapshotと最終候補を比較する。旧モデルの露出したTESTで改善を主張しない。日本語の基準が成立するまでQAを再開しない。
+本学習の10,000更新を完了し、両pilot各1,000更新を合わせ計12,000実更新を保存した。最終のcanonical VAL NLL/byteは1.186713で10,000更新のbeststateを選択。開発VAL9件の自然な一文は1,000更新snapshot／最終候補とも0/9、文学0/3、現代説明文0/6で言語段階は不合格。両モデルの全文非ループは2/9。新規TEST24件は生成していない。学習中に `main_train.py` と `batching.py` を変更しない。実物の1,000更新checkpointも保存し、全学習後に最終候補をVAL byte損失だけで選ぶ。まず同じ開発VALの1,000更新snapshotと最終候補を生成し、自然さ・破綻・ループを手動採点する。開発生成の基準が十分に成立するまで新規TESTを開かず保持する。基準が成立した後に、同じ新規TESTのsnapshotと最終候補を比較する。旧モデルの露出したTESTで改善を主張しない。日本語の基準が成立するまでQAを再開しない。
 
 ```sh
 python training/language/round3/collect_weather.py
@@ -30,3 +30,7 @@ python training/language/round3/run_experiment.py
 `train.py` は比較学習当時の固定コード、`main_train.py` は1,000更新snapshot保存を追加した本学習コード。比較学習中にsnapshot機能を追加してしまった変更は、コードを元へ戻して別ファイルへ移し、両pilotの実行時trainer SHAと一致を確認した。pilotの実際の処理は変更していない。
 
 本学習は1,000更新の保存後に実行環境が再起動し、一時領域のログ・依存ライブラリが失われた。保持されたcheckpoint、optimizer1000カウンター、モデル・Python/Torch RNG・設定とコードSHAを確認し、同じ自作runを `--resume` で再開。未保存の更新数は不明なので加算しない。復旧は `runtime-recovery.json` に記録する。依存ライブラリは持続する `/workspace/.4k29-torch-training` に配置。再コンパイルを伴う実行環境の変更を、未中断実行とのbit完全一致とは主張しない。初回の起動スクリプトは `.txt` のsource archiveとして保存し、現行 `run_experiment.py` は開発VALの生成までを行いTESTを開かない。既に実行中のrunへこの起動スクリプトを重ねて実行しない。
+
+5,000更新の途中診断も一文0/9、全文非ループ1/9だった。`midpoint-5000/state.pt` はFP32重みだけを保持し、optimizerを含む再開用checkpointではない。`diagnose_checkpoint.py` で元の全9件の文章と全tokenが一致することを確認した。診断を追加5,000更新として数えない。実物・根拠は `RESULTS.md`、`optimizer-audit.json`、`comparison.json`、各runの検証生成・採点・JS照合で確認する。
+
+保存済み結果の再評価では `evaluate.py --out` に別のファイルを指定する。生成文・全tokenは比較できるが、elapsedSecondsなどの計時値は変わるため、保存した生成JSONと手動採点SHAを上書きしない。全学習を再実行する場合も新しい作業コピーを使い、既存の実験記録を保持する。
