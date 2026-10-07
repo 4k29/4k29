@@ -1,0 +1,54 @@
+"""Collect licensed original Japanese paragraphs for a future frozen fold.
+No teacher rewriting, QA construction, tokenizer fitting or optimizer updates.
+"""
+import concurrent.futures,datetime,gzip,hashlib,importlib.util,json,pathlib,re,urllib.parse,urllib.robotparser
+ROOT=pathlib.Path(__file__).resolve().parent
+spec=importlib.util.spec_from_file_location('own_source_collection',ROOT.parent/'collect_sources.py')
+base=importlib.util.module_from_spec(spec);spec.loader.exec_module(base)
+def read(p):return json.loads(p.read_text())
+def sha(b):return hashlib.sha256(b).hexdigest()
+def write(p,v):p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n')
+def normalize(u):return urllib.parse.unquote(u).split('#')[0].rstrip('/').lower()
+def main():
+    discovery=ROOT/'source-discovery';tree=read(discovery/'ja-web-tree.json');commit=read(discovery/'commit-metadata.json')['sha']
+    policy=(discovery/'copyright-policy.html').read_text();assert 'creativecommons.org/licenses/by-sa/2.5/' in policy and 'any later version' in policy
+    license=(discovery/'upstream-LICENSE.md').read_text();assert 'All prose content is available under' in license and 'CC-BY-SA 2.5' in license
+    robots=urllib.robotparser.RobotFileParser();robots.parse((discovery/'robots.txt').read_text().splitlines())
+    previous=ROOT.parent/'round3/documents.jsonl';old=[json.loads(line) for line in previous.read_text().splitlines()]
+    known={normalize(d.get(k,'')) for d in old for k in ['url','finalUrl'] if d.get(k)};hashes={d['textSha256'] for d in old}
+    files=[f for f in tree['tree'] if f['type']=='blob' and f['path'].endswith('/index.md') and f.get('size',0)>=2000]
+    def priority(f):return (not bool(re.search(r'guide|using|learn|overview|tutorial|fundament|introduction|concepts|accessibility',f['path'])),sha(('1729|'+f['path']).encode()))
+    entries=[]
+    for f in sorted(files,key=priority):
+        url='https://developer.mozilla.org/ja/docs/Web/'+urllib.parse.quote(f['path'].removesuffix('/index.md'),safe='/')
+        if normalize(url) not in known:entries.append((f,url))
+    entries=entries[:1500];html=ROOT/'source-html';html.mkdir(exist_ok=True);captured=datetime.datetime.now(datetime.timezone.utc).isoformat()
+    def collect(entry):
+        f,url=entry
+        try:
+            if not robots.can_fetch(base.USER_AGENT,url):raise ValueError('Robots excludes URL')
+            raw,meta=base.fetch(url)
+            if not meta['finalUrl'].startswith('https://developer.mozilla.org/ja/docs/'):raise ValueError('Redirect outside Japanese content')
+            if normalize(meta['finalUrl']) in known:return None,dict(url=url,skipped='Already present canonical URL')
+            source,encoding=base.decode(raw);parser=base.Prose();parser.feed(source)
+            blocks=[dict(sourceBlockIndex=i,**b) for i,b in enumerate(parser.blocks) if b['tag']=='p' and len(b['text'])>=40 and b['text'][-1:] in '。！？」' and not base.boilerplate(b['text'])]
+            body='\n'.join(b['text'] for b in blocks)
+            if len(body)<200 or len(re.findall(r'[ぁ-ゖァ-ヺ一-龯]',body))/len(body)<.25:raise ValueError('Insufficient complete Japanese paragraphs')
+            if re.search(r'転載禁止|無断転載|別途許諾',body):raise ValueError('Individual rights restriction')
+            key='mdn:url:'+sha(meta['finalUrl'].encode())[:16];archive=html/(key.replace(':','-')+'-'+sha(url.encode())[:12]+'.html.gz');archive.write_bytes(gzip.compress(raw,mtime=0))
+            return dict(id=key,site='mdn',url=url,**meta,title=''.join(parser.title).strip(),author='MDN contributors',text=body,blocks=blocks,textSha256=sha(body.encode()),htmlSha256=sha(raw),htmlArchive=str(archive.relative_to(ROOT)),htmlArchiveSha256=sha(archive.read_bytes()),encoding=encoding,retrievedAt=captured,license='CC BY-SA 4.0',licenseUrl='https://creativecommons.org/licenses/by-sa/4.0/',policyUrl=base.MDN_POLICY,originalProseLicense='CC BY-SA 2.5 with later-version allowance in captured policy',discoveryRepository='mdn/translated-content',discoveryCommit=commit,discoveryPath='files/ja/web/'+f['path'],discoveryBlob=f['sha'],discoveryOnlyCommitNotHtmlVersion=True,modifications='Whole original complete p paragraphs; original block indexes retained. Layout whitespace normalized by existing own parser. Headings, lists, navigation, code, tables, support boilerplate excluded. No rewritten or synthesized sentences; not a whole-article transcript.'),None
+        except Exception as e:return None,dict(url=url,error=str(e))
+    docs=[];failed=[];skipped=[];urls=set()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
+        for i,(doc,error) in enumerate(pool.map(collect,entries)):
+            if doc:
+                key=normalize(doc['finalUrl'])
+                if key not in urls and doc['textSha256'] not in hashes:docs.append(doc);urls.add(key);hashes.add(doc['textSha256'])
+                else:(ROOT/doc['htmlArchive']).unlink();skipped.append(dict(url=doc['url'],skipped='Duplicate canonical URL or text'))
+            if error:(skipped if 'skipped' in error else failed).append(error)
+            if i%50==0:print(json.dumps(dict(completed=i+1,total=len(entries),accepted=len(docs),characters=sum(len(d['text']) for d in docs))),flush=True)
+    docs.sort(key=lambda d:d['id']);path=ROOT/'mdn-documents.jsonl';path.write_text(''.join(json.dumps(d,ensure_ascii=False,separators=(',',':'))+'\n' for d in docs))
+    write(ROOT/'mdn-credits.json',[{k:v for k,v in d.items() if k not in ['text','blocks']} for d in docs])
+    write(ROOT/'mdn-sources.json',dict(retrievedAt=captured,documents=len(docs),characters=sum(len(d['text']) for d in docs),utf8Bytes=sum(len(d['text'].encode()) for d in docs),documentsSha256=sha(path.read_bytes()),collectorSourceSha256=sha(pathlib.Path(__file__).read_bytes()),parserSourceSha256=sha((ROOT.parents[1]/'dialogue/collect_mdn_language.py').read_bytes()),baseCollectorSourceSha256=sha((ROOT.parent/'collect_sources.py').read_bytes()),previousDocumentsSha256=sha(previous.read_bytes()),discoveryCommit=commit,discoveryTreeSha=tree['sha'],discoveryFiles=len(files),requestedUrls=len(entries),failed=failed,skipped=skipped,partitionsNotAssigned=True,notUsedByRunningRound6=True,tokenizerNotFitted=True,optimizerUpdates=0,externalWeights=False,externalTokenizer=False,externalInferenceAPI=False,wikipedia=False))
+    print(json.dumps(dict(documents=len(docs),characters=sum(len(d['text']) for d in docs),partition='unassigned',optimizerUpdates=0)),flush=True)
+if __name__=='__main__':main()
