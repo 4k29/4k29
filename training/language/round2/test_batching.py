@@ -12,19 +12,20 @@ class BatchingTest(unittest.TestCase):
         cls.info,cls.values=load_partition(ROOT/'paragraph-bpe-8192','train')
         cls.genres={'aozora':.3,'mic':.3,'env':.3,'mdn':.075,'jma':.0125,'maff':.0125}
         cls.strata,cls.weights,cls.masses=sampler(cls.info['rows'],cls.genres)
+        cls.views=VIEWS;cls.draw=staticmethod(draw)
     def test_sampling_marginals_and_every_row_probability(self):
         counts=collections.Counter((r['site'],r['variant']) for r in self.info['rows'])
         for key,rows in self.strata.items():
             actual=self.masses[key[2]]*(self.weights[key]/self.masses[key[2]])/len(rows)
-            expected=self.genres[key[0]]*VIEWS[key[1]]/counts[key[:2]]
+            expected=self.genres[key[0]]*self.views[key[1]]/counts[key[:2]]
             self.assertAlmostEqual(actual,expected,places=15)
         rng=random.Random(10429);observed=collections.Counter();views=collections.Counter()
         for _ in range(5000):
-            width,rows=draw(rng,8,self.strata,self.weights,self.masses)
+            width,rows=self.draw(rng,8,self.strata,self.weights,self.masses)
             self.assertTrue(all(r['length']-1<=width for r in rows))
             for r in rows:observed[r['site']]+=1;views[r['variant']]+=1
         for k,p in self.genres.items():self.assertLess(abs(observed[k]/40000-p),.012)
-        for k,p in VIEWS.items():self.assertLess(abs(views[k]/40000-p),.015)
+        for k,p in self.views.items():self.assertLess(abs(views[k]/40000-p),.015)
     @torch.no_grad()
     def test_causal_logits_and_targets_identical_after_removing_future_padding(self):
         tok=read(ROOT/'paragraph-bpe-8192/tokenizer.json')
@@ -35,5 +36,15 @@ class BatchingTest(unittest.TestCase):
             self.assertTrue(torch.equal(ya[:,:width],yb));self.assertTrue(ya[:,width:].eq(-100).all())
             logits_a=model(a)[:,:width];logits_b=model(b)
             self.assertTrue(torch.allclose(logits_a,logits_b,atol=1e-5,rtol=1e-5))
+
+class PrefixBatchingTest(BatchingTest):
+    @classmethod
+    def setUpClass(cls):
+        from prefix_batching import sampler as prefix_sampler,draw as prefix_draw,VIEWS as prefix_views
+        torch.set_num_threads(1);torch.manual_seed(1229)
+        cls.info,cls.values=load_partition(ROOT/'prefix-bpe-8192','train')
+        cls.genres={'aozora':.3,'mic':.3,'env':.3,'mdn':.075,'jma':.0125,'maff':.0125}
+        cls.strata,cls.weights,cls.masses=prefix_sampler(cls.info['rows'],cls.genres)
+        cls.views=prefix_views;cls.draw=staticmethod(prefix_draw)
 
 if __name__=='__main__':unittest.main()
