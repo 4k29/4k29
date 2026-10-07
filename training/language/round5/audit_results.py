@@ -35,7 +35,7 @@ def main():
     choice = read(ROOT/'checkpoint-choice.json'); assert not choice['testUsed']
     assert choice['modelSha256'] == sha(d/'model.js') and choice['policySha256'] == sha(ROOT/'generation-policy.json')
     assert choice['selectedStep'] == r['bestStep']
-    results = {}
+    results = {}; performance = {}
     for name in ['baseline-1000','characters-10000']:
         folder = ROOT/name; g = read(folder/'validation.json'); v = read(folder/'validation-review.json'); js = read(folder/'validation-js.json')
         assert g['partition'] == 'validation' and g['maxNewTokens'] == 192 and len(g['rows']) == 9
@@ -45,6 +45,7 @@ def main():
         for a,b,c in zip(g['rows'],v['rows'],js['rows'],strict=True):
             for k in ['id','text','tokens','eos','validUtf8','validTokens','inputTokens']: assert a[k] == b[k] == c[k]
         results[name] = dict(passed=v['passed'],total=v['total'],validTokenOutputs=v['validTokenOutputs'],groups=v['groups'],gatePassed=v['gatePassed'],generationSha256=sha(folder/'validation.json'))
+        performance[name] = dict(generatedTokenIds=sum(len(row['tokens']) for row in g['rows']),generatedUnicodeCharacters=sum(len(row['text']) for row in g['rows']),pythonGenerationSeconds=sum(row['elapsedSeconds'] for row in g['rows']),javascriptGenerationMs=sum(row['elapsedMs'] for row in js['rows']),generationSha256=sha(folder/'validation.json'),javascriptParitySha256=sha(folder/'validation-js.json'))
     assert not list(ROOT.glob('*/test.json'))
     previous = {}
     for phase in ['round3','round4']:
@@ -53,6 +54,7 @@ def main():
         previous[phase] = dict(files=len(manifest['files']),manifestSha256=sha(base/'reproducibility-manifest.json'))
     write(ROOT/'optimizer-audit.json',dict(actualOptimizerUpdates=10000,optimizerStepCounters=counts,selectedWeightLineageUpdates=r['bestStep'],parameters=r['parameters'],fullPrecisionWeightsAndOptimizer=True,pythonAndTorchRngSaved=True,randomInitialization=True,previousWeightsNotAllowed=True,baselineAddsUpdates=False,checkpointSha256=r['checkpointSha256'],previousInventoriesVerified=previous))
     write(ROOT/'comparison.json',dict(partition='validation',runs=results,languageGatePassed=results['characters-10000']['gatePassed'],testStillUnopened=True,publicModelReplaced=False,note='Same character vocabulary, architecture, raw fold and 192-token greedy policy at saved1000 versus VAL-selected weights after actual10000. Historical word models differ in architecture and output length; not a one-factor causal comparison.'))
+    write(ROOT/'performance.json',dict(runs=performance,contextLimit=256,maxNewTokens=192,parameters=r['parameters'],device='CPU',trainingThreads=2,pythonEvaluationThreads=1,note='Recorded raw generation timings only, excluding model loading. This is not a controlled browser latency benchmark or a demonstration of usable answer quality. Different EOS/content may change work; repeated timing trials were not run.'))
     from report_results import main as report
     report()
     manifest = ROOT/'reproducibility-manifest.json'

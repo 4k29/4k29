@@ -4,7 +4,8 @@ ROOT = pathlib.Path(__file__).resolve().parent
 def read(p): return json.loads(p.read_text())
 def main():
     c=read(ROOT/'comparison.json'); r=read(ROOT/'characters-10000/result.json'); m=read(ROOT/'characters-10000/metrics.json')
-    b=c['runs']['baseline-1000']; f=c['runs']['characters-10000']
+    b=c['runs']['baseline-1000']; f=c['runs']['characters-10000']; timing=read(ROOT/'performance.json')['runs']
+    speed='\n'.join(f"| {name} | {t['generatedTokenIds']:,} | {t['pythonGenerationSeconds']:.2f} | {t['javascriptGenerationMs']/1000:.2f} |" for name,t in timing.items())
     text=f'''# 自作・文字単位Transformerの実更新と評価
 
 外部の重み・既成Tokenizer・生成API・Wikipedia・QA・teacher文章を使わず、ランダム初期化から **10,000 optimizer更新**を完了した。実物のoptimizerカウンターを確認し、1,000更新の保存スナップショットは追加更新として数えない。以前のround3/4の重みを引き継がず、今回の選択重みの系譜は{r['bestStep']:,}更新。今回までのround3 pilot2,000 + main10,000 + round4追加2,000 + 今回10,000の実更新は24,000で、別初期化の合計と重みの系譜を区別する。
@@ -26,6 +27,14 @@ canonical VAL NLL/byteは初期{m['history'][0]['validation']['nllPerUtf8Byte']:
 文法・意味・接続・反復・破綻を各0〜2点、一文9点以上・文法2・接続2・終止・有効tokenが条件。文学／現代説明文の各グループで一文成功80%以上、全文非ループ90%以上を必要とする。採点はアシスタントによる手動で独立したblind人間評価ではない。事実・数値の正確性や汎用会話能力を保証しない。Pythonと独自JSで全文・全token・EOS・UTF-8有効性の一致、全logit参照誤差2e-4以下を照合した。
 
 新規TEST24件は未生成。QA学習や公開回答モデルの切替は実施していない。以前のround3の88ファイルとround4の55ファイルのSHAを維持し、今回のsource・data・checkpoint・採点・JS比較はreproducibility-manifest.jsonに固定する。
+
+## 記録した推論時間
+
+| run | 生成token IDs合計 | Python生成秒 | 独自JS生成秒 |
+| --- | ---: | ---: | ---: |
+{speed}
+
+モデル読み込みを除く9件の原文続き生成の記録で、ブラウザー応答速度の統制benchmarkではない。EOSや出力内容で仕事量が変わる。時間の反復測定は行っておらず、速度の改善・回答としての実用性はこの表だけで主張しない。
 '''
     (ROOT/'RESULTS.md').write_text(text)
 if __name__=='__main__': main()
