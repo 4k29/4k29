@@ -48,11 +48,12 @@ def main():
         assert j['completeGenerationParity'];assert all(x['maxAbsoluteError']<=2e-4 for x in j['references'])
         assert j['modelSha256']==g['modelFileSha256']
     write(ROOT/'comparison.json',dict(policySha256=sha(ROOT/'generation-policy.json'),checkpointChoiceSha256=sha(ROOT/'checkpoint-choice.json'),sameFreshOpenings=True,baseline=dict(model='../paragraph-million/model.js',sha256=sha(ROOT.parent/'paragraph-million/model.js'),reportSha256=sha(ROOT/'baseline/test-review.json'),passed=baseline['passed'],total=baseline['total'],groups=baseline['groups']),candidate=dict(run=choice['chosenRun'],reportSha256=sha(selected/'review-test.json'),passed=current['passed'],total=current['total'],groups=current['groups'],gatePassed=current['gatePassed']),independentHumanEvaluation=False,testNowConsumed=True,publicModelReplaced=False,note='Same fixed fresh raw openings, greedy decoding and strict language rubric. Neither TEST outputs nor manual reviews select or train weights. Model, tokenizer, training data and updates all differ, so this is not a one-factor causal experiment.'))
+    from report_results import main as write_report
+    write_report()
     manifest=ROOT/'reproducibility-manifest.json'
     files=[dict(path=str(p.relative_to(ROOT)),bytes=p.stat().st_size,sha256=sha(p)) for p in sorted(ROOT.rglob('*')) if p.is_file() and p!=manifest and '__pycache__' not in p.parts]
     assert all(f['bytes']<100*1024*1024 for f in files),'GitHub single-file size limit'
-    shared=[ROOT.parent/'model.py',ROOT.parent/'evaluate_js.mjs',ROOT.parent.parent/'dialogue/tokenizer.py',ROOT.parent.parent/'dialogue/bpe_heap.py',ROOT.parent.parent/'dialogue/inference.mjs']
-    shared=[p for p in shared if p.exists()]
+    shared=[ROOT.parent/'model.py',ROOT.parent/'evaluate_js.mjs']+[ROOT.parent.parent/'dialogue'/name for name in ['tokenizer.py','tokenizer.mjs','bpe_heap.mjs','beam_search.mjs','inference.mjs']]
     write(manifest,dict(files=files,sharedFiles=[dict(path=str(p.relative_to(ROOT.parent.parent.parent)),sha256=sha(p)) for p in shared],priorFrozenFilesVerified=len(old['files']),python=sys.version,torch=torch.__version__,cudaAvailable=torch.cuda.is_available(),externalWeights=False,externalTokenizer=False,externalInferenceAPI=False,languageGatePassed=current['gatePassed'],note='Inventory only this round; previous frozen 206-file inventory is unchanged. Source credits and terms accompany source documents.'))
     print(json.dumps(dict(files=len(files),updates=sum(r['completedOptimizerUpdates'] for r in runs),gatePassed=current['gatePassed'])))
 if __name__=='__main__':main()

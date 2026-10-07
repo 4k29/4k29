@@ -30,6 +30,18 @@ node --test tests/raw-language-round2-data.test.mjs
 
 計算環境はCPU2コア・8 GiB、PyTorch2.6.0+cpu。PyTorchは計算に用い、自作decoderの重み・語彙・推論に外部の学習済みモデルを使わない。
 
-TRAINの原文だけに4種類の途中位置を設け、prefix/suffixを別々に独自BPE符号化する追加実験を実行。単語・文字・文を作り直さず、途中にEOSや区切り記号を入れない。元の全角空白も保持する。73,760個の追加表現は同じ18,440段落の再符号化であり、新規原文ではない。canonical／dropout0.15／dropout0.30／prefix-viewの抽出比率は50%／10%／10%／30%。語彙と全てのheldデータはbyte単位で同一。seed1229、学習率0.00025、追加10,000更新を予定し、完了後のVAL byte損失だけで親／追加モデルを選択してから、固定した新しいTEST24件と旧原文モデルの同一書き出しで比較する。TESTの文章も合格基準も変えない。
+TRAINの原文だけに4種類の途中位置を設け、prefix/suffixを別々に独自BPE符号化する追加実験を実行。単語・文字・文を作り直さず、途中にEOSや区切り記号を入れない。元の全角空白も保持する。73,760個の追加表現は同じ18,440段落の再符号化であり、新規原文ではない。canonical／dropout0.15／dropout0.30／prefix-viewの抽出比率は50%／10%／10%／30%。語彙と全てのheldデータはbyte単位で同一。seed1229、学習率0.00025、追加10,000更新を完了し、VAL byte損失だけで親／追加モデルを選択してから、固定した新しいTEST24件と旧原文モデルの同一書き出しで比較した。TESTの文章も合格基準も変えない。
 
 追加実験の5,000更新時点でも開発VALは1/9合格。中間診断のsnapshotは原文モデルの親10,000更新＋追加モデルの選択5,000更新の系譜で、診断として5,000更新をもう一度加算しない。`prefix-validation-5000` にgzipの実物重み・全文生成・採点・JS一致を保存する。snapshotは共通の固定exporterを使うためversion文字列が他の診断と一致する場合があるが、モデルの識別はSHAと `training.run` で行う。
+
+最終候補はprefix-millionの10,000更新（親10,000更新との系譜20,000更新）。VAL byte損失は1.049614、未見TESTの一文合格は3/24、同じ書き出しでの旧原文モデルは1/24。文学の全文非ループは2/8から8/8、現代説明文は12/16から13/16となったが、文法・意味・接続の言語段階の基準は未達。QA／instructionは再開せず、公開モデルも差し替えていない。詳細と限界は `RESULTS.md`、全ての実物のSHAはこのroundだけの `reproducibility-manifest.json` に記録する。
+
+```sh
+python training/language/round2/prepare_prefix_views.py
+python training/language/round2/test_batching.py
+python training/language/round2/finish_evaluations.py
+python training/language/round2/audit_results.py
+node --test tests/raw-language-round2-data.test.mjs tests/raw-language-prefix-data.test.mjs tests/raw-language-round2-results.test.mjs
+```
+
+再学習には各runの `config.json` とcheckpointのseed・settingsを使う。`pilot-trainer.py` はpilot当時の固定コード、`train.py` は原文モデル、`train_prefix.py` はこのroundの自作親checkpointだけを許す追加学習。完了runをそのまま再実行するのではなく、同じコードと設定で別の作業コピーの空のrunから再現する。最終評価は固定済みcheckpoint-choiceを使い、結果を見て候補や基準を変更しない。
