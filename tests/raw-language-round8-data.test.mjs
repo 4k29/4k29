@@ -72,3 +72,13 @@ test('old fold, original chains and character IDs remain unchanged after adding 
   const sourceRoot=path.resolve('training/language/round7'),manifest=read(path.join(sourceRoot,'source-manifest.json'));
   for(const f of manifest.files)assert.equal(hash(path.join(sourceRoot,f.path)),f.sha256,f.path);
 });
+
+test('frozen experiment snapshot and policy match the actual expanded inputs',()=>{
+  const snapshot=read(path.join(root,'source-manifest.json'));
+  assert.equal(snapshot.files.length,35);
+  assert.ok(snapshot.files.every(f=>!f.path.includes('expanded-characters-10000')));
+  for(const f of snapshot.files){assert.equal(hash(path.join(root,f.path)),f.sha256,f.path);assert.equal(fs.statSync(path.join(root,f.path)).size,f.bytes);}
+  const policy=read(path.join(root,'experiment-policy.json'));
+  for(const [file,key] of [['train.py','trainerSourceSha256'],['initialization.py','initializationSourceSha256'],['documents.jsonl','sourceSha256'],['split.json','splitSha256'],['units.json','rawUnitsSha256'],['generation-policy.json','generationPolicySha256'],['unicode-bpe-4578/data.json','preparedDataSha256']])assert.equal(hash(path.join(root,file)),policy[key]);
+  assert.equal(policy.requestedAdditionalUpdates,10000);assert.equal(policy.layers,8);assert.equal(policy.qaAllowed,false);assert.equal(policy.testUsed,false);
+});
