@@ -42,14 +42,19 @@ test('prefix views preserve source bytes, true boundaries and held data',()=>{
   assert.ok(indented>0,'original ideographic indentation is retained');
 });
 
-test('5,000-update diagnostic is an actual bound snapshot, not a completed run',()=>{
-  const dir=path.join(root,'validation-5000'),snapshot=read(path.join(dir,'snapshot.json'));
+for(const folder of ['validation-5000','prefix-validation-5000'])test(`${folder} is an actual bound snapshot, not a completed run`,()=>{
+  const dir=path.join(root,folder),snapshot=read(path.join(dir,'snapshot.json'));
   const packed=fs.readFileSync(path.join(dir,'model.js.gz'));
   assert.equal(hash(packed),snapshot.compressedModelSha256);
   assert.equal(hash(zlib.gunzipSync(packed)),snapshot.uncompressedModelSha256);
   assert.equal(snapshot.actualSavedUpdates,5000);
   assert.equal(snapshot.completedRequestedRun,false);
   assert.deepEqual(snapshot.optimizerStepCounters,[5000]);
+  if(folder.startsWith('prefix-')) {
+    assert.equal(snapshot.training.parentSelectedSteps,10000);
+    assert.equal(snapshot.training.ownParentOnly,true);
+    assert.equal(snapshot.training.optimizerReset,true);
+  }
   const python=read(path.join(dir,'validation.json')),js=read(path.join(dir,'validation-js.json'));
   assert.equal(python.modelFileSha256,snapshot.compressedModelSha256);
   assert.equal(js.modelSha256,snapshot.uncompressedModelSha256);

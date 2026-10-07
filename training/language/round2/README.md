@@ -31,3 +31,5 @@ node --test tests/raw-language-round2-data.test.mjs
 計算環境はCPU2コア・8 GiB、PyTorch2.6.0+cpu。PyTorchは計算に用い、自作decoderの重み・語彙・推論に外部の学習済みモデルを使わない。
 
 TRAINの原文だけに4種類の途中位置を設け、prefix/suffixを別々に独自BPE符号化する追加実験を実行。単語・文字・文を作り直さず、途中にEOSや区切り記号を入れない。元の全角空白も保持する。73,760個の追加表現は同じ18,440段落の再符号化であり、新規原文ではない。canonical／dropout0.15／dropout0.30／prefix-viewの抽出比率は50%／10%／10%／30%。語彙と全てのheldデータはbyte単位で同一。seed1229、学習率0.00025、追加10,000更新を予定し、完了後のVAL byte損失だけで親／追加モデルを選択してから、固定した新しいTEST24件と旧原文モデルの同一書き出しで比較する。TESTの文章も合格基準も変えない。
+
+追加実験の5,000更新時点でも開発VALは1/9合格。中間診断のsnapshotは原文モデルの親10,000更新＋追加モデルの選択5,000更新の系譜で、診断として5,000更新をもう一度加算しない。`prefix-validation-5000` にgzipの実物重み・全文生成・採点・JS一致を保存する。snapshotは共通の固定exporterを使うためversion文字列が他の診断と一致する場合があるが、モデルの識別はSHAと `training.run` で行う。

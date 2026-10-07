@@ -1,5 +1,5 @@
 """Audit real full-precision optimizer counters and final reproducibility files."""
-import hashlib,json,pathlib,sys
+import gzip,hashlib,json,pathlib,sys
 import torch
 ROOT=pathlib.Path(__file__).resolve().parent
 def read(p):return json.loads(p.read_text())
@@ -29,7 +29,16 @@ def main():
         del saved
     child=read(ROOT/'prefix-million/result.json');parent=runs[2]
     assert child['parentCheckpointSha256']==parent['checkpointSha256'];assert child['parentSelectedSteps']==parent['selectedStep']
-    write(ROOT/'optimizer-audit.json',dict(runs=runs,totalCompletedCleanRawUpdates=sum(r['completedOptimizerUpdates'] for r in runs),discardedPrecisionTimingUpdates=60,selectedChildWeightLineageUpdates=child['parentSelectedSteps']+child['bestStep'],optimizerResetBeforeChild=True,note='Pilots are separate random initializations, not part of the six-layer weight lineage. Checkpoint optimizer/RNG describe the final update; exported weights describe the separately selected beststate. No interrupted attempts without updates are counted.'))
+    diagnostics=[]
+    for name in ['validation-5000','prefix-validation-5000']:
+        directory=ROOT/name;snapshot=read(directory/'snapshot.json');report=read(directory/'review.json');packed=directory/'model.js.gz';js=read(directory/'validation-js.json')
+        assert snapshot['actualSavedUpdates']==5000 and snapshot['optimizerStepCounters']==[5000]
+        assert not snapshot['completedRequestedRun']
+        assert snapshot['compressedModelSha256']==sha(packed)
+        assert snapshot['uncompressedModelSha256']==hashlib.sha256(gzip.decompress(packed.read_bytes())).hexdigest()
+        assert js['completeGenerationParity'];assert report['generationSha256']==sha(directory/'validation.json')
+        diagnostics.append(dict(directory=name,actualRunUpdates=5000,selectedStep=snapshot['selectedStep'],parentSelectedSteps=snapshot['training'].get('parentSelectedSteps',0),firstSentencePassed=report['passed'],total=report['total'],gatePassed=report['gatePassed'],snapshotSha256=sha(directory/'snapshot.json'),note='Intermediate subset of the run, not additional optimizer updates. Frozen exporter family name may match other diagnostics; identity is bound by SHA and training.run.'))
+    write(ROOT/'optimizer-audit.json',dict(runs=runs,diagnostics=diagnostics,totalCompletedCleanRawUpdates=sum(r['completedOptimizerUpdates'] for r in runs),discardedPrecisionTimingUpdates=60,selectedChildWeightLineageUpdates=child['parentSelectedSteps']+child['bestStep'],optimizerResetBeforeChild=True,note='Pilots are separate random initializations, not part of the six-layer weight lineage. Checkpoint optimizer/RNG describe the final update; exported weights describe the separately selected beststate. No interrupted attempts without updates are counted. Pilots did not save trainer SHA at run time; their exact source copy is retained, with its SHA recorded retrospectively.'))
     old=read(ROOT.parent/'reproducibility-manifest.json')
     for f in old['files']:assert sha(ROOT.parent/f['path'])==f['sha256'],f['path']
     choice=read(ROOT/'checkpoint-choice.json');selected=ROOT/choice['chosenRun'];current=read(selected/'review-test.json');baseline=read(ROOT/'baseline/test-review.json')

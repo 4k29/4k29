@@ -1,5 +1,5 @@
 """Commit the final own-raw candidate before opening fresh TEST outputs."""
-import hashlib,json,pathlib
+import datetime,hashlib,json,pathlib
 ROOT=pathlib.Path(__file__).resolve().parent
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def read(p):return json.loads(p.read_text())
@@ -19,6 +19,6 @@ def main():
     assert candidates[0]['tokenizerSha256']==candidates[1]['tokenizerSha256']
     assert candidates[0]['paragraphSelectionsSha256']==candidates[1]['paragraphSelectionsSha256']
     selected=min(candidates,key=lambda c:c['validationNllPerUtf8Byte'])
-    target.write_text(json.dumps(dict(chosenRun=selected['run'],candidates=candidates,criterion='Lowest full canonical held-paragraph NLL per UTF8 byte; same vocabulary, architecture and held targets',testUsed=False,policySha256=sha(ROOT/'generation-policy.json'),representationDecision='TRAIN-only prefix BPE boundaries and original layout added after inspecting development VAL outputs. Probe documents, thresholds, greedy decoding, vocabulary and held byte streams unchanged. No TEST output inspected.'),indent=2)+'\n')
+    target.write_text(json.dumps(dict(chosenRun=selected['run'],selectedAt=datetime.datetime.now(datetime.timezone.utc).isoformat(),candidates=candidates,criterion='Lowest full canonical held-paragraph NLL per UTF8 byte; same vocabulary, architecture and held targets',testUsed=False,policySha256=sha(ROOT/'generation-policy.json'),representationDecision='TRAIN-only prefix BPE boundaries and original layout added after inspecting development VAL outputs. Probe documents, thresholds, greedy decoding, vocabulary and held byte streams unchanged. No TEST output inspected.'),indent=2)+'\n')
     print(json.dumps(selected))
 if __name__=='__main__':main()
