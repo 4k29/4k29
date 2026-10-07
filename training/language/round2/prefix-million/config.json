@@ -1,0 +1,69 @@
+{
+  "config": {
+    "vocabulary": 8454,
+    "dim": 192,
+    "layers": 6,
+    "heads": 4,
+    "hidden": 768,
+    "context": 256,
+    "dropout": 0.1,
+    "epsilon": 1e-05
+  },
+  "settings": {
+    "merges": 8192,
+    "steps": 10000,
+    "dim": 192,
+    "layers": 6,
+    "heads": 4,
+    "batch": 8,
+    "threads": 2,
+    "seed": 1229,
+    "lr": 0.00025,
+    "validation_every": 1000,
+    "run": "prefix-million",
+    "compile": true,
+    "parent": "training/language/round2/raw-modern-million/checkpoint.pt",
+    "precision": "bfloat16",
+    "sourceSha256": "b08653622c392e67781be0bf9f34a0b062cdec69b32342057aa3fc67b0bba21b",
+    "splitSha256": "21098ff6ff4104fb7dc555e2af2954adc1d9760113e93f26e617153981a08ed3",
+    "tokenizerSha256": "80b9a1f8b6bedcccc799ad072027c44fa2cd4aa510d960e0b289687f3359534f",
+    "genreSampling": {
+      "aozora": 0.3,
+      "mic": 0.3,
+      "env": 0.3,
+      "mdn": 0.075,
+      "jma": 0.0125,
+      "maff": 0.0125
+    },
+    "paragraphSelectionsSha256": "f0ed2906e95ae6a27064ca99a62dcccb717eb54725bcb43cb007c1eaf93cfa10",
+    "trainingViews": {
+      "canonical": 0.5,
+      "mergeDropout015": 0.1,
+      "mergeDropout030": 0.1,
+      "prefixCut": 0.3
+    },
+    "prefixCutsSha256": "32a16ac1558c1019ea876229d8f6815f524f407854e32713ff4e8924cc67dcb1",
+    "parentCheckpointSha256": "edb209b62e7caf4bbcd413ffbac2a139a9c0cb814740e8a7887f5fa85f76c288",
+    "parentCompletedSteps": 10000,
+    "parentSelectedSteps": 10000,
+    "ownParentOnly": true,
+    "optimizerReset": true,
+    "seedReset": true,
+    "trainerAncestorSha256": "97dca3707ffa781a060e0f8252c5a94665fd9c373bd803f46b4828fa44ae57d3",
+    "objective": "Raw complete original paragraph causal next-token cross entropy; masked lookback, true boundary BOS/EOS; no QA, instruction tuning or teacher",
+    "externalWeights": false,
+    "externalTokenizer": false,
+    "externalInferenceAPI": false,
+    "randomInitialization": false,
+    "ownRandomInitializedLineage": true,
+    "lengthBucketMasses": {
+      "64": 0.3712635241918461,
+      "128": 0.3503272152370873,
+      "256": 0.27840926057106646
+    },
+    "batching": "Conditional length buckets64/128/256; same marginal row probabilities, correlated batch lengths; no target truncation. Different update trajectory from unbucketed pilots.",
+    "trainerSourceSha256": "79ebb66b898eb436e91b1ad140099e88c11e50499be56f1d8bcfbce38153f85c"
+  },
+  "parameters": 4341888,
+  "selection": "Lowest full held-paragraph validation NLL/UTF8byte; own raw parent, fresh optimizer and RNG; TEST not read"
+}
