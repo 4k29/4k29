@@ -1,0 +1,39 @@
+"""Complete raw learning and freeze both snapshots before any fresh TEST."""
+import gzip,hashlib,json,pathlib,subprocess,sys,time
+import torch
+ROOT=pathlib.Path(__file__).resolve().parent;REPO=ROOT.parents[2]
+from main_train import export_model
+def read(p):return json.loads(p.read_text())
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def write(p,v):p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n')
+def run(args,log):
+    with log.open('w') as f:subprocess.run(args,cwd=REPO,stdout=f,stderr=subprocess.STDOUT,check=True)
+def main():
+    while not (ROOT/'pilot-8192/result.json').exists():time.sleep(10)
+    runs=[]
+    for merges in [4096,8192]:
+        directory=ROOT/f'pilot-{merges}';r=read(directory/'result.json');m=read(directory/'metrics.json');assert r['completedRun'] and r['completedSteps']==1000
+        assert r['trainerSourceSha256']==sha(ROOT/'train.py')
+        runs.append(dict(merges=merges,completedUpdates=r['completedSteps'],parameters=r['parameters'],bestStep=r['bestStep'],validationNllPerUtf8Byte=m['bestValidationNllPerByte'],resultSha256=sha(directory/'result.json')))
+    chosen=min(runs,key=lambda r:r['validationNllPerUtf8Byte'])['merges'];write(ROOT/'vocabulary-choice.json',dict(chosenMerges=chosen,runs=runs,testUsed=False,selection='Lowest canonical raw-chain VAL byte NLL after same1000 updates; parameters and byte exposure differ'))
+    directory=ROOT/'raw-chains-10000'
+    command=[sys.executable,str(ROOT/'main_train.py'),'--merges',str(chosen),'--steps','10000','--dim','192','--layers','8','--heads','4','--batch','8','--threads','2','--seed','1429','--validation-every','1000','--run',directory.name,'--compile','--precision','bfloat16']
+    print(json.dumps(dict(event='main-start',merges=chosen,layers=8,requestedUpdates=10000)),flush=True)
+    run(command,pathlib.Path('/tmp/4k29-round3-main.log'))
+    baseline=ROOT/'baseline-1000';baseline.mkdir(exist_ok=True)
+    torch.set_num_threads(1);cp=directory/'checkpoint-1000.pt';saved=torch.load(cp,map_location='cpu',weights_only=False);counters=sorted({int(s['step']) for s in saved['optimizer']['state'].values()});assert saved['step']==1000 and counters==[1000]
+    tok=read(ROOT/f'raw-bpe-{chosen}/tokenizer.json');assert sha(ROOT/f'raw-bpe-{chosen}/tokenizer.json')==saved['settings']['tokenizerSha256']
+    training=dict(**saved['settings'],completedRun=False,diagnosticSnapshot=True,completedSteps=1000,requestedSteps=10000,bestStep=saved['beststep'],parameters=sum(t.numel() for t in saved['beststate'].values()),checkpointSha256=sha(cp),history=saved['history'],selection='Best full canonical VAL checkpoint available by actual saved1000; not selected by TEST')
+    export_model(None,saved['beststate'],tok,saved['config'],training,baseline/'model.js');packed=baseline/'model.js.gz';packed.write_bytes(gzip.compress((baseline/'model.js').read_bytes(),mtime=0));write(baseline/'snapshot.json',dict(actualOptimizerUpdates=1000,selectedStep=saved['beststep'],optimizerStepCounters=counters,checkpointSha256=sha(cp),plainModelSha256=sha(baseline/'model.js'),gzipModelSha256=sha(packed),additionalUpdates=False));del saved
+    result=read(directory/'result.json');metrics=read(directory/'metrics.json');assert result['completedRun'] and result['completedSteps']==10000
+    choice=ROOT/'checkpoint-choice.json';assert not list(ROOT.glob('*/test.json'))
+    write(choice,dict(run=directory.name,completedUpdates=10000,selectedStep=result['bestStep'],bestValidationNllPerByte=metrics['bestValidationNllPerByte'],modelSha256=sha(directory/'model.js'),baselineModelSha256=sha(baseline/'model.js'),policySha256=sha(ROOT/'generation-policy.json'),testUsed=False,baseline='Saved1000-update weights from this same random-init run; not older exposed experiments'))
+    for modeldir in [directory,baseline]:
+        for part in ['validation','test']:
+            args=[sys.executable,str(ROOT/'evaluate.py'),'--model',str(modeldir/'model.js'),'--partition',part,'--out',str(modeldir/f'{part}.json'),'--reference']
+            if part=='test':args.append('--likelihood')
+            run(args,modeldir/f'{part}-generation.log')
+            run(['node',str(ROOT.parent/'evaluate_js.mjs'),str(modeldir/'model.js'),str(modeldir/f'{part}.json'),str(modeldir/f'{part}-js.json')],modeldir/f'{part}-parity.log')
+    (baseline/'model.js').unlink()
+    print(json.dumps(dict(event='generation-and-parity-finished',manualReviewRequired=True)),flush=True)
+if __name__=='__main__':main()
