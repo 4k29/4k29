@@ -1,0 +1,36 @@
+"""Completed development results, including quality regressions."""
+import json,pathlib
+ROOT=pathlib.Path(__file__).resolve().parent
+def read(p):return json.loads(p.read_text())
+def main():
+    a=read(ROOT/'optimizer-audit.json');c=read(ROOT/'comparison.json');m=read(ROOT/'boundary-focus-2000/metrics.json');r=read(ROOT/'boundary-focus-2000/result.json')
+    text=f'''# 原文の語途中接続へ集中した追加学習の結果
+
+自作round3のVAL選択重みだけから追加2,000 optimizer更新を完了した。optimizer／seedをリセットし、実物の全カウンターは2000。選択した子の更新は{a['childSelectedUpdates']:,}、親の選択10,000更新との重みの系譜は{a['selectedWeightLineageUpdates']:,}。親round3の別初期化pilotを含む12,000実更新と今回2,000実更新を合わせると14,000だが、重みの系譜と区別する。最後の重みの診断は同じ2000更新の実物であり、さらに2000更新した意味ではない。
+
+固定した開発VAL9件の一文合格は **親0/9 → 子1/9**。文学1/3、現代説明文0/6で、言語段階は**不合格**。全文でループのない出力は親2/9 → 子1/9、有効token出力は9/9 → 8/9となり、全体の安定性は改善していない。eシールの出力には不正UTF-8を含む。文字化けを補修せず、invalidとして採点した。新規TEST24件は親・子とも生成していない。
+
+## 実際の学習と選択
+
+8層、dim192、4heads、523万パラメーター、context256、CPU2threads／8 GiB。BF16 activationのみ、重み・optimizer・検証・推論はFP32。seed1529、LR0.0002、同じ原文TRAIN、独自Tokenizer、文書分割、canonical VAL／TESTを使用。外部重み・既成Tokenizer・生成API・Wikipedia・QA／instruction・teacher文章を使わない。
+
+canonical VAL NLL/byteは開始時{m['history'][0]['validation']['nllPerUtf8Byte']:.6f}、1000更新{m['history'][1]['validation']['nllPerUtf8Byte']:.6f}、2000更新{m['history'][2]['validation']['nllPerUtf8Byte']:.6f}。途中では親より悪化したが、最終は僅かに下がり、予め固定したcanonical VAL基準で2000更新を選択してから生成した。文法採点で重みを選び直していない。選択モデルと終端診断は今回は同じ重みなので、二つの独立した改善例とは数えない。
+
+TRAIN4,498原文単位のcanonical全文対象を残し、Unicode位置1〜96から4個の切断を選んだ17,992ビューを追加。prefix／suffixを独立に符号化し、追加行のprefixをマスクして最大32個の原文の続きを学習する。追加行の合計対象は571,283 token。途中のEOS・区切り・固定回答を作らない。繰り返した原文の再符号化であり、新規文章は0件。元data.statsはcanonical親の統計で、追加ビュー数・対象数は別に記録する。
+
+実際に読んだ対象は{r['seenTargetTokens']:,} token、{r['seenTargetUtf8Bytes']:,} UTF-8 bytes相当。これは抽出・再出現を含む学習対象数で、独立した原文量ではない。長さ別batchでcanon／focus各50%の周辺行分布を保つが、バッチ内の相関は変わる。追加学習、ラベル分布、optimizer、seedの複数条件が変わり、単純な一変数の因果比較ではない。
+
+## 評価・再現性
+
+最初の一文の文法・意味・接続・反復・破綻を0〜2点で採点する。9点以上、文法2、接続2、文の終止、有効tokenを必要とし、文学／現代説明文の各グループで一文80%以上・全文非ループ90%以上が基準。基準を緩和していない。唯一合格した一文も視点に曖昧さがあり意味1点、後の全文は反復で崩れている。アシスタントによる手動採点で、独立した人によるblind評価ではない。事実・数値の正確性や広い会話能力を保証しない。
+
+原文prefixから全語彙greedyで最大128新tokenを生成し、EOS／contextで終了。検索・文章補修・反復penaltyを使わない。選択モデルと終端診断の両方について、Pythonと独自JSの全文・全token・EOS・UTF-8有効性の一致および全logit参照誤差2e-4以下を確認した。診断の採点は同一出力と確認して再利用し、独立評価と偽らない。
+
+全文の原文byte一致、4切断のmaskと実際のpackラベル、Tokenizer／heldファイルのbyte一致を検証。親round3の88ファイルはSHA一致のまま保持する。`optimizer-audit.json`、`comparison.json`、`checkpoint-choice.json`、`reproducibility-manifest.json`、各runの生成・手動採点・JS照合、`boundary-focus-2000/learning-curves.svg`で確認できる。
+
+## 公開
+
+自然な日本語を安定して生成する基準は未達。QA学習を再開せず、公開サイトの回答モデルもこの候補へ置き換えていない。保存した改善は開発の一文1件に限られ、モデル全体の性能向上を達成したとは扱わない。
+'''
+    (ROOT/'RESULTS.md').write_text(text)
+if __name__=='__main__':main()
