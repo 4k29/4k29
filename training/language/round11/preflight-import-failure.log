@@ -1,0 +1,26 @@
+.EF
+======================================================================
+ERROR: test_each_genre_view_retains_declared_sampling_mass (__main__.Preflight.test_each_genre_view_retains_declared_sampling_mass)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/4k29-dialogue-generalization/training/language/round11/test_preflight.py", line 39, in test_each_genre_view_retains_declared_sampling_mass
+    strata,weights,masses=sampler(rows,genres)
+                          ^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/4k29-dialogue-generalization/training/language/round10/batching.py", line 13, in sampler
+    weights={k:genres[k[0]]*VIEWS[k[1]]*len(v)/counts[k[:2]] for k,v in strata.items()}
+                            ~~~~~^^^^^^
+KeyError: 2
+
+======================================================================
+FAIL: test_initial_weights_are_exactly_the_owned_selected_parent (__main__.Preflight.test_initial_weights_are_exactly_the_owned_selected_parent)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/4k29-dialogue-generalization/training/language/round11/test_preflight.py", line 48, in test_initial_weights_are_exactly_the_owned_selected_parent
+    for key,value in model.state_dict().items():self.assertTrue(torch.equal(value,saved['beststate'][key]),key)
+                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : token.weight
+
+----------------------------------------------------------------------
+Ran 3 tests in 2.618s
+
+FAILED (failures=1, errors=1)
