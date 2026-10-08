@@ -36,7 +36,7 @@ def main():
                 result.extend(cache[char])
         return result
     directory=ROOT/'multiview'; assert not directory.exists(),'Use a new experiment; frozen streams cannot be overwritten'
-    directory.mkdir(); write(directory/'tokenizer.json',tok); statistics={}
+    directory.mkdir(); (directory/'tokenizer.json').write_bytes((PARENT/'word-bpe-512/tokenizer.json').read_bytes()); statistics={}
     # TEST text is not encoded or emitted by this experiment.
     for part in ['train','validation']:
         selected=[u for u in units if u['partition']==part]; values=array.array('I'); rows=[]; documents=[]; stats={}
