@@ -1,0 +1,13 @@
+# Original-byte-preserving multiview continuation study
+
+Round10 lowered canonical NLL but left meaningful full continuations at 0/17. This new experiment tests a segmentation hypothesis: an arbitrary user prefix can end within a learned word token, while ordinary word-BPE training generally presents the complete token. More training alone has not established natural Japanese.
+
+Use the same own 512-word-rule vocabulary, 8-layer decoder and unchanged round10 best weights. No external weights, dictionary, tokenizer, generated training text or inference API. Fresh AdamW, seed2049, requested10000 updates, learning rate0.00015, batch8, CPU2. Actual completed updates must be audited separately; none are implied by the requested count.
+
+For every original TRAIN chain, construct three encodings: canonical word BPE (sampling weight0.4), original glyph BPE (0.3), and word BPE applied separately to deterministic random 8–24-character fragments (0.3). Join fragments into the same original chain, without inserting BOS/EOS or other content at fragment boundaries. Every view decodes to exactly the same raw bytes. Window lookback32 and true source-unit BOS/EOS remain; every target is covered exactly once per view. Additional segmentations do not add independent source text.
+
+Select checkpoints using the prospectively fixed 0.4/0.3/0.3 weighted development NLL per original UTF-8 byte, reporting all component values separately. This sum is a segmentation diagnostic, not the probability of additional independent text, and cannot be directly compared to the old canonical-only selection score. The old validation sources and 17 generation openings have already been inspected; results on them are development results, not fresh unseen evidence. Reused source notices and short cross-fold overlaps documented in round10 remain limitations. No TEST source text is encoded, generated or used to choose weights here.
+
+This experiment does not alter the old strict greedy language or numerical gates. Keep first-sentence, narrative/modern and complete-output meaning thresholds from round10; a likelihood improvement or repeated familiar opening is insufficient. No public answer-model replacement or instruction tuning until language stability is established and fresh evaluation is justified. Python/JavaScript tie divergence remains a recorded round10 failure; it is not corrected by rewriting outputs.
+
+Freeze code/data/policy hashes before optimizer updates. Save fresh initial state and complete optimizer/RNG checkpoints, audit every actual counter, and resume only with exact source/config identity. Gracefully pause before ending any tool turn; do not claim unattended learning.
