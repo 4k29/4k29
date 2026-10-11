@@ -1,6 +1,6 @@
 export const japaneseIntro={
  prompt:'自己紹介して。',
- reply:'<p>4k29（しか）です。学生で、ChatGPTやCodexを活用して制作しています。<br>何を作るかを考え、仕上がりを確かめるのは自分です。</p>',
+ reply:'<p>しかです。AIとものを作る学生。</p>',
  followup:'もう少し教えて。',
  events:[
   '<strong class="label">関心</strong> インターフェース、デバイス、人とAI<span class="detail">└ HCI、小規模言語モデル、会話の文脈に合わせた情報の届け方</span>',
