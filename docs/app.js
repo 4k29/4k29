@@ -1,7 +1,8 @@
-import {LocalLearning} from './local-learning.js?v=20261011-personal-2';
-import {Conversation} from './dialogue.js?v=20261011-personal-2';
-import {renderAnswer} from './answer-view.js?v=20261011-personal-2';
-import {QuestionJournal} from './question-journal.js?v=20261011-personal-2';
+import {memories} from './memories.js?v=20261011-personal-3';
+import {LocalLearning} from './local-learning.js?v=20261011-personal-3';
+import {Conversation} from './dialogue.js?v=20261011-personal-3';
+import {renderAnswer} from './answer-view.js?v=20261011-personal-3';
+import {QuestionJournal} from './question-journal.js?v=20261011-personal-3';
 
 const journal=new QuestionJournal();
 const dialog=document.querySelector('#chat-dialog');
@@ -10,7 +11,7 @@ const chat=document.querySelector('#chat'),limit=document.querySelector('#limit'
 const replay=document.querySelector('#replay'),openChat=document.querySelector('#open-chat');
 let conversation=null,busy=false,language='jp',errorTimer;
 function showError(message){clearTimeout(errorTimer);limit.textContent=message;limit.hidden=false;input.setAttribute('aria-invalid','true');input.setAttribute('aria-describedby','limit');errorTimer=setTimeout(()=>{limit.hidden=true;input.removeAttribute('aria-invalid');input.removeAttribute('aria-describedby');},4500);}
-const dataReady=fetch(new URL('./profile.json?v=20261011-personal-2',import.meta.url)).then(r=>{if(!r.ok)throw Error('profile unavailable');return r.json();}).then(data=>{conversation=new Conversation(data,{learner:new LocalLearning(data,()=>journal.records)});input.disabled=false;send.disabled=false;}).catch(()=>showError('プロフィールを読み込めませんでした。再読み込みしてください。'));
+const dataReady=fetch(new URL('./profile.json?v=20261011-personal-3',import.meta.url)).then(r=>{if(!r.ok)throw Error('profile unavailable');return r.json();}).then(data=>{conversation=new Conversation(data,{learner:new LocalLearning(data,()=>journal.records)});input.disabled=false;send.disabled=false;}).catch(()=>showError('プロフィールを読み込めませんでした。再読み込みしてください。'));
 function applyLanguage(){document.documentElement.lang=language==='jp'?'ja':'en';document.querySelectorAll('[data-language]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.language===language)));document.querySelectorAll('[data-jp]').forEach(el=>el.textContent=el.dataset[language]);input.placeholder=language==='jp'?'質問…':'Ask…';input.setAttribute('aria-label',language==='jp'?'質問':'Question');send.setAttribute('aria-label',language==='jp'?'送信':'Send');openChat.setAttribute('aria-label',language==='jp'?'しかについて聞く':'Ask about Shika');document.querySelector('#close-chat').setAttribute('aria-label',language==='jp'?'会話を閉じる':'Close conversation');replay.setAttribute('aria-label',language==='jp'?'会話をリセット':'Reset conversation');}
 document.querySelectorAll('[data-language]').forEach(b=>b.addEventListener('click',()=>{language=b.dataset.language;applyLanguage();}));applyLanguage();
 openChat.addEventListener('click',()=>{dialog.showModal();if(!input.disabled)input.focus();});
@@ -33,3 +34,8 @@ const themeButton=document.querySelector('#theme'),systemTheme=matchMedia('(pref
 let theme=systemTheme.matches?'dark':'light',themeChanged=false;
 function applyTheme(){document.documentElement.dataset.theme=theme;themeButton.innerHTML=theme==='dark'?'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg>':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14A9 9 0 0 1 10 3.5 9 9 0 1 0 20.5 14Z"/></svg>';themeButton.setAttribute('aria-label',theme==='dark'?'ライトモードに切り替え':'ダークモードに切り替え');themeButton.title=themeButton.getAttribute('aria-label');document.querySelector('meta[name="theme-color"]').content=theme==='dark'?'#111113':'#f5f5f7';}
 applyTheme();themeButton.addEventListener('click',()=>{themeChanged=true;theme=theme==='dark'?'light':'dark';applyTheme();});systemTheme.addEventListener('change',()=>{if(!themeChanged){theme=systemTheme.matches?'dark':'light';applyTheme();}});
+
+const memoryPhoto=document.querySelector('#memory-photo'),memoryLink=document.querySelector('#memory-link'),memoryPlace=document.querySelector('#memory-place'),memoryMap=document.querySelector('#memory-map');
+let memoryIndex=0,memoryRun=0;
+async function showMemory(step){memoryIndex=(memoryIndex+step+memories.length)%memories.length;const item=memories[memoryIndex],token=++memoryRun;const preload=new Image();preload.src=item.src;try{await preload.decode();if(token!==memoryRun)return;memoryPhoto.src=item.src;memoryPhoto.alt=item.alt;memoryPhoto.width=preload.naturalWidth;memoryPhoto.height=preload.naturalHeight;memoryLink.href=item.url;memoryLink.setAttribute('aria-label','Tecirc Memory / '+item.place);memoryPlace.textContent=item.place;memoryMap.setAttribute('aria-label','おおよその撮影地：'+item.place);for(const id of ['map-ring','map-point']){const marker=document.querySelector('#'+id);marker.setAttribute('cx',String(item.lon+180));marker.setAttribute('cy',String(90-item.lat));}document.querySelector('#memory-status').textContent='';}catch{if(token===memoryRun)document.querySelector('#memory-status').textContent=language==='jp'?'写真を読み込めませんでした。もう一度お試しください。':'Photo unavailable. Please try again.';}}
+document.querySelector('#memory-prev').addEventListener('click',()=>showMemory(-1));document.querySelector('#memory-next').addEventListener('click',()=>showMemory(1));
