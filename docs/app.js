@@ -1,81 +1,35 @@
-import {LocalLearning} from './local-learning.js?v=20261011-design-4';
-import { Conversation } from './dialogue.js?v=20261011-design-4';
-import { startBoot } from './boot.js?v=20261011-design-4';
-import { renderAnswer } from './answer-view.js?v=20261011-design-4';
-import { QuestionJournal } from './question-journal.js?v=20261011-design-4';
-import { japaneseIntro } from './ui-text.js?v=20261011-design-4';
+import {LocalLearning} from './local-learning.js?v=20261011-personal-1';
+import {Conversation} from './dialogue.js?v=20261011-personal-1';
+import {renderAnswer} from './answer-view.js?v=20261011-personal-1';
+import {QuestionJournal} from './question-journal.js?v=20261011-personal-1';
+
 const journal=new QuestionJournal();
-let conversation=null;
-const dataReady=fetch(new URL('./profile.json?v=20261011-design-4',import.meta.url)).then(r=>{if(!r.ok)throw Error('profile unavailable');return r.json();}).then(data=>{conversation=new Conversation(data,{learner:new LocalLearning(data,()=>journal.records)});}).catch(()=>showError('プロフィールデータを読み込めませんでした。再読み込みしてください。'));
-function showError(message){clearTimeout(errorTimer);limit.lastElementChild.textContent=message;limit.classList.remove('stage-hidden');input.setAttribute('aria-invalid','true');input.setAttribute('aria-describedby','limit');errorTimer=setTimeout(()=>{limit.classList.add('stage-hidden');input.removeAttribute('aria-invalid');input.removeAttribute('aria-describedby');},4500);}
-
-const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const prompt=document.querySelector('.prompt'), promptText=prompt.lastElementChild;
-const reply=document.querySelector('.reply'), events=document.querySelector('.events'), working=document.querySelector('.working');
-let originalPrompt=promptText.textContent, originalReply=reply.lastElementChild.querySelector('p').outerHTML;
-let originalFollowup='Tell me more.',introSummary='';
-const followup=document.querySelector('#followup'), followupText=followup.lastElementChild;
-let eventTemplates=Array.from(events.children, row=>row.lastElementChild.innerHTML);
-let workingText=working.children[1].textContent;
-const form=document.querySelector('#prompt-form'), input=document.querySelector('#prompt-input'), send=form.querySelector('button'), chat=document.querySelector('#chat');
-let errorTimer;let busy=false, run=0, limited=false, phase='boot';const limit=document.querySelector('#limit');
-function lockSession(){avatarState("idle");limited=conversation!==null&&conversation.history.length>=conversation.data.sessionLimit;input.disabled=false;send.disabled=false;input.placeholder=language==='jp'?japaneseIntro.placeholder:'Ask…';form.classList.remove('locked');}
-function resetSession(){avatarState("idle");limited=false;limit.classList.add('stage-hidden');input.disabled=false;send.disabled=false;input.placeholder=language==='jp'?japaneseIntro.placeholder:'Ask…';form.classList.remove('locked');}
-
-const languageButtons=Array.from(document.querySelectorAll('.language-button'));
-const englishIntro={prompt:originalPrompt,reply:originalReply,followup:originalFollowup,context:document.querySelector('.context').innerHTML,events:[...eventTemplates],summary:introSummary,working:workingText,hint:working.children[2].textContent};
-let language='en';
-function applyLanguage(){
- const text=language==='jp'?japaneseIntro:englishIntro;
- originalPrompt=text.prompt;originalReply=text.reply;originalFollowup=text.followup;eventTemplates=[...text.events];introSummary=text.summary;workingText=text.working;
- document.documentElement.lang=language==='jp'?'ja':'en';working.children[2].textContent=text.hint;
- input.placeholder=language==='jp'?japaneseIntro.placeholder:'Ask…';languageButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.language===language)));
-}
-function renderIntroLanguage(){
- prompt.classList.remove('stage-hidden');promptText.textContent=originalPrompt;promptText.classList.remove('typing-caret');
- reply.classList.remove('stage-hidden');reply.lastElementChild.innerHTML=originalReply;
- followup.classList.remove('stage-hidden');followupText.textContent=originalFollowup;
- events.classList.remove('stage-hidden');events.querySelectorAll('.generated-summary').forEach(row=>row.remove());
- Array.from(events.children).forEach((row,n)=>{row.style.display='';row.lastElementChild.innerHTML=eventTemplates[n];});
- const extra=document.createElement('div');extra.className='reply generated-summary';const bullet=document.createElement('span');bullet.textContent='•';const content=document.createElement('div');content.textContent=introSummary;extra.append(bullet,content);events.append(extra);
- working.classList.remove('stage-hidden');working.children[1].textContent=workingText;working.children[2].style.visibility='';
-}
-applyLanguage();languageButtons.forEach(button=>{button.disabled=false;button.addEventListener('click',()=>{
- if(button.dataset.language===language)return;language=button.dataset.language;applyLanguage();
- if(phase==='boot')return;
- if(phase==='intro'){++run;document.querySelectorAll('#profile > .thinking').forEach(el=>el.remove());busy=false;phase='idle';lockSession();}
- renderIntroLanguage();
-});});
-
-const avatar=document.querySelector('.avatar');
-const avatarFrames={neutral:'./assets/avatar-neutral.png',blink:'./assets/avatar-blink.png',left:'./assets/avatar-left.png',right:'./assets/avatar-right.png'};
-Object.values(avatarFrames).forEach(src=>{const img=new Image();img.src=src;});
-let avatarMode='idle',avatarTick=0;
-function avatarState(mode){avatarMode=mode;}
-
-
-
-
-
-function faceGesture(mode,duration){avatar.classList.add(mode);setTimeout(()=>avatar.classList.remove(mode),duration);}
-function scheduleBlink(){setTimeout(()=>{if(!reduced&&!document.hidden){if(Math.random()<.08){faceGesture(Math.random()<.5?'wink-left':'wink-right',320);}else{faceGesture('blinking',130);if(Math.random()<.14)setTimeout(()=>faceGesture('blinking',110),280);}}scheduleBlink();},3500+Math.random()*5500);}scheduleBlink();
-const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-async function type(el,value,delay,chunk,token){avatarState('typing');el.textContent='';if(reduced){el.textContent=value;return;}const isPrompt=el===promptText;if(isPrompt)el.classList.add('typing-caret');let i=0;while(i<value.length){if(token!==run)return;let count=isPrompt?(Math.random()<.2?2:1):Math.max(3,Math.floor(Math.random()*6)+2);const part=value.slice(i,i+count);el.append(document.createTextNode(part));i+=count;let wait=isPrompt?24+Math.random()*38:45+Math.random()*75;if(/[.!?\n]$/.test(part))wait+=isPrompt?90:180+Math.random()*240;else if(!isPrompt&&Math.random()<.1)wait+=180+Math.random()*220;await pause(wait);}el.classList.remove('typing-caret');}
-function thinking(){avatarState('thinking');const el=document.createElement('div');el.className='thinking';const spin=document.createElement('span');spin.className='spinner';spin.setAttribute('aria-hidden','true');for(let i=0;i<3;i++)spin.append(document.createElement('i'));const label=document.createElement('span');label.textContent='Thinking…';el.append(spin,label);return el;}
-function intro(){if(busy)return;resetSession();renderIntroLanguage();phase='idle';lockSession();}
-form.addEventListener('submit',async e=>{e.preventDefault();const q=input.value.trim();if(!q||busy)return;if(!conversation){showError('プロフィールデータを読み込めませんでした。再読み込みしてください。');return;}if(limited){showError('Message not sent. Usage limit reached. replay intro で新しい会話を始められます。');return;}busy=true;phase='chat';send.disabled=true;chat.setAttribute('aria-busy','true');const token=++run;input.value='';input.style.height='auto';const turn=document.createElement('section');turn.className='chat-turn';const ask=document.createElement('div');ask.className='prompt';const symbol=document.createElement('span');symbol.textContent='›';const body=document.createElement('div');body.textContent=q;ask.append(symbol,body);const wait=thinking();turn.append(ask,wait);chat.append(turn);await pause(reduced?0:2600);wait.remove();const response=document.createElement('div');response.className='reply';const dot=document.createElement('span');dot.textContent='•';const output=document.createElement('div');output.className='chat-response';response.append(dot,output);turn.append(response);const answer=conversation.respond(q);journal.add(q,answer,conversation.data.unknownReply);await type(output,answer.text,14,5,token);renderAnswer(output,answer);busy=false;phase='idle';send.disabled=false;chat.setAttribute('aria-busy','false');lockSession();if(!matchMedia('(pointer: coarse)').matches)input.focus();});
-document.addEventListener('pointerdown',e=>{if(!input.contains(e.target))input.blur();});
-document.querySelector('#replay').addEventListener('click',()=>{if(busy)return;chat.replaceChildren();input.value='';chat.setAttribute('aria-busy','false');conversation?.reset();journal.newSession();intro();});
-
+const dialog=document.querySelector('#chat-dialog');
+const form=document.querySelector('#prompt-form'),input=document.querySelector('#prompt-input'),send=form.querySelector('button');
+const chat=document.querySelector('#chat'),limit=document.querySelector('#limit');
+const replay=document.querySelector('#replay'),openChat=document.querySelector('#open-chat');
+let conversation=null,busy=false,language='jp',errorTimer;
+function showError(message){clearTimeout(errorTimer);limit.textContent=message;limit.hidden=false;input.setAttribute('aria-invalid','true');input.setAttribute('aria-describedby','limit');errorTimer=setTimeout(()=>{limit.hidden=true;input.removeAttribute('aria-invalid');input.removeAttribute('aria-describedby');},4500);}
+const dataReady=fetch(new URL('./profile.json?v=20261011-personal-1',import.meta.url)).then(r=>{if(!r.ok)throw Error('profile unavailable');return r.json();}).then(data=>{conversation=new Conversation(data,{learner:new LocalLearning(data,()=>journal.records)});input.disabled=false;send.disabled=false;}).catch(()=>showError('プロフィールを読み込めませんでした。再読み込みしてください。'));
+function applyLanguage(){document.documentElement.lang=language==='jp'?'ja':'en';document.querySelectorAll('[data-language]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.language===language)));document.querySelectorAll('[data-jp]').forEach(el=>el.textContent=el.dataset[language]);input.placeholder=language==='jp'?'質問…':'Ask…';input.setAttribute('aria-label',language==='jp'?'質問':'Question');send.setAttribute('aria-label',language==='jp'?'送信':'Send');openChat.setAttribute('aria-label',language==='jp'?'しかについて聞く':'Ask about Shika');document.querySelector('#close-chat').setAttribute('aria-label',language==='jp'?'会話を閉じる':'Close conversation');replay.setAttribute('aria-label',language==='jp'?'会話をリセット':'Reset conversation');}
+document.querySelectorAll('[data-language]').forEach(b=>b.addEventListener('click',()=>{language=b.dataset.language;applyLanguage();}));applyLanguage();
+openChat.addEventListener('click',()=>{dialog.showModal();if(!input.disabled)input.focus();});
+document.querySelector('#close-chat').addEventListener('click',()=>dialog.close());
+dialog.addEventListener('click',e=>{if(e.target!==dialog)return;const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();});
+const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+const pause=ms=>new Promise(r=>setTimeout(r,ms));
+async function type(el,value){if(reduced.matches){el.textContent=value;return;}for(let i=0;i<value.length;i+=8){el.append(document.createTextNode(value.slice(i,i+8)));await pause(24);}}
+function thinking(){const el=document.createElement('div');el.className='thinking';const dots=document.createElement('span');dots.className='spinner';dots.setAttribute('aria-hidden','true');for(let i=0;i<3;i++)dots.append(document.createElement('i'));const label=document.createElement('span');label.textContent=language==='jp'?'考えています…':'Thinking…';el.append(dots,label);return el;}
 function resizeQuestion(){input.style.height='auto';input.style.height=Math.min(input.scrollHeight,160)+'px';input.style.overflowY=input.scrollHeight>160?'auto':'hidden';}
-input.addEventListener('input',resizeQuestion);
-window.addEventListener('resize',resizeQuestion);
-form.addEventListener('keydown',event=>{if(event.target===input&&event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&event.keyCode!==229){event.preventDefault();form.requestSubmit();}});
-
-const themeButton=document.querySelector('#theme');
-const systemTheme=matchMedia('(prefers-color-scheme: light)');
-let theme=systemTheme.matches?'light':'dark',themeChanged=false;
-function applyTheme(){document.documentElement.dataset.theme=theme;themeButton.innerHTML=theme==='dark'?'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg>':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14A9 9 0 0 1 10 3.5 9 9 0 1 0 20.5 14Z"/></svg>';themeButton.setAttribute('aria-label',theme==='dark'?'ライトモードに切り替え':'ダークモードに切り替え');themeButton.title=themeButton.getAttribute('aria-label');document.querySelector('meta[name="theme-color"]').content=theme==='light'?'#f4f4ee':'#111110';}
-applyTheme();themeButton.addEventListener('click',()=>{themeChanged=true;theme=theme==='dark'?'light':'dark';applyTheme();});
-systemTheme.addEventListener('change',()=>{if(!themeChanged){theme=systemTheme.matches?'light':'dark';applyTheme();}});
-startBoot(async()=>{await dataReady;document.querySelector('#profile').classList.remove('stage-hidden');renderIntroLanguage();phase='idle';lockSession();},{instant:true});
+input.addEventListener('input',resizeQuestion);window.addEventListener('resize',resizeQuestion);
+form.addEventListener('keydown',e=>{if(e.target===input&&e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&e.keyCode!==229){e.preventDefault();form.requestSubmit();}});
+form.addEventListener('submit',async e=>{e.preventDefault();const question=input.value.trim();if(!question||busy)return;await dataReady;if(!conversation){showError(language==='jp'?'再読み込みしてください。':'Please reload the page.');return;}if(conversation.history.length>=conversation.data.sessionLimit){showError(language==='jp'?'会話の上限に達しました。リセットで再開できます。':'Usage limit reached. Reset to start again.');return;}
+ busy=true;send.disabled=true;replay.disabled=true;chat.setAttribute('aria-busy','true');input.value='';resizeQuestion();
+ const turn=document.createElement('section');turn.className='chat-turn';const ask=document.createElement('div');ask.className='prompt';const marker=document.createElement('span');marker.textContent='›';marker.setAttribute('aria-hidden','true');const text=document.createElement('div');text.textContent=question;ask.append(marker,text);const wait=thinking();turn.append(ask,wait);chat.append(turn);
+ try{await pause(reduced.matches?0:450);const answer=conversation.respond(question);journal.add(question,answer,conversation.data.unknownReply);wait.remove();const response=document.createElement('div');response.className='reply';const dot=document.createElement('span');dot.textContent='·';dot.setAttribute('aria-hidden','true');const output=document.createElement('div');output.className='chat-response';response.append(dot,output);turn.append(response);await type(output,answer.text);renderAnswer(output,answer);}catch{wait.remove();showError(language==='jp'?'うまく答えられませんでした。もう一度試してください。':'Please try again.');}finally{busy=false;send.disabled=false;replay.disabled=false;chat.setAttribute('aria-busy','false');if(dialog.open&&!matchMedia('(pointer: coarse)').matches)input.focus();}
+});
+replay.addEventListener('click',()=>{if(busy)return;conversation?.reset();journal.newSession();chat.replaceChildren();limit.hidden=true;input.value='';resizeQuestion();input.focus();});
+const themeButton=document.querySelector('#theme'),systemTheme=matchMedia('(prefers-color-scheme: dark)');
+let theme=systemTheme.matches?'dark':'light',themeChanged=false;
+function applyTheme(){document.documentElement.dataset.theme=theme;themeButton.innerHTML=theme==='dark'?'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg>':'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14A9 9 0 0 1 10 3.5 9 9 0 1 0 20.5 14Z"/></svg>';themeButton.setAttribute('aria-label',theme==='dark'?'ライトモードに切り替え':'ダークモードに切り替え');themeButton.title=themeButton.getAttribute('aria-label');document.querySelector('meta[name="theme-color"]').content=theme==='dark'?'#111113':'#f5f5f7';}
+applyTheme();themeButton.addEventListener('click',()=>{themeChanged=true;theme=theme==='dark'?'light':'dark';applyTheme();});systemTheme.addEventListener('change',()=>{if(!themeChanged){theme=systemTheme.matches?'dark':'light';applyTheme();}});
