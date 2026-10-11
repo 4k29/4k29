@@ -13,7 +13,7 @@ const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const prompt=document.querySelector('.prompt'), promptText=prompt.lastElementChild;
 const reply=document.querySelector('.reply'), events=document.querySelector('.events'), working=document.querySelector('.working');
 let originalPrompt=promptText.textContent, originalReply=reply.lastElementChild.querySelector('p').outerHTML;
-let originalFollowup='Tell me more.',introSummary='Mostly AI-generated. Personally nitpicked. The code is a conversation. The taste is mine.';
+let originalFollowup='Tell me more.',introSummary='';
 const followup=document.querySelector('#followup'), followupText=followup.lastElementChild;
 let eventTemplates=Array.from(events.children, row=>row.lastElementChild.innerHTML);
 let workingText=working.children[1].textContent;
@@ -28,6 +28,7 @@ let language='en';
 function applyLanguage(){
  const text=language==='jp'?japaneseIntro:englishIntro;
  originalPrompt=text.prompt;originalReply=text.reply;originalFollowup=text.followup;eventTemplates=[...text.events];introSummary=text.summary;workingText=text.working;
+ document.querySelector('#hero-line').textContent=language==='jp'?'気になることを、かたちに。':'Curiosity, made tangible.';
  document.documentElement.lang=language==='jp'?'ja':'en';working.children[2].textContent=text.hint;
  input.placeholder=language==='jp'?japaneseIntro.placeholder:'Ask about me…';languageButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.language===language)));
 }
