@@ -1,5 +1,5 @@
-import { collectDeviceInfo } from './device-info.js?v=20261011-personal-4';
-export { deviceInfo } from './device-info.js?v=20261011-personal-4';
+import { collectDeviceInfo } from './device-info.js?v=20261011-personal-5';
+export { deviceInfo } from './device-info.js?v=20261011-personal-5';
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 export async function startBoot(ready,{instant=false}={}){
  window.addEventListener('pageshow',event=>{if(event.persisted)window.location.reload();});
