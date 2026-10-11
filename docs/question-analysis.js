@@ -1,8 +1,8 @@
-import {resolveEntities} from './answer-entities.js?v=20261011-personal-3';
-import {retrieveIntent} from './intent-retrieval.js?v=20261011-personal-3';
-import {semanticText,resolveSemanticIntent} from './intent-model.js?v=20261011-personal-3';
-import {resolveKnowledge} from './knowledge-retrieval.js?v=20261011-personal-3';
-import {resolveProductSpecifications,unsupportedProductName} from './product-specifications.js?v=20261011-personal-3';
+import {resolveEntities} from './answer-entities.js?v=20261011-personal-4';
+import {retrieveIntent} from './intent-retrieval.js?v=20261011-personal-4';
+import {semanticText,resolveSemanticIntent} from './intent-model.js?v=20261011-personal-4';
+import {resolveKnowledge} from './knowledge-retrieval.js?v=20261011-personal-4';
+import {resolveProductSpecifications,unsupportedProductName} from './product-specifications.js?v=20261011-personal-4';
 // Local retrieval only: query scopes and evidence come from the editable profile.
 export function normalizeQuestion(text){return String(text).normalize('NFKC').toLowerCase().replace(/headphone\s*(?:\(\s*1\s*\)|1(?!\d))/g,'headphone (1)').replace(/[\s　]+/g,' ').trim();}
 export function matchesKeyword(text,word){

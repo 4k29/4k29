@@ -1,8 +1,8 @@
-import {memories} from './memories.js?v=20261011-personal-3';
-import {LocalLearning} from './local-learning.js?v=20261011-personal-3';
-import {Conversation} from './dialogue.js?v=20261011-personal-3';
-import {renderAnswer} from './answer-view.js?v=20261011-personal-3';
-import {QuestionJournal} from './question-journal.js?v=20261011-personal-3';
+import {memories} from './memories.js?v=20261011-personal-4';
+import {LocalLearning} from './local-learning.js?v=20261011-personal-4';
+import {Conversation} from './dialogue.js?v=20261011-personal-4';
+import {renderAnswer} from './answer-view.js?v=20261011-personal-4';
+import {QuestionJournal} from './question-journal.js?v=20261011-personal-4';
 
 const journal=new QuestionJournal();
 const dialog=document.querySelector('#chat-dialog');
@@ -11,7 +11,7 @@ const chat=document.querySelector('#chat'),limit=document.querySelector('#limit'
 const replay=document.querySelector('#replay'),openChat=document.querySelector('#open-chat');
 let conversation=null,busy=false,language='jp',errorTimer;
 function showError(message){clearTimeout(errorTimer);limit.textContent=message;limit.hidden=false;input.setAttribute('aria-invalid','true');input.setAttribute('aria-describedby','limit');errorTimer=setTimeout(()=>{limit.hidden=true;input.removeAttribute('aria-invalid');input.removeAttribute('aria-describedby');},4500);}
-const dataReady=fetch(new URL('./profile.json?v=20261011-personal-3',import.meta.url)).then(r=>{if(!r.ok)throw Error('profile unavailable');return r.json();}).then(data=>{conversation=new Conversation(data,{learner:new LocalLearning(data,()=>journal.records)});input.disabled=false;send.disabled=false;}).catch(()=>showError('プロフィールを読み込めませんでした。再読み込みしてください。'));
+const dataReady=fetch(new URL('./profile.json?v=20261011-personal-4',import.meta.url)).then(r=>{if(!r.ok)throw Error('profile unavailable');return r.json();}).then(data=>{conversation=new Conversation(data,{learner:new LocalLearning(data,()=>journal.records)});input.disabled=false;send.disabled=false;}).catch(()=>showError('プロフィールを読み込めませんでした。再読み込みしてください。'));
 function applyLanguage(){document.documentElement.lang=language==='jp'?'ja':'en';document.querySelectorAll('[data-language]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.language===language)));document.querySelectorAll('[data-jp]').forEach(el=>el.textContent=el.dataset[language]);input.placeholder=language==='jp'?'質問…':'Ask…';input.setAttribute('aria-label',language==='jp'?'質問':'Question');send.setAttribute('aria-label',language==='jp'?'送信':'Send');openChat.setAttribute('aria-label',language==='jp'?'しかについて聞く':'Ask about Shika');document.querySelector('#close-chat').setAttribute('aria-label',language==='jp'?'会話を閉じる':'Close conversation');replay.setAttribute('aria-label',language==='jp'?'会話をリセット':'Reset conversation');}
 document.querySelectorAll('[data-language]').forEach(b=>b.addEventListener('click',()=>{language=b.dataset.language;applyLanguage();}));applyLanguage();
 openChat.addEventListener('click',()=>{dialog.showModal();if(!input.disabled)input.focus();});
