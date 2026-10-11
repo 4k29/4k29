@@ -3,5 +3,5 @@ export const japaneseIntro={
  reply:'<p>しかです。AIと、アイデアを試しています。</p>',
  followup:'もう少し教えて。',
  events:[],
- summary:'',working:'',hint:'',placeholder:'しかについて質問…'
+ summary:'',working:'',hint:'',placeholder:'質問…'
 };

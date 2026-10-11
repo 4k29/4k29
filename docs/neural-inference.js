@@ -1,4 +1,4 @@
-import {neuralModel as model} from './neural-model.js?v=20261011-design-3';
+import {neuralModel as model} from './neural-model.js?v=20261011-design-4';
 
 // GPT-style decoder inference: learned embeddings, causal multi-head attention,
 // residual connections, pre-layer normalization, GELU MLP and a tied softmax head.

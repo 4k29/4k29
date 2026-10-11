@@ -1,12 +1,12 @@
-import {LocalLearning} from './local-learning.js?v=20261011-design-3';
-import { Conversation } from './dialogue.js?v=20261011-design-3';
-import { startBoot } from './boot.js?v=20261011-design-3';
-import { renderAnswer } from './answer-view.js?v=20261011-design-3';
-import { QuestionJournal } from './question-journal.js?v=20261011-design-3';
-import { japaneseIntro } from './ui-text.js?v=20261011-design-3';
+import {LocalLearning} from './local-learning.js?v=20261011-design-4';
+import { Conversation } from './dialogue.js?v=20261011-design-4';
+import { startBoot } from './boot.js?v=20261011-design-4';
+import { renderAnswer } from './answer-view.js?v=20261011-design-4';
+import { QuestionJournal } from './question-journal.js?v=20261011-design-4';
+import { japaneseIntro } from './ui-text.js?v=20261011-design-4';
 const journal=new QuestionJournal();
 let conversation=null;
-const dataReady=fetch(new URL('./profile.json?v=20261011-design-3',import.meta.url)).then(r=>{if(!r.ok)throw Error('profile unavailable');return r.json();}).then(data=>{conversation=new Conversation(data,{learner:new LocalLearning(data,()=>journal.records)});}).catch(()=>showError('プロフィールデータを読み込めませんでした。再読み込みしてください。'));
+const dataReady=fetch(new URL('./profile.json?v=20261011-design-4',import.meta.url)).then(r=>{if(!r.ok)throw Error('profile unavailable');return r.json();}).then(data=>{conversation=new Conversation(data,{learner:new LocalLearning(data,()=>journal.records)});}).catch(()=>showError('プロフィールデータを読み込めませんでした。再読み込みしてください。'));
 function showError(message){clearTimeout(errorTimer);limit.lastElementChild.textContent=message;limit.classList.remove('stage-hidden');input.setAttribute('aria-invalid','true');input.setAttribute('aria-describedby','limit');errorTimer=setTimeout(()=>{limit.classList.add('stage-hidden');input.removeAttribute('aria-invalid');input.removeAttribute('aria-describedby');},4500);}
 
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -19,8 +19,8 @@ let eventTemplates=Array.from(events.children, row=>row.lastElementChild.innerHT
 let workingText=working.children[1].textContent;
 const form=document.querySelector('#prompt-form'), input=document.querySelector('#prompt-input'), send=form.querySelector('button'), chat=document.querySelector('#chat');
 let errorTimer;let busy=false, run=0, limited=false, phase='boot';const limit=document.querySelector('#limit');
-function lockSession(){avatarState("idle");limited=conversation!==null&&conversation.history.length>=conversation.data.sessionLimit;input.disabled=false;send.disabled=false;input.placeholder=language==='jp'?japaneseIntro.placeholder:'Ask about me…';form.classList.remove('locked');}
-function resetSession(){avatarState("idle");limited=false;limit.classList.add('stage-hidden');input.disabled=false;send.disabled=false;input.placeholder=language==='jp'?japaneseIntro.placeholder:'Ask about me…';form.classList.remove('locked');}
+function lockSession(){avatarState("idle");limited=conversation!==null&&conversation.history.length>=conversation.data.sessionLimit;input.disabled=false;send.disabled=false;input.placeholder=language==='jp'?japaneseIntro.placeholder:'Ask…';form.classList.remove('locked');}
+function resetSession(){avatarState("idle");limited=false;limit.classList.add('stage-hidden');input.disabled=false;send.disabled=false;input.placeholder=language==='jp'?japaneseIntro.placeholder:'Ask…';form.classList.remove('locked');}
 
 const languageButtons=Array.from(document.querySelectorAll('.language-button'));
 const englishIntro={prompt:originalPrompt,reply:originalReply,followup:originalFollowup,context:document.querySelector('.context').innerHTML,events:[...eventTemplates],summary:introSummary,working:workingText,hint:working.children[2].textContent};
@@ -28,9 +28,8 @@ let language='en';
 function applyLanguage(){
  const text=language==='jp'?japaneseIntro:englishIntro;
  originalPrompt=text.prompt;originalReply=text.reply;originalFollowup=text.followup;eventTemplates=[...text.events];introSummary=text.summary;workingText=text.working;
- document.querySelector('#hero-line').textContent=language==='jp'?'気になることを、かたちに。':'Curiosity, made tangible.';
  document.documentElement.lang=language==='jp'?'ja':'en';working.children[2].textContent=text.hint;
- input.placeholder=language==='jp'?japaneseIntro.placeholder:'Ask about me…';languageButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.language===language)));
+ input.placeholder=language==='jp'?japaneseIntro.placeholder:'Ask…';languageButtons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.language===language)));
 }
 function renderIntroLanguage(){
  prompt.classList.remove('stage-hidden');promptText.textContent=originalPrompt;promptText.classList.remove('typing-caret');
