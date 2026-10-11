@@ -1,9 +1,9 @@
-import { collectDeviceInfo } from './device-info.js?v=20261011-sidebar-1';
-export { deviceInfo } from './device-info.js?v=20261011-sidebar-1';
+import { collectDeviceInfo } from './device-info.js?v=20261011-restored-1';
+export { deviceInfo } from './device-info.js?v=20261011-restored-1';
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-export async function startBoot(ready,{instant=false}={}){
+export async function startBoot(ready){
  window.addEventListener('pageshow',event=>{if(event.persisted)window.location.reload();});
- const reduced=instant||matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const profile=document.querySelector('#profile'),log=document.querySelector('#boot-log'),summary=document.querySelector('#device-summary');
  profile.classList.remove('stage-hidden');
  for(const element of profile.querySelectorAll('.prompt,.reply,.events,.working'))element.classList.add('stage-hidden');

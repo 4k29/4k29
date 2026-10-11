@@ -1,4 +1,4 @@
-import {canonicalReading} from './japanese-reading.js?v=20261011-sidebar-1';
+import {canonicalReading} from './japanese-reading.js?v=20261011-restored-1';
 // An explainable local intent model, not a language model. Every rule points to registered fact IDs.
 export const semanticModel={
  synonyms:[
