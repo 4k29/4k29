@@ -1,28 +1,30 @@
-"""Recorded assistant manual judgments of all unedited step1000 outputs.
-Scores are evidence records, never training targets or checkpoint selectors.
+"""Assistant manual judgments of the selected step9500 after actual10000 updates.
+Every full raw output was read; these records are never training targets or selectors.
 """
 import pathlib,json,hashlib
 ROOT=pathlib.Path(__file__).resolve().parent
-# First-sentence grammar/meaning/connection/repetition/breaks; full output loop.
 judgments=[
-('validation-aozora-00',[2,2,2,2,2],True,True,'初文「のぼりはじめました」は自然になった。しかし以降は全角空白を生成枠の終わりまで反復し、文間の接続や物語の進行がない。'),
-('validation-aozora-01',[0,0,0,0,1],False,True,'「ために、そのまま」のまま述語が成立せず、「そのまま」から読点だけの反復へ崩れる。'),
-('validation-aozora-02',[1,0,1,2,2],True,True,'「風のようにかんとんぼりと光っている」は語の結び付き・意味が不明。ぼくから私へ突然移り、そのまま・立ちあがりの節を反復する。'),
-('validation-mic-03',[2,1,1,1,2],True,True,'初文は文法上読めるが、2020年に立ち上げた対象をeシールそのものとして循環的に説明する。以降は会議から日付の羅列へ崩れ、66日など根拠不明の数値を反復。'),
-('validation-mic-04',[2,2,2,2,2],True,True,'初文「なっています」は自然。全文ではコンテンツ市場から情報通信へ飛び、携帯電話・PHAPSの反復と架空の略語・年代・数値列に崩れる。数値の事実性は認定しない。'),
-('validation-env-05',[1,0,1,0,0],False,True,'循環分野の経済活動に関する説明を法律・産業省の節に置き換え、引用を閉じず、関係省庁・協力を通じての反復に入り主文が完成しない。'),
-('validation-env-06',[1,0,1,0,2],True,True,'海岸法の目標から海洋ごみを除くという不明な述語へつながり、初文から海洋ごみを反復。後続では生態系の入れ子と助詞・語形が崩れる。'),
-('validation-jma-07',[0,0,1,2,2],True,True,'「お知らせるおそれのある避難の判断」は活用・修飾関係が成立しない。後続でも警報と火山泥流と警戒レベルの役割を混同し、同じ説明の節を反復する。'),
-('validation-jma-08',[0,0,1,2,2],True,True,'「解析雨量は、予測処理において、また、速報版の発表状況や…ご覧ください」は主語と述語が不整合。後続は解析の反復と「行うととともに」に崩れる。'),
-('validation-mdn-new-00',[1,0,1,0,2],True,True,'CSをCSSへ補完できたが、初文でCSSのCSSのCSSを反復する。path関数からプロパティへ対象を混同し、値・オブジェクトを返しますを全文で反復。EOSでも意味の成立は認めない。'),
-('validation-mdn-new-01',[2,2,2,2,2],True,True,'初文はグローバル属性を定義するという読める文。ただし技術的正確性は認定しない。後続は要素に設定されるの循環から架空textable/tabタグとtableの反復へ崩れる。'),
-('validation-mdn-new-02',[2,1,1,2,2],True,True,'「インターフェイスのメソッドで」は自然に補完するが、説明のないIDateオブジェクトとlowerBoundの関係が不明。DOM・メソッドを返す節から配列の配列の反復へ移る。'),
-('validation-mdn-new-03',[1,1,1,2,2],True,True,'「信頼型オブジェクトは…参照してください」は対象の説明と読者への命令が混在し主述関係が弱い。以降はDOMオブジェクト/メソッドを返しますの長い循環に入る。'),
-('validation-stat-new-00',[0,0,1,0,1],False,True,'企業サイトからCSS ARIAへ話題が飛び、「ユーザーがユーザーが表示されるように」を反復。統計上の説明も述語の完成もない。'),
-('validation-stat-new-01',[1,0,1,0,2],True,False,'EOSで一文だけ閉じるため長い循環はない。しかし「客観的な管理や管理のための適切な管理のため」は不自然な修飾と冗長な同語列で、データによる品質管理の意味が成立しない。'),
-('validation-bunka-new-00',[1,0,1,0,0],False,True,'表彰を開催したという曖昧な結び付きから架空の会議・条項へ飛び、括弧を閉じず第1条を反復し続ける。'),
-('validation-bunka-new-01',[2,1,1,1,2],True,True,'法附則の規定の説明から実施した事業の報告へ移り、初文の対象と述語の関係が弱い。後続は文化庁から化学物質管理法へ唐突に移って条文句を反復する。')]
-generation=ROOT/'new-validation.json';assert hashlib.sha256(generation.read_bytes()).hexdigest()=='d3be69466bec3f95d778dbedcaf3cae23a47b62f388a0bb1459df11cf90b6e1e', 'These manual judgments apply only to the recorded step1000 generation';g=json.loads(generation.read_text());assert [r['id'] for r in g['rows']]==[x[0] for x in judgments]
+('validation-aozora-00',[2,2,2,2,2],True,True,'初文「のぼりはじめました」は自然。以降はおじょうちゃん・おじさんの所有関係を延々と重ね、「おかしなさいんの」などの語形に崩れ、虫の話が続かない。'),
+('validation-aozora-01',[0,0,0,0,1],False,True,'寒さを防ぐための述語がなく、そのまま・いつもののを反復し続ける。文が閉じず行動や意味の進展がない。'),
+('validation-aozora-02',[1,0,1,2,2],True,True,'「葦が風のなかにかけていた」は語の結び付き・動作が不明。後続は「もう一度もなくなってしまいました」の反復からお父様の所有関係の列に崩れる。'),
+('validation-mic-03',[0,0,0,0,0],True,False,'AI EANI EANI EEEEEEEESDEという不明な文字列、括弧・引用の不整合、2020年の対象と2025年の取組の関係の欠落がある。短い一文でEOSになり、局所的文字反復はあるが延々続く同一節の循環とは分類しない。全文意味は不合格。'),
+('validation-mic-04',[2,2,2,2,2],True,False,'初文は自然。後続でコンテンツ市場の内訳を携帯基地局と企業向け・米中の6割とし、何の内訳か不明になり、日本のデジタル化投資と米国情報化投資のシェアを混同する。有限の3文でEOS、冗長な節はあるが長い循環ではない。数値や図表の事実性は認定しない。'),
+('validation-env-05',[0,0,1,0,0],False,True,'法律番号や年を変えながら「に基づき」を重ねる。最初の句点も「同法第111号」で主文の述語がなく、括弧が不整合。後半は第1条を反復する。'),
+('validation-env-06',[2,2,2,2,2],True,True,'初文は海岸法の目標・実施と対策という自然な文。後続は海洋ごみ・海域の生態系を反復し、架空の略語や括弧を混在させ、「海洋環境の変化を推進する」など意味の結び付きが崩れる。'),
+('validation-jma-07',[0,0,1,0,2],True,False,'「お知らせるおそれが著しく大きな噴石」は活用・修飾関係が不成立。「避難をとるべき」も不自然。後続の警報が警報を発表するという主述と「とるべきとって」も破綻。短い3文でEOS、冗長・同義的な節はあるが延々続く循環とは分類しない。'),
+('validation-jma-08',[1,1,1,2,2],True,False,'予測処理・速報版の並列が未完成のまま「発表状況や解析雨量の基準を満たしたものです」とつながり、解析雨量と発表状況の意味関係が成立しない。2文でEOSになり長い循環はないが、後続の参照指示でも説明は補えない。'),
+('validation-mdn-new-00',[0,0,1,0,2],True,True,'CSをCSSに補完できるが、「SVGオブジェクトをSVGオブジェクトを返します」と目的語を重複。後続は同じSVGプロパティを返す命題を繰り返す。EOSでも長い循環なので非ループとは扱わない。'),
+('validation-mdn-new-01',[2,2,2,2,2],True,True,'初文はグローバル属性を指定できるという自然な文。全文では属性・プロパティ・要素の関係を混同し、要素を指定する要素という自己参照の節を反復する。'),
+('validation-mdn-new-02',[0,0,1,0,0],False,True,'インターフェイをスへ補完するが、Formation/Format/Promissionなどの不明な識別子に入り、JavaScriptらしい句とASCII点列を反復する。日本語の主文も文末もない。'),
+('validation-mdn-new-03',[2,1,1,2,2],True,True,'初文は構文上読めるが、信頼型オブジェクト・ポリシーとSVGリクエスト送信との関係が不明。全文でSVGリクエストを送信するという同じ節を重ね、説明が進まない。'),
+('validation-stat-new-00',[0,0,1,0,0],False,True,'ウェブサイトがウェブサイトを提供するという循環からワーク/ワットワークの列に移り、企業サイトの説明にも主文の完成にも至らない。'),
+('validation-stat-new-01',[1,1,1,2,2],True,True,'「データなどの客観的な取組」は語の関係が不自然。後続は品質管理から販売・資源循環へ飛び、「資源循環の促進を図るため」を反復。EOSでも長い同一節の循環なので非ループとは扱わない。'),
+('validation-bunka-new-00',[1,1,1,0,2],True,True,'初文で小林副大臣から文化庁長官へ主語が移り、表彰と国際連携を曖昧に結ぶ。後続では会合が協力覚書を開催したという不整合、文化からパリ協定への話題逸脱、APAPの文字列反復がある。'),
+('validation-bunka-new-01',[1,1,1,2,2],True,True,'「施策を講じられています」はこの法条文の説明では助詞・態の関係が不自然。後続は文化観光から化学物質管理へ飛び、法に基づき・地方公共団体・事業者の句を反復する。')]
+generation=ROOT/'new-validation.json';g=json.loads(generation.read_text());assert g['training']['completedSteps']==10000 and g['training']['bestStep']==9500
+EXPECTED_SHA='74b1bce35bde9d552c4a62e231517cf0d7aac0f512c98ab4c71e0c1b1b89f117'
+assert hashlib.sha256(generation.read_bytes()).hexdigest()==EXPECTED_SHA,'Judgments are bound only to this recorded final generation'
+assert [r['id'] for r in g['rows']]==[x[0] for x in judgments]
 rows=[dict(id=i,**dict(zip(['grammar','meaning','connection','repetition','breaks'],scores)),sentenceClosed=closed,fullOutputLoop=loop,fullOutputMeaningful=False,reason=reason) for i,scores,closed,loop,reason in judgments]
-manual=dict(generationSha256=hashlib.sha256(generation.read_bytes()).hexdigest(),meaningPolicySha256=hashlib.sha256((ROOT.parents[1]/'round10/full-meaning-policy.json').read_bytes()).hexdigest(),reviewer='Assistant manual reading of every unedited full step1000 continuation; not independent or blind human scoring',rows=rows)
+manual=dict(generationSha256=EXPECTED_SHA,meaningPolicySha256=hashlib.sha256((ROOT.parents[1]/'round10/full-meaning-policy.json').read_bytes()).hexdigest(),reviewer='Assistant manual reading of every unedited selected-step9500 continuation after actual10000 updates; not independent or blind human scoring',rows=rows,note='Nonloop does not mean meaningful: four bounded EOS outputs still fail grammar/semantics/context. EOS alone is not a nonloop criterion; the long repeated MDN and stat outputs are loops despite EOS.')
 (ROOT/'new-manual.json').write_text(json.dumps(manual,ensure_ascii=False,indent=2)+'\n')

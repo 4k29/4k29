@@ -11,6 +11,10 @@ assert cp['settings']==zero['settings']==read(folder/'config.json')['settings']
 assert result['checkpointSha256']==sha(folder/'checkpoint.pt')
 assert zero['step']==0 and not zero['optimizer']['state'] and zero['seen_tokens']==zero['seen_bytes']==0
 parent=torch.load(PARENT/'word-512-continue-10000/checkpoint.pt',weights_only=False,map_location='cpu')
+assert cp['config']==zero['config']==parent['config']==read(folder/'config.json')['config']
+assert cp['settings']['trainingViews']=={'canonical':.4,'glyph':.3,'randomCharacterCuts':.3}
+assert not any(cp['settings'][k] for k in ['externalWeights','externalTokenizer','externalInferenceAPI'])
+assert sum(t.numel() for t in cp['model'].values())==result['parameters']==4655808
 assert all(torch.equal(v,parent['beststate'][k]) for k,v in zero['model'].items())
 counters=sorted(set(int(s['step']) for s in cp['optimizer']['state'].values()));assert counters==[cp['step']]
 assert len(cp['optimizer']['state'])==len(cp['model'])
@@ -18,6 +22,7 @@ assert all(torch.isfinite(t).all() and t.dtype==torch.float32 for key in ['model
 assert all(torch.isfinite(s[k]).all() and s[k].dtype==torch.float32 for s in cp['optimizer']['state'].values() for k in ['exp_avg','exp_avg_sq'])
 assert cp['torchRng'].dtype==torch.uint8 and isinstance(cp['pythonRng'],tuple)
 rng=random.Random();rng.setstate(cp['pythonRng']);torch.set_rng_state(cp['torchRng'])
+assert rng.getstate()==cp['pythonRng'] and torch.equal(torch.get_rng_state(),cp['torchRng'])
 assert cp['bestloss']==min(x['validation']['nllPerUtf8Byte'] for x in cp['history'])
 assert cp['beststep']==result['bestStep']
 for row in read(ROOT/'source-manifest.json')['files']:assert sha(ROOT/row['path'])==row['sha256'],row['path']
@@ -29,5 +34,5 @@ assert export['training']==result
 assert all(export['tensors'][k]['data']==[round(float(x),7) for x in t.flatten()] for k,t in cp['beststate'].items())
 # Retain latest raw weights separately from the likelihood-selected inference export.
 torch.save(dict(config=cp['config'],state=cp['beststate'],selectedStep=cp['beststep'],actualUpdates=cp['step'],parentCheckpointSha256=cp['settings']['parentCheckpointSha256']),folder/'selected-weights.pt')
-record=dict(actualCompletedUpdates=cp['step'],requestedUpdates=10000,completedRun=result['completedRun'],selectedStep=cp['beststep'],selectedWeightLineageUpdates=39000+cp['beststep'],latestWeightLineageUpdates=39000+cp['step'],optimizerCounters=counters,allParametersHaveOptimizerState=True,finiteFp32WeightsAndMoments=True,pythonAndTorchRngRestored=True,numpyRandomNotUsed=True,exactParentInitialWeights=True,sourceManifestVerified=True,checkpointSha256=sha(folder/'checkpoint.pt'),initialCheckpointSha256=sha(folder/'checkpoint-0.pt'),selectedWeightsSha256=sha(folder/'selected-weights.pt'),modelSha256=sha(folder/'model.js'),bestWeightedDevelopmentNllPerByte=cp['bestloss'],initialWeightedDevelopmentNllPerByte=cp['history'][0]['validation']['nllPerUtf8Byte'],elapsedTrainingSeconds=cp['elapsed'],seenTargetTokens=cp['seen_tokens'],seenTargetUtf8Bytes=cp['seen_bytes'],testEncodedOrGenerated=False,publicModelReplaced=False)
+record=dict(actualCompletedUpdates=cp['step'],requestedUpdates=10000,completedRun=result['completedRun'],selectedStep=cp['beststep'],selectedWeightLineageUpdates=39000+cp['beststep'],latestWeightLineageUpdates=39000+cp['step'],optimizerCounters=counters,allParametersHaveOptimizerState=True,configurationAndTrainingViewsInvariant=True,externalWeights=False,externalTokenizer=False,externalInferenceAPI=False,finiteFp32WeightsAndMoments=True,pythonAndTorchRngRestored=True,numpyRandomNotUsed=True,exactParentInitialWeights=True,sourceManifestVerified=True,checkpointSha256=sha(folder/'checkpoint.pt'),initialCheckpointSha256=sha(folder/'checkpoint-0.pt'),selectedWeightsSha256=sha(folder/'selected-weights.pt'),modelSha256=sha(folder/'model.js'),bestWeightedDevelopmentNllPerByte=cp['bestloss'],initialWeightedDevelopmentNllPerByte=cp['history'][0]['validation']['nllPerUtf8Byte'],elapsedTrainingSeconds=cp['elapsed'],seenTargetTokens=cp['seen_tokens'],seenTargetUtf8Bytes=cp['seen_bytes'],testEncodedOrGenerated=False,publicModelReplaced=False)
 write(ROOT/'execution/optimizer-audit.json',record);print(json.dumps(record))

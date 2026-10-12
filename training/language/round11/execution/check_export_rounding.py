@@ -7,7 +7,7 @@ from train import read,write,sha
 from model import Decoder
 torch.set_num_threads(1)
 cp=torch.load(ROOT/'continue-10000/checkpoint.pt',map_location='cpu',weights_only=False);model=Decoder(cp['config']);model.load_state_dict(cp['beststate']);model.eval()
-rounded,export=load_model(ROOT/'continue-10000/model.js');g=read(ROOT/'execution/new-validation.json');rows=[];errors=[]
+rounded,export=load_model(ROOT/'continue-10000/model.js');g=read(ROOT/'execution/new-validation.json');assert g['modelFileSha256']==sha(ROOT/'continue-10000/model.js');rows=[];errors=[]
 for r in g['rows']:
  raw=generate(model,r['prefix'],export['tokenizer'],g['maxNewTokens']);same=all(raw[k]==r[k] for k in ['text','tokens','eos','validUtf8','validTokens','inputTokens'])
  rows.append(dict(id=r['id'],prefix=r['prefix'],**raw,sameAsRoundedPython=same))
