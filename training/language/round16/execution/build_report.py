@@ -65,6 +65,8 @@ modelVersionの日付文字列は既存exporter由来で、実行日や重みの
 
 判定はassistant・非blindで、独立人間評価ではない。未知の固有名詞・省略された主語・APIの役割には不確実性があり、事実不一致や未知名だけを失敗の自動条件にはしない。既存17件は露出した開発診断で新TESTではない。過去policyのTEST参照が閲覧可能であった点も区別する。未見一般化は未実証。
 
+意味判定の感度: JMA08とMDN02の2非ループ例には、話題の解釈や未知返却名を事実性と混同する可能性がある。仮にこの2件を全文意味成立とした場合でもexpanded17は2/17、物語は0/3で既存80%ゲートを通らない。これはevaluation-sensitivity.jsonの仮定例で、公式スコア変更・両例の合格認定・他の全判定の正しさの証明ではない。MDN02はRound12と無修正全文/token等が完全一致し、旧判定を維持した。独立再評価を推薦する。
+
 ## 推論の数値検査
 
 Python/JS全文: 旧{old['matchingSequences']}/17、新{new['matchingSequences']}/17。新4参照logit最大誤差={new['maxReferenceLogitError']:.9g}、許容2e-4は不変。厳格exit値をparity-status.json、分岐をnumerical-divergence.jsonへ保存した。新しい一致でRound 10の既知の気象書き出しnear-tie分岐（旧16/17）を消していない。
