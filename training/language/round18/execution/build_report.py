@@ -26,7 +26,7 @@ MAFF確率2.5%は不変だが、追加原文の行確率は全体の約**{100*ex
 
 ## データ・再現性
 
-出典は農林水産省の子ども向け農産物解説。公共データ利用規約第1.0版、出典URL・加工表示・取得時刻・HTML SHA・本文SHA・利用条件snapshotを`sources/`に保存。画像、キャラクター、第三者リンク、外部モデル生成を使用しない。HTML本文の段落を抽出しruby読みを省略する処理を明示。既存heldout（validation/test）の本文は重複監査に限って機械的に読み、完全64文字一致を検査した。TESTのloss・生成・学習・モデル選択は行っていない。継承したprepared dataの`testRead:false`はstream構築処理のscopeであり、collectorがTEST本文を一切読まなかったという意味ではない（`test-access-audit.json`）。URLと本文SHAの重複も除外。新規3文書1,879文字はURL SHAによる事前予約で、学習・評価・tokenizerに未使用。旧foldを変更せず、新しいTESTの成績を主張しない。64文字未満の類似、意味重複、元データに既知の56短いcross-fold重複は残る限界である。
+出典は農林水産省の子ども向け農産物解説。公共データ利用規約第1.0版、出典URL・加工表示・取得時刻・HTML SHA・本文SHA・利用条件snapshotを`sources/`に保存。画像、キャラクター、第三者リンク、外部モデル生成を使用しない。HTML本文の段落を抽出しruby読みを省略する処理を明示。既存heldout（validation/test）の本文は重複監査に限って機械的に読み、完全64文字一致を検査した。TESTのloss・生成・学習・モデル選択は行っていない。継承したprepared dataの`testRead:false`はstream構築処理のscopeであり、collectorがTEST本文を一切読まなかったという意味ではない（`test-access-audit.json`）。URLと本文SHAの重複も除外。学習中に追加した広い原文監査では、既存非TRAINの全原文（development/quarantineも含む）と新規予約分の計630文書に対し、追加TRAINの64文字一致が0件だった（`raw-fold-overlap-audit.json`）。新規3文書1,879文字はURL SHAによる事前予約で、学習・評価・tokenizerに未使用。旧foldを変更せず、新しいTESTの成績を主張しない。64文字未満の類似、意味重複、元データに既知の56短いcross-fold重複は残る限界である。
 
 追加30viewの原文バイト一致・mask対象一回被覆・予約データ除外を独立に検査。全パラメータ勾配finite/nonzero、親重み・optimizer・RNGとstep0 snapshotの一致、固定source/code SHA、全80,000row draw replayと最終RNG・token/byte exposure・実counterを監査した。実target tokens **{a['seenTargetTokens']:,}**、bytes **{a['seenTargetUtf8Bytes']:,}**、訓練elapsed **{a['elapsedTrainingSeconds']:.2f}秒**。loss全推移は`execution/loss-history.csv`、100更新間隔のtraining eventは`training-loss-events.csv`。
 
@@ -45,7 +45,7 @@ Python/JavaScript全文列: 旧 **{old['matchingSequences']}/17**、新 **{new['
 ## 原因の切り分けと次の実験
 
 1. **容量**: 同じ465万parameterを維持したため容量差は試していない。TRAIN/DEV差と短い初文後の崩壊だけでは容量不足を確定できず、大規模化を優先しない。
-2. **データ量・偏り**: 既存MAFFの6単位を実際の原文追加で多様化したが、追加は全row約1.72%、農業だけで小さい。結果は汎用現代日本語コーパス増加の効果を決定しない。既存MAFF TRAIN原文93文書37,118文字のうち採用は6単位2,451文字で、短い本文に参考資料見出しを連結して末尾条件で落とすケースを確認した。参考資料直前で区切る診断では追加19,508文字が対象になり得る（`maff-chain-diagnostic.json`）。これは診断だけでRound18の訓練には追加していない。次はこの単位化の欠落を既存TRAINだけで回復する対照を優先し、その後に利用条件の明確な複数分野原文と事前固定heldoutを拡充する。
+2. **データ量・偏り**: 既存MAFFの6単位を実際の原文追加で多様化したが、追加は全row約1.72%、農業だけで小さい。結果は汎用現代日本語コーパス増加の効果を決定しない。既存MAFF TRAIN原文93文書37,118文字のうち採用は6単位2,451文字で、短い本文に参考資料見出しを連結して末尾条件で落とすケースを確認した。参考資料直前で区切る診断では追加19,508文字が対象になり得る（`maff-chain-diagnostic.json`）。これは診断だけでRound18の訓練には追加していない。全ジャンルの原文/単位採用率ではMAFF6.6%に対し他ジャンル89～98%だった（`raw-unit-coverage.json`）。rawには見出し・参考資料も含むため、除外文字すべてを有用な文章とは扱わない。次はこの単位化の欠落を既存TRAINだけで回復する対照を優先し、その後に利用条件の明確な複数分野原文と事前固定heldoutを拡充する。
 3. **分割・文字境界**: 独自語彙と40/30/30を固定、追加全viewが原文バイトと一致する。Round12のcuts除去でも全文意味0/17だった。全体の意味崩壊をencoding誤りだけで説明する証拠はない。
 4. **LR・optimizer**: 親最新model/moments/RNGを一致させ、終端LRを固定。今回その効果は分離していない。LR変更を次のデータ変更と同時に行わない。
 5. **context**: context256を固定。短い生成での局所反復・文法崩壊があるなら、長contextだけでは説明しにくい。長文は未検証。
