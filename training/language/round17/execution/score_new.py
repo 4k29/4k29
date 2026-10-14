@@ -1,6 +1,6 @@
 from pathlib import Path
 import json,hashlib
-B=Path('/workspace/4k29/training/language');E=B/'round17/execution';g=json.loads((E/'new-validation.json').read_text());sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+B=Path(__file__).resolve().parents[2];E=B/'round17/execution';g=json.loads((E/'new-validation.json').read_text());sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
 assert sha(E/'new-validation.json')=='04c28c6524074061971fd9c8c4f18b70cc544f9f30e71cafee12902223b0bffc', 'These judgments apply only to the actually read raw generation'
 data=[
 (2,2,2,2,2,True,True,'初文は「のぼりはじめました」と自然に接続する。後続は「いましたくさん」の活用・語境界が崩れ、おじいさんの所有関係を五重以上に重ね、呼びかけも長く反復して未完となる。'),
