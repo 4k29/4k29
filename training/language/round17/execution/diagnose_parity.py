@@ -7,7 +7,7 @@ from tokenizer import SPECIALS,encode_stream
 import torch
 from train import read,write,sha
 torch.set_num_threads(1)
-for name,path in [('old',ROOT.parent/'round11/continue-10000/model.js'),('new',ROOT/'continue-10000/model.js')]:
+for name,path in [('old',ROOT.parent/'round16/continue-10000/model.js'),('new',ROOT/'continue-10000/model.js')]:
  py=read(ROOT/'execution'/f'{name}-validation.json');js=read(ROOT/'execution'/f'{name}-validation-js.json');model,export=load_model(path);rows=[]
  for a,b in zip(py['rows'],js['rows'],strict=True):
   if all(a[k]==b[k] for k in ['tokens','text','eos','validUtf8','validTokens','inputTokens']):continue
