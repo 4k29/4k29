@@ -7,7 +7,7 @@ def write(p,x):p.write_text(json.dumps(x,ensure_ascii=False,indent=2)+'\n')
 a=read(E/'optimizer-audit.json');c=read(E/'comparison.json');p=read(R/'policy.json');s=read(R/'sources/manifest.json');exp=read(E/'intervention-exposure.json');new=c['models']['new'];old=c['models']['old'];assert a['actualCompletedUpdates']==10000 and a['optimizerCounters']==[20000]
 met=a['bestWeightedDevelopmentNllPerByte']<p['nllSuccessThreshold'];lang=new['gatePassed']
 write(E/'progress-goal.json',dict(actualCompletedUpdates=10000,nllSuccessThreshold=p['nllSuccessThreshold'],bestWeightedDevelopmentNllPerByte=a['bestWeightedDevelopmentNllPerByte'],nllCriterionMet=met,unchangedLanguageGatePassed=lang,progressCriterionMet=met or lang,languageImprovementEstablished=False,developmentOnly=True,note='NLL criterion is progress only, not a language certification. Single seed, tiny source intervention, exposed development.'))
-manual=read(E/'new-manual.json');reasons='\n'.join(f"- **{x['id']}**: {x['reason']}" for x in manual['rows'])
+chain=read(E/'maff-chain-diagnostic.json');manual=read(E/'new-manual.json');reasons='\n'.join(f"- **{x['id']}**: {x['reason']}" for x in manual['rows'])
 text=f'''# Round18 結果 — MAFF少数データ枠の原文多様化
 
 実際に**{a['actualCompletedUpdates']:,} optimizer更新**を完了した。要求回数を実績として代用していない。採用追加step **{a['selectedStep']}**、親optimizer10,000→最終20,000。最新の重み・optimizer・Torch/Python RNGは同じcheckpointに保存し、採用FP32重みは別保存した。
@@ -43,7 +43,7 @@ Python/JavaScript全文列: 旧 **{old['matchingSequences']}/17**、新 **{new['
 ## 原因の切り分けと次の実験
 
 1. **容量**: 同じ465万parameterを維持したため容量差は試していない。TRAIN/DEV差と短い初文後の崩壊だけでは容量不足を確定できず、大規模化を優先しない。
-2. **データ量・偏り**: 既存MAFFの6単位を実際の原文追加で多様化したが、追加は全row約1.72%、農業だけで小さい。結果は汎用現代日本語コーパス増加の効果を決定しない。次は利用条件の明確な複数分野の人間原文を十分収集し、heldoutを事前固定する。
+2. **データ量・偏り**: 既存MAFFの6単位を実際の原文追加で多様化したが、追加は全row約1.72%、農業だけで小さい。結果は汎用現代日本語コーパス増加の効果を決定しない。既存MAFF TRAIN原文93文書37,118文字のうち採用は6単位2,451文字で、短い本文に参考資料見出しを連結して末尾条件で落とすケースを確認した。参考資料直前で区切る診断では追加19,508文字が対象になり得る（`maff-chain-diagnostic.json`）。これは診断だけでRound18の訓練には追加していない。次はこの単位化の欠落を既存TRAINだけで回復する対照を優先し、その後に利用条件の明確な複数分野原文と事前固定heldoutを拡充する。
 3. **分割・文字境界**: 独自語彙と40/30/30を固定、追加全viewが原文バイトと一致する。Round12のcuts除去でも全文意味0/17だった。全体の意味崩壊をencoding誤りだけで説明する証拠はない。
 4. **LR・optimizer**: 親最新model/moments/RNGを一致させ、終端LRを固定。今回その効果は分離していない。LR変更を次のデータ変更と同時に行わない。
 5. **context**: context256を固定。短い生成での局所反復・文法崩壊があるなら、長contextだけでは説明しにくい。長文は未検証。
