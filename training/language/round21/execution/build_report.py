@@ -17,7 +17,7 @@ text=f'''# Round21 結果 — 反復抑制係数だけを変える対照
 
 実**10,000追加optimizer更新**を完了。親optimizer10,000→最終20,000。採用は追加step **{a['selectedStep']}**、採用重み系譜 **{a['selectedWeightLineageUpdates']}**。最新model・AdamW・Torch/private Python RNGを同じcheckpointに保存し、採用FP32を別保存した。
 
-通常CEの共通DEV weighted segmentation NLL/UTF-8 byteは初期 **{a['initialWeightedDevelopmentNllPerByte']:.12f}** → 最良 **{a['bestWeightedDevelopmentNllPerByte']:.12f}**。事前閾値はRound20最良 **{p['nllSuccessThreshold']:.12f}**。NLL条件={met}、従来の厳格な言語ゲート={lang}。ULを検証NLLに混ぜていない。この40/30/30の分割診断は独立文章の確率や言語能力の証明ではない。
+通常CEの共通DEV weighted segmentation NLL/UTF-8 byteは初期 **{a['initialWeightedDevelopmentNllPerByte']:.12f}** → 最良 **{a['bestWeightedDevelopmentNllPerByte']:.12f}**。事前閾値は全ラウンド最良（Round19） **{p['nllSuccessThreshold']:.12f}**。NLL条件={met}、従来の厳格な言語ゲート={lang}。ULを検証NLLに混ぜていない。この40/30/30の分割診断は独立文章の確率や言語能力の証明ではない。
 
 | 同一DEV17件 | 旧Round20 | 新Round21 |
 | --- | ---: | ---: |
