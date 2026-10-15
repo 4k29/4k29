@@ -42,6 +42,13 @@ if __name__=='__main__':
    links=sorted({urllib.parse.urljoin(url,l).split('#')[0] for l in page.links if re.search(r'/kodomo_sodan/\d{4}/[^/]+\.html(?:#.*)?$',urllib.parse.urljoin(url,l))})
    urls.extend(('maff',u) for u in sorted([u for u in links if u not in knownUrls],reverse=True)[:p['maxSortedLinksPerMaffCategory']])
   except Exception as ex:failures.append(dict(url=url,error=str(ex)))
+ for url in p['maffKidsIndexes']:
+  try:
+   raw,html,page,meta=fetch(url);(out/'html'/f'{sha(url.encode())[:16]}.html').write_bytes(raw);indexRecords.append(dict(url=url,htmlSha256=sha(raw),**meta))
+   prefix=url.rsplit('/',1)[0]+'/'
+   links=sorted({urllib.parse.urljoin(url,l).split('#')[0] for l in page.links if urllib.parse.urljoin(url,l).startswith(prefix) and urllib.parse.urljoin(url,l).split('#')[0].endswith('.html')})
+   urls.extend(('maff',u) for u in [u for u in links if u not in knownUrls][:p['maxNewLinksPerKidsIndex']])
+  except Exception as ex:failures.append(dict(url=url,error=str(ex)))
  urls=sorted(set((s,u) for s,u in urls if u not in knownUrls))
  spec=importlib.util.spec_from_file_location('legacy',B/'round3/prepare.py');legacy=importlib.util.module_from_spec(spec);spec.loader.exec_module(legacy)
  sources=[];units=[];records=[]
