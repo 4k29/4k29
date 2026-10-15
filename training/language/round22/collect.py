@@ -63,11 +63,12 @@ if __name__=='__main__':
    blocks=[]
    for b in page.blocks:
     t=b['text']
-    if b['tag']!='p' or not re.search('[。！？]',t) or re.search('お問い合わせ|お問合せ|電話|Copyright|出典|資料：|参考文献|転載|写真提供',t,re.I):continue
+    if b['tag'] in ['h1','h2','h3'] and t in p['stopBeforeReferenceHeading']:break
+    if b['tag'] not in p['sourceBlocks'] or (b['tag']=='p' and not re.search('[。！？]',t)) or re.search('お問い合わせ|お問合せ|電話|Copyright|出典|資料：|参考文献|転載|写真提供',t,re.I):continue
     if t not in blocks:blocks.append(t)
    text='\n'.join(blocks);part='reserved' if int(sha(url.encode()),16)%10==0 else 'train';did=f'{site}-expanded:'+key
    author='気象庁' if site=='jma' else '農林水産省'
-   doc=dict(id=did,site=site,url=url,partition=part,text=text,blocks=blocks,title=''.join(page.title),author=author,license='公共データ利用規約（第1.0版）',licenseUrl=LICENSE,policyUrl=POLICIES[site],attribution=f'出典：{author}ウェブサイト（{url}）を加工して作成',retrievedAt=now,htmlSha256=sha(raw),textSha256=sha(text.encode()),processing='Main paragraphs only; omit ruby, images, navigation, contact and credit paragraphs; normalize HTML whitespace; legacy source chains; no rewriting.',**meta)
+   doc=dict(id=did,site=site,url=url,partition=part,text=text,blocks=blocks,title=''.join(page.title),author=author,license='公共データ利用規約（第1.0版）',licenseUrl=LICENSE,policyUrl=POLICIES[site],attribution=f'出典：{author}ウェブサイト（{url}）を加工して作成',retrievedAt=now,htmlSha256=sha(raw),textSha256=sha(text.encode()),processing='Original main headings and paragraphs, close before reference headings; omit ruby, images, navigation, contact and credit paragraphs; normalize HTML whitespace; legacy source chains; no rewriting.',**meta)
    sources.append(doc)
    for a,b,t in legacy.chains(doc):
     if not p['minimumUnitCharacters']<=len(t)<=p['maximumUnitCharacters'] or len(re.findall('[ぁ-ゖァ-ヺ一-龯]',t))/len(t)<p['minimumJapaneseFraction'] or len(re.findall('[。！？]',t))<p['minimumSentenceTerminators']:continue
