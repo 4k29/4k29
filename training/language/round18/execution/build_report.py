@@ -18,6 +18,8 @@ text=f'''# Round18 結果 — MAFF少数データ枠の原文多様化
 
 全文意味成立 **{new['meaningfulFullOutputs']}/17**、初文合格 **{new['firstSentencePasses']}/17**、非ループ **{new['nonLoopOutputs']}/17**。同条件のRound16対照はそれぞれ **{old['meaningfulFullOutputs']}/17・{old['firstSentencePasses']}/17・{old['nonLoopOutputs']}/17**。expanded17/parent13/original9、および物語・現代文の各scopeで、初文80%・非ループ90%・全文意味80%という従来の基準を維持。未知の固有名や事実性だけを意味失敗の理由にはしない。assistant全文読解であり、独立・盲検の人間評価ではない。
 
+旧対照の数値は今回の同一rubric再読解。Round16の元公式値（初文4/17・非ループ2/17・全文意味0/17）は元ファイルと`old-manual-legacy.json`に保持した。未知API名や未確認の会合名だけを意味失敗とした旧解釈を固定済みrubricに合わせて修正し、今回の旧対照は初文8/17・全文意味1/17とした。閾値は一切変更していない。再読解によって旧側に成立を認めるため、新側の改善を水増ししない。初文判定の感度と短い局所反復の扱いは`evaluation-sensitivity.json`に保存。旧・新とも全scopeのゲート未達である。
+
 ## 介入と対照
 
 Round16と同じRound11最新step10,000のモデル・AdamW・Torch/Python RNGから追加10,000更新。Round17の最良重みと最新optimizerを混ぜていない。唯一の主要介入はMAFF TRAINへ人間執筆の説明原文 **10文書・5,867文字**を追加すること。旧MAFF6単位2,451文字を保持し、他ジャンルの全学習行も保持。独自語彙5,455、8層192次元、context256、40/30/30、固定ジャンル比、FP32・CPU2・batch8、seed系譜2049、一定LR2.2499999999999998e-5、500更新ごとの検証は不変。
@@ -37,6 +39,12 @@ MAFF確率2.5%は不変だが、追加原文の行確率は全体の約**{100*ex
 `execution/FULL_GENERATIONS.md`に旧・新の全17件を省略せず保存。JSONに全token、入力、EOS、UTF-8状態を保持。greedy・全語彙・max192・true EOS・Python1threadを両モデルで一致させ、反復ペナルティや生成後修正は使わない。
 
 Python/JavaScript全文列: 旧 **{old['matchingSequences']}/17**、新 **{new['matchingSequences']}/17**。新reference logits最大絶対誤差 **{new['maxReferenceLogitError']:.12g}**。許容2e-4は不変。丸め前selected FP32との一致は`export-rounding.json`、near-tieの実traceは`numerical-divergence.json`に保存。Round10の既知の16/17分岐を取り消さず、今回の一致を全入力・全環境への保証とはしない。
+
+## 追加TRAINの局所予測と自由生成
+
+採用後の追加TRAIN30viewで教師強制NLLは旧1.334603859→新0.832431946へ低下した（`added-train-loss.json`）。一方、学習中のログstep5400で生成を見る前に固定した短いTRAIN3文書の自由生成は、旧・新とも意味成立0/3。完全な原文再現も0/3だが、原文の暗記一致は言語合格基準ではなく、実際の文法・話題の崩れを全文読解した。新側は最初の例で原文との一致が入力24字から25字に延びるだけで、後続がスケールやURLへ逸れた。これはTRAIN上の事後診断で、DEVゲート・選択・新TEST・未見一般化とは別。旧新ともPython/JS3/3一致、全6出力を`TRAIN_GENERATIONS.md`に保存。
+
+局所的な教師強制予測を学んでも自己回帰の誤りが累積して全文は崩れる、という差が観測された。これだけで容量・LR・文字境界の単一原因を確定できない。
 
 ## 各生成の失敗・成立判定
 
