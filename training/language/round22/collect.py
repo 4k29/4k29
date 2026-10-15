@@ -7,6 +7,9 @@ sha=lambda b:hashlib.sha256(b).hexdigest()
 read=lambda p:json.loads(p.read_text())
 def write(p,x):p.write_text(json.dumps(x,ensure_ascii=False,indent=2)+'\n')
 class Prose(Page):
+ def handle_starttag(self,tag,attrs):
+  if tag=='a' and dict(attrs).get('href'):self.links.append(dict(attrs)['href'])
+  super().handle_starttag(tag,attrs)
  def handle_data(self,t):
   if any(tag in ['rt','rp','script','style'] for tag,a in self.stack):return
   super().handle_data(t)
@@ -28,12 +31,16 @@ if __name__=='__main__':
  knownUrls={d['url'] for d in old};held=[d['text'] for d in old if parts[d['id']]!='train'];train=[d['text'] for d in old if parts[d['id']]=='train']
  extra=[json.loads(l) for l in (B/'round18/sources/documents.jsonl').read_text().splitlines()];knownUrls.update(d['url'] for d in extra);held.extend(d['text'] for d in extra if d['partition']=='reserved')
  urls=[('jma',u) for u in p['jmaUrls']];failures=[];indexRecords=[]
+ raw,html,page,meta=fetch(p['jmaKnowledgeIndex']);(out/'html'/'jma-knowledge-index.html').write_bytes(raw);indexRecords.append(dict(url=p['jmaKnowledgeIndex'],htmlSha256=sha(raw),**meta))
+ links=sorted({urllib.parse.urljoin(p['jmaKnowledgeIndex'],l).split('#')[0] for l in page.links if urllib.parse.urljoin(p['jmaKnowledgeIndex'],l).startswith('https://www.jma.go.jp/jma/kishou/know/') and urllib.parse.urljoin(p['jmaKnowledgeIndex'],l).split('#')[0].endswith('.html')})
+ urls.extend(('jma',u) for u in links if u not in knownUrls)
+ urls=urls[:len(p['jmaUrls'])+p['maxSortedNewJmaKnowledgeLinks']]
  for cat in p['maffCategories']:
   url=f'https://www.maff.go.jp/j/heya/kodomo_sodan/{cat}.html'
   try:
    raw,html,page,meta=fetch(url);(out/'html'/f'{sha(url.encode())[:16]}.html').write_bytes(raw);indexRecords.append(dict(url=url,htmlSha256=sha(raw),**meta))
    links=sorted({urllib.parse.urljoin(url,l).split('#')[0] for l in page.links if re.search(r'/kodomo_sodan/\d{4}/[^/]+\.html(?:#.*)?$',urllib.parse.urljoin(url,l))})
-   urls.extend(('maff',u) for u in links[:p['maxSortedLinksPerMaffCategory']])
+   urls.extend(('maff',u) for u in [u for u in links if u not in knownUrls][:p['maxSortedLinksPerMaffCategory']])
   except Exception as ex:failures.append(dict(url=url,error=str(ex)))
  urls=sorted(set((s,u) for s,u in urls if u not in knownUrls))
  spec=importlib.util.spec_from_file_location('legacy',B/'round3/prepare.py');legacy=importlib.util.module_from_spec(spec);spec.loader.exec_module(legacy)
