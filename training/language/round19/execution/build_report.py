@@ -12,7 +12,7 @@ text=f'''# Round19 結果 — 既存TRAINの参考資料境界修正
 
 共通DEV weighted segmentation NLL/UTF-8 byte: 初期 **{a['initialWeightedDevelopmentNllPerByte']:.12f}** → 最良 **{a['bestWeightedDevelopmentNllPerByte']:.12f}**。事前進捗閾値はRound17最良 **{p['nllSuccessThreshold']:.12f}**。NLL条件={met}、従来の厳格な言語ゲート={lang}。このNLLは40/30/30の分割診断で、独立した文章確率や言語能力の証明ではない。
 
-全文意味 **{new['meaningfulFullOutputs']}/17**、初文 **{new['firstSentencePasses']}/17**、非ループ **{new['nonLoopOutputs']}/17**。同条件のRound16対照（Round18で固定rubricに合わせて再読解）はそれぞれ **{old['meaningfulFullOutputs']}/17・{old['firstSentencePasses']}/17・{old['nonLoopOutputs']}/17**。Round16元公式値4/17・2/17・0/17は改変しない。未知API名の未確認事実だけで失格にしないという元rubricを適用した再読解はRound18の記録を、全文一致の確認後に継承。閾値は変えていない。expanded17/parent13/original9と各物語/現代文groupで初文80%・非ループ90%・全文意味80%を要求。独立・盲検の人間評価ではない。
+全文意味 **{new['meaningfulFullOutputs']}/17**、初文 **{new['firstSentencePasses']}/17**、非ループ **{new['nonLoopOutputs']}/17**。同条件のRound16対照（Round18で固定rubricに合わせて再読解）はそれぞれ **{old['meaningfulFullOutputs']}/17・{old['firstSentencePasses']}/17・{old['nonLoopOutputs']}/17**。Round16元公式値（初文4/17・非ループ2/17・全文意味0/17）は改変しない。未知API名の未確認事実だけで失格にしないという元rubricを適用した再読解はRound18の記録を、全文一致の確認後に継承。閾値は変えていない。expanded17/parent13/original9と各物語/現代文groupで初文80%・非ループ90%・全文意味80%を要求。独立・盲検の人間評価ではない。
 
 ## 変更と再現
 
@@ -51,6 +51,16 @@ Python/JS全文一致: 旧 **{old['matchingSequences']}/17**・新 **{new['match
 7. **推論/実装**: Python/JS/raw丸め比較を実測。既存の因果性・明示attention一致・optimizer/RNG再開一致3テスト通過。実8層親で長さ64/128/256の未来suffixを変更しても先頭32logitの差0、後方は変化した。検査した範囲では未来参照による見かけのloss低下は見つからない。数値near-tieの限界は残す。
 8. **評価/目的**: 既存17はDEVで、新TESTや独立読解ではない。未知名だけの失敗判定を避けて旧側も一貫して扱い、閾値を緩和しない。教師強制の局所改善と自由生成の差が残る場合、露出誤差・反復を抑える訓練目的の対照も候補だが、現時点で単一原因と確定しない。追加診断や別decodingで既存ゲートを代替しない。
 
-公開モデル・Web回答挙動は変更しない。Checkpoint SHA `{a['checkpointSha256']}`、採用FP32 SHA `{a['selectedWeightsSha256']}`、JS SHA `{a['modelSha256']}`。全成果と入力のSHA/sizeは`artifact-manifest.json`に保存する。
+## 結論と推奨する次の単独対照
+
+NLLの事前進捗条件は達成したが、全文意味0/17で日本語生成能力の改善は実証できなかった。旧Round16最良0.974345326、Round18最良0.974257670、Round17最良0.973998407に対し今回は{a['bestWeightedDevelopmentNllPerByte']:.12f}。同一の露出済みDEVを繰り返し使う単一seedの観測であり、有意差や未見性能の保証はない。Round16より実target tokensは約0.033%少なく、同じ更新数でも長さ分布とsampler軌跡が違うため純粋な内容効果は未分離。
+
+固定旧TRAIN/DEVのcanonical診断ではRound11の0.767786/1.016398から今回は0.754141/1.012222へ低下した一方、gapは0.248612から0.258081へ広がった。回復TRAINの局所改善だけを一般化とは扱わず、過学習の可能性を残すが、この別スコープの診断から過学習だけを原因と確定しない。Python/JSとraw/roundedの同一全文でも破綻するため、観測した失敗の主因をJSの丸め誤差に帰す根拠はない。短い初文からの主述の崩れは、context長だけの説明にも合わない。
+
+次に優先するのは、**Round19と同じデータ・親checkpoint・モデル・sampling・LR・生成条件を固定し、反復を抑える学習目的だけを比較する対照**。自己回帰で長い反復が13/17に残り、教師強制の改善と乖離することを根拠とする。例えば過去に出たn-gramの再完結候補を抑える項を、goldの正しい次tokenを除外して加える候補がある。自然な反復も必要なので、副作用を含め係数・範囲・gold除外・検証条件を更新前に固定し、元CEと別に記録する必要がある。これは未実施の推奨で、成功を予告しない。語彙、データ拡大、context、モデル規模、LRを同時変更せず、今回のNLL条件達成を理由に言語ゲートを緩和しない。
+
+非ループ4/17は長い周期ループと短い局所再帰を分けた判定で、局所反復もすべてループとみなすと1/17になる。どちらでも言語ゲート不合格・全文意味0/17であり、解釈幅は`evaluation-sensitivity.json`に記録した。独立した盲検評価は未実施。
+
+既存Nodeテスト962件が通過し失敗0、公開側43問・2,580応答も2,580件通過。docs/app.js構文確認も通過。これらは実験モデルの言語合格を意味しない（`repository-validation.json`）。変更はRound19内だけで、公開モデル・Web回答挙動は変更しない。Checkpoint SHA `{a['checkpointSha256']}`、採用FP32 SHA `{a['selectedWeightsSha256']}`、JS SHA `{a['modelSha256']}`。全成果と入力のSHA/sizeは`artifact-manifest.json`に保存する。
 '''
 (R/'RESULTS.md').write_text(text);print(json.dumps({'actualUpdates':10000,'nllCriterionMet':met,'languageGatePassed':lang}))
