@@ -19,15 +19,15 @@ for name in ['old','new']:
 assert models['new']['modelSha256']==audit['modelSha256']
 write(OUT/'comparison.json',dict(actualCompletedUpdates=audit['actualCompletedUpdates'],requestedUpdates=10000,remainingUpdates=10000-audit['actualCompletedUpdates'],completedRun=audit['completedRun'],selectedStep=audit['selectedStep'],developmentLanguageGatePassed=models['new']['gatePassed'],models=models,naturalJapaneseEstablished=False,developmentOnly=True,unseenGeneralizationEstablished=False,testEncodedOrGenerated=False,publicModelReplaced=False,independentHumanEvaluation=False,selectionUsedGeneratedOutputs=False))
 with (OUT/'loss-history.csv').open('w') as f:
- w=csv.writer(f,lineterminator="\n");w.writerow(['step','sampled_training_token_loss','weighted_development_nll_per_utf8_byte','canonical_nll_per_byte','glyph_nll_per_byte','random_character_cuts_nll_per_byte','learning_rate','elapsed_seconds'])
+ w=csv.writer(f,lineterminator="\n");w.writerow(['step','sampled_combined_objective','weighted_development_nll_per_utf8_byte','canonical_nll_per_byte','glyph_nll_per_byte','random_character_cuts_nll_per_byte','learning_rate','elapsed_seconds'])
  for h in read(ROOT/'continue-10000/metrics.json')['history']:
   v=h['validation'];w.writerow([h['step'],h.get('trainingLoss',''),v['nllPerUtf8Byte'],*(v['views'][str(k)]['nllPerUtf8Byte'] for k in range(3)),h.get('learningRate',''),h['elapsedSeconds']])
 with (OUT/'training-loss-events.csv').open('w') as f:
- w=csv.writer(f,lineterminator="\n");w.writerow(['step','sampled_training_token_loss','elapsed_seconds'])
+ w=csv.writer(f,lineterminator="\n");w.writerow(['step','sampled_combined_objective','cross_entropy','unlikelihood','negative_candidates','elapsed_seconds'])
  for path in [OUT/'train.log']:
   for line in path.read_text().splitlines():
    h=json.loads(line)
-   if 'trainingLoss' in h:w.writerow([h['step'],h['trainingLoss'],h['elapsedSeconds']])
+   if 'trainingLoss' in h:w.writerow([h['step'],h['trainingLoss'],h['crossEntropyLoss'],h['unlikelihoodLoss'],h['negativeCandidates'],h['elapsedSeconds']])
 text=['# Unabridged raw Japanese continuations — development only','', 'Greedy full vocabulary, max192 new tokens, true EOS stop. No rewriting, filtering, retrieval, templates or repetition penalties. JSON files retain every token ID, exact Unicode text and byte validity; fullwidth whitespace is preserved there. Both models use the same17 openings and settings. These are not new TEST results.','']
 old=read(OUT/'old-validation.json');new=read(OUT/'new-validation.json')
 for a,b in zip(old['rows'],new['rows'],strict=True):
