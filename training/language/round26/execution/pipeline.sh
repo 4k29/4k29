@@ -1,5 +1,9 @@
 set -eu
 bash training/language/round26/execution/run.sh > training/language/round26/execution/train.log 2>&1
+if [ -f training/language/round26/execution/user-pause-requested ]; then
+  python training/language/round26/execution/inspect_checkpoint.py
+  exit 0
+fi
 python training/language/round26/execution/verify_initial.py
 python training/language/round26/execution/audit.py
 python training/language/round26/execution/replay_sampler.py
