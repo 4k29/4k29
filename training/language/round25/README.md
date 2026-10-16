@@ -9,3 +9,5 @@ R24と同じaligned Round11 latest model/AdamW/Torch/private Python RNGから始
 実行: `bash training/language/round25/execution/run.sh`。未完了・非稼働時だけ`--resume`で整合checkpointから再開。100更新atomic checkpointにはweights/moments/RNG/実counterとrollout累計を保存。未保持stepのrolloutは再開時にarchiveし、保持trace欠落や累計不一致は拒否する。完了済みrunを二重実行しない。persistent.shはチャット接続と独立に学習→機械評価→PR保存を実行する。
 
 最小CE DEV NLLだけでcheckpoint選択、閾値0.9714231061588403。旧新17同入力greedy max192/trueEOS/Python1thread、全token・無加工全文を保存し、全文を読んで厳格な初文/非ループ/全文意味ゲートを維持。露出済みDEVを新TESTと混同しない。自己生成損失は訓練のみで、推論penalty/出力修正なし。外部weights/tokenizer/API/他モデル教師なし。新しい原文と容量の変更は別ラウンド。公開モデル/サイト変更なし。
+
+rollout prefixは抽出済みTRAIN windowの先頭をそのまま用いる。元windowにBOSがある場合は含め、途中windowへBOSを追加しない。policyの「including own BOS」は元windowにある場合を指し、全rolloutに合成BOSを挿入する実装ではない。短いwindowでは実長-1までとしpaddingを含めない。全sourceRowとprefix IDsはtraining-rollouts.jsonlで追跡できる。
