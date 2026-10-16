@@ -29,6 +29,16 @@ class Tests(unittest.TestCase):
    self.assertGreater(float(block.fc2.weight.grad[:,16:].abs().sum()),0)
   no.step();no.zero_grad();torch.nn.functional.cross_entropy(new(x).flatten(0,1),y.flatten()).backward()
   for block in new.blocks:self.assertGreater(float(block.fc1.weight.grad[16:].abs().sum()),0)
+ def test_expanded_optimizer_exact_resume(self):
+  torch.manual_seed(22);cfg=dict(vocabulary=20,dim=8,layers=1,heads=2,hidden=16,context=16,dropout=.1,epsilon=1e-5)
+  old=Decoder(cfg);oo=torch.optim.AdamW(old.parameters(),lr=.001);x=torch.tensor([[1,6,7,8,9,10,11,12]]);y=x.roll(-1,1)
+  def step(m,o):
+   m.train();o.zero_grad();loss=torch.nn.functional.cross_entropy(m(x).flatten(0,1),y.flatten());loss.backward();o.step();return loss.detach()
+  step(old,oo);parent=copy.deepcopy(dict(config=cfg,model=old.state_dict(),optimizer=oo.state_dict()));newcfg=dict(cfg,hidden=32);m=Decoder(newcfg);expand_ffn_weights(m,parent);o=torch.optim.AdamW(m.parameters(),lr=.001);o.load_state_dict(parent['optimizer']);expand_optimizer_moments(o,m,parent)
+  step(m,o);saved=copy.deepcopy(dict(model=m.state_dict(),optimizer=o.state_dict(),rng=torch.get_rng_state()));expected=step(m,o);end=torch.get_rng_state().clone()
+  n=Decoder(newcfg);no=torch.optim.AdamW(n.parameters(),lr=.001);n.load_state_dict(saved['model']);no.load_state_dict(saved['optimizer']);torch.set_rng_state(saved['rng']);actual=step(n,no)
+  self.assertTrue(torch.equal(expected,actual));self.assertTrue(torch.equal(end,torch.get_rng_state()));self.assertTrue(all(torch.equal(v,n.state_dict()[k]) for k,v in m.state_dict().items()))
+  for key,state in o.state_dict()['state'].items():self.assertTrue(all(torch.equal(v,no.state_dict()['state'][key][name]) for name,v in state.items()))
  def test_reject_other_architecture_change(self):
   cfg=dict(vocabulary=20,dim=8,layers=1,heads=2,hidden=16,context=16,dropout=.1,epsilon=1e-5);old=Decoder(cfg)
   new=Decoder(dict(cfg,hidden=32,context=32))
