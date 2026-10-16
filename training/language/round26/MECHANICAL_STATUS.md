@@ -1,5 +1,5 @@
-# Paused at user request
+# Resumed — training in progress
 
-Actual retained additional updates: **3,099/10,000**. AdamW counters: **13,099**. Training process exited cleanly, with aligned latest weights, optimizer and RNG saved. Best exposed-DEV NLL is **0.9695510136979912 at 3,000**.
+User requested continuation from the aligned 3,099-update checkpoint. Training is running toward 10,000 total additional updates; completion is not yet claimed. Existing logs are appended, settings unchanged. After training, resume-pipeline.sh runs old/new full generation and Python/JavaScript checks; complete semantic reading remains pending.
 
-Autoregressive old/new outputs and Python/JavaScript generation comparison have not yet been produced for R26. No language gate pass, new TEST, public model change or adoption is claimed. See [PAUSED.md](PAUSED.md) for evidence and exact continuation instructions.
+Historical checkpoint and exact resume details: [PAUSED.md](PAUSED.md). No public model changed.

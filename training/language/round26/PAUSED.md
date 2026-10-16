@@ -1,4 +1,6 @@
-# User-requested pause
+# Historical user-requested pause; training resumed
+
+The user subsequently requested continuation. The detached resume controller restores this checkpoint and appends the existing log; training is currently in progress, not complete. See execution/resume-request.json and execution/launch.json. The following pause receipt is historical.
 
 R26 stopped cleanly after **3,099 actual additional optimizer updates**, not 10,000. AdamW counters are 13,099. The requested stop arrived after the 3,000-update validation had completed and training had advanced. No updates were discarded or replayed.
 
