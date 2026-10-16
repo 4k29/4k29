@@ -23,7 +23,7 @@ def extract(wikitext,p):
             try:code.replace(tag,'')
             except ValueError:pass
     for tag in list(code.filter_tags()):
-        if str(tag.tag).lower() in ['table','blockquote','poem','math','score','gallery','timeline','syntaxhighlight']:
+        if str(tag.tag).lower() not in ['sub','sup','small','big','span','div','b','i','u','s','br']:
             try:code.replace(tag,'__EXCLUDED__')
             except ValueError:pass
     for template in list(code.filter_templates(recursive=False)):code.replace(template,'__EXCLUDED__')
@@ -46,9 +46,11 @@ def extract(wikitext,p):
         if len(re.findall('[ぁ-ゖァ-ヺ一-龯]',text))/len(text)<p['minimumJapaneseFraction']:continue
         if text[-1:] not in '。！？」）' or not re.search('[。！？]',text):continue
         if re.search(r'「[^」]{31,}」|『[^』]{31,}』',text):continue
+        if any(pattern in text for pattern in p['diagramDependentParagraphPatterns']):continue
         if '\ufffd' in text or re.search(r'__\w+__|\{\{|\}\}|<ref|https?://',text):continue
         blocks.append(text);count+=1
         if count==p['maxAcceptedParagraphsPerDocument']:break
+    blocks=[t for i,t in enumerate(blocks) if re.search('[。！？]',t) or (i+1<len(blocks) and re.search('[。！？]',blocks[i+1]))]
     return blocks,None
 if __name__=='__main__':
     a=argparse.ArgumentParser();a.add_argument('--out',type=pathlib.Path,default=R/'sources');args=a.parse_args();p=read(R/'collection-policy.json');out=args.out;out.mkdir(exist_ok=False);(out/'raw').mkdir();(out/'terms').mkdir()

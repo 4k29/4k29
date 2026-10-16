@@ -42,4 +42,25 @@ class Tests(unittest.TestCase):
   self.assertTrue(all(p.grad is not None and torch.isfinite(p.grad).all() for p in m.parameters()))
   again,other=rollout_unlikelihood(m,torch.tensor([[1,6,7]]),8)
   self.assertTrue(torch.equal(record['tokens'],other['tokens']));self.assertTrue(torch.equal(loss.detach(),again.detach()))
+ def test_exact_next_optimizer_update_with_rollout_after_resume(self):
+  cfg=dict(vocabulary=16,dim=8,layers=1,heads=2,hidden=32,context=16,dropout=.1,epsilon=1e-5)
+  torch.manual_seed(9);rng=random.Random(9);m=Decoder(cfg)
+  with torch.no_grad():m.token.weight[6]*=20
+  opt=torch.optim.AdamW(m.parameters(),lr=.0001)
+  def step(model,optimizer,index):
+   x=torch.tensor([[6,6,6,6,rng.randrange(7,12),8,9,10]])
+   y=x.roll(-1,1);y[:,-1]=-100;model.train();optimizer.zero_grad()
+   ce=torch.nn.functional.cross_entropy(model(x).flatten(0,1),y.flatten());loss=ce;record=None
+   if index%2==0:
+    ul,record=rollout_unlikelihood(model,torch.tensor([[6,6,6,6]]),8);loss=loss+.1*ul
+   loss.backward();torch.nn.utils.clip_grad_norm_(model.parameters(),1.);optimizer.step();return loss.detach(),record
+  step(m,opt,1);snap=copy.deepcopy(dict(model=m.state_dict(),optimizer=opt.state_dict(),torch=torch.get_rng_state(),python=rng.getstate()))
+  expected,trace=step(m,opt,2);self.assertGreater(trace['negativePositions'],0);trng=torch.get_rng_state().clone();prng=rng.getstate()
+  n=Decoder(cfg);no=torch.optim.AdamW(n.parameters(),lr=.0001);n.load_state_dict(snap['model']);no.load_state_dict(snap['optimizer']);torch.set_rng_state(snap['torch']);rng.setstate(snap['python'])
+  actual,other=step(n,no,2);self.assertTrue(torch.equal(expected,actual));self.assertTrue(torch.equal(trace['tokens'],other['tokens']))
+  self.assertTrue(all(torch.equal(v,n.state_dict()[k]) for k,v in m.state_dict().items()))
+  for k,state in opt.state_dict()['state'].items():
+   self.assertTrue(all(torch.equal(v,no.state_dict()['state'][k][name]) for name,v in state.items()))
+  self.assertTrue(torch.equal(trng,torch.get_rng_state()) and prng==rng.getstate())
+
 if __name__=='__main__':unittest.main()
