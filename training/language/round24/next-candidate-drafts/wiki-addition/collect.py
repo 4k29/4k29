@@ -76,7 +76,10 @@ if __name__=='__main__':
             if raw is None:failures.append(dict(title=title,url=url,errors=errors));continue
             key=sha(title.encode())[:16];(out/'raw'/f'{key}.json').write_bytes(raw)
             if page['pageid'] in seen_pages:failures.append(dict(title=title,reason='same canonical pageid as earlier requested title'));continue
-            seen_pages.add(page['pageid']);wt=rev['slots']['main']['content'];(out/'raw'/f'{key}.wikitext').write_text(wt)
+            seen_pages.add(page['pageid']);slot=rev['slots']['main']
+            if 'texthidden' in slot or 'content' not in slot:
+                failures.append(dict(title=title,revision=rev['revid'],reason='Revision text not publicly available; skipped without alternate retrieval'));continue
+            wt=slot['content'];(out/'raw'/f'{key}.wikitext').write_text(wt)
             blocks,reason=extract(wt,p);text='\n'.join(blocks);did='wiki2019:'+str(page['pageid']);partition='reserved' if int(sha(did.encode()),16)%10==0 else 'train'
             permanent='https://ja.wikipedia.org/w/index.php?oldid='+str(rev['revid']);history='https://ja.wikipedia.org/w/index.php?'+urllib.parse.urlencode(dict(title=page['title'],action='history'))
             doc=dict(id=did,site='wiki2019',title=page['title'],requestedTitle=title,pageid=page['pageid'],revision=rev['revid'],revisionTimestamp=rev['timestamp'],partition=partition,url=permanent,historyUrl=history,author='日本語版ウィキペディア「'+page['title']+'」の執筆者',license=p['license'],licenseUrl=p['licenseUrl'],historicLicenseUrl=p['historicLicenseUrl'],policyUrl=p['termsUrl'],attribution='出典：Wikipedia contributors, '+page['title']+' ('+permanent+'); authors/history: '+history+'; adapted markup and paragraph selection, CC BY-SA4.0.',text=text,blocks=blocks,textSha256=sha(text.encode()),wikitextSha256=sha(wt.encode()),apiResponseSha256=sha(raw),rawFile='raw/'+key+'.json',wikitextFile='raw/'+key+'.wikitext',processing=p['processing'],extractionExclusionReason=reason,retriedErrors=errors,**meta)
