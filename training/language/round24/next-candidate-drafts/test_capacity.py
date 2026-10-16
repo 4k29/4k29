@@ -1,5 +1,6 @@
-import sys,unittest,copy
-sys.path.insert(0,'/workspace/4k29/training/language')
+import sys,unittest,copy,pathlib
+TEST_ROOT=pathlib.Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(TEST_ROOT));sys.path.insert(0,str(TEST_ROOT.parent))
 import torch
 from model import Decoder
 from capacity import expand_ffn_weights,expand_optimizer_moments

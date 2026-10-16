@@ -1,5 +1,5 @@
 import sys,pathlib,unittest,copy,random
-sys.path.insert(0,'/workspace/4k29/training/language/round24')
+sys.path.insert(0,str(pathlib.Path(__file__).resolve().parents[1]))
 import torch
 from train import Decoder
 from sequence_objective import repeated_generated_positions,sequence_unlikelihood,rollout_unlikelihood
