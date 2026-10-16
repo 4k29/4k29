@@ -16,3 +16,4 @@ python training/language/round25/execution/measure_repetition.py
 python training/language/round25/execution/measure_added_train.py
 python training/language/round25/execution/assemble_numerical.py
 bash training/language/round25/execution/repository-checks.sh
+python training/language/round25/execution/diagnose_sequence_saturation.py
