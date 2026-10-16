@@ -5,6 +5,7 @@ python training/language/round25/execution/audit.py
 python training/language/round25/execution/replay_sampler.py
 python training/language/round25/execution/verify_paired_exposure.py
 python training/language/round25/execution/compare_losses.py
+python training/language/round25/execution/decode_training_rollouts.py
 bash training/language/round25/execution/compare.sh
 python training/language/round25/execution/rebind_old.py
 python training/language/round25/execution/check_export_rounding.py
