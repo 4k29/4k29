@@ -22,3 +22,4 @@ python training/language/round26/execution/diagnose_sequence_saturation.py
 bash training/language/round26/execution/compare_daily.sh
 python training/language/round26/execution/check_daily_rounding.py
 bash training/language/round26/execution/compare_human_daily.sh
+python training/language/round26/execution/verify_best_archive.py
