@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -u
 cd "$(dirname "$0")/../../../.."
-python training/language/round26/execution/evaluate_daily.py --model training/language/round25/continue-10000/model.js --out training/language/round26/execution/daily-old-python.json > training/language/round26/execution/daily-old-generation.log 2>&1 || exit $?
+python training/language/round26/execution/evaluate_daily.py --model training/language/round25/continue-10000/model.js --out training/language/round26/execution/daily-old-python.json --reuse-exact > training/language/round26/execution/daily-old-generation.log 2>&1 || exit $?
 python training/language/round26/execution/evaluate_daily.py --model training/language/round26/continue-10000/model.js --out training/language/round26/execution/daily-new-python.json > training/language/round26/execution/daily-new-generation.log 2>&1 || exit $?
 node training/language/round10/evaluate_js.mjs "$PWD/training/language/round25/continue-10000/model.js" training/language/round26/execution/daily-old-python.json training/language/round26/execution/daily-old-javascript.json > training/language/round26/execution/daily-old-parity.log 2>&1
 old_status=$?
