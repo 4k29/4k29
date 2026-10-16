@@ -1,0 +1,15 @@
+"""Fixed initial TRAIN-only diagnostic, no optimizer and no feedback into frozen run."""
+import pathlib,sys,math,random,statistics,json
+R=pathlib.Path(__file__).resolve().parents[1];sys.path.insert(0,str(R));import train as t
+from sequence_objective import rollout_unlikelihood
+t.torch.set_num_threads(1);cp=t.torch.load(R.parent/'round11/continue-10000/checkpoint.pt',weights_only=False,map_location='cpu');m=t.Decoder(cp['config']);m.load_state_dict(cp['model']);m.train();t.torch.set_rng_state(cp['torchRng']);rng=random.Random();rng.setstate(cp['pythonRng']);info,values=t.load_partition(R/'multiview','train');strata,weights,masses=t.sampler(info['rows'],t.read(R/'policy.json')['genreSampling']);rows=[];params=list(m.parameters())
+norm=lambda gs:math.sqrt(sum(float(g.double().square().sum()) for g in gs))
+for batch in range(16):
+ width,data=t.draw(rng,8,strata,weights,masses);x,y=t.pack(data,values,width);z=m(x);ce=t.F.cross_entropy(z.flatten(0,1),y.flatten());teacher,count=t.causal_unlikelihood(z,x,y);base=ce+teacher
+ rng_before=t.torch.get_rng_state().clone();seq,record=rollout_unlikelihood(m,x[:1,:min(32,data[0]['length']-1)]);assert t.torch.equal(rng_before,t.torch.get_rng_state())
+ gb=t.torch.autograd.grad(base,params);gs=t.torch.autograd.grad(seq,params);bn,sn=norm(gb),norm(gs);dot=sum(float((a.double()*b.double()).sum()) for a,b in zip(gb,gs,strict=True))
+ rows.append(dict(batch=batch+1,width=width,sourceRow=data[0],baselineLoss=float(base.detach()),sequenceLoss=float(seq.detach()),baselineGradientNorm=bn,sequenceGradientNorm=sn,scaledSequenceToBaselineGradientNorm=.1*sn/bn,cosine=dot/(bn*sn) if sn else None,tokens=record['tokens'][0].tolist(),prefixLength=record['prefixLength'],generatedTokens=record['generatedTokens'],negativePositions=record['negativePositions']))
+assert all(t.torch.equal(v,m.state_dict()[k]) for k,v in cp['model'].items())
+ratios=[r['scaledSequenceToBaselineGradientNorm'] for r in rows];active=[r for r in rows if r['negativePositions']]
+record=dict(parentCheckpointSha256=t.sha(R.parent/'round11/continue-10000/checkpoint.pt'),trainIndexSha256=t.sha(R/'multiview/train.index.json'),scriptSha256=t.sha(pathlib.Path(__file__)),batches=rows,medianScaledSequenceToBaselineGradientNorm=statistics.median(ratios),activeBatches=len(active),medianActiveScaledGradientRatio=statistics.median(r['scaledSequenceToBaselineGradientNorm'] for r in active) if active else 0,additionalExperimentalOptimizerUpdates=0,optimizerInstantiated=False,weightsUnchanged=True,globalCeDropoutRngNotConsumedByRollout=True,trainOnly=True,noDevelopmentOrTestRead=True,conditionsNotTunedFromDiagnostic=True,scope='16 deterministic fixed-initial own-parent TRAIN batches; full baseline CE+teacherUL1 versus additional sequenceUL0.1 gradient. Scheduled every10updates; not late-training or semantic success evidence. Not an average training gradient estimate because only initial frozen batches.')
+t.write(R/'execution/sequence-gradient-diagnostic.json',record);print(json.dumps({k:v for k,v in record.items() if k!='batches'}))
