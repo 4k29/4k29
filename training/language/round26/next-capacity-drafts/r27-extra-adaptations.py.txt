@@ -1,0 +1,48 @@
+"""Extend capacity-only operational draft with fixed everyday diagnostics; no updates."""
+import pathlib,shutil,json,os
+B=pathlib.Path(os.environ.get('CAPACITY_DRAFT_ROOT','/workspace/4k29/training/language'))
+R=B/'round27';E=R/'execution';C=json.loads((E/'creation-context.json').read_text())['scientificControl'];D=B/'round26'
+shutil.copyfile('/workspace/r27-single-factor.py.txt',E/'verify_single_factor.py')
+for name in ['evaluate_daily.py','daily_human_likelihood.py','assemble_daily.py','assemble_human_daily.py','compare_daily.sh','compare_human_daily.sh','check_daily_rounding.py','archive_best_aligned.py','verify_best_archive.py','watch_resume.py','snapshot_live_selected.py','replay_partial_sampler.py']:
+ text=(D/'execution'/name).read_text().replace('round26/','round27/').replace('round25/',C+'/')
+ if name=='snapshot_live_selected.py':text=text.replace('parameters=4655808','parameters=sum(t.numel() for t in cp[\'beststate\'].values())')
+ (E/name).write_text(text)
+for name in ['daily-probes.json','daily-probe-preflight.json','DAILY_REVIEW_PROTOCOL.md','HUMAN_DAILY_DEV_PROTOCOL.md']:
+ shutil.copyfile(D/'execution'/name,E/name)
+shutil.copytree(D/'prospective-daily-source',R/'prospective-daily-source',dirs_exist_ok=True)
+for name in ['resume-persistent.sh','resume-pipeline.sh']:(E/name).unlink(missing_ok=True)
+p=E/'pipeline.sh';s=p.read_text();s=s.replace('if [ -f training/language/round27/execution/user-pause-requested ]; then\n  python training/language/round27/execution/inspect_checkpoint.py\n  exit 0\nfi\n','')
+for name in ['compare_daily.sh','compare_human_daily.sh']:
+ line=f'bash training/language/round27/execution/{name}\n'
+ if line not in s:s+=line
+s=s.replace('bash training/language/round27/execution/compare_daily.sh\n','bash training/language/round27/execution/compare_daily.sh\npython training/language/round27/execution/check_daily_rounding.py\n');p.write_text(s)
+p=E/'publish_mechanical.py';s=p.read_text();line=next(x for x in s.splitlines() if x.startswith('body='));s=s.replace(line,"body=f\"Round27: ONLY own FFN hidden768 to1536, parameters4655808 to7021248; all adopted data/objective/LR/seed/sampling unchanged versus {read(E/'creation-context.json')['scientificControl']}. Actual retained updates {step}/10000, optimizer counters {counters}, best DEV NLL {record['bestDevelopmentNllPerByte']}, selected step {record['selectedStep']}, pipeline exit {status}. Own old coordinates/moments retained, new incoming features own seeded and outgoing/moments zero; new coordinates inherit AdamW tensor age10000. Checkpoint/optimizer/RNG losslessly SHA-bound40MiB chunks saved at {commit}. Original17 and supplementary everyday12 plus humanDEV99 evaluations are development only; full semantic reading pending, no guessed language success or new TEST/public replacement.\"")
+s=s.replace("write(E/'mechanical-status.json',record)","record.update(capacityOnly=True,newCoordinateInitialLineage=0,existingCoordinateInitialLineage=49000,newCoordinateLatestUpdates=step,existingCoordinateLatestUpdates=49000+step,newCoordinateInitialAdamWTensorAge=10000,newCoordinateIndependentBiasCorrectionAge=False,checkpointStorage='lossless SHA-bound40MiB chunks')\nwrite(E/'mechanical-status.json',record)")
+p.write_text(s)
+# The FFN expansion is the only learning change; make positive exposures explicit even for a data-control template.
+for name in ['compare_losses.py','compare_interim.py']:
+ p=E/name;s=p.read_text().replace('exposureEqualityRequired=False','exposureEqualityRequired=True')
+ if 'oldTargetTokens' in s:
+  marker="record=dict("
+  insert="assert all(x['oldTargetTokens']==x['newTargetTokens'] and x['oldTargetBytes']==x['newTargetBytes'] for x in rows), 'Capacity experiment changed positive exposures'\n"
+  pos=s.index(marker);s=s[:pos]+insert+s[pos:]
+ p.write_text(s)
+# Descriptive report extension; actual numbers are still read only from completed audit receipts.
+p=E/'build_report.py';s=p.read_text();marker="(R/'RESULTS.md').write_text";pos=s.index(marker)
+s=s[:pos]+"lines.extend(['', '## FFN capacity and checkpoint lineage', '', 'Only FFN hidden768→1536 changes; depth8/embedding192/heads4/context256 and all own data/tokenizer/objective/LR stay fixed. Old coordinates start at49000 lineage updates; new coordinates start at0. New moment coordinates are zero but inherit global AdamW tensor age10000, not independent fresh bias correction. Full latest and zero-update checkpoints are stored as lossless SHA-bound40MiB chunks; reconstruct exact bytes before resume. Additional everyday DEV uses the identical fixed12 openings and humanDEV99 targets; no new TEST or relaxed gate.'])\n"+s[pos:];p.write_text(s)
+print('Capacity operational draft extended with shared daily diagnostics; no optimizer updates.')
+
+# Optional selected-step model+optimizer+RNG archive is full-size too; chunk it losslessly.
+p=R/'.gitignore';p.write_text(p.read_text()+'continue-10000/best-aligned-checkpoint.pt\n')
+p=E/'publish_mechanical.py';s=p.read_text();s=s.replace("[R/'continue-10000/checkpoint.pt',R/'continue-10000/checkpoint-0.pt']", "[R/'continue-10000/checkpoint.pt',R/'continue-10000/checkpoint-0.pt',R/'continue-10000/best-aligned-checkpoint.pt']");s=s.replace("'checkpoint.pt','checkpoint-0.pt','.training.lock']", "'checkpoint.pt','checkpoint-0.pt','best-aligned-checkpoint.pt','.training.lock']");p.write_text(s)
+p=E/'freeze_results.py';s=p.read_text();s=s.replace("p.name not in ['artifact-manifest.json','checkpoint.pt','checkpoint-0.pt','.training.lock']", "p.name not in ['artifact-manifest.json','checkpoint.pt','checkpoint-0.pt','best-aligned-checkpoint.pt','.training.lock']");s=s.replace("for name in ['checkpoint.pt','checkpoint-0.pt']:", "for name in ['checkpoint.pt','checkpoint-0.pt']+(['best-aligned-checkpoint.pt'] if (R/'continue-10000/best-aligned-checkpoint.pt').exists() else []):");p.write_text(s)
+# Fresh runs wait for their first checkpoint; no missing-file crash in the verifier.
+p=E/'watch_resume.py';s=p.read_text();s=s.replace("    stamp = checkpoint.stat().st_mtime_ns", "    if not checkpoint.exists():\n        time.sleep(5)\n        continue\n    stamp = checkpoint.stat().st_mtime_ns");p.write_text(s)
+p=E/'archive_best_aligned.py';s=p.read_text().replace('import datetime,hashlib,io,json,pathlib,time,torch','import datetime,hashlib,io,json,pathlib,time,torch,sys');s=s.replace(' time.sleep(5)\n'," if '--once' in sys.argv:break\n time.sleep(5)\n");p.write_text(s)
+shutil.copyfile('/workspace/r27-supervise.py.txt',E/'supervise.py')
+(E/'persistent.sh').write_text('#!/usr/bin/env bash\nset -eu\ncd "$(dirname "$0")/../../../.."\npython training/language/round27/execution/supervise.py "$@"\n')
+p=R/'.gitignore';p.write_text(p.read_text()+'continue-10000/.controller.lock\n')
+for name in ['publish_mechanical.py','freeze_results.py']:
+ p=E/name;s=p.read_text().replace("'best-aligned-checkpoint.pt','.training.lock']", "'best-aligned-checkpoint.pt','.training.lock','.controller.lock']");p.write_text(s)
+
+p=E/'pipeline.sh';s=p.read_text();s+='python training/language/round27/execution/verify_best_archive.py\n';p.write_text(s)
