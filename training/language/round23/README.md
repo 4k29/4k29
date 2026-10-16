@@ -7,3 +7,5 @@ Round22でNLL0.9714611700632592へ改善した一方、全文意味0/17、反復
 通常CE DEV NLL/byteでcheckpoint選択、事前成功閾値0.9714611700632592。従来言語ゲートを維持。既存17書き出しは露出済みDEVで新TESTではない。TEST encode/loss/生成は行わず、公開モデル/サイトを変更しない。外部weights/tokenizer/生成API/教師文章なし。
 
 実行: `bash training/language/round23/execution/run.sh`。未完了で稼働プロセスがない場合だけ`--resume`。完了/稼働中runを二重実行しない。checkpointは最新model/optimizer/RNG/実counterを原子的に保存し、採用beststateとは区別する。persistent.shがチャットと独立に実学習・機械評価・PR保存を進め、意味判定は全出力読解後に追加する。準備段階の実験更新0を完了数にしない。
+
+実施結果: 実10,000/10,000更新、optimizer counter20,000。最良NLL0.9714555771476026（採用9,500更新）。全17生成はRound22と全文・token同一、全文意味0/17、言語ゲート不合格。[結果](RESULTS.md)と[全文](execution/FULL_GENERATIONS.md)を参照。
