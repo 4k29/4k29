@@ -9,3 +9,5 @@ Round21はUL係数0.3でNLL・反復が悪化し全文意味0/17。通常CEのRo
 要求は実10,000更新、検証500ごと。通常CE weighted DEV NLL/byteで選択し、事前閾値0.972624845997683と比較。従来の全scope/groupの厳格な言語ゲートを変更しない。17件は露出済みDEVで新TESTではない。外部weights/tokenizer/生成API/教師文章を使用せず、公開モデル・サイトを変更しない。
 
 実行 `bash training/language/round22/execution/run.sh`。未完了だけ`--resume`、稼働中・完了済みを重複実行しない。persistent.shがチャットと独立して学習・機械評価・実counterと重み/optimizer/RNGのPR保存を行い、意味判定は全文読解後に追加する。準備段階の実験更新0を完了とは扱わない。
+
+実施結果: **10,000/10,000更新完了**、optimizer counter20,000。採用9,500更新時NLL **0.9714611700632592**（Round19最良0.972624845997683を改善）。全文意味は旧新とも0/17で言語ゲート不合格。結果は[RESULTS.md](RESULTS.md)、旧新17件の無加工全文は[execution/FULL_GENERATIONS.md](execution/FULL_GENERATIONS.md)。checkpoint.ptに最新model/optimizer/RNG、selected-weights.ptに採用FP32を保存。完了済みrunを重複実行しない。
