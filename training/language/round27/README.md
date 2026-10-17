@@ -9,3 +9,5 @@ Round25と同じRound11 latestからmodel/AdamW/Torch RNG/private Python RNGを�
 actual model/moment/RNG/勾配/source preflightを完了（experimental updates0）。16件の容量・厳密resume・chunk・損失/rollout試験が合格。初期共通DEV差は最初のoptimizer更新前に5e-7以内を要求する。固定Pareto採用基準、17/13/9とジャンル別の従来厳格言語ゲートは変更しない。全出力を無加工保存し全文を読む。日常12件と人間DEV99も同じ条件・同じ原文で比較し、露出DEVとして扱う。TESTを開けず、NLLだけで会話能力を認定しない。
 
 起動はexecution/persistent.sh。独立controllerが実学習、機械評価、checkpointの40MiB SHA付き分割、PR保存を継続する。raw full checkpointは100MiBを超えるためgit除外し、完全なmodel/optimizer/RNGを含むlossless partsを保存する。selectedとlatestを混ぜない。実完了数はcheckpointとexecution/train.logで確認し、準備を完了学習と記録しない。公開モデル・Webサイトは変更しない。
+
+実10000更新と全文読解を完了。共通NLLは僅かに低下するが、日常会話は0/12で会話NLLは微悪化。任意のNLL-only採用は行わず、次の対照はRound25。詳細はRESULTS.md。
