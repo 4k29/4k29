@@ -1,0 +1,17 @@
+# Round28 — 人間の日常会話TRAINを30%だけ混ぜる
+
+実用ジャンルは日常会話。R25の自己生成反復負例、R26のWiki追加、R27の容量比較を完了した。R27は共通NLLが0.0075%低下しても全文0/17・日常0/12のまま会話NLLが微悪化し、任意のNLL-only保持を行わなかった。最後に採用したRound25を科学的対照にする。
+
+唯一の学習要因変更は人間会話コーパスmass0→30%。既存8ジャンルのmassをそれぞれ0.7倍して相対比を保つ。6つの学習coreファイルはRound25とbyte同一。8層/embedding192/FFN768/4head/context256/4655808parameters/独自語彙5455、BPE40/30/30、teacherUL1.0+sequenceUL0.1every10、LR2.2499999999999998e-5/CPU2FP32/batch8/seed2049/実10000更新/500更新CE検証を固定する。容量拡大・新語彙・新しい反復目的・推論補正は混ぜない。
+
+同じRound11 latest整合model/AdamW/Torch RNG/private Python RNGから始める兄弟対照。Round25selectedとlatest momentsを混ぜず、10000を過去ラウンドの累積weight系譜へ単純加算しない。データ変更でrow数・長さbucket・実exposure・RNG消費が変わるため、旧新の最終RNG一致を要求せずそれぞれ独立再生する。
+
+原文はnu-dialogue/real-persona-chat、固定commit28d0b6b3865b29cabc26c230a2db37cdf315e937、CC-BY-SA4.0、Sanae Yamashita et al./PACLIC2023を帰属に保存。人間発話だけをホワイトリスト取得し、別のLLMログとpersona profileは使わない。元発話を改変せず改行1個で連結し、role名や模範応答を補わない。これはPhase1の会話原文によるcausal事前学習で、指示追従を認定するものではない。
+
+話者foldは発話取得前に固定。両話者TRAINの8992候補から完全重複5ファイルと伏字12ファイルを丸ごと除外し8975対話/269877発話を採用。連結改行を含む6429894Unicode文字/18683972UTF8bytes。旧R10全fold・R22原文・会話DEV/予約TESTの64文字連続部分と照合し追加の一致除外0。hash128bit、短文・近似重複の不在は保証しない。TEST原文へのアクセスはソース重複監査だけで、tokenize・モデルloss/生成・意味読解はしない。新TRAINだけを3分割し原文byte一致・真のBOS/EOS・全target一度被覆・旧TRAIN prefixとvalidation/tokenizerの不変を全件検証。曖昧な内部dialogueIdでなくsourcePath+SHAを識別子にする。
+
+評価は固定の従来17件・日常12件・人間会話DEV99ファイル（完全重複1組を含む）を同条件で比較する。全て露出DEVで新TESTではない。最小共通mixed-view CEによる選択は変えず、生成全文を読み原文のまま保存する。初文80%/非長期ループ90%/全文意味80%の全scope/group厳格ゲートを変更しない。採用は既存Paretoに加え、人間会話DEV NLLと日常全文/非ループが悪化しない条件を開始前に固定する。NLL低下だけで会話能力改善とは言わない。
+
+起動はexecution/persistent.sh。重複起動と完了runの再実行をロック・identityで拒否し、100更新ごとに実model/optimizer/RNGを保存。115737548bytesのTRAIN token streamとfull checkpointsはSHA付き40MiB lossless partsで保存し、必要時に自動再構築する。実所要や完了数を予定回数と混同しない。独立controllerは環境が存続する間、訓練→機械検証→PR保存を進める。環境の交換・停止まで継続できる保証はなく、次の環境ではGitHub保存状態を監査して復元する。公開モデル・Webサイトは変更しない。
+
+prospective-daily-sourceはR26/R27時点の取得・監査証跡のコピーで、当時の未使用・未開始記述は履歴。このroundの採否・TEST hash利用範囲は本READMEとsource-policy.json/sources/manifest.jsonが定義する。

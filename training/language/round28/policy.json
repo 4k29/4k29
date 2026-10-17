@@ -1,0 +1,124 @@
+{
+  "sourceHashes": {
+    "documents.jsonl": "877ddf08933a3a159d9e6bd64690e1c7c328ce464e16d460121e9e7819ce8abb",
+    "split.json": "81725bdbf99ce0e620bfc5459dfc132694b6a6ce51f213328e8988c94290e529",
+    "units.json": "853603583f51ea492ae256fe48cc1feb6d0b74a349b71c738dc099c975d4e0e3",
+    "character-frequencies.json": "75d4a6d39536366ef74171f65c326104b8a37a7b3d3382f2650d2a64acac34bb",
+    "word-bpe-512/tokenizer.json": "453e93eafe8bf745e47c5241f9c7e9ed9e0b7dd3dc2bb912c21255b654bf5613",
+    "unicode-bpe-4681/tokenizer.json": "e08f6bd59d8cd0f7e403702a2107659699a9c48657da9d8b269dc2905f5cfb8b",
+    "word_bpe.py": "bc47cfe1f87e15a6d3cde92137318edf7e32db4a167e851cb5c34c41a48dd34e",
+    "generation-policy.json": "62171d706e73855c3aa35f807b91a0fa95d12561d1161a0cfa6e175ff101b411"
+  },
+  "codeHashes": {
+    "train.py": "e78c00d73a1e19e3fb6187ad7ea59aa17e08b37f24916dece59b8c6bf717bd9c",
+    "batching.py": "b45a03c802f1545691c7b1133dfd17dd0942595e9f1efb7f7cb1a9a900242710",
+    "initialization.py": "f8e865641dc43a193396153e71914e2af23ce2c52ed00e2d163a91b945803d85",
+    "objective.py": "13854f11ba09628e3d64da000491f779338a3bc96f63a320b9c36c1b4226b18f",
+    "sequence_objective.py": "7df369585635db8036fa03e5b22f15abf4f9665f09349b67046081858f543d8f",
+    "rollout_trace.py": "73ebf739bff437ede3acac11465816262ecd210ba3479fce2a7318403e619fc8"
+  },
+  "parentManifestSha256": "2319a8ca177832524c3b3eaea2adacd66d17a097e02210ac7e3d95b25558447f",
+  "parentCheckpointSha256": "6637813862d68c2e9d291bf0ae4d0bc8ba2fc35e51c8c233d519517af1067f49",
+  "glyphTokenizer": "unicode-bpe-4681/tokenizer.json",
+  "seed": 2049,
+  "requestedUpdates": 10000,
+  "completedUpdatesAtFreeze": 0,
+  "views": {
+    "0": 0.4,
+    "1": 0.3,
+    "2": 0.3
+  },
+  "randomCharacterFragments": {
+    "min": 8,
+    "max": 24
+  },
+  "validationStatus": "Exposed development only; no fresh language claim",
+  "generationPolicySha256": "62171d706e73855c3aa35f807b91a0fa95d12561d1161a0cfa6e175ff101b411",
+  "instructionTuningAllowed": false,
+  "publicModelReplacementAllowed": false,
+  "testGenerationAllowed": false,
+  "validationViews": {
+    "0": 0.4,
+    "1": 0.3,
+    "2": 0.3
+  },
+  "preparedPolicySha256": "3fb429bedfb83e75ea17d6140b10a039f5ae7009c30f8a79b189804c28765e67",
+  "experiment": "Round28 sibling of adopted Round25: ONLY human everyday-conversation corpus mass0→0.30; old masses×0.70, all model/objective/LR/seed fixed",
+  "genreSampling": {
+    "aozora": 0.315,
+    "mic": 0.06999999999999999,
+    "env": 0.06999999999999999,
+    "mdn": 0.105,
+    "jma": 0.06999999999999999,
+    "maff": 0.017499999999999998,
+    "stat": 0.034999999999999996,
+    "bunka": 0.017499999999999998,
+    "human-chat": 0.3
+  },
+  "learningRate": 2.2499999999999998e-05,
+  "parentLatestWeightLineageUpdates": 49000,
+  "parentOptimizerUpdates": 10000,
+  "parentStateSelection": "Latest aligned model/optimizer/RNG, not selected best weights with latest moments",
+  "optimizerContinuation": true,
+  "nllSuccessThreshold": 0.9714220852387883,
+  "meaningGatePolicySha256": "1ff218cab264646b24fa27ca22129fe5c664db59c7008b3f34c204b772fcb1f4",
+  "schedule": {
+    "kind": "constant_existing_terminal_value",
+    "learningRate": 2.2499999999999998e-05,
+    "additionalUpdates": 10000
+  },
+  "rationale": {
+    "target": "Natural everyday Japanese; practical domain declared before training",
+    "evidence": "Original full17 and daily12 remain0; isolated FFN capacity trial did not improve language and worsened human DEV NLL. Wiki prose helps NLL but does not fix chat; conversation-source mismatch is directly testable.",
+    "factor": "Human TRAIN corpus mass0→30%, preserve every old TRAIN row and old relative masses. Neither capacity, vocabulary, LR nor objectives change.",
+    "limitation": "One seed, exposed development, no new TEST language claim; source-only64char hash hygiene does not guarantee no short/fuzzy overlap."
+  },
+  "newSourceManifestSha256": "c1e05c7247c7c9cb56da887fc109be1d193422287438dd1564ce3b0c41252501",
+  "newSourceDocumentsSha256": "6f0d312dcf09c2f81e9587bf4435a35ca5682641ece6634832bcce52e8eb4ef9",
+  "unlikelihood": {
+    "kind": "causal_repeated_fourgram_completion",
+    "coefficient": 1.0,
+    "window": 64,
+    "ngram": 4,
+    "excludeGold": true,
+    "uniqueNonSpecialCandidates": true,
+    "probabilityCap": 0.999999,
+    "normalization": "sum penalties / valid next-token targets",
+    "futureTokensUsed": false
+  },
+  "gradientCalibrationSha256": "f058f5de6e2ef1b062bbe820f4f89f73f999b1e0c826d8e3531984cd55c6e51f",
+  "sequenceUnlikelihood": {
+    "coefficient": 0.1,
+    "everyUpdates": 10,
+    "prefixTokens": 32,
+    "prefixSelection": "First sampled TRAIN row, true first min32 tokens including own BOS; no heldout prefix",
+    "maxNewTokens": 64,
+    "eos": 2,
+    "window": 64,
+    "ngram": 4,
+    "decoding": "greedy full vocabulary",
+    "negativeOnly": true,
+    "generatedCrossEntropyTargets": false,
+    "normalization": "sum repeated generated-target penalties / all generated positions",
+    "probabilityCap": 0.999999,
+    "dropoutRng": "fork_rng CPU; restore global CE dropout RNG and model mode",
+    "plannedCalls": 1000,
+    "optimizerStepsPerIteration": 1
+  },
+  "sourceManifestReference": "sources/manifest.json",
+  "sourcePolicySha256": "c64396b6085f035f1d81442d6d14242ba8ba7b05ecd925d673b638260633d4fa",
+  "supplementaryEverydayDevelopment": {
+    "fixedDailyProbesSha256": "dc47e4120c21423004da14306b5552ae9520c7bb580f27520653806f791c208d",
+    "humanDev99PreviouslyExposed": true,
+    "oneExactDuplicateDevFile": true,
+    "usedForWeightSelection": false,
+    "originalStrictGatesUnchanged": true,
+    "additionalPracticalAdoptionGuard": "Original Pareto plus humanDEV99 NLL must not rise and daily12 full/nonloop counts must not fall; ambiguity can block adoption",
+    "controlHumanDev99Nll": 1.2880010131269757,
+    "controlDailyFull": 0,
+    "controlDailyNonloop": 1,
+    "reservedTestModelEvaluation": false,
+    "rawReservedTestUsedOnlyForPretrainingDuplicateHashes": true
+  },
+  "controlManifestSha256": "cf3f0704eea96690a5d250c626ff43ae4f631ba8eae9b3489b5f9f5ab386382e"
+}
