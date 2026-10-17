@@ -1,5 +1,5 @@
-# Resumed — training in progress
+# Mechanical execution status — language review pending
 
-User requested continuation from the aligned 3,099-update checkpoint. Training is running toward 10,000 total additional updates; completion is not yet claimed. Existing logs are appended, settings unchanged. After training, resume-pipeline.sh runs old/new full generation and Python/JavaScript checks; complete semantic reading remains pending.
+Actual retained additional optimizer updates: 10000/10000. Optimizer counters: [20000]. Pipeline exit: 0. Mechanical outputs available: True.
 
-Historical checkpoint and exact resume details: [PAUSED.md](PAUSED.md). No public model changed.
+Checkpoint includes aligned model/AdamW/Torch RNG/private Python RNG. Raw old/new JSON retains every generated token and unedited character. Semantic/full-language judgment is pending actual complete reading; no score or gate pass is guessed. No public model/site replacement or TEST generation.
