@@ -15,3 +15,5 @@ prepared dataは全旧TRAIN rows/documents/token prefix、validation、tokenizer
 実行 `bash training/language/round26/execution/run.sh`。未完了・非稼働時だけ`--resume`、同一identityのmodel/optimizer/RNG/rollout countersを復元。最新checkpointとselected weightsを別保存。チャットから独立したpersistent controllerが訓練・全機械検証・PR保存を行う。途中windowへ合成BOSを追加せず、真の先頭min32tokensをsequence負例生成に使う。生成tokenをCE正解にしない。
 
 最小CE DEV NLLでstep選択、事前閾値0.9714220852387883。17書き出しは既存DEVで新TESTではない。旧新greedy full vocabulary/max192/trueEOS/Python1thread、全token/無加工全文保存、従来の全scope/group厳格ゲート不変。全文をassistantが読み独立盲検ではない。推論penalty/文章修正/検索/テンプレートなし。公開モデル/サイト変更なし。容量の比較は別R27で行う。
+
+実10000更新完了。Wiki混合は初文回帰のため不採用。日常会話を含む実測と次の対照は[RESULTS.md](RESULTS.md)を参照。
