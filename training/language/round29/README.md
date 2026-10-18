@@ -1,5 +1,9 @@
 # Round29 — human everyday-conversation sampling mass10%
 
+## 完了済み実測
+
+実10000更新・全17件と日常12件の全文読解・数値比較を完了。選択9500、共通NLL0.971422→0.969489、会話DEV NLL1.288001→0.994147。初文8→6/17、全文意味0→0/17、日常全文0/12。NLL改善には成功したが言語改善未達、設定不採用、採用対照R25を維持。公開model/site変更なし。[RESULTS.md](RESULTS.md)・[採用判定](execution/adoption.json)を参照。以下の起動/途中snapshot説明は履歴であり再学習しない。
+
 Single factor: same8975 human TRAIN dialogues and all three token views asRound28, sampling mass30%→10%. Against the last adopted scientific controlRound25 this is0→10%, old genre masses×90%. Same alignedRound11 parent, optimizer/RNG, own8-layer192dim model, vocabulary, objectives, LR, seed, context256 and10000 actual updates. Round28 is not adopted or made the baseline. No turnEOS/role labels or inference changes.
 
 Round28 humanDEV NLL improved27.94% but common NLL and daily loops regressed. Test whether a lower dose retains domain learning without those regressions. Original strict gates/Pareto and additional humanDEV/daily nonloop guards remain unchanged againstRound25. NLL improvement alone never means semantic success. Fixed17 and daily12 are exposedDEV, not freshTEST. No public/site promotion.
