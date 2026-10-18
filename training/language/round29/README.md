@@ -11,3 +11,7 @@ Training and automatic mechanical evaluation run under execution/persistent.sh; 
 ## 実行開始と最初の保存
 
 全初期DEVが親と完全一致した後、2026-10-18T01:05:33Zにdetached controllerを起動。実100更新の整合checkpointとoptimizer/RNG・ログをexecution/retained-progress-100へ保存した。これは途中の固定snapshotであり、学習は10000更新へ継続する。最新の実数はcheckpoint.ptおよびexecution/train.logを確認する。最終評価・採用判定は未完了。
+
+## 評価参照文の表示記録
+
+評価rubric確認時にcompactな旧Round10 policyのTEST参照文の一部がツール出力へ表示された。execution/evaluation-reference-exposure.jsonに記録。モデルへのTEST入力・token化・生成・loss測定は行っておらず、学習fold/重み/selectorを変更しない。この旧参照文を今後の人によるblind/unseen評価とは扱わない。新しい人間会話reservedTESTは未アクセス。
