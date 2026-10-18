@@ -7,3 +7,7 @@ Round28 humanDEV NLL improved27.94% but common NLL and daily loops regressed. Te
 The identical copiedsource-policy.json describes historical admission/filtering atRound28 (including its30% mixture), not this run sampling; policy.json is the authoritative frozen10% configuration. Source manifest binds both. SameCC-BY-SA4.0 provenance, train/dev/test hygiene and raw-only reserved hashes are reused; no newly acquired/test-encoded source.
 
 Training and automatic mechanical evaluation run under execution/persistent.sh; actual retained steps only are reported. Full human-readable judgments require actually reading every raw output, never guessed by automation.
+
+## 実行開始と最初の保存
+
+全初期DEVが親と完全一致した後、2026-10-18T01:05:33Zにdetached controllerを起動。実100更新の整合checkpointとoptimizer/RNG・ログをexecution/retained-progress-100へ保存した。これは途中の固定snapshotであり、学習は10000更新へ継続する。最新の実数はcheckpoint.ptおよびexecution/train.logを確認する。最終評価・採用判定は未完了。
