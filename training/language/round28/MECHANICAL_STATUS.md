@@ -1,5 +1,3 @@
-# Mechanical execution status — language review pending
+# Completed execution and review
 
-Actual retained additional optimizer updates: 10000/10000. Optimizer counters: [20000]. Pipeline exit: 0. Mechanical outputs available: True.
-
-Checkpoint includes aligned model/AdamW/Torch RNG/private Python RNG. Raw old/new JSON retains every generated token and unedited character. Semantic/full-language judgment is pending actual complete reading; no score or gate pass is guessed. No public model/site replacement or TEST generation. TEST raw hashes used only for pre-training source hygiene, never model evaluation.
+Actual optimizer updates: 10000/10000; selected step10000; optimizer counters20000. Full17 plus daily12 outputs read and preserved unchanged. Original first/nonloop/full: 8/4/0 → 7/6/0; daily full0/12 and long loops12/12. Human DEV NLL improved1.288001→0.928190 but common DEV worsened0.971422→0.971899. Not adopted; last adopted control remainsRound25. No public/site replacement or new TEST evaluation. See RESULTS.md and execution/adoption.json.

@@ -15,3 +15,7 @@
 起動はexecution/persistent.sh。重複起動と完了runの再実行をロック・identityで拒否し、100更新ごとに実model/optimizer/RNGを保存。115737548bytesのTRAIN token streamとfull checkpointsはSHA付き40MiB lossless partsで保存し、必要時に自動再構築する。実所要や完了数を予定回数と混同しない。独立controllerは環境が存続する間、訓練→機械検証→PR保存を進める。環境の交換・停止まで継続できる保証はなく、次の環境ではGitHub保存状態を監査して復元する。公開モデル・Webサイトは変更しない。
 
 prospective-daily-sourceはR26/R27時点の取得・監査証跡のコピーで、当時の未使用・未開始記述は履歴。このroundの採否・TEST hash利用範囲は本READMEとsource-policy.json/sources/manifest.jsonが定義する。
+
+## 完了済み実測
+
+10000回の実更新・全文読解を完了。人間会話DEV NLLは改善したが意味改善は未達、採用なし。詳細は[RESULTS.md](RESULTS.md)。再学習しない。
