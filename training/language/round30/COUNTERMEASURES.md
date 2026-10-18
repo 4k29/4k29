@@ -1,0 +1,29 @@
+# Countermeasures fixed before Round30 outcomes
+
+Practical target: natural everyday Japanese, Phase1. The present model fails full meaning; an NLL decrease does not establish language ability. This is a prospective reasoning record, not a result claim.
+
+| Evidence already obtained | What it supports | What it does not establish |
+| --- | --- | --- |
+| R25 daily full meaning0/12, long loops11/12; recent-window token fourgram repeat46.16% at positions1–64,75.99% at65–128,80.82% at129–192 | On-policy negative training ending at64 misses later histories seen at evaluation192 | Repeats alone explain broken grammar or meaning |
+| R28 human mass30%: humanDEV NLL1.288001→0.928190; full meaning0/12; commonNLL worse | Domain likelihood can improve substantially without natural free generation | Human dialogue is useless or NLL irrelevant |
+| R29 human mass10%: humanDEV NLL0.994147 and common0.969489; full meaning0/12; first-sentence passes8→6 | A smaller mixture alleviated common likelihood tradeoff but failed fixed adoption | Another small mixture adjustment will repair meaning |
+| R27 FFN768→1536: primary full meaning unchanged, negligible common NLL gain | This particular capacity intervention did not solve the issue | All possible capacity limitations are ruled out |
+| R29 fixed TRAIN gradient probe:13 active rollouts, no zero active gradients or cap saturation | Global disappearance of sequence-negative gradients was not observed on that probe | Current negative loss teaches subject–predicate relations or discourse coherence |
+| R29 true-turn audit:260902 separators,21 embedded utterance newlines; after-separator EOS requires40 canonical/38 random piece splits | A future turn-framing study must use actual utterance offsets and disclose token-stream changes | Adding EOS is already validated, or every newline is a true turn boundary |
+| Final R29 Python/JS and raw/export agree on17+12 full sequences; historic R10 near-tie divergence retained | Current observed failures are reproducible in both implementations on these inputs | Universal numerical equality or elimination of every inference error |
+
+## Executed treatment planned for this round
+
+Scientific control remains adopted R25, not rejected R28/R29. Same aligned R11 latest own model/AdamW/RNG is the sibling starting point. Extend maximum self-generated negative rollout64→128 only. Prefix32 plus128 fits context256. Keep coefficient0.1, frequency10, repeat-window64, teacherUL1.0, positive corpus, genre masses, tokenizers,40/30/30 views, constant LR, seed, capacity and requested10000 actual optimizer updates unchanged. Generated tokens remain negatives only; no generated CE targets.
+
+This intervention necessarily changes generated lengths, the all-generated-position normalization, and opportunities for EOS. Report these together as consequences of the horizon factor; do not attribute outcomes exclusively to gradient strength. Fourgram repetition suppression may simply move the failure to new phrases, shorten output without useful meaning, or damage likelihood. No decoding penalties, output repair, gate relaxation or within-round tuning.
+
+The positive corpus deliberately stays byte-identical to adopted R25 to isolate the countermeasure. Everyday relevance is still checked on the unchanged daily12 full generations and humanDEV99 canonical likelihood. A human-corpus/EOS representation study must be a separately frozen round; it is not silently combined with this intervention.
+
+## Assessment and subsequent decisions
+
+Keep the original17 strict language gates and original conservative Pareto adoption policy. Compare all full old/new outputs under exactly the same192-token greedy evaluation, including grammar, relations, topic continuity, local versus long repetition, termination and collapse. Report ambiguous interpretations separately. Read all raw outputs before scoring. HumanDEV99 is supplementary and never a checkpoint selector. Existing exposed DEV is not a fresh TEST or unseen-generalization proof.
+
+If late repeat counts improve but full meaning stays zero, record a narrow repetition effect only. If likelihood improves but first-sentence/nonloop/full metrics fall, reject adoption. If there is no useful improvement, favor testing true human-turn framing over blindly enlarging the model or increasing iterations. Exact framing requires preserved raw speaker folds, true utterance offsets, explicit handling of78 affected pieces, and unchanged canonical DEV/gates. Preserve the adopted baseline when considering any exploratory branch; do not retroactively adopt rejected settings to make a causal claim.
+
+Other unresolved hypotheses: limited actual domain exposure, genre imbalance, short context, imperfect segmentation, low fixed LR or objective mismatch. R29 exposure was only0.292 raw-byte-equivalent passes in mixed views, not a complete dialogue epoch; this leaves undertraining plausible but does not establish that extra steps solve meaning. One seed and exposed/assistant-reviewed DEV constrain all conclusions. Historical oldR10 TEST reference visibility incident from R29 remains disclosed; no such excerpt is human-blind. No new TEST model evaluation.
