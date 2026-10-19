@@ -1,0 +1,20 @@
+{
+  "partition": "train-only",
+  "minimumUnicodeCharacters": 40,
+  "minimumDistinctSourceDocuments": 3,
+  "comparison": "exact whole line excluding original CR/LF terminator; no normalization",
+  "scope": "Only contiguous duplicate suffix lines of the final canonical TRAIN unit of each sourceDocument. Do not stitch around internal removed lines.",
+  "retain": "Retain every original occurrence in source with lexicographically smallest SHA256(sourceDocument UTF8). Other sources trimmed only at suffix. Non-suffix occurrences remain untouched.",
+  "emptyUnit": "Drop empty or whitespace-only unit in all views; never train BOS/EOS-only",
+  "views": {
+    "canonical": 0.4,
+    "glyph": 0.3,
+    "randomCharacterCuts": 0.3
+  },
+  "tokenizer": "existing own vocabulary and merges unchanged",
+  "randomCuts": "For changed units only, same seed SHA256(2049|sourceDocument|startLine), same8..24 Unicode-character fragmentation. Unchanged units copied exactly.",
+  "validation": "Byte-identical to Round25",
+  "test": "Not read, tokenized or evaluated",
+  "externalGeneratedTargets": false,
+  "actualOptimizerUpdates": 0
+}
