@@ -1,6 +1,6 @@
 # Round30 — longer own-negative rollout, frozen one-factor experiment
 
-Status: actual training in progress. Full10000 updates and final semantic evaluation are not yet complete. An actual2000-update aligned model/AdamW/RNG backup has been pushed; live atomic checkpoints are saved every100 updates. See execution/launch.json, train.log and retained-progress-2000/snapshot.json for actual state, not a planned count.
+Status: actual10,000 updates completed; selected9,500. Full final17+daily12+additional native8 outputs read and graded. Whole meaning remains0 in every set, common NLL is slightly worse than R25. Not adopted; public model unchanged. See RESULTS.md and execution/artifact-manifest.json.
 
 Scientific control and last adopted settings: Round25. Only max generated negative rollout tokens64→128. Original positive corpus, 40/30/30 own-tokenizer views,8layers/192dim, LR, seed, parent aligned model/AdamW/RNG, teacherUL1.0 and sequenceUL0.1every10 unchanged. No human-corpus mixture or EOS-framing change. Daily conversation is the practical target; existing17 and12 daily DEV are exposed diagnostics, not TEST.
 
