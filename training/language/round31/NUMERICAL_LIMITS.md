@@ -1,0 +1,9 @@
+# Observed numerical agreement and retained legacy branch
+
+R31 actual2000 selected2000: complete Python/JavaScript daily12/12 and native8/8 token sequences match. Raw selected FP32 versus seven-decimal exported weights also matches12/12 and8/8. These checks apply to those exact inputs, weights and recorded environment, not all possible prompts or machines. Semantically failed outputs are preserved even when all numerical paths agree.
+
+A known Round10 branch remains explicitly retained in ../round11/execution/old-numerical-divergence.json (SHA256117e5f69480f8856262090b46825efb9a2333732791c88e9a8b7484a8e406769), also referenced by Round30 execution/numerical-divergence.json. The recorded Round10 model SHA is d54787620b97292b9b5e5e3aa477d036ad0e9ec7d2341aad60923913092ae290. Its full sequence comparison is16/17, not17/17.
+
+On validation-jma-08, first different generated index75 (98 shared input+generated prefix tokens), Python chooses token4966「場合」 while JavaScript chooses1542「１」. Python's top-two margin is1.9073486328125e-6; JavaScript's two scores tie at8.187641143798828. Maximum common-prefix logit error7.033348083496094e-6 passes the unchanged2e-4 reference tolerance, yet argmax branching changes subsequent generation. A passed logit tolerance is therefore not identical autoregressive behavior. Original outputs, trace and branch are retained without repaired outputs or weight edits.
+
+The R28/29 historical supplemental native8 evaluations match Python/JavaScript8/8 each, but no claim of raw/export parity on those additional historical8 is made unless separately measured. Current Round31 final original17/daily12/native8 must still be measured after actual completion. Do not infer their result from the midpoint or this historical branch, and do not suppress a newly observed near-tie failure.
