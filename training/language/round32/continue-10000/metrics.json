@@ -1,0 +1,4700 @@
+{
+  "config": {
+    "vocabulary": 5455,
+    "dim": 192,
+    "layers": 8,
+    "heads": 4,
+    "hidden": 768,
+    "context": 256,
+    "dropout": 0.1,
+    "epsilon": 1e-05
+  },
+  "settings": {
+    "merges": 512,
+    "steps": 10000,
+    "dim": 192,
+    "layers": 8,
+    "heads": 4,
+    "batch": 8,
+    "threads": 2,
+    "seed": 2049,
+    "lr": 2.2499999999999998e-05,
+    "validation_every": 500,
+    "run": "continue-10000",
+    "compile": false,
+    "ancestor": null,
+    "precision": "float32",
+    "sourceSha256": "877ddf08933a3a159d9e6bd64690e1c7c328ce464e16d460121e9e7819ce8abb",
+    "splitSha256": "81725bdbf99ce0e620bfc5459dfc132694b6a6ce51f213328e8988c94290e529",
+    "tokenizerSha256": "453e93eafe8bf745e47c5241f9c7e9ed9e0b7dd3dc2bb912c21255b654bf5613",
+    "genreSampling": {
+      "aozora": 0.45,
+      "mic": 0.1,
+      "env": 0.1,
+      "mdn": 0.15,
+      "jma": 0.1,
+      "maff": 0.025,
+      "stat": 0.05,
+      "bunka": 0.025
+    },
+    "newSourceManifestSha256": "f2e261d9e5fcaa63a2d69e813d98ba1253f6570e9cd843181c2dc6fd8a806f2f",
+    "newSourceDocumentsSha256": "c0e782ea85b9fce25d5d884f1f5df1e5cef40dbeff9c03fc815757f2cf8366d0",
+    "rawUnitsSha256": "853603583f51ea492ae256fe48cc1feb6d0b74a349b71c738dc099c975d4e0e3",
+    "wordMerges": 512,
+    "preparedDataSha256": "7e1401be7cf0ae18f5db39293c6bdde3c2a9d8e4bd4db7accd098a58582a9b33",
+    "trainingViews": {
+      "canonical": 0.4,
+      "glyph": 0.3,
+      "randomCharacterCuts": 0.3
+    },
+    "validationViews": {
+      "canonical": 0.4,
+      "glyph": 0.3,
+      "randomCharacterCuts": 0.3
+    },
+    "objective": "CE + 0.1 self-generated repeated-fourgram UL every10updates + 1.0 causal repeated-fourgram completion unlikelihood within past64 completion positions on unique non-special candidates excluding the true next token; same raw targets",
+    "unlikelihood": {
+      "kind": "causal_repeated_fourgram_completion",
+      "coefficient": 1.0,
+      "window": 64,
+      "ngram": 4,
+      "excludeGold": true,
+      "uniqueNonSpecialCandidates": true,
+      "probabilityCap": 0.999999,
+      "normalization": "sum penalties / valid next-token targets",
+      "futureTokensUsed": false
+    },
+    "sequenceUnlikelihood": {
+      "coefficient": 0.1,
+      "everyUpdates": 10,
+      "prefixTokens": 32,
+      "prefixSelection": "First sampled TRAIN row, true first min32 tokens including own BOS; no heldout prefix",
+      "maxNewTokens": 64,
+      "eos": 2,
+      "window": 64,
+      "ngram": 4,
+      "decoding": "greedy full vocabulary",
+      "negativeOnly": true,
+      "generatedCrossEntropyTargets": false,
+      "normalization": "sum repeated generated-target penalties / all generated positions",
+      "probabilityCap": 0.999999,
+      "dropoutRng": "fork_rng CPU; restore global CE dropout RNG and model mode",
+      "plannedCalls": 1000,
+      "optimizerStepsPerIteration": 1,
+      "negativeScoringMode": "eval, gradients enabled, restore caller mode in finally"
+    },
+    "externalWeights": false,
+    "externalTokenizer": false,
+    "externalInferenceAPI": false,
+    "parentCheckpointSha256": "6637813862d68c2e9d291bf0ae4d0bc8ba2fc35e51c8c233d519517af1067f49",
+    "parentSelectedLineageUpdates": 49000,
+    "parentWeightSelection": "Latest optimizer-aligned state, not beststate",
+    "parentOptimizerUpdates": 10000,
+    "parentSeenTargetTokens": 15422254,
+    "parentSeenTargetUtf8Bytes": 54017389,
+    "initialization": "Our Round11 latest model + AdamW moments + Torch/Python RNG; hold terminal learning rate",
+    "experimentPolicySha256": "3ff62d490f04e575dcd0f6d6471f9e8c80788afa0fffa3e2b2e6975e18c728ad",
+    "savedComparisonSnapshotStep": 0,
+    "schedule": "Hold exact Round11 terminal LR throughout additional10000; preserve moments and RNG, no restart",
+    "validationStatus": "Previously exposed development sources; not independent unseen validation",
+    "lengthBucketMasses": {
+      "64": 0.04910984232024757,
+      "128": 0.11227090627358756,
+      "256": 0.8386192514061649
+    },
+    "batching": "Conditional length buckets64/128/256; same marginal row probabilities, correlated batch lengths; no target truncation. Different update trajectory from unbucketed pilots.",
+    "trainerSourceSha256": "e78c00d73a1e19e3fb6187ad7ea59aa17e08b37f24916dece59b8c6bf717bd9c"
+  },
+  "history": [
+    {
+      "step": 0,
+      "validation": {
+        "nllPerUtf8Byte": 0.9789190007498177,
+        "views": {
+          "0": {
+            "lossSum": 1051637.431149125,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.708877681748729,
+            "tokenPerplexity": 40.80798127435994,
+            "nllPerUtf8Byte": 0.9606942688798801,
+            "sites": {
+              "aozora": {
+                "lossSum": 498647.99072265625,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.496172316150365,
+                "tokenPerplexity": 89.6732327681575,
+                "nllPerUtf8Byte": 1.1866779089317268
+              },
+              "bunka": {
+                "lossSum": 12449.20361328125,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.334905870153027,
+                "tokenPerplexity": 28.075740334274293,
+                "nllPerUtf8Byte": 0.9019854813274344
+              },
+              "env": {
+                "lossSum": 85058.01489257812,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9543265219192847,
+                "tokenPerplexity": 19.1887951341808,
+                "nllPerUtf8Byte": 0.7936219048170607
+              },
+              "jma": {
+                "lossSum": 23428.59814453125,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.766655650246182,
+                "tokenPerplexity": 43.23522905245058,
+                "nllPerUtf8Byte": 0.9781887246683333
+              },
+              "mdn": {
+                "lossSum": 353991.5283203125,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.215473960580548,
+                "tokenPerplexity": 24.91509788741978,
+                "nllPerUtf8Byte": 0.7991681415968225
+              },
+              "mic": {
+                "lossSum": 41438.195861816406,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.9050894462855026,
+                "tokenPerplexity": 18.26687748347665,
+                "nllPerUtf8Byte": 0.8282669570620909
+              },
+              "stat": {
+                "lossSum": 36623.89959394932,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.8377763380435206,
+                "tokenPerplexity": 46.42213245367449,
+                "nllPerUtf8Byte": 1.0020492925647575
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1090013.187133789,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.7376329233642567,
+            "tokenPerplexity": 15.450369568736788,
+            "nllPerUtf8Byte": 0.9957513786274045,
+            "sites": {
+              "aozora": {
+                "lossSum": 503381.86169433594,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.571147871666283,
+                "tokenPerplexity": 35.55738505004335,
+                "nllPerUtf8Byte": 1.1979435315960922
+              },
+              "bunka": {
+                "lossSum": 12678.80615234375,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.6299120830416407,
+                "tokenPerplexity": 13.872550216095462,
+                "nllPerUtf8Byte": 0.9186209355414976
+              },
+              "env": {
+                "lossSum": 86511.98706054688,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.3518917752432276,
+                "tokenPerplexity": 10.505424840730925,
+                "nllPerUtf8Byte": 0.8071879886593847
+              },
+              "jma": {
+                "lossSum": 23559.8779296875,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.8801806760009168,
+                "tokenPerplexity": 17.817492082029982,
+                "nllPerUtf8Byte": 0.9836699064626738
+              },
+              "mdn": {
+                "lossSum": 384100.8151855469,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.1714473940173495,
+                "tokenPerplexity": 8.770969907172553,
+                "nllPerUtf8Byte": 0.8671426011638941
+              },
+              "mic": {
+                "lossSum": 42471.918212890625,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.354188693137333,
+                "tokenPerplexity": 10.52958267268998,
+                "nllPerUtf8Byte": 0.8489290068537003
+              },
+              "stat": {
+                "lossSum": 37307.9208984375,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.9875016734815425,
+                "tokenPerplexity": 19.836063571598807,
+                "nllPerUtf8Byte": 1.02076447778154
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1079761.534790039,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.697066465303377,
+            "tokenPerplexity": 40.32882465646893,
+            "nllPerUtf8Byte": 0.9863862653654811,
+            "sites": {
+              "aozora": {
+                "lossSum": 504538.5791015625,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.470283782408741,
+                "tokenPerplexity": 87.38151683257593,
+                "nllPerUtf8Byte": 1.2006962770589653
+              },
+              "bunka": {
+                "lossSum": 12716.913818359375,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.338648941548799,
+                "tokenPerplexity": 28.181026759210415,
+                "nllPerUtf8Byte": 0.9213819604665537
+              },
+              "env": {
+                "lossSum": 86857.87744140625,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9562600810525934,
+                "tokenPerplexity": 19.225933697503162,
+                "nllPerUtf8Byte": 0.8104152704536071
+              },
+              "jma": {
+                "lossSum": 23900.20947265625,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.7490524662990197,
+                "tokenPerplexity": 42.480810923979476,
+                "nllPerUtf8Byte": 0.9978793984658783
+              },
+              "mdn": {
+                "lossSum": 371950.0362548828,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.223947406669638,
+                "tokenPerplexity": 25.12711160102479,
+                "nllPerUtf8Byte": 0.8397111101814715
+              },
+              "mic": {
+                "lossSum": 42429.975830078125,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.920967632526375,
+                "tokenPerplexity": 18.55923729559574,
+                "nllPerUtf8Byte": 0.84809066220424
+              },
+              "stat": {
+                "lossSum": 37367.94287109375,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.83969819883824,
+                "tokenPerplexity": 46.51143511620049,
+                "nllPerUtf8Byte": 1.0224067107470451
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "elapsedSeconds": 135.19
+    },
+    {
+      "step": 500,
+      "trainingLoss": 3.2435245513916016,
+      "crossEntropyLoss": 3.1173195838928223,
+      "unlikelihoodLoss": 0.00423502828925848,
+      "negativeCandidates": 58,
+      "sequenceUnlikelihoodLoss": 1.2196996212005615,
+      "rolloutCalls": 50,
+      "rolloutGeneratedTokens": 2775,
+      "rolloutNegativePositions": 1162,
+      "validation": {
+        "nllPerUtf8Byte": 0.9765995896541333,
+        "views": {
+          "0": {
+            "lossSum": 1049520.7530698776,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.7014126563939453,
+            "tokenPerplexity": 40.504482880481945,
+            "nllPerUtf8Byte": 0.9587606362042395,
+            "sites": {
+              "aozora": {
+                "lossSum": 498021.9404296875,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.490527392179681,
+                "tokenPerplexity": 89.16846022866746,
+                "nllPerUtf8Byte": 1.1851880401939232
+              },
+              "bunka": {
+                "lossSum": 12387.106201171875,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.318271149523674,
+                "tokenPerplexity": 27.612571261808977,
+                "nllPerUtf8Byte": 0.8974863209079753
+              },
+              "env": {
+                "lossSum": 84577.44555664062,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.937634870502609,
+                "tokenPerplexity": 18.871160750574145,
+                "nllPerUtf8Byte": 0.7891380198796442
+              },
+              "jma": {
+                "lossSum": 23091.765380859375,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.7125024728069733,
+                "tokenPerplexity": 40.95617009448758,
+                "nllPerUtf8Byte": 0.9641253133839662
+              },
+              "mdn": {
+                "lossSum": 353679.8583984375,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.2126429139652783,
+                "tokenPerplexity": 24.844661834795062,
+                "nllPerUtf8Byte": 0.7984645183394006
+              },
+              "mic": {
+                "lossSum": 41393.958251953125,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.901988099548032,
+                "tokenPerplexity": 18.210313320468522,
+                "nllPerUtf8Byte": 0.8273827353978238
+              },
+              "stat": {
+                "lossSum": 36368.678851127625,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.8110320497880776,
+                "tokenPerplexity": 45.19706042092694,
+                "nllPerUtf8Byte": 0.9950663178507654
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1086873.6204223633,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.729747714913799,
+            "tokenPerplexity": 15.329019249094628,
+            "nllPerUtf8Byte": 0.9928833143524983,
+            "sites": {
+              "aozora": {
+                "lossSum": 502284.30194091797,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.5633614405774625,
+                "tokenPerplexity": 35.28159502505822,
+                "nllPerUtf8Byte": 1.195331568974472
+              },
+              "bunka": {
+                "lossSum": 12631.369018554688,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.6200723954687177,
+                "tokenPerplexity": 13.736718025221089,
+                "nllPerUtf8Byte": 0.9151839601908918
+              },
+              "env": {
+                "lossSum": 86090.13427734375,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.340423398144404,
+                "tokenPerplexity": 10.385632889661782,
+                "nllPerUtf8Byte": 0.8032519503003793
+              },
+              "jma": {
+                "lossSum": 23066.470947265625,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.8198619739933526,
+                "tokenPerplexity": 16.774535190239515,
+                "nllPerUtf8Byte": 0.9630692224652676
+              },
+              "mdn": {
+                "lossSum": 383473.9353027344,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.167903437238092,
+                "tokenPerplexity": 8.739940983966713,
+                "nllPerUtf8Byte": 0.8657273626881914
+              },
+              "mic": {
+                "lossSum": 42371.702392578125,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.3486338003757066,
+                "tokenPerplexity": 10.471254124519636,
+                "nllPerUtf8Byte": 0.8469258923161728
+              },
+              "stat": {
+                "lossSum": 36955.70654296875,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.959297448988529,
+                "tokenPerplexity": 19.284418707337895,
+                "nllPerUtf8Byte": 1.0111277064480217
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1077260.0861816406,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6885015910540013,
+            "tokenPerplexity": 39.9848883328528,
+            "nllPerUtf8Byte": 0.9841011362222934,
+            "sites": {
+              "aozora": {
+                "lossSum": 503780.95361328125,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.463571112508583,
+                "tokenPerplexity": 86.79691785983219,
+                "nllPerUtf8Byte": 1.1988932868796927
+              },
+              "bunka": {
+                "lossSum": 12653.203857421875,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3219227769550734,
+                "tokenPerplexity": 27.71358640706992,
+                "nllPerUtf8Byte": 0.9167659656152641
+              },
+              "env": {
+                "lossSum": 86375.55725097656,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9398440233816605,
+                "tokenPerplexity": 18.912896112601288,
+                "nllPerUtf8Byte": 0.8059150494133682
+              },
+              "jma": {
+                "lossSum": 23566.54150390625,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.6967123927696077,
+                "tokenPerplexity": 40.31454785499966,
+                "nllPerUtf8Byte": 0.9839481234147321
+              },
+              "mdn": {
+                "lossSum": 371434.80627441406,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.219481553201533,
+                "tokenPerplexity": 25.015147795594643,
+                "nllPerUtf8Byte": 0.8385479315372255
+              },
+              "mic": {
+                "lossSum": 42366.4677734375,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.916595606046916,
+                "tokenPerplexity": 18.47827293682788,
+                "nllPerUtf8Byte": 0.8468212627111233
+              },
+              "stat": {
+                "lossSum": 37082.555908203125,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.8103736033911964,
+                "tokenPerplexity": 45.16731037482333,
+                "nllPerUtf8Byte": 1.0145983722729246
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 805667,
+      "seenTargetUtf8Bytes": 2828921,
+      "elapsedSeconds": 630.64,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 1000,
+      "trainingLoss": 3.4690752029418945,
+      "crossEntropyLoss": 3.4410111904144287,
+      "unlikelihoodLoss": 0.0014061068650335073,
+      "negativeCandidates": 28,
+      "sequenceUnlikelihoodLoss": 0.26657891273498535,
+      "rolloutCalls": 100,
+      "rolloutGeneratedTokens": 5332,
+      "rolloutNegativePositions": 2184,
+      "validation": {
+        "nllPerUtf8Byte": 0.977360123254284,
+        "views": {
+          "0": {
+            "lossSum": 1049903.086731851,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.7027610572247576,
+            "tokenPerplexity": 40.55913599772317,
+            "nllPerUtf8Byte": 0.9591099065392221,
+            "sites": {
+              "aozora": {
+                "lossSum": 498264.8017578125,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.4927172062378835,
+                "tokenPerplexity": 89.36393652668347,
+                "nllPerUtf8Byte": 1.1857659993522507
+              },
+              "bunka": {
+                "lossSum": 12403.892578125,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.322767901989017,
+                "tokenPerplexity": 27.737017752536584,
+                "nllPerUtf8Byte": 0.8987025487701058
+              },
+              "env": {
+                "lossSum": 84545.80322265625,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9365358349017487,
+                "tokenPerplexity": 18.850432065947366,
+                "nllPerUtf8Byte": 0.7888427855104757
+              },
+              "jma": {
+                "lossSum": 23195.52276611328,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.7291837244555115,
+                "tokenPerplexity": 41.64510040905655,
+                "nllPerUtf8Byte": 0.9684573824104747
+              },
+              "mdn": {
+                "lossSum": 353576.640625,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.2117053376782634,
+                "tokenPerplexity": 24.821378985429146,
+                "nllPerUtf8Byte": 0.7982314948075404
+              },
+              "mic": {
+                "lossSum": 41470.019287109375,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.907320477223035,
+                "tokenPerplexity": 18.307676947784685,
+                "nllPerUtf8Byte": 0.828903043915838
+              },
+              "stat": {
+                "lossSum": 36446.406495034695,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.819177040242554,
+                "tokenPerplexity": 45.56669333141109,
+                "nllPerUtf8Byte": 0.9971929873603845
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1088619.1973266602,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.7341318350876413,
+            "tokenPerplexity": 15.396371042930905,
+            "nllPerUtf8Byte": 0.9944779378207926,
+            "sites": {
+              "aozora": {
+                "lossSum": 503968.3137207031,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.5753083451858223,
+                "tokenPerplexity": 35.70562877718289,
+                "nllPerUtf8Byte": 1.1993391647426925
+              },
+              "bunka": {
+                "lossSum": 12669.46728515625,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.6279749606214997,
+                "tokenPerplexity": 13.84570339922786,
+                "nllPerUtf8Byte": 0.9179443040976851
+              },
+              "env": {
+                "lossSum": 86036.2046508789,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.3389572817224584,
+                "tokenPerplexity": 10.370417499222297,
+                "nllPerUtf8Byte": 0.8027487674676368
+              },
+              "jma": {
+                "lossSum": 23301.284912109375,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.8485678376661827,
+                "tokenPerplexity": 17.263040651508724,
+                "nllPerUtf8Byte": 0.9728731540273632
+              },
+              "mdn": {
+                "lossSum": 383065.0148925781,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.1655916765651413,
+                "tokenPerplexity": 8.719759668289836,
+                "nllPerUtf8Byte": 0.8648041875890691
+              },
+              "mic": {
+                "lossSum": 42479.536376953125,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.354610962638054,
+                "tokenPerplexity": 10.534029933213132,
+                "nllPerUtf8Byte": 0.8490812787717994
+              },
+              "stat": {
+                "lossSum": 37099.37548828125,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.9708020089911313,
+                "tokenPerplexity": 19.507558561258634,
+                "nllPerUtf8Byte": 1.0150585648931914
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1077779.8269042969,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6902811654641594,
+            "tokenPerplexity": 40.056107768270046,
+            "nllPerUtf8Byte": 0.9845759309745244,
+            "sites": {
+              "aozora": {
+                "lossSum": 504184.9443359375,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.467150527939906,
+                "tokenPerplexity": 87.1081567814054,
+                "nllPerUtf8Byte": 1.1998547002913755
+              },
+              "bunka": {
+                "lossSum": 12669.1796875,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.326117009057495,
+                "tokenPerplexity": 27.83006772493554,
+                "nllPerUtf8Byte": 0.9179234667077235
+              },
+              "env": {
+                "lossSum": 86343.51159667969,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9387533302705724,
+                "tokenPerplexity": 18.89227919251075,
+                "nllPerUtf8Byte": 0.8056160519204651
+              },
+              "jma": {
+                "lossSum": 23672.568359375,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.713344056372549,
+                "tokenPerplexity": 40.99065264208548,
+                "nllPerUtf8Byte": 0.9883749471577388
+              },
+              "mdn": {
+                "lossSum": 371283.19958496094,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.218167473498201,
+                "tokenPerplexity": 24.982297486290125,
+                "nllPerUtf8Byte": 0.8382056656167985
+              },
+              "mic": {
+                "lossSum": 42454.783935546875,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.9226754740153433,
+                "tokenPerplexity": 18.590960612540513,
+                "nllPerUtf8Byte": 0.8485865267948606
+              },
+              "stat": {
+                "lossSum": 37171.639404296875,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.819527271300542,
+                "tokenPerplexity": 45.58265499759802,
+                "nllPerUtf8Byte": 1.0170357439135647
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 1574894,
+      "seenTargetUtf8Bytes": 5516079,
+      "elapsedSeconds": 1098.53,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 1500,
+      "trainingLoss": 2.8810532093048096,
+      "crossEntropyLoss": 2.8688950538635254,
+      "unlikelihoodLoss": 0.003204015549272299,
+      "negativeCandidates": 47,
+      "sequenceUnlikelihoodLoss": 0.08953949809074402,
+      "rolloutCalls": 150,
+      "rolloutGeneratedTokens": 8004,
+      "rolloutNegativePositions": 3038,
+      "validation": {
+        "nllPerUtf8Byte": 0.9757924472268416,
+        "views": {
+          "0": {
+            "lossSum": 1048177.07209903,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6966738098898593,
+            "tokenPerplexity": 40.312992433654166,
+            "nllPerUtf8Byte": 0.9575331536426064,
+            "sites": {
+              "aozora": {
+                "lossSum": 497162.8544921875,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.482781249647784,
+                "tokenPerplexity": 88.48041690757246,
+                "nllPerUtf8Byte": 1.1831435953693732
+              },
+              "bunka": {
+                "lossSum": 12397.015380859375,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3209256310901085,
+                "tokenPerplexity": 27.68596569221017,
+                "nllPerUtf8Byte": 0.8982042733559901
+              },
+              "env": {
+                "lossSum": 84483.5400390625,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9343732429947726,
+                "tokenPerplexity": 18.809710322245863,
+                "nllPerUtf8Byte": 0.7882618475891516
+              },
+              "jma": {
+                "lossSum": 23064.70330810547,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.7081516572516833,
+                "tokenPerplexity": 40.778364432856954,
+                "nllPerUtf8Byte": 0.9629954201538754
+              },
+              "mdn": {
+                "lossSum": 353322.58251953125,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.2093976066811813,
+                "tokenPerplexity": 24.764163963585982,
+                "nllPerUtf8Byte": 0.7976579354769867
+              },
+              "mic": {
+                "lossSum": 41372.743225097656,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.9005007869530046,
+                "tokenPerplexity": 18.18324902363145,
+                "nllPerUtf8Byte": 0.8269586892883801
+              },
+              "stat": {
+                "lossSum": 36373.63313418627,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.8115512034146777,
+                "tokenPerplexity": 45.22053073057717,
+                "nllPerUtf8Byte": 0.995201869659533
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1087008.5733795166,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.730086657288964,
+            "tokenPerplexity": 15.334215783901046,
+            "nllPerUtf8Byte": 0.99300659689139,
+            "sites": {
+              "aozora": {
+                "lossSum": 502028.68531799316,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.561548016558075,
+                "tokenPerplexity": 35.21767251002702,
+                "nllPerUtf8Byte": 1.1947232548827196
+              },
+              "bunka": {
+                "lossSum": 12669.92919921875,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.6280707735363515,
+                "tokenPerplexity": 13.847030059983316,
+                "nllPerUtf8Byte": 0.9179777712808832
+              },
+              "env": {
+                "lossSum": 86147.13635253906,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.341973041336969,
+                "tokenPerplexity": 10.401739391411947,
+                "nllPerUtf8Byte": 0.8037838001860387
+              },
+              "jma": {
+                "lossSum": 23239.597900390625,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.841026638189563,
+                "tokenPerplexity": 17.133346258665817,
+                "nllPerUtf8Byte": 0.9702976034566667
+              },
+              "mdn": {
+                "lossSum": 383330.5534667969,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.1670928528766775,
+                "tokenPerplexity": 8.73285939498581,
+                "nllPerUtf8Byte": 0.8654036651242734
+              },
+              "mic": {
+                "lossSum": 42527.354248046875,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.3572614737568247,
+                "tokenPerplexity": 10.561987531271503,
+                "nllPerUtf8Byte": 0.8500370627233035
+              },
+              "stat": {
+                "lossSum": 37065.31689453125,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.9680747032776464,
+                "tokenPerplexity": 19.45442796995396,
+                "nllPerUtf8Byte": 1.0141267037273591
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1075971.5419921875,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.684089659939216,
+            "tokenPerplexity": 39.808866343865155,
+            "nllPerUtf8Byte": 0.9829240223412732,
+            "sites": {
+              "aozora": {
+                "lossSum": 502985.35302734375,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.4565219778261085,
+                "tokenPerplexity": 86.18722612005382,
+                "nllPerUtf8Byte": 1.1969999239117664
+              },
+              "bunka": {
+                "lossSum": 12665.41455078125,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3251285247522318,
+                "tokenPerplexity": 27.802571731692773,
+                "nllPerUtf8Byte": 0.9176506702493298
+              },
+              "env": {
+                "lossSum": 86293.10168457031,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.93703759860353,
+                "tokenPerplexity": 18.859892901874485,
+                "nllPerUtf8Byte": 0.8051457092899625
+              },
+              "jma": {
+                "lossSum": 23539.765380859375,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.692512216605392,
+                "tokenPerplexity": 40.14557475882465,
+                "nllPerUtf8Byte": 0.9828301691311166
+              },
+              "mdn": {
+                "lossSum": 371012.78576660156,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.2158236104965856,
+                "tokenPerplexity": 24.92381097248015,
+                "nllPerUtf8Byte": 0.8375951817735672
+              },
+              "mic": {
+                "lossSum": 42363.278564453125,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.91637605427875,
+                "tokenPerplexity": 18.474216444653262,
+                "nllPerUtf8Byte": 0.8467575167789951
+              },
+              "stat": {
+                "lossSum": 37111.843017578125,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.8133829652258657,
+                "tokenPerplexity": 45.30343988357878,
+                "nllPerUtf8Byte": 1.0153996830988024
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 2369719,
+      "seenTargetUtf8Bytes": 8299907,
+      "elapsedSeconds": 1573.88,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 2000,
+      "trainingLoss": 2.2811431884765625,
+      "crossEntropyLoss": 2.254312753677368,
+      "unlikelihoodLoss": 0.0024028969928622246,
+      "negativeCandidates": 9,
+      "sequenceUnlikelihoodLoss": 0.24427597224712372,
+      "rolloutCalls": 200,
+      "rolloutGeneratedTokens": 10648,
+      "rolloutNegativePositions": 4169,
+      "validation": {
+        "nllPerUtf8Byte": 0.9752891862824673,
+        "views": {
+          "0": {
+            "lossSum": 1048535.7851966023,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6979389065499153,
+            "tokenPerplexity": 40.364024539205715,
+            "nllPerUtf8Byte": 0.9578608460647307,
+            "sites": {
+              "aozora": {
+                "lossSum": 497603.4404296875,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.4867538923374735,
+                "tokenPerplexity": 88.83261710855925,
+                "nllPerUtf8Byte": 1.184192097737265
+              },
+              "bunka": {
+                "lossSum": 12388.5703125,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3186633572193944,
+                "tokenPerplexity": 27.62340324881196,
+                "nllPerUtf8Byte": 0.8975924005578901
+              },
+              "env": {
+                "lossSum": 84504.32055664062,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9350950142975454,
+                "tokenPerplexity": 18.823291532044074,
+                "nllPerUtf8Byte": 0.7884557373003594
+              },
+              "jma": {
+                "lossSum": 23149.185424804688,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.7217339911261553,
+                "tokenPerplexity": 41.33600827304044,
+                "nllPerUtf8Byte": 0.9665227098995736
+              },
+              "mdn": {
+                "lossSum": 353149.8681640625,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.207828759778931,
+                "tokenPerplexity": 24.725343241512068,
+                "nllPerUtf8Byte": 0.7972680170765606
+              },
+              "mic": {
+                "lossSum": 41372.668212890625,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.9004955281050635,
+                "tokenPerplexity": 18.183153400941194,
+                "nllPerUtf8Byte": 0.8269571899438461
+              },
+              "stat": {
+                "lossSum": 36367.73209601641,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.8109328404083,
+                "tokenPerplexity": 45.192576671013505,
+                "nllPerUtf8Byte": 0.9950404141294265
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1084573.416885376,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.7239706169780815,
+            "tokenPerplexity": 15.240717313687087,
+            "nllPerUtf8Byte": 0.9907820270744045,
+            "sites": {
+              "aozora": {
+                "lossSum": 501664.47160339355,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.558964170911857,
+                "tokenPerplexity": 35.126792940193766,
+                "nllPerUtf8Byte": 1.1938565024295131
+              },
+              "bunka": {
+                "lossSum": 12630.445678710938,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.619880870921165,
+                "tokenPerplexity": 13.734087358443125,
+                "nllPerUtf8Byte": 0.9151170612020676
+              },
+              "env": {
+                "lossSum": 85934.20101928711,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.336184238236383,
+                "tokenPerplexity": 10.34169971676075,
+                "nllPerUtf8Byte": 0.8017970368576011
+              },
+              "jma": {
+                "lossSum": 23142.5302734375,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.829160180126834,
+                "tokenPerplexity": 16.93123566390299,
+                "nllPerUtf8Byte": 0.9662448446176569
+              },
+              "mdn": {
+                "lossSum": 382046.06298828125,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.159831208558465,
+                "tokenPerplexity": 8.669674168154131,
+                "nllPerUtf8Byte": 0.8625038107874055
+              },
+              "mic": {
+                "lossSum": 42269.91943359375,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.3429920422146084,
+                "tokenPerplexity": 10.412344175205137,
+                "nllPerUtf8Byte": 0.8448914537995953
+              },
+              "stat": {
+                "lossSum": 36885.785888671875,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.953698421578465,
+                "tokenPerplexity": 19.176746429710906,
+                "nllPerUtf8Byte": 1.0092146403094988
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1076092.0755615234,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.684502362746991,
+            "tokenPerplexity": 39.8252989654409,
+            "nllPerUtf8Byte": 0.9830341324475121,
+            "sites": {
+              "aozora": {
+                "lossSum": 503257.591796875,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.458934052158552,
+                "tokenPerplexity": 86.39536704073326,
+                "nllPerUtf8Byte": 1.1976477952353612
+              },
+              "bunka": {
+                "lossSum": 12666.896484375,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3255175858164874,
+                "tokenPerplexity": 27.81339073432962,
+                "nllPerUtf8Byte": 0.917758041180626
+              },
+              "env": {
+                "lossSum": 86327.90197753906,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.938222047498011,
+                "tokenPerplexity": 18.88224471584967,
+                "nllPerUtf8Byte": 0.8054704085535055
+              },
+              "jma": {
+                "lossSum": 23626.123779296875,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.7060586320465685,
+                "tokenPerplexity": 40.69310354599382,
+                "nllPerUtf8Byte": 0.9864357972233675
+              },
+              "mdn": {
+                "lossSum": 370785.26416015625,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.213851523867837,
+                "tokenPerplexity": 24.874707492196446,
+                "nllPerUtf8Byte": 0.8370815310083672
+              },
+              "mic": {
+                "lossSum": 42339.326416015625,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.9147271386490172,
+                "tokenPerplexity": 18.44377912159586,
+                "nllPerUtf8Byte": 0.8462787610636743
+              },
+              "stat": {
+                "lossSum": 37088.970947265625,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.8110327730441456,
+                "tokenPerplexity": 45.19709310998696,
+                "nllPerUtf8Byte": 1.01477389113972
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 3153786,
+      "seenTargetUtf8Bytes": 11036419,
+      "elapsedSeconds": 2054.07,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 2500,
+      "trainingLoss": 2.7658374309539795,
+      "crossEntropyLoss": 2.7630808353424072,
+      "unlikelihoodLoss": 0.0016293174121528864,
+      "negativeCandidates": 6,
+      "sequenceUnlikelihoodLoss": 0.011272291652858257,
+      "rolloutCalls": 250,
+      "rolloutGeneratedTokens": 13000,
+      "rolloutNegativePositions": 5116,
+      "validation": {
+        "nllPerUtf8Byte": 0.9747422753816688,
+        "views": {
+          "0": {
+            "lossSum": 1047691.6379691362,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.694961797976823,
+            "tokenPerplexity": 40.24403515504158,
+            "nllPerUtf8Byte": 0.9570896987286841,
+            "sites": {
+              "aozora": {
+                "lossSum": 497685.548828125,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.487494241270682,
+                "tokenPerplexity": 88.89840859319234,
+                "nllPerUtf8Byte": 1.184387498549815
+              },
+              "bunka": {
+                "lossSum": 12402.6318359375,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3224301730344226,
+                "tokenPerplexity": 27.72765174020325,
+                "nllPerUtf8Byte": 0.8986112038789669
+              },
+              "env": {
+                "lossSum": 84440.29809570312,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9328713172763408,
+                "tokenPerplexity": 18.781480739231647,
+                "nllPerUtf8Byte": 0.7878583846879753
+              },
+              "jma": {
+                "lossSum": 23019.68603515625,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.700914153562098,
+                "tokenPerplexity": 40.48429631301208,
+                "nllPerUtf8Byte": 0.9611158630185065
+              },
+              "mdn": {
+                "lossSum": 352611.6833496094,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.2029401703116482,
+                "tokenPerplexity": 24.604766155036387,
+                "nllPerUtf8Byte": 0.7960530158022562
+              },
+              "mic": {
+                "lossSum": 41307.18957519531,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.8959050459334907,
+                "tokenPerplexity": 18.099875249106876,
+                "nllPerUtf8Byte": 0.8256484024624288
+              },
+              "stat": {
+                "lossSum": 36224.600249409676,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7959342187372602,
+                "tokenPerplexity": 44.519808222940924,
+                "nllPerUtf8Byte": 0.9911242509893479
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1084356.4230194092,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.723425623982904,
+            "tokenPerplexity": 15.232413492477379,
+            "nllPerUtf8Byte": 0.9905837983339264,
+            "sites": {
+              "aozora": {
+                "lossSum": 502043.0799713135,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.561650136716706,
+                "tokenPerplexity": 35.221269127970835,
+                "nllPerUtf8Byte": 1.1947575111464963
+              },
+              "bunka": {
+                "lossSum": 12611.063598632812,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.615860526578057,
+                "tokenPerplexity": 13.67898244261465,
+                "nllPerUtf8Byte": 0.9137127661667014
+              },
+              "env": {
+                "lossSum": 85891.10708618164,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.335012698080188,
+                "tokenPerplexity": 10.329591094512788,
+                "nllPerUtf8Byte": 0.801394954945386
+              },
+              "jma": {
+                "lossSum": 22932.862548828125,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.8035284289520934,
+                "tokenPerplexity": 16.502773025745967,
+                "nllPerUtf8Byte": 0.9574908166184345
+              },
+              "mdn": {
+                "lossSum": 381893.29345703125,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.1589675524884884,
+                "tokenPerplexity": 8.66218978386626,
+                "nllPerUtf8Byte": 0.8621589196456287
+              },
+              "mic": {
+                "lossSum": 42210.339599609375,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.3396895737270316,
+                "tokenPerplexity": 10.378014454296304,
+                "nllPerUtf8Byte": 0.843700571649198
+              },
+              "stat": {
+                "lossSum": 36774.6767578125,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.9448011497287396,
+                "tokenPerplexity": 19.006882486925534,
+                "nllPerUtf8Byte": 1.006174635634696
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1075438.9868164062,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.682266209281023,
+            "tokenPerplexity": 39.73634298180951,
+            "nllPerUtf8Byte": 0.9824375213000576,
+            "sites": {
+              "aozora": {
+                "lossSum": 503559.71923828125,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.461610944387377,
+                "tokenPerplexity": 86.62694794764846,
+                "nllPerUtf8Byte": 1.1983667953457984
+              },
+              "bunka": {
+                "lossSum": 12668.918212890625,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3260483625336374,
+                "tokenPerplexity": 27.82815735309844,
+                "nllPerUtf8Byte": 0.9179045220178688
+              },
+              "env": {
+                "lossSum": 86232.70239257812,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9349818723861723,
+                "tokenPerplexity": 18.821161949336602,
+                "nllPerUtf8Byte": 0.8045821621483912
+              },
+              "jma": {
+                "lossSum": 23485.622192382812,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.684019167432598,
+                "tokenPerplexity": 39.80606021599762,
+                "nllPerUtf8Byte": 0.9805695875906147
+              },
+              "mdn": {
+                "lossSum": 370252.8712158203,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.2092369071588207,
+                "tokenPerplexity": 24.7601846940073,
+                "nllPerUtf8Byte": 0.8358796054087827
+              },
+              "mic": {
+                "lossSum": 42271.296875,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.910043843797329,
+                "tokenPerplexity": 18.3576034164176,
+                "nllPerUtf8Byte": 0.844918986108335
+              },
+              "stat": {
+                "lossSum": 36967.856689453125,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7985878225907443,
+                "tokenPerplexity": 44.63810304197599,
+                "nllPerUtf8Byte": 1.0114601408917652
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 3898393,
+      "seenTargetUtf8Bytes": 13661032,
+      "elapsedSeconds": 2696.27,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 3000,
+      "trainingLoss": 2.403884172439575,
+      "crossEntropyLoss": 2.3815534114837646,
+      "unlikelihoodLoss": 0.00011657597497105598,
+      "negativeCandidates": 4,
+      "sequenceUnlikelihoodLoss": 0.2221411019563675,
+      "rolloutCalls": 300,
+      "rolloutGeneratedTokens": 15787,
+      "rolloutNegativePositions": 6106,
+      "validation": {
+        "nllPerUtf8Byte": 0.9741337016155056,
+        "views": {
+          "0": {
+            "lossSum": 1047037.7580035925,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.69265571725079,
+            "tokenPerplexity": 40.151336088079766,
+            "nllPerUtf8Byte": 0.9564923647837076,
+            "sites": {
+              "aozora": {
+                "lossSum": 497277.61474609375,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.48381601141602,
+                "tokenPerplexity": 88.5720204459721,
+                "nllPerUtf8Byte": 1.1834167007677057
+              },
+              "bunka": {
+                "lossSum": 12378.633544921875,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.316001485379554,
+                "tokenPerplexity": 27.54997106647156,
+                "nllPerUtf8Byte": 0.8968724492770522
+              },
+              "env": {
+                "lossSum": 84236.51220703125,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.925793206454491,
+                "tokenPerplexity": 18.649012701934858,
+                "nllPerUtf8Byte": 0.785956988971806
+              },
+              "jma": {
+                "lossSum": 22898.92901611328,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.6814998418188556,
+                "tokenPerplexity": 39.70590200745873,
+                "nllPerUtf8Byte": 0.9560740268094561
+              },
+              "mdn": {
+                "lossSum": 352754.8815917969,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.2042409082732024,
+                "tokenPerplexity": 24.636791332075823,
+                "nllPerUtf8Byte": 0.796376298886549
+              },
+              "mic": {
+                "lossSum": 41233.17614746094,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.8907162189751077,
+                "tokenPerplexity": 18.006201367424513,
+                "nllPerUtf8Byte": 0.824169021536297
+              },
+              "stat": {
+                "lossSum": 36258.01075017452,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7994352667059124,
+                "tokenPerplexity": 44.67594737292409,
+                "nllPerUtf8Byte": 0.9920383799878115
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1083807.7874145508,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.7220476930436104,
+            "tokenPerplexity": 15.211438732849816,
+            "nllPerUtf8Byte": 0.9900826074617881,
+            "sites": {
+              "aozora": {
+                "lossSum": 501915.1799621582,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.5607427741749897,
+                "tokenPerplexity": 35.189325162262996,
+                "nllPerUtf8Byte": 1.1944531358792927
+              },
+              "bunka": {
+                "lossSum": 12624.890991210938,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.618728685171321,
+                "tokenPerplexity": 13.718272251421672,
+                "nllPerUtf8Byte": 0.9147146059419604
+              },
+              "env": {
+                "lossSum": 85708.77554321289,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.330055881448806,
+                "tokenPerplexity": 10.278515895355008,
+                "nllPerUtf8Byte": 0.7996937359994485
+              },
+              "jma": {
+                "lossSum": 22795.267333984375,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.7867074980421,
+                "tokenPerplexity": 16.22750266320256,
+                "nllPerUtf8Byte": 0.9517459535712235
+              },
+              "mdn": {
+                "lossSum": 381645.9382324219,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.1575691725927957,
+                "tokenPerplexity": 8.650085217183682,
+                "nllPerUtf8Byte": 0.8616004926795843
+              },
+              "mic": {
+                "lossSum": 42224.666259765625,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.340483690469798,
+                "tokenPerplexity": 10.386259082496508,
+                "nllPerUtf8Byte": 0.8439869330354912
+              },
+              "stat": {
+                "lossSum": 36893.069091796875,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.9542816377159573,
+                "tokenPerplexity": 19.187933879726895,
+                "nllPerUtf8Byte": 1.0094139126049104
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1074638.8497314453,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.67952656734237,
+            "tokenPerplexity": 39.62762861730156,
+            "nllPerUtf8Byte": 0.9817065782116204,
+            "sites": {
+              "aozora": {
+                "lossSum": 503133.27783203125,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.457832612696861,
+                "tokenPerplexity": 86.30026016101756,
+                "nllPerUtf8Byte": 1.1973519540034774
+              },
+              "bunka": {
+                "lossSum": 12650.489990234375,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3212102888512405,
+                "tokenPerplexity": 27.6938478390228,
+                "nllPerUtf8Byte": 0.9165693370695823
+              },
+              "env": {
+                "lossSum": 86034.68322753906,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9282421710472435,
+                "tokenPerplexity": 18.69473944246237,
+                "nllPerUtf8Byte": 0.8027345720400745
+              },
+              "jma": {
+                "lossSum": 23352.358032226562,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.663114985447304,
+                "tokenPerplexity": 38.982584123171904,
+                "nllPerUtf8Byte": 0.9750055543495705
+              },
+              "mdn": {
+                "lossSum": 370285.736328125,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.2095217717461493,
+                "tokenPerplexity": 24.767238998515403,
+                "nllPerUtf8Byte": 0.8359538013954735
+              },
+              "mic": {
+                "lossSum": 42203.6298828125,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.9053855075597204,
+                "tokenPerplexity": 18.272286399146115,
+                "nllPerUtf8Byte": 0.843566457781581
+              },
+              "stat": {
+                "lossSum": 36978.67443847656,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7996993874308016,
+                "tokenPerplexity": 44.687748774958166,
+                "nllPerUtf8Byte": 1.0117561202352066
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 4669003,
+      "seenTargetUtf8Bytes": 16365141,
+      "elapsedSeconds": 3172.14,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 3500,
+      "trainingLoss": 3.170888662338257,
+      "crossEntropyLoss": 3.1687347888946533,
+      "unlikelihoodLoss": 0.002153953770175576,
+      "negativeCandidates": 44,
+      "sequenceUnlikelihoodLoss": 0.0,
+      "rolloutCalls": 350,
+      "rolloutGeneratedTokens": 18155,
+      "rolloutNegativePositions": 7032,
+      "validation": {
+        "nllPerUtf8Byte": 0.9741773642826259,
+        "views": {
+          "0": {
+            "lossSum": 1046116.900786519,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6894080706006047,
+            "tokenPerplexity": 40.021150249159426,
+            "nllPerUtf8Byte": 0.9556511411597706,
+            "sites": {
+              "aozora": {
+                "lossSum": 496862.16845703125,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.480070046048701,
+                "tokenPerplexity": 88.24085338229537,
+                "nllPerUtf8Byte": 1.1824280255042925
+              },
+              "bunka": {
+                "lossSum": 12368.6533203125,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3133279722240827,
+                "tokenPerplexity": 27.476414227793782,
+                "nllPerUtf8Byte": 0.8961493493922982
+              },
+              "env": {
+                "lossSum": 84284.84326171875,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9274718926650256,
+                "tokenPerplexity": 18.680344833448448,
+                "nllPerUtf8Byte": 0.7864079351140519
+              },
+              "jma": {
+                "lossSum": 22927.515258789062,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.6860957007699455,
+                "tokenPerplexity": 39.88880470818006,
+                "nllPerUtf8Byte": 0.9572675570451782
+              },
+              "mdn": {
+                "lossSum": 352309.3903808594,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.200194299035874,
+                "tokenPerplexity": 24.537297307181646,
+                "nllPerUtf8Byte": 0.7953705618712256
+              },
+              "mic": {
+                "lossSum": 41207.745361328125,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.888933353991035,
+                "tokenPerplexity": 17.974127341834823,
+                "nllPerUtf8Byte": 0.8236607108000824
+              },
+              "stat": {
+                "lossSum": 36156.58474647999,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7888069523713703,
+                "tokenPerplexity": 44.20363176651403,
+                "nllPerUtf8Byte": 0.9892633108013896
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1085549.5517578125,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.726422237743747,
+            "tokenPerplexity": 15.278127611931263,
+            "nllPerUtf8Byte": 0.9916737480704696,
+            "sites": {
+              "aozora": {
+                "lossSum": 502407.66748046875,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.564236634178044,
+                "tokenPerplexity": 35.31248676739824,
+                "nllPerUtf8Byte": 1.1956251531525535
+              },
+              "bunka": {
+                "lossSum": 12650.060791015625,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.623949552170841,
+                "tokenPerplexity": 13.790080814678848,
+                "nllPerUtf8Byte": 0.9165382401837143
+              },
+              "env": {
+                "lossSum": 85863.36108398438,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.334258402674651,
+                "tokenPerplexity": 10.321802469240534,
+                "nllPerUtf8Byte": 0.8011360747546991
+              },
+              "jma": {
+                "lossSum": 23061.26904296875,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.8192260443727077,
+                "tokenPerplexity": 16.763871157585996,
+                "nllPerUtf8Byte": 0.9628520330244562
+              },
+              "mdn": {
+                "lossSum": 382358.4865722656,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.1615974411475443,
+                "tokenPerplexity": 8.68500036003213,
+                "nllPerUtf8Byte": 0.8632091355057357
+              },
+              "mic": {
+                "lossSum": 42334.4697265625,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.34657001976401,
+                "tokenPerplexity": 10.449666037477357,
+                "nllPerUtf8Byte": 0.846181685519938
+              },
+              "stat": {
+                "lossSum": 36874.237060546875,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.952773627526175,
+                "tokenPerplexity": 19.159020086542164,
+                "nllPerUtf8Byte": 1.0088986582545862
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1074284.21484375,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6783123096489065,
+            "tokenPerplexity": 39.57953966647715,
+            "nllPerUtf8Byte": 0.981382611325256,
+            "sites": {
+              "aozora": {
+                "lossSum": 502841.0615234375,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.455243534518562,
+                "tokenPerplexity": 86.07711104056571,
+                "nllPerUtf8Byte": 1.1966565403158875
+              },
+              "bunka": {
+                "lossSum": 12645.33837890625,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.319857804911066,
+                "tokenPerplexity": 27.65641767213433,
+                "nllPerUtf8Byte": 0.9161960859952362
+              },
+              "env": {
+                "lossSum": 86085.80139160156,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9299820084953394,
+                "tokenPerplexity": 18.727293561452548,
+                "nllPerUtf8Byte": 0.8032115229163119
+              },
+              "jma": {
+                "lossSum": 23399.00341796875,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.6704319087009805,
+                "tokenPerplexity": 39.26886276162864,
+                "nllPerUtf8Byte": 0.9769530883039852
+              },
+              "mdn": {
+                "lossSum": 370211.18127441406,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.208875551693355,
+                "tokenPerplexity": 24.751239082312356,
+                "nllPerUtf8Byte": 0.8357854865660098
+              },
+              "mic": {
+                "lossSum": 42201.80224609375,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.9052596892533216,
+                "tokenPerplexity": 18.26998755563867,
+                "nllPerUtf8Byte": 0.8435299269656956
+              },
+              "stat": {
+                "lossSum": 36900.026611328125,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7916180241808597,
+                "tokenPerplexity": 44.328066164723054,
+                "nllPerUtf8Byte": 1.0096042740246827
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 5440507,
+      "seenTargetUtf8Bytes": 19072374,
+      "elapsedSeconds": 3667.9,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 4000,
+      "trainingLoss": 2.7591683864593506,
+      "crossEntropyLoss": 2.724130630493164,
+      "unlikelihoodLoss": 0.003287659492343664,
+      "negativeCandidates": 57,
+      "sequenceUnlikelihoodLoss": 0.3175015449523926,
+      "rolloutCalls": 400,
+      "rolloutGeneratedTokens": 20856,
+      "rolloutNegativePositions": 7977,
+      "validation": {
+        "nllPerUtf8Byte": 0.9725615799771593,
+        "views": {
+          "0": {
+            "lossSum": 1045022.1821990013,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6855472558209295,
+            "tokenPerplexity": 39.866933892732916,
+            "nllPerUtf8Byte": 0.9546510912928545,
+            "sites": {
+              "aozora": {
+                "lossSum": 496035.8857421875,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.4726196811882915,
+                "tokenPerplexity": 87.58586979209512,
+                "nllPerUtf8Byte": 1.1804616454877679
+              },
+              "bunka": {
+                "lossSum": 12361.9599609375,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3115349480143315,
+                "tokenPerplexity": 27.42719249295436,
+                "nllPerUtf8Byte": 0.8956643936340748
+              },
+              "env": {
+                "lossSum": 84252.49755859375,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9263484268901307,
+                "tokenPerplexity": 18.659369889886616,
+                "nllPerUtf8Byte": 0.7861061380575474
+              },
+              "jma": {
+                "lossSum": 22866.19024658203,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.676236374048558,
+                "tokenPerplexity": 39.49746031623753,
+                "nllPerUtf8Byte": 0.9547071206455693
+              },
+              "mdn": {
+                "lossSum": 352217.8427734375,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.1993627284352577,
+                "tokenPerplexity": 24.516901293660354,
+                "nllPerUtf8Byte": 0.795163884802884
+              },
+              "mic": {
+                "lossSum": 41225.106872558594,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.8901505098540796,
+                "tokenPerplexity": 17.996017975766247,
+                "nllPerUtf8Byte": 0.824007732811485
+              },
+              "stat": {
+                "lossSum": 36062.69904470444,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7789687776070875,
+                "tokenPerplexity": 43.77088094158055,
+                "nllPerUtf8Byte": 0.9866945482695679
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1082494.0872497559,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.718748256977127,
+            "tokenPerplexity": 15.161332270262525,
+            "nllPerUtf8Byte": 0.9888825130357405,
+            "sites": {
+              "aozora": {
+                "lossSum": 501090.8179321289,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.554894492913697,
+                "tokenPerplexity": 34.98412869948359,
+                "nllPerUtf8Byte": 1.1924913266908506
+              },
+              "bunka": {
+                "lossSum": 12572.444213867188,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.607849868049614,
+                "tokenPerplexity": 13.569842510246383,
+                "nllPerUtf8Byte": 0.9109146655460939
+              },
+              "env": {
+                "lossSum": 85672.29751586914,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.3290641995397223,
+                "tokenPerplexity": 10.268327929534983,
+                "nllPerUtf8Byte": 0.799353382870104
+              },
+              "jma": {
+                "lossSum": 22839.48486328125,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.792113063970813,
+                "tokenPerplexity": 16.315459011451875,
+                "nllPerUtf8Byte": 0.9535921198814767
+              },
+              "mdn": {
+                "lossSum": 381363.2888183594,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.1559712631135097,
+                "tokenPerplexity": 8.636274201333741,
+                "nllPerUtf8Byte": 0.8609623858637755
+              },
+              "mic": {
+                "lossSum": 42266.096923828125,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.342780163174332,
+                "tokenPerplexity": 10.410138251417028,
+                "nllPerUtf8Byte": 0.8448150494468943
+              },
+              "stat": {
+                "lossSum": 36689.656982421875,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.9379930319043783,
+                "tokenPerplexity": 18.87792088249848,
+                "nllPerUtf8Byte": 1.0038484495450457
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1072903.5010986328,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6735847931364307,
+            "tokenPerplexity": 39.392868332720155,
+            "nllPerUtf8Byte": 0.9801212984976512,
+            "sites": {
+              "aozora": {
+                "lossSum": 501973.3076171875,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.4475551111255704,
+                "tokenPerplexity": 85.41785134776441,
+                "nllPerUtf8Byte": 1.1945914675389095
+              },
+              "bunka": {
+                "lossSum": 12636.596923828125,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.317562857397775,
+                "tokenPerplexity": 27.593020419679533,
+                "nllPerUtf8Byte": 0.915562739010877
+              },
+              "env": {
+                "lossSum": 86046.61657714844,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9286483297759927,
+                "tokenPerplexity": 18.702334016265436,
+                "nllPerUtf8Byte": 0.8028459144886351
+              },
+              "jma": {
+                "lossSum": 23346.86669921875,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.662253599877451,
+                "tokenPerplexity": 38.94901954582929,
+                "nllPerUtf8Byte": 0.9747762807072252
+              },
+              "mdn": {
+                "lossSum": 369897.384765625,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.206155661003415,
+                "tokenPerplexity": 24.684009887044752,
+                "nllPerUtf8Byte": 0.8350770623447906
+              },
+              "mic": {
+                "lossSum": 42213.963134765625,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.9060968700788674,
+                "tokenPerplexity": 18.285289243149194,
+                "nllPerUtf8Byte": 0.8437729988959749
+              },
+              "stat": {
+                "lossSum": 36788.765380859375,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7801855097471613,
+                "tokenPerplexity": 43.824170792384265,
+                "nllPerUtf8Byte": 1.006560107824
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 6222923,
+      "seenTargetUtf8Bytes": 21813771,
+      "elapsedSeconds": 4149.66,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 4500,
+      "trainingLoss": 3.350011110305786,
+      "crossEntropyLoss": 3.3361666202545166,
+      "unlikelihoodLoss": 0.0033644360955804586,
+      "negativeCandidates": 50,
+      "sequenceUnlikelihoodLoss": 0.1048005074262619,
+      "rolloutCalls": 450,
+      "rolloutGeneratedTokens": 23193,
+      "rolloutNegativePositions": 8862,
+      "validation": {
+        "nllPerUtf8Byte": 0.9730873251859427,
+        "views": {
+          "0": {
+            "lossSum": 1045678.3632122278,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6878614518005115,
+            "tokenPerplexity": 39.95930062700577,
+            "nllPerUtf8Byte": 0.9552505272962551,
+            "sites": {
+              "aozora": {
+                "lossSum": 497074.1796875,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.481981693228438,
+                "tokenPerplexity": 88.4097000970549,
+                "nllPerUtf8Byte": 1.182932567883533
+              },
+              "bunka": {
+                "lossSum": 12349.0595703125,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3080791776888563,
+                "tokenPerplexity": 27.3325739990817,
+                "nllPerUtf8Byte": 0.8947297181794305
+              },
+              "env": {
+                "lossSum": 84194.52514648438,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.924334866676544,
+                "tokenPerplexity": 18.621835926195264,
+                "nllPerUtf8Byte": 0.7855652345791017
+              },
+              "jma": {
+                "lossSum": 22919.400146484375,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.6847910203351084,
+                "tokenPerplexity": 39.83679649953172,
+                "nllPerUtf8Byte": 0.9569287356053766
+              },
+              "mdn": {
+                "lossSum": 351877.93017578125,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.196275140119732,
+                "tokenPerplexity": 24.44131993779312,
+                "nllPerUtf8Byte": 0.7943965011305593
+              },
+              "mic": {
+                "lossSum": 41101.225646972656,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.8814656230350995,
+                "tokenPerplexity": 17.840401331071064,
+                "nllPerUtf8Byte": 0.8215315939830633
+              },
+              "stat": {
+                "lossSum": 36162.042838692665,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.789378899580076,
+                "tokenPerplexity": 44.22892114172192,
+                "nllPerUtf8Byte": 0.989412647095479
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1082912.0988616943,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.7197981179922954,
+            "tokenPerplexity": 15.177257920347891,
+            "nllPerUtf8Byte": 0.989264375974449,
+            "sites": {
+              "aozora": {
+                "lossSum": 501437.636428833,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.557354931460669,
+                "tokenPerplexity": 35.07031097789075,
+                "nllPerUtf8Byte": 1.1933166821642602
+              },
+              "bunka": {
+                "lossSum": 12586.965087890625,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.6108618726178436,
+                "tokenPerplexity": 13.610776553693618,
+                "nllPerUtf8Byte": 0.9119667503181151
+              },
+              "env": {
+                "lossSum": 85681.95120239258,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.3293266420833127,
+                "tokenPerplexity": 10.2710231292873,
+                "nllPerUtf8Byte": 0.7994434552412605
+              },
+              "jma": {
+                "lossSum": 22931.839111328125,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.8034033143432917,
+                "tokenPerplexity": 16.500708416913763,
+                "nllPerUtf8Byte": 0.9574480861478905
+              },
+              "mdn": {
+                "lossSum": 381335.9675292969,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.1558168069405714,
+                "tokenPerplexity": 8.634940378483394,
+                "nllPerUtf8Byte": 0.8609007055633748
+              },
+              "mic": {
+                "lossSum": 42111.68212890625,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.334221059193296,
+                "tokenPerplexity": 10.321417024399443,
+                "nllPerUtf8Byte": 0.841728605414876
+              },
+              "stat": {
+                "lossSum": 36826.057373046875,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.94891554877057,
+                "tokenPerplexity": 19.08524548379167,
+                "nllPerUtf8Byte": 1.0075804364838128
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1073528.9626464844,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6757263520264205,
+            "tokenPerplexity": 39.477320877872835,
+            "nllPerUtf8Byte": 0.9806926715836863,
+            "sites": {
+              "aozora": {
+                "lossSum": 502859.4267578125,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.4554062531148935,
+                "tokenPerplexity": 86.09111852685884,
+                "nllPerUtf8Byte": 1.196700245731994
+              },
+              "bunka": {
+                "lossSum": 12620.74853515625,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3134020832649647,
+                "tokenPerplexity": 27.478450608910137,
+                "nllPerUtf8Byte": 0.9144144714647334
+              },
+              "env": {
+                "lossSum": 85987.71472167969,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.926643569711027,
+                "tokenPerplexity": 18.664877881734206,
+                "nllPerUtf8Byte": 0.8022963389689923
+              },
+              "jma": {
+                "lossSum": 23380.331176757812,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.6675029296875,
+                "tokenPerplexity": 39.154013364560406,
+                "nllPerUtf8Byte": 0.9761734865666492
+              },
+              "mdn": {
+                "lossSum": 369716.9444580078,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.204591660452001,
+                "tokenPerplexity": 24.645434255987738,
+                "nllPerUtf8Byte": 0.834669701903167
+              },
+              "mic": {
+                "lossSum": 42076.19677734375,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.8966127479928234,
+                "tokenPerplexity": 18.112689101754476,
+                "nllPerUtf8Byte": 0.8410193239525035
+              },
+              "stat": {
+                "lossSum": 36887.60021972656,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7903411652000165,
+                "tokenPerplexity": 44.27150159551141,
+                "nllPerUtf8Byte": 1.009264281368206
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 6988004,
+      "seenTargetUtf8Bytes": 24495299,
+      "elapsedSeconds": 4620.68,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 5000,
+      "trainingLoss": 3.063887357711792,
+      "crossEntropyLoss": 3.0066957473754883,
+      "unlikelihoodLoss": 0.004528373945504427,
+      "negativeCandidates": 56,
+      "sequenceUnlikelihoodLoss": 0.5266337990760803,
+      "rolloutCalls": 500,
+      "rolloutGeneratedTokens": 25636,
+      "rolloutNegativePositions": 9759,
+      "validation": {
+        "nllPerUtf8Byte": 0.9733204422223287,
+        "views": {
+          "0": {
+            "lossSum": 1045277.4258326292,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6864474400366403,
+            "tokenPerplexity": 39.90283763491844,
+            "nllPerUtf8Byte": 0.9548842620499343,
+            "sites": {
+              "aozora": {
+                "lossSum": 496947.4248046875,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.480838779177562,
+                "tokenPerplexity": 88.30871312928528,
+                "nllPerUtf8Byte": 1.1826309177774836
+              },
+              "bunka": {
+                "lossSum": 12385.21337890625,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3177640982872356,
+                "tokenPerplexity": 27.598573822418803,
+                "nllPerUtf8Byte": 0.8973491797497646
+              },
+              "env": {
+                "lossSum": 84152.181640625,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.922864146456358,
+                "tokenPerplexity": 18.594468545374806,
+                "nllPerUtf8Byte": 0.7851701544232904
+              },
+              "jma": {
+                "lossSum": 22967.5458984375,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.692531494925643,
+                "tokenPerplexity": 40.14634870553168,
+                "nllPerUtf8Byte": 0.9589389127150223
+              },
+              "mdn": {
+                "lossSum": 351445.4641113281,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.1923468445029353,
+                "tokenPerplexity": 24.34549554431141,
+                "nllPerUtf8Byte": 0.7934201695706696
+              },
+              "mic": {
+                "lossSum": 41181.49719238281,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.8870931851081614,
+                "tokenPerplexity": 17.94108232553375,
+                "nllPerUtf8Byte": 0.8231360622103301
+              },
+              "stat": {
+                "lossSum": 36198.098806262016,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.793157162974119,
+                "tokenPerplexity": 44.39634574338226,
+                "nllPerUtf8Byte": 0.9903991574670173
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1084530.7389221191,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.7238634287360557,
+            "tokenPerplexity": 15.239083775540626,
+            "nllPerUtf8Byte": 0.9907430398022764,
+            "sites": {
+              "aozora": {
+                "lossSum": 502190.9861755371,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.5626994294437853,
+                "tokenPerplexity": 35.25824594586568,
+                "nllPerUtf8Byte": 1.1951094969729943
+              },
+              "bunka": {
+                "lossSum": 12636.631103515625,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.6211638878895718,
+                "tokenPerplexity": 13.751719734469635,
+                "nllPerUtf8Byte": 0.9155652154409234
+              },
+              "env": {
+                "lossSum": 85731.10943603516,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.3306630446943006,
+                "tokenPerplexity": 10.284758527381483,
+                "nllPerUtf8Byte": 0.7999021192609903
+              },
+              "jma": {
+                "lossSum": 23070.392822265625,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.8203414208148687,
+                "tokenPerplexity": 16.782579616101994,
+                "nllPerUtf8Byte": 0.9632329682378867
+              },
+              "mdn": {
+                "lossSum": 381641.4699707031,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.157543912049518,
+                "tokenPerplexity": 8.649866714091463,
+                "nllPerUtf8Byte": 0.8615904051714711
+              },
+              "mic": {
+                "lossSum": 42293.184326171875,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.3442815989231125,
+                "tokenPerplexity": 10.425780144847968,
+                "nllPerUtf8Byte": 0.8453564726398536
+              },
+              "stat": {
+                "lossSum": 36966.965087890625,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.9601989980693966,
+                "tokenPerplexity": 19.301812396752798,
+                "nllPerUtf8Byte": 1.011435746200734
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1073295.521850586,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6749270587469858,
+            "tokenPerplexity": 39.445779527678916,
+            "nllPerUtf8Byte": 0.9804794182055735,
+            "sites": {
+              "aozora": {
+                "lossSum": 502761.39599609375,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.454537686582144,
+                "tokenPerplexity": 86.01637512704619,
+                "nllPerUtf8Byte": 1.196466953025532
+              },
+              "bunka": {
+                "lossSum": 12649.77001953125,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.321021270551654,
+                "tokenPerplexity": 27.688613689685848,
+                "nllPerUtf8Byte": 0.9165171728395342
+              },
+              "env": {
+                "lossSum": 85953.13696289062,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.925466694901148,
+                "tokenPerplexity": 18.642924577804756,
+                "nllPerUtf8Byte": 0.8019737160294711
+              },
+              "jma": {
+                "lossSum": 23428.955688476562,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.675130304074755,
+                "tokenPerplexity": 39.45379751284954,
+                "nllPerUtf8Byte": 0.9782036528110126
+              },
+              "mdn": {
+                "lossSum": 369394.0499267578,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.2017929109287238,
+                "tokenPerplexity": 24.576554292456766,
+                "nllPerUtf8Byte": 0.8339407380669552
+              },
+              "mic": {
+                "lossSum": 42168.3056640625,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.902953714998107,
+                "tokenPerplexity": 18.227905972862988,
+                "nllPerUtf8Byte": 0.8428603970430242
+              },
+              "stat": {
+                "lossSum": 36939.90759277344,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.795715946647497,
+                "tokenPerplexity": 44.51009185180913,
+                "nllPerUtf8Byte": 1.0106954388019764
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 7744568,
+      "seenTargetUtf8Bytes": 27152545,
+      "elapsedSeconds": 5087.35,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 5500,
+      "trainingLoss": 2.9410994052886963,
+      "crossEntropyLoss": 2.940598726272583,
+      "unlikelihoodLoss": 0.0005007251165807247,
+      "negativeCandidates": 2,
+      "sequenceUnlikelihoodLoss": 0.0,
+      "rolloutCalls": 550,
+      "rolloutGeneratedTokens": 28231,
+      "rolloutNegativePositions": 10675,
+      "validation": {
+        "nllPerUtf8Byte": 0.9737516622888576,
+        "views": {
+          "0": {
+            "lossSum": 1046221.9352247715,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6897785023409657,
+            "tokenPerplexity": 40.03597809968115,
+            "nllPerUtf8Byte": 0.9557470924637802,
+            "sites": {
+              "aozora": {
+                "lossSum": 497089.2177734375,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.482117287529304,
+                "tokenPerplexity": 88.4216887613082,
+                "nllPerUtf8Byte": 1.1829683553823431
+              },
+              "bunka": {
+                "lossSum": 12385.078125,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.317727866327351,
+                "tokenPerplexity": 27.597573890114056,
+                "nllPerUtf8Byte": 0.8973393801622953
+              },
+              "env": {
+                "lossSum": 84314.158203125,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.92849009076187,
+                "tokenPerplexity": 18.69937481150591,
+                "nllPerUtf8Byte": 0.7866814540724689
+              },
+              "jma": {
+                "lossSum": 22894.7265625,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.6808242061897105,
+                "tokenPerplexity": 39.679084345879126,
+                "nllPerUtf8Byte": 0.9558985663437852
+              },
+              "mdn": {
+                "lossSum": 352160.75537109375,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.1988441763202267,
+                "tokenPerplexity": 24.50419129832281,
+                "nllPerUtf8Byte": 0.7950350047885625
+              },
+              "mic": {
+                "lossSum": 41203.74938964844,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.888653210154826,
+                "tokenPerplexity": 17.96909270609279,
+                "nllPerUtf8Byte": 0.8235808392893951
+              },
+              "stat": {
+                "lossSum": 36174.24979996681,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7906580530196807,
+                "tokenPerplexity": 44.28553291818548,
+                "nllPerUtf8Byte": 0.9897466360219653
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1083829.334411621,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.7221018096077727,
+            "tokenPerplexity": 15.212261945924533,
+            "nllPerUtf8Byte": 0.9901022911246018,
+            "sites": {
+              "aozora": {
+                "lossSum": 502346.0107727051,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.56379922226979,
+                "tokenPerplexity": 35.297044042838145,
+                "nllPerUtf8Byte": 1.1954784230856488
+              },
+              "bunka": {
+                "lossSum": 12623.546508789062,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.6184498047685256,
+                "tokenPerplexity": 13.714447027545319,
+                "nllPerUtf8Byte": 0.9146171937972079
+              },
+              "env": {
+                "lossSum": 85867.07034301758,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.3343592416000862,
+                "tokenPerplexity": 10.322843361190417,
+                "nllPerUtf8Byte": 0.8011706834770294
+              },
+              "jma": {
+                "lossSum": 23039.74365234375,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.816594578526131,
+                "tokenPerplexity": 16.71981559395622,
+                "nllPerUtf8Byte": 0.9619533068491399
+              },
+              "mdn": {
+                "lossSum": 380786.11181640625,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.152708292957686,
+                "tokenPerplexity": 8.608140221487389,
+                "nllPerUtf8Byte": 0.8596593561720426
+              },
+              "mic": {
+                "lossSum": 42299.843505859375,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.344650712591285,
+                "tokenPerplexity": 10.429629153117874,
+                "nllPerUtf8Byte": 0.8454895763713647
+              },
+              "stat": {
+                "lossSum": 36867.0078125,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.952194731942665,
+                "tokenPerplexity": 19.147932224096632,
+                "nllPerUtf8Byte": 1.0087008621986921
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1074311.05078125,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.678404194978583,
+            "tokenPerplexity": 39.58317661261629,
+            "nllPerUtf8Byte": 0.9814071265532164,
+            "sites": {
+              "aozora": {
+                "lossSum": 503065.345703125,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.45723072434435,
+                "tokenPerplexity": 86.24833266845208,
+                "nllPerUtf8Byte": 1.1971902897469688
+              },
+              "bunka": {
+                "lossSum": 12646.056396484375,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.320046310444835,
+                "tokenPerplexity": 27.661631551316844,
+                "nllPerUtf8Byte": 0.9162481087149961
+              },
+              "env": {
+                "lossSum": 86111.92541503906,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9308711553398137,
+                "tokenPerplexity": 18.74395228035442,
+                "nllPerUtf8Byte": 0.803455269461163
+              },
+              "jma": {
+                "lossSum": 23361.66064453125,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.66457421875,
+                "tokenPerplexity": 39.039510332358326,
+                "nllPerUtf8Byte": 0.975393956182675
+              },
+              "mdn": {
+                "lossSum": 370001.31115722656,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.2070564626918947,
+                "tokenPerplexity": 24.706255302679192,
+                "nllPerUtf8Byte": 0.835311685646747
+              },
+              "mic": {
+                "lossSum": 42196.26953125,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.904878805676029,
+                "tokenPerplexity": 18.263030142487704,
+                "nllPerUtf8Byte": 0.8434193390215871
+              },
+              "stat": {
+                "lossSum": 36928.48193359375,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7945419167276766,
+                "tokenPerplexity": 44.457866335399316,
+                "nllPerUtf8Byte": 1.0103828267146502
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 8509603,
+      "seenTargetUtf8Bytes": 29818967,
+      "elapsedSeconds": 5720.27,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 6000,
+      "trainingLoss": 2.8234939575195312,
+      "crossEntropyLoss": 2.803218126296997,
+      "unlikelihoodLoss": 0.0034019623417407274,
+      "negativeCandidates": 60,
+      "sequenceUnlikelihoodLoss": 0.16873890161514282,
+      "rolloutCalls": 600,
+      "rolloutGeneratedTokens": 30515,
+      "rolloutNegativePositions": 11564,
+      "validation": {
+        "nllPerUtf8Byte": 0.9730944167752604,
+        "views": {
+          "0": {
+            "lossSum": 1045328.0987929702,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6866261516401932,
+            "tokenPerplexity": 39.90996937226162,
+            "nllPerUtf8Byte": 0.9549305529303697,
+            "sites": {
+              "aozora": {
+                "lossSum": 496848.587890625,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.479947593802128,
+                "tokenPerplexity": 88.23004875309819,
+                "nllPerUtf8Byte": 1.1823957065970776
+              },
+              "bunka": {
+                "lossSum": 12335.01171875,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3043160243102063,
+                "tokenPerplexity": 27.22991062106286,
+                "nllPerUtf8Byte": 0.8937119054303724
+              },
+              "env": {
+                "lossSum": 84265.439453125,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.926797938700462,
+                "tokenPerplexity": 18.66775938247219,
+                "nllPerUtf8Byte": 0.7862268905933643
+              },
+              "jma": {
+                "lossSum": 22918.246459960938,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.684605540186646,
+                "tokenPerplexity": 39.829408249810726,
+                "nllPerUtf8Byte": 0.9568805669893089
+              },
+              "mdn": {
+                "lossSum": 351730.9814453125,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.1949403346835545,
+                "tokenPerplexity": 24.40871729500591,
+                "nllPerUtf8Byte": 0.7940647509771137
+              },
+              "mic": {
+                "lossSum": 41082.59411621094,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.8801594304690785,
+                "tokenPerplexity": 17.81711354395581,
+                "nllPerUtf8Byte": 0.8211591868121315
+              },
+              "stat": {
+                "lossSum": 36147.237708985806,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7878274870570894,
+                "tokenPerplexity": 44.16035703894044,
+                "nllPerUtf8Byte": 0.9890075709044244
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1083474.741027832,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.721211227242966,
+            "tokenPerplexity": 15.19872020461971,
+            "nllPerUtf8Byte": 0.9897783621529821,
+            "sites": {
+              "aozora": {
+                "lossSum": 502084.40002441406,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.5619432740562016,
+                "tokenPerplexity": 35.231595310517555,
+                "nllPerUtf8Byte": 1.1948558442293977
+              },
+              "bunka": {
+                "lossSum": 12597.429565429688,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.6130324757165915,
+                "tokenPerplexity": 13.640352234377305,
+                "nllPerUtf8Byte": 0.9127249359099904
+              },
+              "env": {
+                "lossSum": 85839.03985595703,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.3335972122650346,
+                "tokenPerplexity": 10.314980048146163,
+                "nllPerUtf8Byte": 0.8009091489401367
+              },
+              "jma": {
+                "lossSum": 23051.943359375,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.8180859852536675,
+                "tokenPerplexity": 16.74477024355683,
+                "nllPerUtf8Byte": 0.9624626679209637
+              },
+              "mdn": {
+                "lossSum": 380883.26708984375,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.1532575434590657,
+                "tokenPerplexity": 8.612869545492885,
+                "nllPerUtf8Byte": 0.8598786930575545
+              },
+              "mic": {
+                "lossSum": 42171.28564453125,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.337524840337634,
+                "tokenPerplexity": 10.355573118409458,
+                "nllPerUtf8Byte": 0.8429199609140765
+              },
+              "stat": {
+                "lossSum": 36847.37548828125,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.950622636793822,
+                "tokenPerplexity": 19.117853502238038,
+                "nllPerUtf8Byte": 1.0081637114088278
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1073459.2160644531,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6754875421214654,
+            "tokenPerplexity": 39.46789442823568,
+            "nllPerUtf8Byte": 0.9806289565240596,
+            "sites": {
+              "aozora": {
+                "lossSum": 502759.54638671875,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.454521298779238,
+                "tokenPerplexity": 86.01496551919415,
+                "nllPerUtf8Byte": 1.1964625513421276
+              },
+              "bunka": {
+                "lossSum": 12611.448974609375,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3109606129192373,
+                "tokenPerplexity": 27.41144461645771,
+                "nllPerUtf8Byte": 0.9137406879154742
+              },
+              "env": {
+                "lossSum": 86052.61901855469,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9288526264781556,
+                "tokenPerplexity": 18.706155231745278,
+                "nllPerUtf8Byte": 0.802901919428186
+              },
+              "jma": {
+                "lossSum": 23408.05517578125,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.6718517922794116,
+                "tokenPerplexity": 39.32465957812509,
+                "nllPerUtf8Byte": 0.9773310164828712
+              },
+              "mdn": {
+                "lossSum": 369677.7481689453,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.204251919190657,
+                "tokenPerplexity": 24.63706260724502,
+                "nllPerUtf8Byte": 0.8345812127078571
+              },
+              "mic": {
+                "lossSum": 42071.10546875,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.8962622517382623,
+                "tokenPerplexity": 18.106341784484727,
+                "nllPerUtf8Byte": 0.8409175588396962
+              },
+              "stat": {
+                "lossSum": 36878.69287109375,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7894259012632294,
+                "tokenPerplexity": 44.23100002431475,
+                "nllPerUtf8Byte": 1.009020571591391
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 9282305,
+      "seenTargetUtf8Bytes": 32526136,
+      "elapsedSeconds": 6202.6,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 6500,
+      "trainingLoss": 2.3521273136138916,
+      "crossEntropyLoss": 2.3521273136138916,
+      "unlikelihoodLoss": 0.0,
+      "negativeCandidates": 0,
+      "sequenceUnlikelihoodLoss": 0.0,
+      "rolloutCalls": 650,
+      "rolloutGeneratedTokens": 32871,
+      "rolloutNegativePositions": 12313,
+      "validation": {
+        "nllPerUtf8Byte": 0.9740890683680523,
+        "views": {
+          "0": {
+            "lossSum": 1047253.5765420794,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6934168584359486,
+            "tokenPerplexity": 40.18190855712222,
+            "nllPerUtf8Byte": 0.9566895198362962,
+            "sites": {
+              "aozora": {
+                "lossSum": 497835.34765625,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.488844936263018,
+                "tokenPerplexity": 89.0185643571326,
+                "nllPerUtf8Byte": 1.1847439884252924
+              },
+              "bunka": {
+                "lossSum": 12371.7509765625,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.314157775666354,
+                "tokenPerplexity": 27.499223713287236,
+                "nllPerUtf8Byte": 0.8963737847096436
+              },
+              "env": {
+                "lossSum": 84231.21337890625,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9256091618528792,
+                "tokenPerplexity": 18.645580767645857,
+                "nllPerUtf8Byte": 0.7859075489975111
+              },
+              "jma": {
+                "lossSum": 23010.196411132812,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.699388490535822,
+                "tokenPerplexity": 40.422578011619294,
+                "nllPerUtf8Byte": 0.9607196530889237
+              },
+              "mdn": {
+                "lossSum": 352279.69140625,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.1999245290784812,
+                "tokenPerplexity": 24.53067877431336,
+                "nllPerUtf8Byte": 0.7953035137289762
+              },
+              "mic": {
+                "lossSum": 41200.599609375,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.888432389888881,
+                "tokenPerplexity": 17.96512520433116,
+                "nllPerUtf8Byte": 0.8235178814586248
+              },
+              "stat": {
+                "lossSum": 36324.777103602886,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.806431636131498,
+                "tokenPerplexity": 44.98961278526232,
+                "nllPerUtf8Byte": 0.9938651427837393
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1083082.1825256348,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.7202252932261604,
+            "tokenPerplexity": 15.183742654009643,
+            "nllPerUtf8Byte": 0.9894197511982077,
+            "sites": {
+              "aozora": {
+                "lossSum": 502064.0334777832,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.561798787424504,
+                "tokenPerplexity": 35.226505183718295,
+                "nllPerUtf8Byte": 1.194807376108764
+              },
+              "bunka": {
+                "lossSum": 12600.878784179688,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.613747932831298,
+                "tokenPerplexity": 13.650114813367352,
+                "nllPerUtf8Byte": 0.9129748430792413
+              },
+              "env": {
+                "lossSum": 85614.3701171875,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.3274894007499864,
+                "tokenPerplexity": 10.252170105139363,
+                "nllPerUtf8Byte": 0.7988128993831466
+              },
+              "jma": {
+                "lossSum": 23031.2900390625,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.815561129469743,
+                "tokenPerplexity": 16.702545441755984,
+                "nllPerUtf8Byte": 0.9616003523469793
+              },
+              "mdn": {
+                "lossSum": 380789.19189453125,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.152725705645589,
+                "tokenPerplexity": 8.608290113651497,
+                "nllPerUtf8Byte": 0.8596663097291596
+              },
+              "mic": {
+                "lossSum": 42080.468017578125,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.332490882854505,
+                "tokenPerplexity": 10.303574592608648,
+                "nllPerUtf8Byte": 0.8411046975330426
+              },
+              "stat": {
+                "lossSum": 36901.9501953125,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.9549928087213724,
+                "tokenPerplexity": 19.201584635391452,
+                "nllPerUtf8Byte": 1.0096569043014172
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1074913.8352050781,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.680468108173616,
+            "tokenPerplexity": 39.66495721813349,
+            "nllPerUtf8Byte": 0.9819577835802384,
+            "sites": {
+              "aozora": {
+                "lossSum": 503713.57763671875,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.462974151745171,
+                "tokenPerplexity": 86.74511896797607,
+                "nllPerUtf8Byte": 1.198732946149424
+              },
+              "bunka": {
+                "lossSum": 12643.860595703125,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.319469833474173,
+                "tokenPerplexity": 27.645689853208985,
+                "nllPerUtf8Byte": 0.9160890157733028
+              },
+              "env": {
+                "lossSum": 85995.90942382812,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9269224813256227,
+                "tokenPerplexity": 18.670084459014117,
+                "nllPerUtf8Byte": 0.8023727984906102
+              },
+              "jma": {
+                "lossSum": 23477.095947265625,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.6826817172181374,
+                "tokenPerplexity": 39.752857178362625,
+                "nllPerUtf8Byte": 0.980213600570566
+              },
+              "mdn": {
+                "lossSum": 369846.5858154297,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.2057153514785317,
+                "tokenPerplexity": 24.673143674803104,
+                "nllPerUtf8Byte": 0.8349623790843881
+              },
+              "mic": {
+                "lossSum": 42175.4052734375,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.9034424668482375,
+                "tokenPerplexity": 18.236817073112206,
+                "nllPerUtf8Byte": 0.8430023040862982
+              },
+              "stat": {
+                "lossSum": 37061.40051269531,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.808199806072268,
+                "tokenPerplexity": 45.069232436028955,
+                "nllPerUtf8Byte": 1.014019549445821
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 10060158,
+      "seenTargetUtf8Bytes": 35254467,
+      "elapsedSeconds": 6679.96,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 7000,
+      "trainingLoss": 2.709962844848633,
+      "crossEntropyLoss": 2.707913637161255,
+      "unlikelihoodLoss": 0.002049308968707919,
+      "negativeCandidates": 37,
+      "sequenceUnlikelihoodLoss": 0.0,
+      "rolloutCalls": 700,
+      "rolloutGeneratedTokens": 35286,
+      "rolloutNegativePositions": 13267,
+      "validation": {
+        "nllPerUtf8Byte": 0.9724414819620363,
+        "views": {
+          "0": {
+            "lossSum": 1044849.3149053156,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6849375935661786,
+            "tokenPerplexity": 39.84263593545218,
+            "nllPerUtf8Byte": 0.9544931731611852,
+            "sites": {
+              "aozora": {
+                "lossSum": 497157.59814453125,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.482733854601066,
+                "tokenPerplexity": 88.47622347345425,
+                "nllPerUtf8Byte": 1.1831310863614932
+              },
+              "bunka": {
+                "lossSum": 12365.353271484375,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.312443951643283,
+                "tokenPerplexity": 27.4521352452711,
+                "nllPerUtf8Byte": 0.8959102500713212
+              },
+              "env": {
+                "lossSum": 84135.66088867188,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.922290329918095,
+                "tokenPerplexity": 18.583801792475555,
+                "nllPerUtf8Byte": 0.785016009859129
+              },
+              "jma": {
+                "lossSum": 22906.78143310547,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.682762288280622,
+                "tokenPerplexity": 39.75606023733748,
+                "nllPerUtf8Byte": 0.9564018802181733
+              },
+              "mdn": {
+                "lossSum": 351071.69677734375,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.1889517374633822,
+                "tokenPerplexity": 24.262980134592922,
+                "nllPerUtf8Byte": 0.7925763557452167
+              },
+              "mic": {
+                "lossSum": 41121.143798828125,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.882862016182566,
+                "tokenPerplexity": 17.865330946959343,
+                "nllPerUtf8Byte": 0.8219297181456751
+              },
+              "stat": {
+                "lossSum": 36091.080591350794,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7819428472546153,
+                "tokenPerplexity": 43.90125236077927,
+                "nllPerUtf8Byte": 0.9874710824195133
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1082198.6153259277,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.7180061616739235,
+            "tokenPerplexity": 15.150085290476042,
+            "nllPerUtf8Byte": 0.9886125928375535,
+            "sites": {
+              "aozora": {
+                "lossSum": 501380.9655761719,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.5569528907630064,
+                "tokenPerplexity": 35.05621411954321,
+                "nllPerUtf8Byte": 1.1931818173895405
+              },
+              "bunka": {
+                "lossSum": 12609.188842773438,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.6154716537592693,
+                "tokenPerplexity": 13.673664092302005,
+                "nllPerUtf8Byte": 0.913576933978658
+              },
+              "env": {
+                "lossSum": 85725.5407409668,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.3305116556374186,
+                "tokenPerplexity": 10.283201645338188,
+                "nllPerUtf8Byte": 0.799850161330946
+              },
+              "jma": {
+                "lossSum": 22980.83642578125,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.809393206085727,
+                "tokenPerplexity": 16.599842478752993,
+                "nllPerUtf8Byte": 0.9594938176185233
+              },
+              "mdn": {
+                "lossSum": 380575.7780761719,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.151519207608088,
+                "tokenPerplexity": 8.597910491279231,
+                "nllPerUtf8Byte": 0.859184508581492
+              },
+              "mic": {
+                "lossSum": 42146.859619140625,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.336170922850209,
+                "tokenPerplexity": 10.341562013952114,
+                "nllPerUtf8Byte": 0.8424317333428069
+              },
+              "stat": {
+                "lossSum": 36779.446044921875,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.9451830593307076,
+                "tokenPerplexity": 19.014142784151133,
+                "nllPerUtf8Byte": 1.0063051258562992
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1072991.2395019531,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.67388520642046,
+            "tokenPerplexity": 39.404704251407914,
+            "nllPerUtf8Byte": 0.9802014494876539,
+            "sites": {
+              "aozora": {
+                "lossSum": 502994.6171875,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.45660405960661,
+                "tokenPerplexity": 86.1943008113779,
+                "nllPerUtf8Byte": 1.1970219706750276
+              },
+              "bunka": {
+                "lossSum": 12643.350341796875,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3193358734042726,
+                "tokenPerplexity": 27.64198668270783,
+                "nllPerUtf8Byte": 0.9160520462104677
+              },
+              "env": {
+                "lossSum": 85946.39270019531,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9252371498653997,
+                "tokenPerplexity": 18.63864567813497,
+                "nllPerUtf8Byte": 0.8019107896301941
+              },
+              "jma": {
+                "lossSum": 23401.0302734375,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.6707498468137256,
+                "tokenPerplexity": 39.28134981469458,
+                "nllPerUtf8Byte": 0.9770377133914033
+              },
+              "mdn": {
+                "lossSum": 369063.96154785156,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.198931807367983,
+                "tokenPerplexity": 24.50633872036975,
+                "nllPerUtf8Byte": 0.8331955334639385
+              },
+              "mic": {
+                "lossSum": 42107.879150390625,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.898793828334753,
+                "tokenPerplexity": 18.152237445273112,
+                "nllPerUtf8Byte": 0.8416525914529407
+              },
+              "stat": {
+                "lossSum": 36834.00830078125,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7848343917777694,
+                "tokenPerplexity": 44.028378493463606,
+                "nllPerUtf8Byte": 1.0077979780782307
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 10835496,
+      "seenTargetUtf8Bytes": 37973905,
+      "elapsedSeconds": 7187.86,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 7500,
+      "trainingLoss": 2.3487839698791504,
+      "crossEntropyLoss": 2.343336582183838,
+      "unlikelihoodLoss": 0.0054473355412483215,
+      "negativeCandidates": 54,
+      "sequenceUnlikelihoodLoss": 0.0,
+      "rolloutCalls": 750,
+      "rolloutGeneratedTokens": 37768,
+      "rolloutNegativePositions": 14164,
+      "validation": {
+        "nllPerUtf8Byte": 0.9718726399915344,
+        "views": {
+          "0": {
+            "lossSum": 1044263.0902759135,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6828701172857787,
+            "tokenPerplexity": 39.760347324893864,
+            "nllPerUtf8Byte": 0.9539576438760328,
+            "sites": {
+              "aozora": {
+                "lossSum": 496997.7724609375,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.481292750200058,
+                "tokenPerplexity": 88.34881182721472,
+                "nllPerUtf8Byte": 1.182750734667454
+              },
+              "bunka": {
+                "lossSum": 12360.384765625,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3111129830230377,
+                "tokenPerplexity": 27.41562161933634,
+                "nllPerUtf8Byte": 0.8955502655865092
+              },
+              "env": {
+                "lossSum": 83903.77294921875,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9142361484220327,
+                "tokenPerplexity": 18.43472562906855,
+                "nllPerUtf8Byte": 0.7828524118907858
+              },
+              "jma": {
+                "lossSum": 22830.42608642578,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.670486509071669,
+                "tokenPerplexity": 39.27100691462719,
+                "nllPerUtf8Byte": 0.9532138986441393
+              },
+              "mdn": {
+                "lossSum": 350838.1677246094,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.186830481647828,
+                "tokenPerplexity": 24.21156669668568,
+                "nllPerUtf8Byte": 0.7920491426224391
+              },
+              "mic": {
+                "lossSum": 41166.43243408203,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.886037046696721,
+                "tokenPerplexity": 17.922144061821175,
+                "nllPerUtf8Byte": 0.8228349477130128
+              },
+              "stat": {
+                "lossSum": 36166.13385501504,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7898075924777364,
+                "tokenPerplexity": 44.24788583080988,
+                "nllPerUtf8Byte": 0.98952457946907
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1081667.7359771729,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.716672826627485,
+            "tokenPerplexity": 15.129898611595557,
+            "nllPerUtf8Byte": 0.9881276227017357,
+            "sites": {
+              "aozora": {
+                "lossSum": 501466.82987976074,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.5575620389035083,
+                "tokenPerplexity": 35.07757505251295,
+                "nllPerUtf8Byte": 1.1933861564706767
+              },
+              "bunka": {
+                "lossSum": 12642.293701171875,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.6223384569947883,
+                "tokenPerplexity": 13.767881569351218,
+                "nllPerUtf8Byte": 0.9159754891444628
+              },
+              "env": {
+                "lossSum": 85523.29330444336,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.325013410842849,
+                "tokenPerplexity": 10.226817235110136,
+                "nllPerUtf8Byte": 0.7979631199272545
+              },
+              "jma": {
+                "lossSum": 22919.385498046875,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.801880867731892,
+                "tokenPerplexity": 16.475606082629227,
+                "nllPerUtf8Byte": 0.9569281240051303
+              },
+              "mdn": {
+                "lossSum": 380015.35595703125,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.1483509582786255,
+                "tokenPerplexity": 8.570713273663719,
+                "nllPerUtf8Byte": 0.8579193045649198
+              },
+              "mic": {
+                "lossSum": 42278.486572265625,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.343466912713576,
+                "tokenPerplexity": 10.417289864467065,
+                "nllPerUtf8Byte": 0.8450626938290151
+              },
+              "stat": {
+                "lossSum": 36822.091064453125,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.9485979391778607,
+                "tokenPerplexity": 19.079184789265117,
+                "nllPerUtf8Byte": 1.0074719161797347
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1072228.115600586,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.671272296353086,
+            "tokenPerplexity": 39.30187769973584,
+            "nllPerUtf8Byte": 0.9795043187686687,
+            "sites": {
+              "aozora": {
+                "lossSum": 502868.5859375,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.455487404753467,
+                "tokenPerplexity": 86.09810524568192,
+                "nllPerUtf8Byte": 1.1967220426637
+              },
+              "bunka": {
+                "lossSum": 12643.7998046875,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.319453873638094,
+                "tokenPerplexity": 27.645248636051523,
+                "nllPerUtf8Byte": 0.9160846112655775
+              },
+              "env": {
+                "lossSum": 85692.44506835938,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.91659388953267,
+                "tokenPerplexity": 18.47824121863637,
+                "nllPerUtf8Byte": 0.7995413667891373
+              },
+              "jma": {
+                "lossSum": 23298.545166015625,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.654673751531863,
+                "tokenPerplexity": 38.654907953255154,
+                "nllPerUtf8Byte": 0.9727587643946234
+              },
+              "mdn": {
+                "lossSum": 368648.51794433594,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.1953308712270494,
+                "tokenPerplexity": 24.418251652725818,
+                "nllPerUtf8Byte": 0.8322576316612167
+              },
+              "mic": {
+                "lossSum": 42163.60400390625,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.9026300429510017,
+                "tokenPerplexity": 18.22200706392977,
+                "nllPerUtf8Byte": 0.8427664202259894
+              },
+              "stat": {
+                "lossSum": 36912.61767578125,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7929118039232685,
+                "tokenPerplexity": 44.38545403437377,
+                "nllPerUtf8Byte": 1.009948772217605
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 11624513,
+      "seenTargetUtf8Bytes": 40747000,
+      "elapsedSeconds": 7671.96,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 8000,
+      "trainingLoss": 2.8775908946990967,
+      "crossEntropyLoss": 2.8736860752105713,
+      "unlikelihoodLoss": 0.003904873738065362,
+      "negativeCandidates": 48,
+      "sequenceUnlikelihoodLoss": 0.0,
+      "rolloutCalls": 800,
+      "rolloutGeneratedTokens": 40411,
+      "rolloutNegativePositions": 15321,
+      "validation": {
+        "nllPerUtf8Byte": 0.9720172078437117,
+        "views": {
+          "0": {
+            "lossSum": 1044340.1734227538,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6831419714005973,
+            "tokenPerplexity": 39.77115780829137,
+            "nllPerUtf8Byte": 0.9540280610513855,
+            "sites": {
+              "aozora": {
+                "lossSum": 496723.31689453125,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.478818059551249,
+                "tokenPerplexity": 88.13044615393828,
+                "nllPerUtf8Byte": 1.182097587831014
+              },
+              "bunka": {
+                "lossSum": 12363.61376953125,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3119779720148004,
+                "tokenPerplexity": 27.439346089462912,
+                "nllPerUtf8Byte": 0.895784217470747
+              },
+              "env": {
+                "lossSum": 83942.52661132812,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9155821823253145,
+                "tokenPerplexity": 18.459556102343402,
+                "nllPerUtf8Byte": 0.7832139975118554
+              },
+              "jma": {
+                "lossSum": 22923.71795654297,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.6854852020165545,
+                "tokenPerplexity": 39.86446007457181,
+                "nllPerUtf8Byte": 0.9571090124229873
+              },
+              "mdn": {
+                "lossSum": 351031.7790527344,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.188589145723811,
+                "tokenPerplexity": 24.254184173186584,
+                "nllPerUtf8Byte": 0.7924862378434008
+              },
+              "mic": {
+                "lossSum": 41163.26403808594,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.885814921346462,
+                "tokenPerplexity": 17.918163541397664,
+                "nllPerUtf8Byte": 0.8227716177910441
+              },
+              "stat": {
+                "lossSum": 36191.955099999905,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7925133710573093,
+                "tokenPerplexity": 44.36777293331575,
+                "nllPerUtf8Byte": 0.9902310624093656
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1082030.0760040283,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.7175828651469094,
+            "tokenPerplexity": 15.143673669092884,
+            "nllPerUtf8Byte": 0.9884586284047235,
+            "sites": {
+              "aozora": {
+                "lossSum": 501591.5265350342,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.558446675854043,
+                "tokenPerplexity": 35.10861970113662,
+                "nllPerUtf8Byte": 1.1936829084257308
+              },
+              "bunka": {
+                "lossSum": 12611.298583984375,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.6159092686132284,
+                "tokenPerplexity": 13.679649200307411,
+                "nllPerUtf8Byte": 0.9137297916232702
+              },
+              "env": {
+                "lossSum": 85526.42837524414,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.3250986400403475,
+                "tokenPerplexity": 10.227688895680988,
+                "nllPerUtf8Byte": 0.797992371266635
+              },
+              "jma": {
+                "lossSum": 22998.6298828125,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.8115684453316017,
+                "tokenPerplexity": 16.635990408532543,
+                "nllPerUtf8Byte": 0.9602367284377479
+              },
+              "mdn": {
+                "lossSum": 380200.015625,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.1493948997099843,
+                "tokenPerplexity": 8.579665268212393,
+                "nllPerUtf8Byte": 0.8583361905971328
+              },
+              "mic": {
+                "lossSum": 42222.78369140625,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.340379341023571,
+                "tokenPerplexity": 10.385175338657898,
+                "nllPerUtf8Byte": 0.8439493042455777
+              },
+              "stat": {
+                "lossSum": 36879.393310546875,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.9531865239067003,
+                "tokenPerplexity": 19.166932409962747,
+                "nllPerUtf8Byte": 1.0090397359858512
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1072290.5087890625,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.67148592849069,
+            "tokenPerplexity": 39.31027474078766,
+            "nllPerUtf8Byte": 0.9795613163391347,
+            "sites": {
+              "aozora": {
+                "lossSum": 502584.41796875,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.452969636014265,
+                "tokenPerplexity": 85.88160279371284,
+                "nllPerUtf8Byte": 1.1960457823413573
+              },
+              "bunka": {
+                "lossSum": 12641.9560546875,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.318969822706091,
+                "tokenPerplexity": 27.63187016587548,
+                "nllPerUtf8Byte": 0.9159510255533618
+              },
+              "env": {
+                "lossSum": 85743.30993652344,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.918325105902571,
+                "tokenPerplexity": 18.510258758969353,
+                "nllPerUtf8Byte": 0.800015954323441
+              },
+              "jma": {
+                "lossSum": 23379.4912109375,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.667371170343137,
+                "tokenPerplexity": 39.148854797282496,
+                "nllPerUtf8Byte": 0.9761384163891904
+              },
+              "mdn": {
+                "lossSum": 368843.20849609375,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.1970183884693184,
+                "tokenPerplexity": 24.45949266108532,
+                "nllPerUtf8Byte": 0.832697163327901
+              },
+              "mic": {
+                "lossSum": 42150.443603515625,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.9017240536634743,
+                "tokenPerplexity": 18.20550559693749,
+                "nllPerUtf8Byte": 0.8425033700482836
+              },
+              "stat": {
+                "lossSum": 36947.68151855469,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.796514747077136,
+                "tokenPerplexity": 44.54566073663254,
+                "nllPerUtf8Byte": 1.0109081375291988
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 12411050,
+      "seenTargetUtf8Bytes": 43510978,
+      "elapsedSeconds": 8156.6,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 8500,
+      "trainingLoss": 3.448194980621338,
+      "crossEntropyLoss": 3.4196670055389404,
+      "unlikelihoodLoss": 0.0017261813627555966,
+      "negativeCandidates": 40,
+      "sequenceUnlikelihoodLoss": 0.26801741123199463,
+      "rolloutCalls": 850,
+      "rolloutGeneratedTokens": 43069,
+      "rolloutNegativePositions": 16263,
+      "validation": {
+        "nllPerUtf8Byte": 0.972579873761396,
+        "views": {
+          "0": {
+            "lossSum": 1045045.8037486076,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.685630563466272,
+            "tokenPerplexity": 39.87025525146791,
+            "nllPerUtf8Byte": 0.9546726701057198,
+            "sites": {
+              "aozora": {
+                "lossSum": 497524.3173828125,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.486040461501398,
+                "tokenPerplexity": 88.76926378206021,
+                "nllPerUtf8Byte": 1.1840038014369474
+              },
+              "bunka": {
+                "lossSum": 12331.85546875,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.303470524712028,
+                "tokenPerplexity": 27.206897472749095,
+                "nllPerUtf8Byte": 0.8934832248043761
+              },
+              "env": {
+                "lossSum": 84127.4267578125,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9220043332226218,
+                "tokenPerplexity": 18.578487646523893,
+                "nllPerUtf8Byte": 0.7849391824534415
+              },
+              "jma": {
+                "lossSum": 22885.99676513672,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.679420701790469,
+                "tokenPerplexity": 39.62343363858325,
+                "nllPerUtf8Byte": 0.9555340806286468
+              },
+              "mdn": {
+                "lossSum": 350813.8723144531,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.186609794844701,
+                "tokenPerplexity": 24.20622411297324,
+                "nllPerUtf8Byte": 0.7919942935194788
+              },
+              "mic": {
+                "lossSum": 41116.04089355469,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.8825042690377654,
+                "tokenPerplexity": 17.85894081891533,
+                "nllPerUtf8Byte": 0.8218277212383508
+              },
+              "stat": {
+                "lossSum": 36246.294166088104,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7982074993281048,
+                "tokenPerplexity": 44.62112936093649,
+                "nllPerUtf8Byte": 0.9917178080409342
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1082355.9060516357,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.7184012066828473,
+            "tokenPerplexity": 15.156071438375891,
+            "nllPerUtf8Byte": 0.9887562814266622,
+            "sites": {
+              "aozora": {
+                "lossSum": 502267.91764831543,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.563245205297432,
+                "tokenPerplexity": 35.27749429730981,
+                "nllPerUtf8Byte": 1.1952925777854033
+              },
+              "bunka": {
+                "lossSum": 12605.05029296875,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.61461321156788,
+                "tokenPerplexity": 13.661931078911678,
+                "nllPerUtf8Byte": 0.9132770825220077
+              },
+              "env": {
+                "lossSum": 85513.71374511719,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.3247529835014458,
+                "tokenPerplexity": 10.224154239060123,
+                "nllPerUtf8Byte": 0.7978737391895386
+              },
+              "jma": {
+                "lossSum": 22944.668212890625,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.804971664167558,
+                "tokenPerplexity": 16.526607604243917,
+                "nllPerUtf8Byte": 0.9579837256436318
+              },
+              "mdn": {
+                "lossSum": 379993.3837890625,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.148226742434789,
+                "tokenPerplexity": 8.569648721400647,
+                "nllPerUtf8Byte": 0.857869700392962
+              },
+              "mic": {
+                "lossSum": 42156.39111328125,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.3366992468976915,
+                "tokenPerplexity": 10.34702715340779,
+                "nllPerUtf8Byte": 0.8426222489162752
+              },
+              "stat": {
+                "lossSum": 36874.78125,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.952817204516336,
+                "tokenPerplexity": 19.15985499716328,
+                "nllPerUtf8Byte": 1.008913547566281
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1073076.9387207031,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6741786376064534,
+            "tokenPerplexity": 39.416268517085236,
+            "nllPerUtf8Byte": 0.9802797376370312,
+            "sites": {
+              "aozora": {
+                "lossSum": 503495.9658203125,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.461046080009857,
+                "tokenPerplexity": 86.5780292881244,
+                "nllPerUtf8Byte": 1.1982150755472032
+              },
+              "bunka": {
+                "lossSum": 12618.288818359375,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3127563188131726,
+                "tokenPerplexity": 27.46071173050157,
+                "nllPerUtf8Byte": 0.914236256945325
+              },
+              "env": {
+                "lossSum": 85922.21887207031,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9244143790909196,
+                "tokenPerplexity": 18.623316652197133,
+                "nllPerUtf8Byte": 0.8016852391097933
+              },
+              "jma": {
+                "lossSum": 23351.621337890625,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.6629994255514706,
+                "tokenPerplexity": 38.97807956008975,
+                "nllPerUtf8Byte": 0.9749747959538485
+              },
+              "mdn": {
+                "lossSum": 368561.5089111328,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.19457670394755,
+                "tokenPerplexity": 24.39984314872496,
+                "nllPerUtf8Byte": 0.8320612008378662
+              },
+              "mic": {
+                "lossSum": 42110.784912109375,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.8989938670046382,
+                "tokenPerplexity": 18.15586895791647,
+                "nllPerUtf8Byte": 0.8417106718390841
+              },
+              "stat": {
+                "lossSum": 37016.550048828125,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.8035912503933544,
+                "tokenPerplexity": 44.86200624243652,
+                "nllPerUtf8Byte": 1.0127924169971305
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 13199848,
+      "seenTargetUtf8Bytes": 46281189,
+      "elapsedSeconds": 8671.11,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 9000,
+      "trainingLoss": 2.2283568382263184,
+      "crossEntropyLoss": 2.2184441089630127,
+      "unlikelihoodLoss": 0.004299411084502935,
+      "negativeCandidates": 47,
+      "sequenceUnlikelihoodLoss": 0.05613277107477188,
+      "rolloutCalls": 900,
+      "rolloutGeneratedTokens": 45756,
+      "rolloutNegativePositions": 17309,
+      "validation": {
+        "nllPerUtf8Byte": 0.9716032224360764,
+        "views": {
+          "0": {
+            "lossSum": 1043886.070425719,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6815404570183285,
+            "tokenPerplexity": 39.70751470333878,
+            "nllPerUtf8Byte": 0.9536132278267295,
+            "sites": {
+              "aozora": {
+                "lossSum": 496578.814453125,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.4775151206268875,
+                "tokenPerplexity": 88.01569234006271,
+                "nllPerUtf8Byte": 1.1817537022480098
+              },
+              "bunka": {
+                "lossSum": 12346.39013671875,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.307364086986003,
+                "tokenPerplexity": 27.313035716184714,
+                "nllPerUtf8Byte": 0.894536308992809
+              },
+              "env": {
+                "lossSum": 84035.12719726562,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9187984855429,
+                "tokenPerplexity": 18.519023212896425,
+                "nllPerUtf8Byte": 0.7840779943202891
+              },
+              "jma": {
+                "lossSum": 22956.993041992188,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.690834894210963,
+                "tokenPerplexity": 40.078294128672276,
+                "nllPerUtf8Byte": 0.958498310800893
+              },
+              "mdn": {
+                "lossSum": 350596.7707519531,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.1846377577614056,
+                "tokenPerplexity": 24.158535578609783,
+                "nllPerUtf8Byte": 0.791504166953275
+              },
+              "mic": {
+                "lossSum": 41125.512268066406,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.8831682745419522,
+                "tokenPerplexity": 17.87080319182264,
+                "nllPerUtf8Byte": 0.8220170351402439
+              },
+              "stat": {
+                "lossSum": 36246.46257659793,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.798225146871836,
+                "tokenPerplexity": 44.62191682121658,
+                "nllPerUtf8Byte": 0.9917224158416901
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1081433.9095153809,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.716085557567155,
+            "tokenPerplexity": 15.121015898781536,
+            "nllPerUtf8Byte": 0.9879140170092201,
+            "sites": {
+              "aozora": {
+                "lossSum": 501820.56970214844,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.5600715794928166,
+                "tokenPerplexity": 35.165714199007716,
+                "nllPerUtf8Byte": 1.1942279832513856
+              },
+              "bunka": {
+                "lossSum": 12601.057739257812,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.6137850527396416,
+                "tokenPerplexity": 13.650621513782383,
+                "nllPerUtf8Byte": 0.9129878089594126
+              },
+              "env": {
+                "lossSum": 85446.33139038086,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.3229211448015676,
+                "tokenPerplexity": 10.205442381436471,
+                "nllPerUtf8Byte": 0.7972450375582528
+              },
+              "jma": {
+                "lossSum": 23069.449462890625,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.8202260957079,
+                "tokenPerplexity": 16.780644274911417,
+                "nllPerUtf8Byte": 0.9631935811820227
+              },
+              "mdn": {
+                "lossSum": 379382.0788574219,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.144770835942844,
+                "tokenPerplexity": 8.540083932748253,
+                "nllPerUtf8Byte": 0.8564896237891904
+              },
+              "mic": {
+                "lossSum": 42205.994873046875,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.3394487485752937,
+                "tokenPerplexity": 10.375515468312027,
+                "nllPerUtf8Byte": 0.8436137292234035
+              },
+              "stat": {
+                "lossSum": 36908.427490234375,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.9555114902493895,
+                "tokenPerplexity": 19.211546726003338,
+                "nllPerUtf8Byte": 1.009834126521502
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1071981.562866211,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.670428108245974,
+            "tokenPerplexity": 39.268713522366156,
+            "nllPerUtf8Byte": 0.9792790873420619,
+            "sites": {
+              "aozora": {
+                "lossSum": 502587.96875,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.4530010964426525,
+                "tokenPerplexity": 85.88430470822884,
+                "nllPerUtf8Byte": 1.196054232457967
+              },
+              "bunka": {
+                "lossSum": 12633.0068359375,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.3166203297289316,
+                "tokenPerplexity": 27.567025486863137,
+                "nllPerUtf8Byte": 0.915302625412078
+              },
+              "env": {
+                "lossSum": 85830.21618652344,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9212830123727387,
+                "tokenPerplexity": 18.565091428091833,
+                "nllPerUtf8Byte": 0.8008268209272833
+              },
+              "jma": {
+                "lossSum": 23424.794921875,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.6744776348039214,
+                "tokenPerplexity": 39.42805563297599,
+                "nllPerUtf8Byte": 0.9780299328577094
+              },
+              "mdn": {
+                "lossSum": 368407.73486328125,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.193243838254685,
+                "tokenPerplexity": 24.367343098792965,
+                "nllPerUtf8Byte": 0.8317140419082995
+              },
+              "mic": {
+                "lossSum": 42103.590087890625,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.8984985603669715,
+                "tokenPerplexity": 18.146878462218908,
+                "nllPerUtf8Byte": 0.8415668616408281
+              },
+              "stat": {
+                "lossSum": 36994.251220703125,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.801299961025804,
+                "tokenPerplexity": 44.7593320775574,
+                "nllPerUtf8Byte": 1.0121823092479445
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 13988974,
+      "seenTargetUtf8Bytes": 49045204,
+      "elapsedSeconds": 9152.38,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 9500,
+      "trainingLoss": 3.2581241130828857,
+      "crossEntropyLoss": 3.24664306640625,
+      "unlikelihoodLoss": 0.0013897476019337773,
+      "negativeCandidates": 38,
+      "sequenceUnlikelihoodLoss": 0.1009119525551796,
+      "rolloutCalls": 950,
+      "rolloutGeneratedTokens": 48023,
+      "rolloutNegativePositions": 18221,
+      "validation": {
+        "nllPerUtf8Byte": 0.9714264147652326,
+        "views": {
+          "0": {
+            "lossSum": 1043331.6891082525,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.679585284603742,
+            "tokenPerplexity": 39.62995551144238,
+            "nllPerUtf8Byte": 0.9531067881178631,
+            "sites": {
+              "aozora": {
+                "lossSum": 496714.04296875,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.478734439103286,
+                "tokenPerplexity": 88.12307695466393,
+                "nllPerUtf8Byte": 1.182075517827608
+              },
+              "bunka": {
+                "lossSum": 12350.9345703125,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.308581454677873,
+                "tokenPerplexity": 27.34630597038994,
+                "nllPerUtf8Byte": 0.8948655680562599
+              },
+              "env": {
+                "lossSum": 84004.37182617188,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.917730256891802,
+                "tokenPerplexity": 18.499251224092703,
+                "nllPerUtf8Byte": 0.7837910356342487
+              },
+              "jma": {
+                "lossSum": 22840.68634033203,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.672136067577497,
+                "tokenPerplexity": 39.3358401965603,
+                "nllPerUtf8Byte": 0.9536422838433481
+              },
+              "mdn": {
+                "lossSum": 350067.826171875,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.1798331017519756,
+                "tokenPerplexity": 24.042740525918813,
+                "nllPerUtf8Byte": 0.7903100263503217
+              },
+              "mic": {
+                "lossSum": 41157.657958984375,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.885421898414496,
+                "tokenPerplexity": 17.911122675928606,
+                "nllPerUtf8Byte": 0.8226595634416225
+              },
+              "stat": {
+                "lossSum": 36196.169271826744,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7929549692787115,
+                "tokenPerplexity": 44.38736998962481,
+                "nllPerUtf8Byte": 0.9903463643827942
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1082026.6969604492,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.7175743784780684,
+            "tokenPerplexity": 15.143545150294768,
+            "nllPerUtf8Byte": 0.9884555415729842,
+            "sites": {
+              "aozora": {
+                "lossSum": 502393.6922302246,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.5641374893955975,
+                "tokenPerplexity": 35.30898589212966,
+                "nllPerUtf8Byte": 1.1955918949803659
+              },
+              "bunka": {
+                "lossSum": 12607.025146484375,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.615022847227624,
+                "tokenPerplexity": 13.667528639464496,
+                "nllPerUtf8Byte": 0.9134201671123298
+              },
+              "env": {
+                "lossSum": 85505.55355834961,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.324531142843345,
+                "tokenPerplexity": 10.221886357518676,
+                "nllPerUtf8Byte": 0.7977976017088518
+              },
+              "jma": {
+                "lossSum": 22952.148193359375,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.8058860872077473,
+                "tokenPerplexity": 16.54172682664254,
+                "nllPerUtf8Byte": 0.9582960291160859
+              },
+              "mdn": {
+                "lossSum": 379429.4992675781,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.14503891901371,
+                "tokenPerplexity": 8.542373691583473,
+                "nllPerUtf8Byte": 0.8565966796875
+              },
+              "mic": {
+                "lossSum": 42218.500732421875,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.3401419396054473,
+                "tokenPerplexity": 10.382710175933177,
+                "nllPerUtf8Byte": 0.8438636964305791
+              },
+              "stat": {
+                "lossSum": 36920.27783203125,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.956460428573931,
+                "tokenPerplexity": 19.229785951546745,
+                "nllPerUtf8Byte": 1.0101583581501887
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1071482.8005371094,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6687203631359053,
+            "tokenPerplexity": 39.20170979779524,
+            "nllPerUtf8Byte": 0.9788234568206403,
+            "sites": {
+              "aozora": {
+                "lossSum": 502745.35107421875,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.454395526285551,
+                "tokenPerplexity": 86.00414788278118,
+                "nllPerUtf8Byte": 1.1964287694678044
+              },
+              "bunka": {
+                "lossSum": 12635.1689453125,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.317187961489236,
+                "tokenPerplexity": 27.582677848034987,
+                "nllPerUtf8Byte": 0.915459277301297
+              },
+              "env": {
+                "lossSum": 85811.74291992188,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.920654263637108,
+                "tokenPerplexity": 18.55342231918271,
+                "nllPerUtf8Byte": 0.8006544586984322
+              },
+              "jma": {
+                "lossSum": 23300.536865234375,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.6549861749387254,
+                "tokenPerplexity": 38.66698653800792,
+                "nllPerUtf8Byte": 0.9728419216414502
+              },
+              "mdn": {
+                "lossSum": 367901.2233886719,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.188853554087872,
+                "tokenPerplexity": 24.260598030246804,
+                "nllPerUtf8Byte": 0.830570546085725
+              },
+              "mic": {
+                "lossSum": 42142.4375,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.9011728968745696,
+                "tokenPerplexity": 18.19547427360221,
+                "nllPerUtf8Byte": 0.8423433439936039
+              },
+              "stat": {
+                "lossSum": 36946.33984375,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.7963768848900536,
+                "tokenPerplexity": 44.53951999771594,
+                "nllPerUtf8Byte": 1.0108714285958575
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 14755683,
+      "seenTargetUtf8Bytes": 51734895,
+      "elapsedSeconds": 9615.34,
+      "learningRate": 2.2499999999999998e-05
+    },
+    {
+      "step": 10000,
+      "trainingLoss": 3.216867446899414,
+      "crossEntropyLoss": 3.2148804664611816,
+      "unlikelihoodLoss": 0.001986896153539419,
+      "negativeCandidates": 25,
+      "sequenceUnlikelihoodLoss": 0.0,
+      "rolloutCalls": 1000,
+      "rolloutGeneratedTokens": 50646,
+      "rolloutNegativePositions": 18977,
+      "validation": {
+        "nllPerUtf8Byte": 0.9716848404105995,
+        "views": {
+          "0": {
+            "lossSum": 1043709.774261117,
+            "tokens": 283546,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6809187019429546,
+            "tokenPerplexity": 39.68283402800415,
+            "nllPerUtf8Byte": 0.9534521773449359,
+            "sites": {
+              "aozora": {
+                "lossSum": 496846.63818359375,
+                "tokens": 110905,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.479930013827994,
+                "tokenPerplexity": 88.22849768475724,
+                "nllPerUtf8Byte": 1.18239106670219
+              },
+              "bunka": {
+                "lossSum": 12314.917724609375,
+                "tokens": 3733,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.298933223843926,
+                "tokenPerplexity": 27.083731225690386,
+                "nllPerUtf8Byte": 0.8922560298948975
+              },
+              "env": {
+                "lossSum": 84057.67504882812,
+                "tokens": 28791,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.9195816417918143,
+                "tokenPerplexity": 18.533532182302856,
+                "nllPerUtf8Byte": 0.7842883738939149
+              },
+              "jma": {
+                "lossSum": 22769.604125976562,
+                "tokens": 6220,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.660708058838676,
+                "tokenPerplexity": 38.88886873244995,
+                "nllPerUtf8Byte": 0.9506744656163234
+              },
+              "mdn": {
+                "lossSum": 350491.9245605469,
+                "tokens": 110090,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.183685389776972,
+                "tokenPerplexity": 24.13553871525031,
+                "nllPerUtf8Byte": 0.7912674671194195
+              },
+              "mic": {
+                "lossSum": 41147.68731689453,
+                "tokens": 14264,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.884722890976902,
+                "tokenPerplexity": 17.898607042732422,
+                "nllPerUtf8Byte": 0.8224602701757852
+              },
+              "stat": {
+                "lossSum": 36081.32730066776,
+                "tokens": 9543,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.780920811135677,
+                "tokenPerplexity": 43.85640661608901,
+                "nllPerUtf8Byte": 0.9872042272201089
+              }
+            }
+          },
+          "1": {
+            "lossSum": 1081917.0283050537,
+            "tokens": 398159,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 2.71729893912998,
+            "tokenPerplexity": 15.139374596484503,
+            "nllPerUtf8Byte": 0.9883553568081656,
+            "sites": {
+              "aozora": {
+                "lossSum": 502005.34449768066,
+                "tokens": 140958,
+                "utf8Bytes": 420205,
+                "tokenLoss": 3.5613824295015584,
+                "tokenPerplexity": 35.21184140209004,
+                "nllPerUtf8Byte": 1.194667708612893
+              },
+              "bunka": {
+                "lossSum": 12594.936279296875,
+                "tokens": 4821,
+                "utf8Bytes": 13802,
+                "tokenLoss": 2.612515303733017,
+                "tokenPerplexity": 13.633299650212264,
+                "nllPerUtf8Byte": 0.9125442891825007
+              },
+              "env": {
+                "lossSum": 85703.25436401367,
+                "tokens": 36784,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.329905784145652,
+                "tokenPerplexity": 10.27697323361627,
+                "nllPerUtf8Byte": 0.7996422214095718
+              },
+              "jma": {
+                "lossSum": 22882.212890625,
+                "tokens": 8180,
+                "utf8Bytes": 23951,
+                "tokenLoss": 2.7973365391962104,
+                "tokenPerplexity": 16.400905376593485,
+                "nllPerUtf8Byte": 0.955376096640015
+              },
+              "mdn": {
+                "lossSum": 379694.9748535156,
+                "tokens": 176887,
+                "utf8Bytes": 442950,
+                "tokenLoss": 2.146539739231914,
+                "tokenPerplexity": 8.555203884229227,
+                "nllPerUtf8Byte": 0.857196015020918
+              },
+              "mic": {
+                "lossSum": 42243.959228515625,
+                "tokens": 18041,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.341553086221142,
+                "tokenPerplexity": 10.397372044849979,
+                "nllPerUtf8Byte": 0.8443725610336923
+              },
+              "stat": {
+                "lossSum": 36792.34619140625,
+                "tokens": 12488,
+                "utf8Bytes": 36549,
+                "tokenLoss": 2.9462160627327236,
+                "tokenPerplexity": 19.033794606785868,
+                "nllPerUtf8Byte": 1.0066580806973173
+              }
+            }
+          },
+          "2": {
+            "lossSum": 1072031.3198242188,
+            "tokens": 292059,
+            "utf8Bytes": 1094664,
+            "tokenLoss": 3.6705984743638056,
+            "tokenPerplexity": 39.275404150553186,
+            "nllPerUtf8Byte": 0.9793245414339183,
+            "sites": {
+              "aozora": {
+                "lossSum": 502866.02294921875,
+                "tokens": 112865,
+                "utf8Bytes": 420205,
+                "tokenLoss": 4.455464696311688,
+                "tokenPerplexity": 86.09615011407078,
+                "nllPerUtf8Byte": 1.1967159432877257
+              },
+              "bunka": {
+                "lossSum": 12599.7099609375,
+                "tokens": 3809,
+                "utf8Bytes": 13802,
+                "tokenLoss": 3.307878698067078,
+                "tokenPerplexity": 27.327094924223914,
+                "nllPerUtf8Byte": 0.9128901580160484
+              },
+              "env": {
+                "lossSum": 85888.04382324219,
+                "tokens": 29381,
+                "utf8Bytes": 107177,
+                "tokenLoss": 2.923251210756686,
+                "tokenPerplexity": 18.601667193412254,
+                "nllPerUtf8Byte": 0.8013663735992068
+              },
+              "jma": {
+                "lossSum": 23250.257080078125,
+                "tokens": 6375,
+                "utf8Bytes": 23951,
+                "tokenLoss": 3.6470991498161767,
+                "tokenPerplexity": 38.36321853137921,
+                "nllPerUtf8Byte": 0.9707426445692507
+              },
+              "mdn": {
+                "lossSum": 368478.33850097656,
+                "tokens": 115371,
+                "utf8Bytes": 442950,
+                "tokenLoss": 3.193855808660552,
+                "tokenPerplexity": 24.382259755449713,
+                "nllPerUtf8Byte": 0.8318734360559353
+              },
+              "mic": {
+                "lossSum": 42125.1572265625,
+                "tokens": 14526,
+                "utf8Bytes": 50030,
+                "tokenLoss": 2.8999832869724975,
+                "tokenPerplexity": 18.1738416269899,
+                "nllPerUtf8Byte": 0.8419979457637917
+              },
+              "stat": {
+                "lossSum": 36823.790283203125,
+                "tokens": 9732,
+                "utf8Bytes": 36549,
+                "tokenLoss": 3.783784451623831,
+                "tokenPerplexity": 43.982175590356526,
+                "nllPerUtf8Byte": 1.0075184077048107
+              }
+            }
+          }
+        },
+        "metric": "Weighted segmentation diagnostic; not probability of independent text"
+      },
+      "seenTargetTokens": 15543567,
+      "seenTargetUtf8Bytes": 54500806,
+      "elapsedSeconds": 10098.06,
+      "learningRate": 2.2499999999999998e-05
+    }
+  ],
+  "bestStep": 9500,
+  "bestValidationNllPerByte": 0.9714264147652326
+}
