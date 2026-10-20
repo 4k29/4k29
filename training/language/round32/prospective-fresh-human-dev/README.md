@@ -15,3 +15,5 @@ gh api 'repos/nu-dialogue/multi-relational-multi-party-chat-corpus/git/trees/e6e
 gh api repos/nu-dialogue/multi-relational-multi-party-chat-corpus/tarball/e6e39cb896df88781c7a2e0451226a527c5f1e2e > /workspace/mrmp-pinned-source.tar.gz
 python training/language/round32/prospective-fresh-human-dev/prepare.py
 ```
+
+The separate after_final.py waiter runs no training and changes no weights/Git/selector. It waits for actual10000 and the main pipeline's completion, then saves old/new5 raw generations, JavaScript comparisons and raw-checkpoint/export comparisons under ../execution/fresh-human-dev. Both generation and raw-parity entrypoints were checked to refuse premature execution without creating model outputs. Numerical disagreement, if any, is preserved rather than repaired. FULL_GENERATIONS.md retains all10 outputs; semantic scores stay pending actual complete reading. Original17/daily12/native8 gates and frozen R32 learning inputs are unchanged.

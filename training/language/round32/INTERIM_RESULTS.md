@@ -11,3 +11,13 @@
 保存元full checkpoint SHA47b30f533dccd162c844e173f4bdb0097da0ac169bc1a2dc79264477f1b36aec、optimizer counter12000。retained-progress-2000のlossless partsを全てSHA/byte検証し、推論snapshotの元checkpoint SHAとの一致も確認。推論snapshot自体にoptimizer/RNGはなく再開用ではない。
 
 数値検証は日常12/12・会話8/8ともPython/JavaScript全列一致、未丸め/export全列一致。追加99人間会話DEVのNLL/serialized byteは1.295653225334744。これは原混合viewNLLとは異なる指標で、R25最終との進捗も違い、言語改善とは扱わない。固定snapshot内の全ファイルと手動理由をsnapshot-evidence-manifest.jsonにSHA結合。
+
+## Actual5000 retained, selected4000
+
+実5000更新のcheckpointから選択4000更新の推論重みを分離し、新しい20件の全prefixと無修正全文を実際に読んだ。5000更新の重みと誤記しない。日常12件は主判定意味0/12・長いループ11/12・EOS0。趣味の引用列を有限リストと見る感度ではループ10/12、ごくの局所反復runを長期と数える感度では12/12となるが、文脈・主述の崩れによる意味0は変わらない。会話途中8件は意味0/8・主判定ループ6/8・強い不自然反復7/8・EOS2。自己言及の変化する有限節を長期ループと分ければ5/8。未知名や猫の口調それ自体を失格にしていない。
+
+旧R25最終との全40出力をexecution/interim-daily-5000/FULL_GENERATIONS.md、個別理由をdaily-reading.json/native-reading.jsonに保存し生成SHAに結合。旧R25実10000/選択9500とは進捗が異なるため、同一更新時点の生成の因果比較ではない。すべて既知DEVで新TESTや独立盲検人手評価ではない。
+
+同じ実5000更新でのNLL/byteはR32 0.9733204422223287対R25 0.9733334999262551でほぼ同等。正例targets7,744,568・UTF8 bytes27,152,545は一致。選択された4000更新のNLLは0.9725615799771593。元の実5000 full checkpointはSHA f0d3db633f438ba8b0f58c823414bdd6af55ac7ecdfebe8e1c021ed5c0b209b4、optimizer counter15000。lossless partsを全SHA/byte検証し、推論snapshotのsource SHAとの一致も確認。選択snapshotに4000更新時点のoptimizerは含まれず再開には使わない。最新5000の整合したmodel/AdamW/RNGでのみ当該時点から正確に再開できる。学習本体は継続し、最終10000評価・採用判断は未完了。
+
+実5000/選択4000の数値検証は日常12/12・会話8/8ともPython/JavaScript全列一致、未丸め/export全列一致。追加99人間会話DEV NLL/serialized byteは1.2830771875350246。R25最終とは進捗が異なり、元のmixed-view NLLとは指標も違うため、言語改善の根拠にしない。固定snapshot内25ファイルと手動理由をsnapshot-evidence-manifest.jsonで検証。
