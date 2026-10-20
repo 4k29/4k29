@@ -2,10 +2,9 @@
 
 Round32 changes only one executable line in sequence_objective.py versus adopted Round25: self-generated negative histories are scored in eval mode with gradients enabled; caller mode is restored in finally. CE remains in train mode. No suffix cleanup, human mixture, LR, horizon, architecture, vocabulary, source fold, decoding or acceptance change. Original copied multiview/data.json provenance remains Round25; current exact files are bound by source-manifest.json. diagnose_gap.py uses an old fixed TRAIN reference, not the full present TRAIN, and never proves whole-corpus generalization.
 
-In a fresh checkout containing the tracked Round32 experiment before any run, restore ignored data if needed:
+In a fresh checkout containing the tracked Round32 experiment before any run, the exact TRAIN tokens are tracked directly (48MiB), so no data download or chunk restore is required:
 
 ```bash
-python training/language/round32/checkpoint_chunks.py restore training/language/round32/multiview/train.tokens.bin.chunks.json
 python -m unittest discover -s training/language/round32/execution -p 'test_*.py'
 python training/language/round32/execution/verify_single_factor.py
 python training/language/round32/execution/check_sampling.py
