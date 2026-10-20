@@ -1,0 +1,13 @@
+# R32 interim assessment, actual2000 selected2000
+
+実2000更新/選択2000のモデルを固定して、新しい日常12件と会話途中8件のprefix＋無修正全文を実際に読んだ。旧R25実10000/選択9500との全40全文はexecution/interim-daily-2000/FULL_GENERATIONS.mdに保存。旧結果はモデルSHA・同一prefix・own vocabulary・greedy192・thread条件とprobe SHAの一致確認後に再利用。進捗が違うので同一更新数の生成の因果比較ではない。すべて既知DEV、独立盲検人手評価や新TESTではない。
+
+日常12件は全文意味0/12、主判定長いループ11/12、EOS0。帰路の出力は目線・顔・引用を変えながら同句を繰り返す有限節列として主判定では長周期ループと分けた。強い同句循環と判定すれば12/12となる。文脈接続と主述が崩れるため、どちらでも意味0は変わらない。
+
+会話途中8件は主判定全文意味0/8、長いループ5/8、強い不自然な反復7/8、EOS2。自分を呼ぶ節を有限の変化する列と分ければループ4/8、短い野菜の重複も長いループに含めれば6/8となる。56tokenの野菜の出力も主述・修飾が崩れ、34tokenのパターンの出力も参照先がない。パターンを暗黙の料理手順と補完する寛容な解釈では意味1/8の余地を別記したが、厳格基準を緩めた合格にしない。未知名や猫の口調そのものは失敗理由ではない。
+
+日常12件と会話8件の個別理由・生成SHAは各daily-reading.json/native-reading.jsonに結合。途中NLL/byte0.9752891862824673はR25同2000更新0.9752837799676208とほぼ同等で、正例targets3,153,786/UTF8 bytes11,036,419は一致。途中の生成評価でLR・目的・データ・選択条件を変えていない。最終10000更新の厳格17件評価と採用判断は未完了。学習本体は継続している。
+
+保存元full checkpoint SHA47b30f533dccd162c844e173f4bdb0097da0ac169bc1a2dc79264477f1b36aec、optimizer counter12000。retained-progress-2000のlossless partsを全てSHA/byte検証し、推論snapshotの元checkpoint SHAとの一致も確認。推論snapshot自体にoptimizer/RNGはなく再開用ではない。
+
+数値検証は日常12/12・会話8/8ともPython/JavaScript全列一致、未丸め/export全列一致。追加99人間会話DEVのNLL/serialized byteは1.295653225334744。これは原混合viewNLLとは異なる指標で、R25最終との進捗も違い、言語改善とは扱わない。固定snapshot内の全ファイルと手動理由をsnapshot-evidence-manifest.jsonにSHA結合。
