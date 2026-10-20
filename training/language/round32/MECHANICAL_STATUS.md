@@ -1,5 +1,3 @@
-# Mechanical execution status — language review pending
+# Actual10000 training and full-output reading complete
 
-Actual retained additional optimizer updates: 10000/10000. Optimizer counters: [20000]. Pipeline exit: 1. Mechanical outputs available: False.
-
-Checkpoint includes aligned model/AdamW/Torch RNG/private Python RNG. Raw old/new JSON retains every generated token and unedited character. Semantic/full-language judgment is pending actual complete reading; no score or gate pass is guessed. No public model/site replacement or TEST generation. No new TEST data acquisition or model evaluation.
+Initial automatic pipeline failed in post-training reporting at missing creation-context.json; retained training10000 and aligned checkpoints were already saved and published. The reporting-only metadata was restored from frozen scientific-control audit and complete_missing_evaluations.sh ran the remaining steps without more optimizer updates. Original automatic pending status is historical. Final-assessment.json and RESULTS.md supersede its pending semantic status. All42 new full outputs actually read; strict gates fail, not adopted. Public model/site unchanged.
