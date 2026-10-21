@@ -1,0 +1,3 @@
+# Round36 prospective reproduction
+
+Restore missing SHA-bound source inputs and Round35 paired zero/latest states from lossless parts. Preflight all positive bytes, exact coefficient-only inverse trainer patch, all147986 masks,27 unit tests, real coefficient0.3 gradients, parent Adam/RNG and full initial DEV before freezing/launch. Only resume an incomplete nonrunning checkpoint with execution/run.sh --resume; never relaunch a live or completed run. New auxiliary counters and all exact model/moments/RNG states must be preserved. Same selected/terminal full-output reading and numerical checks; no new TEST, external teacher data, decoding repair or public/site replacement.
