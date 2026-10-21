@@ -17,5 +17,5 @@ for f in extra:
  key=os.path.relpath(f,R);item=dict(path=key,sha256=sha(f),bytes=f.stat().st_size)
  if key in paths:assert paths[key]==item
  else:paths[key]=item
-m['inputs']=list(paths.values());m.update(frozenTrainingInputCount=len(read(R/'source-manifest.json')['files']),postTrainingControlReferencesAdded=True,fullNewUniqueOutputsActuallyRead=read(E/'final-output-verification.json')['newStateOutputsActuallyRead'],newStateOutputsCoveredByActualReading=84,allFourStateOutputsSaved=168,originalTrainingInputManifestSha256=sha(R/'source-manifest.json'))
+m['inputs']=list(paths.values());m.update(frozenTrainingInputCount=len(read(R/'source-manifest.json')['files']),postTrainingControlReferencesAdded=True,newStateOutputsActuallyRead=read(E/'final-output-verification.json')['newStateOutputsActuallyRead'],newStateOutputsCoveredByActualReading=84,newDistinctCoreOutputs=read(E/'final-output-verification.json')['newDistinctCoreOutputs'],allFourStateOutputsSaved=168,originalTrainingInputManifestSha256=sha(R/'source-manifest.json'))
 p.write_text(json.dumps(m,indent=2)+'\n');print(json.dumps(dict(files=len(m['files']),inputs=len(m['inputs']),assembledFullStates=len(m['assembledCheckpoints']),actualCompletedUpdates=10000)))
