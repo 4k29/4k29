@@ -6,7 +6,7 @@ Only the EOS auxiliary coefficient1.0→0.3 changes against Round35. Both rounds
 
 Preflight passed:27 objective tests, an independent eligible-position audit across all147986TRAIN rows, exact parent model/optimizer/RNG alignment, initial DEV equality and finite real-objective gradients. Frozen397 input hashes were rechecked during execution. The source manifest/policy/code SHAs are recorded in [execution/launch.json](execution/launch.json).
 
-The initial state and actual200/1000 states are committed as lossless checkpoint parts with model, optimizer and RNG. Latest remote checkpoint: actual1000, commit95b3dcae75d977ccb2aa8321d3ecc616155d610d. See [REPRODUCE.md](REPRODUCE.md) for the existing guarded reproduction/resume procedure; do not restart the currently running trainer. Ongoing raw logs and checkpoints are local until subsequent publication.
+The initial state and actual200/1000 states are committed as lossless checkpoint parts with model, optimizer and RNG. Latest remote checkpoint: actual1000, commit95b3dcae75d977ccb2aa8321d3ecc616155d610d. See [REPRODUCTION.md](REPRODUCTION.md) for the existing guarded reproduction/resume procedure; do not restart the currently running trainer. Ongoing raw logs and checkpoints are local until subsequent publication.
 
 Same pure-CE DEV selector, original strict gates and practical adoption guard. Daily12 whole-meaning/nonloop and humanDEV99 must not regress. Generic acknowledgements are reported separately from content understanding. [execution/PAIRED_VALIDATION_PROGRESS.md](execution/PAIRED_VALIDATION_PROGRESS.md) records matched-update exposed common DEV curves; it excludes expanded human-chat DEV and is not language evidence.
 
