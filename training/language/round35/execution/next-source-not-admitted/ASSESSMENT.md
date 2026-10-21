@@ -1,0 +1,11 @@
+# Prospective source check only — no Round35 data change
+
+JMRD, ku-nlp/JMRD, is pinned at a20b0a89b4cf6ce1db320039f6e27df10604bf4c. README and CC-BY-SA4.0 LICENSE were acquired and hashed; no data/train.json, valid.json or test.json was downloaded or parsed. The README describes about5,000 human crowdworker movie-recommendation dialogues, average23 utterances, and fixed upstream splits train4,575/valid200/test300. References: Takashi Kodama, Ribeka Tanaka, Sadao Kurohashi (NLP2021; DialDoc2022). This is candidate provenance, not final data admission or a language result.
+
+The displayed README example contains dialogue03042 and two greeting utterances plus movie-knowledge examples. If this source is later admitted, exclude03042 entirely from TRAIN and any purported fresh evaluation. README knowledge, plot/review excerpts, questionnaires and checked_knowledge annotations are not proposed targets. Only original human dialog[].text could be considered after a separate prospective policy and integrity/duplication/licensing audit.
+
+Potential value: authentic adjacent question/answer and explanatory turns, with a different collection than the current first-meeting chat. Limits: film-recommendation domain, supplied external movie knowledge, no publicly exposed participant IDs for claiming speaker-disjoint splits, and possible greeting/stock-phrase skew. It is not broad daily conversation by itself. Repository licensing does not independently establish third-party rights over supplied movie knowledge, which would stay excluded.
+
+Existing RealPersonaChat mixture10% and30% trials both left daily full meaning0. Repeating mixture tweaks or blindly enlarging the corpus is not justified by this source metadata. No next round is selected before completing Round35 full generation review. If eventually selected, respect upstream train/valid/test isolation, keep heldout texts closed, fix one data factor per round, retain own tokenizer/weights and make no external generated answers.
+
+Other search results: open2ch crawler licensing does not establish original forum-text rights; Nagoya/Meidai scraper has no clear repository dataset license; BSD is business-focused; CALLS is customer-complaint focused. None were admitted or their dialogue files acquired.
