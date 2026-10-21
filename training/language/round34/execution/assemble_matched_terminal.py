@@ -13,6 +13,8 @@ for item in ref['groups']:
  lines.extend([f'## {group}','',f'R33 SHA {sha(oldpath)}; R34 SHA {sha(newpath)}.',''])
  for a,b in zip(old['rows'],new['rows'],strict=True):
   assert a['id']==b['id'] and a['prefix']==b['prefix']
+  assert a['inputTokens']==b['inputTokens']
+  assert all(len(row['tokens'])<=min(192,256-row['inputTokens'])for row in (a,b))
   lines.extend([f"### {b['id']}",'','Prefix:','```text',b['prefix'],'```','','Round33 terminal10000:','```text',a['text'],'```','','Round34 terminal10000:','```text',b['text'],'```','']);total+=1
  records.append(dict(group=group,inputs=item['inputs'],oldSha256=sha(oldpath),newSha256=sha(newpath)))
 assert total==42

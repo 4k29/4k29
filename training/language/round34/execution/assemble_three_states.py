@@ -17,6 +17,8 @@ for group,op,np,count in groups:
  lines.extend([f'## {group}','',f'Old SHA {sha(oldpath)}; selected SHA {sha(newpath)}; terminal SHA {sha(endpath)}.',''])
  for a,b,c in zip(old['rows'],new['rows'],end['rows'],strict=True):
   assert a['id']==b['id']==c['id'] and a['prefix']==b['prefix']==c['prefix']
+  assert a['inputTokens']==b['inputTokens']==c['inputTokens']
+  assert all(len(row['tokens'])<=min(192,256-row['inputTokens'])for row in (a,b,c))
   if same:
    assert all(b[k]==c[k]for k in ['text','tokens','eos','validUtf8','validTokens','inputTokens'])
   lines.extend([f"### {b['id']}",'','Prefix:','```text',b['prefix'],'```',''])
