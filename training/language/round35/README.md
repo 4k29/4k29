@@ -1,0 +1,3 @@
+# Round35 — human utterance-end EOS auxiliary
+
+Actual new optimizer updates0; preflight pending. Paired sibling of Round34 from identical aligned Round28 model/Adam20000/Torch/private Python RNG, lineage59000; same10000 dose. Only learning change: coefficient1.0 additional EOS2 CE where a human TRAIN true utterance-end original unmasked target is standalone newline16; summed and divided by original valid target count. Original newline CE remains. R34 negative prefix selection remains. No other learning/decoding/data change or new TEST. Daily conversation is priority; ending alone cannot establish meaning. Strict gates and pure-CE DEV selector unchanged; public model and R25 adoption anchor unchanged.
