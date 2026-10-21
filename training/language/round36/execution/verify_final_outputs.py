@@ -13,6 +13,26 @@ paths=[('original17',17,'old-validation.json','new-validation.json','new-validat
 expected_models={'selected':sha(R/'continue-10000/model.js'),'terminal':sha(terminal_model)};old_model=sha(P/'continue-10000/model.js');oldnumeric=[]
 parity={};identities=[];distinct_new_core=set();lines=['# All four states — complete unedited generations','',f'42 identical exposed DEV inputs: R35 selected{control["bestStep"]}, R36 selected{result["bestStep"]}, R35 terminal10000, R36 terminal10000. Both trials completed10000 from the same aligned R28 model/Adam/RNG. Same own tokenizer and bounded greedy192/context256. No output repair. New state outputs actually read: {unique_new_read}; if selected and terminal weights are identical, actual primary reading covers both states without claiming a second fresh reading. Individual SHA-bound judgments remain separate. The84 old control state outputs retain verified prior reading provenance, not a claim of rereading all old outputs now. Not a new TEST; source5 are one cast family.','']
 pin=read(E/'terminal-control-reference.json');pinrows={x['group']:x for x in pin['groups']}
+# Bind the actual reading receipts to the precise full generations and explicit judgments.
+manual_paths={'original17':'new-manual.json','daily12':'daily-new-reading.json','native8':'content-native-dev/new-reading.json','mrmp5':'fixed-source-mrmp-dev/new-reading.json'}
+reading_bindings=[]
+for state in ['selected','terminal']:
+ receipt_path=E/'selected-full-reading-complete.json'if state=='selected'else D/'full-reading-complete.json'
+ receipt=read(receipt_path);groups={x['group']:x for x in receipt['groups']};assert set(groups)==set(manual_paths)
+ for group,n,op,np,jp,rp in paths:
+  gp=E/np if state=='selected'or same_new else D/f'{group}-python.json'
+  mp=E/manual_paths[group]if state=='selected'else D/(f'{group}-manual.json'if group=='original17'else f'{group}-reading.json')
+  manual=read(mp);generation=read(gp);entry=groups[group]
+  assert entry['inputs']==n and entry['generationSha256']==manual['generationSha256']==sha(gp)
+  assert entry['manualSha256']==sha(mp)and len(manual['rows'])==len(generation['rows'])==n
+  assert manual[f'all{n}FullPrefixesAndContinuationsActuallyRead']is True
+  if group=='original17':assert manual['meaningPolicySha256']==sha(R.parent/'round10/full-meaning-policy.json')
+  for judgment,row in zip(manual['rows'],generation['rows'],strict=True):
+   digest=hashlib.sha256(json.dumps(dict(prefix=row['prefix'],text=row['text']),ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+   assert judgment['id']==row['id']and judgment['prefixAndTextSha256']==digest
+   assert isinstance(judgment['fullOutputMeaningful'],bool)and isinstance(judgment['fullOutputLoop'],bool)
+  assert entry['wholeMeaning']==sum(x['fullOutputMeaningful']for x in manual['rows'])
+  reading_bindings.append(dict(state=state,group=group,inputs=n,generationSha256=sha(gp),manualSha256=sha(mp),receiptSha256=sha(receipt_path),allPerRowPrefixAndFullTextHashesMatch=True))
 for state in ['selected','terminal']:
  records=[]
  for group,n,op,np,jp,rp in paths:
@@ -46,5 +66,5 @@ for group,n,op,np,jp,rp in paths:
   lines.extend([f"### {a['id']}",'','Prefix:','```text',a['prefix'],'```',''])
   for label,row in [(f'R35 selected{control["bestStep"]}',a),(f'R36 selected{result["bestStep"]}',b),('R35 terminal10000',c),('R36 terminal10000',d)]:lines.extend([label+':','```text',row['text'],'```',''])
 out=E/'ALL_FOUR_STATE_GENERATIONS.md';out.write_text('\n'.join(lines)+'\n');legacy=R.parent/'round11/execution/old-numerical-divergence.json'
-report=dict(actualCompletedUpdates=10000,selectedStep=result['bestStep'],parity=parity,unchangedReferenceTolerance=2e-4,oldControlCurrentNumerical=oldnumeric,oldSelectedCurrentPythonJavascriptScope=sum(x['inputs']for x in oldnumeric),oldSelectedCurrentRawExportScope=sum(x['rawCurrentRuntimeScope']for x in oldnumeric),oldSelectedCurrentPythonJavascriptMatching=sum(x['pythonJavascriptMatching']for x in oldnumeric),oldSelectedCurrentRawExportMatching=sum(x['rawExportMatching']or 0 for x in oldnumeric),oldOriginal17RawNotRegeneratedInCurrentRuntime=True,oldTerminalEvidenceHistoricalNotNewCurrentRuntimeRerun=True,historicalRound10NearTieDivergenceRetained=dict(path='../round11/execution/old-numerical-divergence.json',sha256=sha(legacy)),universalParityClaim=False,noOutputRepair=True,noNewModelForwardOrOptimizerByThisVerifier=True,savedStateOutputs=168,newStateOutputsActuallyRead=unique_new_read,newDistinctCoreOutputs=len(distinct_new_core),duplicateStateOutputsNotIndependent=True,newStateOutputsCoveredByActualReading=84,terminalAndSelectedWeightsExactlyEqual=same_new,notIndependent168Examples=True,fullFourStateOutputSha256=sha(out),pairedOutputIdentity=identities,codeSha256=sha(pathlib.Path(__file__)))
+report=dict(readingReceiptBindings=reading_bindings,actualCompletedUpdates=10000,selectedStep=result['bestStep'],parity=parity,unchangedReferenceTolerance=2e-4,oldControlCurrentNumerical=oldnumeric,oldSelectedCurrentPythonJavascriptScope=sum(x['inputs']for x in oldnumeric),oldSelectedCurrentRawExportScope=sum(x['rawCurrentRuntimeScope']for x in oldnumeric),oldSelectedCurrentPythonJavascriptMatching=sum(x['pythonJavascriptMatching']for x in oldnumeric),oldSelectedCurrentRawExportMatching=sum(x['rawExportMatching']or 0 for x in oldnumeric),oldOriginal17RawNotRegeneratedInCurrentRuntime=True,oldTerminalEvidenceHistoricalNotNewCurrentRuntimeRerun=True,historicalRound10NearTieDivergenceRetained=dict(path='../round11/execution/old-numerical-divergence.json',sha256=sha(legacy)),universalParityClaim=False,noOutputRepair=True,noNewModelForwardOrOptimizerByThisVerifier=True,savedStateOutputs=168,newStateOutputsActuallyRead=unique_new_read,newDistinctCoreOutputs=len(distinct_new_core),duplicateStateOutputsNotIndependent=True,newStateOutputsCoveredByActualReading=84,terminalAndSelectedWeightsExactlyEqual=same_new,notIndependent168Examples=True,fullFourStateOutputSha256=sha(out),pairedOutputIdentity=identities,codeSha256=sha(pathlib.Path(__file__)))
 (E/'final-output-verification.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(dict(actualUpdates=10000,selected=parity['selected'],terminal=parity['terminal'],savedStateOutputs=168,newActuallyRead=unique_new_read)))

@@ -13,6 +13,15 @@ for directory in ['retained-paired-200','retained-paired-1000','retained-paired-
 paths={x['path']:x for x in m['inputs']}
 extra=[P/'execution/artifact-manifest.json',P/'execution/final-assessment.json',R.parent/'round33/execution/jma-notice-provenance/audit.json',R.parent/'round33/execution/generated-notice-train-match-audit.json']
 for row in read(E/'terminal-control-reference.json')['verifiedTerminalArtifacts']:extra.append(P/row['path'])
+# Explicitly pin existing control snapshots used by post-training, read-only comparisons.
+for n in [200,1000,5000]:
+ control=P/f'execution/retained-paired-{n}/checkpoint.pt'
+ extra.extend([control,control.with_name('checkpoint.pt.chunks.json')])
+zero=R.parent/'round34/execution/retained-paired-5000/checkpoint.pt'
+extra.extend([zero,zero.with_name('checkpoint.pt.chunks.json'),R.parent/'round34/execution/artifact-manifest.json',P/'execution/eos-location-effect-5000.json',P/'execution/audit_eos_location_effect.py'])
+location=read(E/'eos-location-effect-5000.json')
+for label,source in [('coefficientZeroRound34',zero),('coefficientOneRound35',P/'execution/retained-paired-5000/checkpoint.pt'),('coefficientPointThreeRound36',E/'retained-paired-5000/checkpoint.pt')]:
+ assert location['results'][label]['checkpointSha256']==sha(source)
 for f in extra:
  key=os.path.relpath(f,R);item=dict(path=key,sha256=sha(f),bytes=f.stat().st_size)
  if key in paths:assert paths[key]==item
