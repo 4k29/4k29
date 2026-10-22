@@ -1,0 +1,3 @@
+# Round37 prospective — remove competing original newline CE
+
+Actual updates0; all zero-update preflight checks passed:37 tests,147986-row masks/data audit, exact trainer reverse patch, aligned model/Adam/RNG, real finite gradients, and full initial DEV equality. Final397 inputs frozen. Training launch pending. Only main CE at already eligible human true-end EOS positions is excluded. EOS coefficient0.3, original valid-target denominator, data/labels/tokenizer/sampling/LR/seed/all other objectives/inference/strict gates remain fixed. Same aligned Round28 parent and10000 actual-update budget. Original NL-gold DEV likelihood remains unchanged, including possible regression. Practical floors remain exactly those inherited by Round36, not lowered to its worse loops.
