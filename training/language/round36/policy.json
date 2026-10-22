@@ -1,0 +1,145 @@
+{
+  "sourceHashes": {
+    "documents.jsonl": "877ddf08933a3a159d9e6bd64690e1c7c328ce464e16d460121e9e7819ce8abb",
+    "split.json": "81725bdbf99ce0e620bfc5459dfc132694b6a6ce51f213328e8988c94290e529",
+    "units.json": "853603583f51ea492ae256fe48cc1feb6d0b74a349b71c738dc099c975d4e0e3",
+    "character-frequencies.json": "75d4a6d39536366ef74171f65c326104b8a37a7b3d3382f2650d2a64acac34bb",
+    "word-bpe-512/tokenizer.json": "453e93eafe8bf745e47c5241f9c7e9ed9e0b7dd3dc2bb912c21255b654bf5613",
+    "unicode-bpe-4681/tokenizer.json": "e08f6bd59d8cd0f7e403702a2107659699a9c48657da9d8b269dc2905f5cfb8b",
+    "word_bpe.py": "bc47cfe1f87e15a6d3cde92137318edf7e32db4a167e851cb5c34c41a48dd34e",
+    "generation-policy.json": "62171d706e73855c3aa35f807b91a0fa95d12561d1161a0cfa6e175ff101b411"
+  },
+  "codeHashes": {
+    "train.py": "1a295f46d162009e7f290af122cadfa7453d83167eb1583984c3aa54b20b497a",
+    "batching.py": "b45a03c802f1545691c7b1133dfd17dd0942595e9f1efb7f7cb1a9a900242710",
+    "initialization.py": "bb2b64e6f0fdd7676650e5d3aa200ab07e61c5cfe2ca2df064fadf49daee02b1",
+    "objective.py": "13854f11ba09628e3d64da000491f779338a3bc96f63a320b9c36c1b4226b18f",
+    "sequence_objective.py": "7df369585635db8036fa03e5b22f15abf4f9665f09349b67046081858f543d8f",
+    "rollout_trace.py": "73ebf739bff437ede3acac11465816262ecd210ba3479fce2a7318403e619fc8",
+    "prefix_selection.py": "9f957b0eca8a34851b037904b66093e83fd0e514abfdc170120ba46575cd6330",
+    "utterance_end_objective.py": "1c313575cba3d41059d6f765314cc213bcbe8f11d3501fc1135f44e857ae6925"
+  },
+  "parentManifestSha256": "b932ba3487cf857f41912b7b72c4654af56a05a263f9d81d71ba0a39cc8ac7b2",
+  "parentCheckpointSha256": "2870e80b4bd5973555dd570cb7195f670f56d670cdd10a51f153fe889ae85204",
+  "glyphTokenizer": "unicode-bpe-4681/tokenizer.json",
+  "seed": 2049,
+  "requestedUpdates": 10000,
+  "completedUpdatesAtFreeze": 0,
+  "views": {
+    "0": 0.4,
+    "1": 0.3,
+    "2": 0.3
+  },
+  "randomCharacterFragments": {
+    "min": 8,
+    "max": 24
+  },
+  "validationStatus": "Exposed development only; no fresh language claim",
+  "generationPolicySha256": "62171d706e73855c3aa35f807b91a0fa95d12561d1161a0cfa6e175ff101b411",
+  "instructionTuningAllowed": false,
+  "publicModelReplacementAllowed": false,
+  "testGenerationAllowed": false,
+  "validationViews": {
+    "0": 0.4,
+    "1": 0.3,
+    "2": 0.3
+  },
+  "preparedPolicySha256": "3fb429bedfb83e75ea17d6140b10a039f5ae7009c30f8a79b189804c28765e67",
+  "experiment": "Round36: ONLY human utterance-end EOS auxiliary coefficient1.0 to0.3; paired sibling of R35 from identical aligned R28 full state",
+  "genreSampling": {
+    "aozora": 0.315,
+    "mic": 0.06999999999999999,
+    "env": 0.06999999999999999,
+    "mdn": 0.105,
+    "jma": 0.06999999999999999,
+    "maff": 0.017499999999999998,
+    "stat": 0.034999999999999996,
+    "bunka": 0.017499999999999998,
+    "human-chat": 0.3
+  },
+  "learningRate": 2.2499999999999998e-05,
+  "parentLatestWeightLineageUpdates": 59000,
+  "parentOptimizerUpdates": 20000,
+  "parentStateSelection": "Latest Round28 full aligned state, which also happens to be its selected10000 state",
+  "optimizerContinuation": true,
+  "nllSuccessThreshold": 0.9678213304515457,
+  "meaningGatePolicySha256": "1ff218cab264646b24fa27ca22129fe5c664db59c7008b3f34c204b772fcb1f4",
+  "schedule": {
+    "kind": "constant_existing_terminal_value",
+    "learningRate": 2.2499999999999998e-05,
+    "additionalUpdates": 10000
+  },
+  "rationale": {
+    "evidence": "R35 actual10000 and all84 new state outputs read; common/human CE and original17 full meaning regressed, minimal conversational acknowledgements improved with sensitivity; matched5000 TRAIN12-row EOS-location audit shows EOS preference also rose at non-newline content positions",
+    "hypothesis": "A weaker EOS coefficient may retain useful turn termination while reducing premature endings and competing original-newline CE cost",
+    "limitations": "No coefficient sweep; same exposed DEV/one seed; EOS changes its own negative distribution; generic acknowledgements do not establish understanding"
+  },
+  "newSourceManifestSha256": "c1e05c7247c7c9cb56da887fc109be1d193422287438dd1564ce3b0c41252501",
+  "newSourceDocumentsSha256": "6f0d312dcf09c2f81e9587bf4435a35ca5682641ece6634832bcce52e8eb4ef9",
+  "unlikelihood": {
+    "kind": "causal_repeated_fourgram_completion",
+    "coefficient": 1.0,
+    "window": 64,
+    "ngram": 4,
+    "excludeGold": true,
+    "uniqueNonSpecialCandidates": true,
+    "probabilityCap": 0.999999,
+    "normalization": "sum penalties / valid next-token targets",
+    "futureTokensUsed": false
+  },
+  "gradientCalibrationSha256": "f058f5de6e2ef1b062bbe820f4f89f73f999b1e0c826d8e3531984cd55c6e51f",
+  "sequenceUnlikelihood": {
+    "coefficient": 0.1,
+    "everyUpdates": 10,
+    "prefixTokens": 32,
+    "prefixSelection": "Human first sampled row: latest existing token-aligned true after-utterance separator within8..32 original real tokens, provided clean character start; otherwise original min32. All nonhuman rows unchanged. No retokenization or RNG.",
+    "maxNewTokens": 64,
+    "eos": 2,
+    "window": 64,
+    "ngram": 4,
+    "decoding": "greedy full vocabulary",
+    "negativeOnly": true,
+    "generatedCrossEntropyTargets": false,
+    "normalization": "sum repeated generated-target penalties / all generated positions",
+    "probabilityCap": 0.999999,
+    "dropoutRng": "fork_rng CPU; restore global CE dropout RNG and model mode",
+    "plannedCalls": 1000,
+    "optimizerStepsPerIteration": 1
+  },
+  "sourceManifestReference": "sources/manifest.json",
+  "sourcePolicySha256": "c64396b6085f035f1d81442d6d14242ba8ba7b05ecd925d673b638260633d4fa",
+  "supplementaryEverydayDevelopment": {
+    "fixedDailyProbesSha256": "dc47e4120c21423004da14306b5552ae9520c7bb580f27520653806f791c208d",
+    "humanDev99PreviouslyExposed": true,
+    "oneExactDuplicateDevFile": true,
+    "usedForWeightSelection": false,
+    "originalStrictGatesUnchanged": true,
+    "additionalPracticalAdoptionGuard": "Original Pareto plus humanDEV99 NLL must not rise and daily12 full/nonloop counts must not fall; ambiguity can block adoption",
+    "controlHumanDev99Nll": 0.9107185711429243,
+    "controlDailyFull": 0,
+    "controlDailyNonloop": 4,
+    "reservedTestModelEvaluation": false,
+    "rawReservedTestUsedOnlyForPretrainingDuplicateHashes": true
+  },
+  "controlManifestSha256": "4e64bf400ea3ef16f4c26995796532e034cc5e74f400d5ba801103ab113927c4",
+  "humanNegativePrefix": {
+    "minTokens": 8,
+    "maxTokens": 32,
+    "featureMap": "human-turn-token-boundaries.json",
+    "featureMapSha256": "835d6da37308c68c5a5bc4a61c727a6ee4d2978006890c21f0416345dc02dc56",
+    "fallback": "exact original prefix",
+    "noPositiveTargetOrSamplingChange": true,
+    "prefixLengthChangePartOfTreatment": true
+  },
+  "humanUtteranceEndEos": {
+    "coefficient": 0.3,
+    "eosId": 2,
+    "standaloneNewlineId": 16,
+    "featureMap": "human-turn-token-boundaries.json",
+    "featureMapSha256": "835d6da37308c68c5a5bc4a61c727a6ee4d2978006890c21f0416345dc02dc56",
+    "eligibility": "human-chat TRAIN only; true utterance-end target is original standalone newline16; originally unmasked; no compound newline tokens",
+    "normalization": "Sum auxiliary EOS CE / original nonmasked target count in same batch",
+    "retainOriginalGoldTargets": true,
+    "noExtraModelForwardOrRandomDraw": true
+  }
+}
