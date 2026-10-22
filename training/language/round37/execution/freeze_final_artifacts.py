@@ -10,6 +10,14 @@ for directory in ['retained-paired-200','retained-paired-1000','retained-paired-
   b=(cp.parent/item['path']).read_bytes();assert len(b)==item['bytes']and hashlib.sha256(b).hexdigest()==item['sha256'];h.update(b);total+=len(b)
  assert h.hexdigest()==parts['sha256']and total==parts['bytes'];assert not raw.exists()or sha(raw)==parts['sha256']
  m['assembledCheckpoints'].append(dict(path=str(raw.relative_to(R)),sha256=parts['sha256'],bytes=parts['bytes'],chunksManifest=str(cp.relative_to(R))))
+for state in read(E/'historical-pause-state-integrity.json')['states']:
+ cp=R/state['chunksManifest'];parts=read(cp);h=hashlib.sha256();total=0
+ for item in parts['chunks']:
+  b=(cp.parent/item['path']).read_bytes();assert len(b)==item['bytes']and hashlib.sha256(b).hexdigest()==item['sha256'];h.update(b);total+=len(b)
+ assert h.hexdigest()==state['sha256']==parts['sha256']and total==state['bytes']==parts['bytes']
+ m['assembledCheckpoints'].append(state)
+m['historicalPauseStatesPreservedWithoutOverwritingCurrent']=True
+m['pausedTreeManifestSupersededByAuthorizedResume']=True
 paths={x['path']:x for x in m['inputs']};extra=[P/'execution/artifact-manifest.json',P/'execution/final-assessment.json',R.parent/'round33/execution/jma-notice-provenance/audit.json',R.parent/'round33/execution/generated-notice-train-match-audit.json']
 for row in read(E/'terminal-control-reference.json')['verifiedTerminalArtifacts']:extra.append(P/row['path'])
 for n in [200,1000,5000]:
