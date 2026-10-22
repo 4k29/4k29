@@ -1,13 +1,7 @@
-# Round37 — resumed from actual7553; training/evaluation in progress
+# Round37 — actual10000 and complete full-output assessment finished
 
-User explicitly requested continuation. At 2026-10-22T13:10:57.314723+00:00, the existing supervisor resumed the exact latest7553 full model/Adam27553/Torch/private Python RNG, starting7554 toward the original10000. Policy/data/code SHA unchanged. Final language and numerical assessment remains pending. Prior pause records and paused-artifact-manifest describe the historical aa60811 tree only and are superseded by this authorized continuation.
+Competing original newline main CE removed at existing human ends; EOS0.3 fixed. Actual7553 stop +2447 exact-resume updates completed the original10000 once. Selected8000 and terminal10000 model/Adam/RNG preserved; all84 new state outputs actually read (82 distinct), all168 old/new raw state outputs saved.
 
-# Historical pause snapshot (before this continuation)
+Daily loops improve and terminal has1/12 short meaningful prose continuation, but selected daily whole remains0; original17 meaning1→1 selected, nonloop5→3; humanDEV original NLL worsens. Original17/13/9 strict gates, fixed practical guard and Pareto fail. **Not adopted.** No new TEST/public/site change.
 
-Stopped after the7500 validation and the in-flight optimizer update at actual**7553**. Latest Adam27553; selected7500 full aligned Adam27500 separately preserved. **2447 updates remain.** All model/moments/RNG, source SHA and exact log/trace resume checks passed. No trainer or final-diagnostic waiter remains running. No next round was started.
-
-Last/best common exposed DEV NLL**0.968670848665** at7500; same-update R36 0.968756035327. Final10000 selected/terminal complete generation reading and numerical checks are **not executed**. Interim actual1000 paired40 full outputs and actual5000 EOS/humanDEV diagnostics are saved, with limitations. They are not final language results.
-
-See [RESULTS.md](RESULTS.md), [REPRODUCTION.md](REPRODUCTION.md), [EOS_LOCATION_DIAGNOSTIC.md](EOS_LOCATION_DIAGNOSTIC.md), [execution/user-pause-verification.json](execution/user-pause-verification.json) and paused-artifact-manifest.json. PR78 remains draft: https://github.com/4k29/4k29/pull/78
-
-Only competing original newline main CE at existing eligible human ends changed; EOS0.3, original denominator/data/labels, own8x192/tokenizer/BPE40/30/30, sampling/LR/seed/other losses/generation/gates unchanged.397 frozen training inputs verified. New JMRD TRAIN is a separate unadmitted candidate, not a change to this training corpus. No new TEST, public/site replacement, external model/tokenizer/teacher API or adoption. The later explicit continuation authorized the currently running exact resume.
+See [RESULTS.md](RESULTS.md), [ALL_FOUR_STATE_GENERATIONS.md](execution/ALL_FOUR_STATE_GENERATIONS.md), [EOS_LOCATION_DIAGNOSTIC.md](EOS_LOCATION_DIAGNOSTIC.md), [REPRODUCTION.md](REPRODUCTION.md), SHA-bound actual readings and final artifact-manifest.json. New selected/terminal42+42 sequences match Python/JS and raw/export in this runtime; known old near-tie remains disclosed. Historical paused-artifact-manifest applies only before authorized resume at aa60811, not the completed tree. Prospective JMRD source still unadmitted; next corpus-only experiment is a recommendation, not a claimed launch.
