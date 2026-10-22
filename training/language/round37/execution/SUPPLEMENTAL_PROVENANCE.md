@@ -1,0 +1,1 @@
+Inherited probes, source plans and boundary-map prototype markers retain historical provenance, not newly executed R37 outcomes. No new TRAIN source. Same old-control reading reuse only after exact full-core identity. No score, numerical parity or language success claimed before actual execution/reading.
