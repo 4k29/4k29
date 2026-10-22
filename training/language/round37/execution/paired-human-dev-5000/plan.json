@@ -1,0 +1,25 @@
+{
+  "posthoc": true,
+  "reason": "Measure original-NL-gold human DEV tradeoff suggested by matched5000 TRAIN-position diagnostic; not selected weights or a condition change",
+  "actualUpdatesEach": 5000,
+  "canonicalWindowsExactlyAsExistingHumanDev": true,
+  "oldEvaluatorSha256": "41e5f17a7aca5154580c641a57890bc874f044ff6f4630262fc88c97a8e89542",
+  "adaptedEvaluatorSha256": "54cf1c4a76a2d7950b85a6abbfe2fb9631d574356235ddef4e56ffad40036bd0",
+  "onlyChanges": [
+    {
+      "original": "model, export = ev.load_model(a.model)",
+      "replacement": "checkpoint = ev.torch.load(a.model, map_location='cpu', weights_only=False)\nassert checkpoint['step'] == 5000 and sorted({int(x['step']) for x in checkpoint['optimizer']['state'].values()}) == [25000]\nmodel = ev.Decoder(checkpoint['config']); model.load_state_dict(checkpoint['model']); model.eval()\nexport = dict(tokenizer=tok)\n# Full checkpoint SHA identifies the raw model file including moments; no export/JS parity claim."
+    },
+    {
+      "original": "report = dict(identity=identity,",
+      "replacement": "report = dict(rawCheckpointStep=5000, rawFp32Checkpoint=True, numericalScope='Raw Python FP32 only; no interim JS or rounded export claim', identity=identity,"
+    }
+  ],
+  "checkpoints": {
+    "36": "16344e96b52e1443ab0e92e2913022bf26cd8ed1755556337b0a617bc08fe716",
+    "37": "05439de7f6a8d9fff3b369acb1c520c7027d21052a3f6d845f4b63af626470c9"
+  },
+  "notUsedForCheckpointSelection": true,
+  "noOptimizerUpdate": true,
+  "newTest": false
+}

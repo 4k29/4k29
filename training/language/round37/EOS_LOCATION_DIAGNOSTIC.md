@@ -13,3 +13,9 @@ The treatment raises greedy termination pressure at eligible human ends while re
 At content positions EOS pressure also rises; its becoming argmax is not automatically an ungrammatical alternative continuation. Original content NLL improves in this selected subset. Direct end-target effects and changed later self-negative text/length are mediated together and not separated. At1000, paired fixed DEV output reading found shorter loops but daily12 whole meaning0; final selected/terminal raw192 generation and all numerical checks remain pending.
 
 Full counts, uncensored group probabilities and checkpoint/code/data SHA: execution/eos-location-effect-5000.json; exact old-control reproduction: execution/eos-location-control-reproduction.json. Scope/cautions predeclared in the diagnostic plan. No adoption, new TEST or public model change.
+
+## Subsequent same-actual5000 human DEV check
+
+The exploratory follow-up measured both raw FP32 checkpoints on the unchanged99 human DEV files,390 canonical windows,66,402 original targets,247,408 serialized bytes. Every document/token identity and window setting matches; the original evaluator is recovered byte-for-byte by undoing only the saved raw-loader/report-metadata patches. No optimizer, TEST, model selection or mid-run condition change; raw Python only, no interim JS/export claim.
+
+Human original-gold DEV NLL worsens **0.914884896722→0.939224732172**, delta+0.024339835451, while common weighted DEV improves. This is direct evidence that the common selector does not summarize human conversation and that the target tradeoff reaches original human-DEV likelihood. It does not attribute all aggregate loss change to the67 selected TRAIN end positions, identify final-state performance or grade meaning. The final selected/terminal humanDEV measurements remain required. See execution/paired-human-dev-5000/{plan,control,new,comparison}.json.
