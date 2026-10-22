@@ -1,0 +1,24 @@
+{
+  "posthoc": true,
+  "reason": "Separate original-gold newline serialization cost from content-token CE after measured whole-DEV likelihood regression; preserve aggregate and original gates",
+  "baseEvaluatorSha256": "54cf1c4a76a2d7950b85a6abbfe2fb9631d574356235ddef4e56ffad40036bd0",
+  "adaptedEvaluatorSha256": "9862f7711495ac0154084fc944902118cb271599d402c9b467396d709c5c181b",
+  "onlyChanges": [
+    {
+      "original": "begun = time.monotonic()",
+      "replacement": "piece_bytes = [bytes.fromhex(x) for x in tok['bytes']]\nassert piece_bytes[16] == b'\\n'\ncompound_newline = ev.torch.tensor([i >= 6 and i != 16 and b'\\n' in b for i,b in enumerate(piece_bytes)])\ncategory_totals = {k: dict(targets=0, negativeLogLikelihoodSum=0.0) for k in ['standaloneNewline16','compoundNewlineToken','originalDialogueEos','otherOriginalContent']}\nbegun = time.monotonic()"
+    },
+    {
+      "original": "        for i, (doc_index, _, _) in enumerate(batch):",
+      "replacement": "        safe = y.clamp_min(0)\n        masks = dict(standaloneNewline16=y.eq(16), compoundNewlineToken=y.ge(6) & compound_newline[safe], originalDialogueEos=y.eq(2))\n        masks['otherOriginalContent'] = y.ne(-100) & ~masks['standaloneNewline16'] & ~masks['compoundNewlineToken'] & ~masks['originalDialogueEos']\n        assert sum(int(mask.sum()) for mask in masks.values()) == int(y.ne(-100).sum())\n        for name,mask in masks.items():\n            category_totals[name]['targets'] += int(mask.sum())\n            category_totals[name]['negativeLogLikelihoodSum'] += float(ce[mask].sum())\n        for i, (doc_index, _, _) in enumerate(batch):"
+    },
+    {
+      "original": "a.out.write_text(json.dumps(report,",
+      "replacement": "assert sum(x['targets'] for x in category_totals.values()) == target_count\nfor x in category_totals.values():\n    x['lossPerTarget'] = x['negativeLogLikelihoodSum']/x['targets'] if x['targets'] else None\n    x['contributionPerSerializedUtf8Byte'] = x['negativeLogLikelihoodSum']/total_bytes\nassert abs(sum(x['negativeLogLikelihoodSum'] for x in category_totals.values())-sum(losses)) < 0.1\nreport['originalGoldTokenCategories'] = category_totals\nreport['categoryCaution'] = 'Token classes, not character likelihood or meaning; compound-newline tokens may also contain content. All original contexts and targets unchanged; no gate or selector replacement.'\na.out.write_text(json.dumps(report,"
+    }
+  ],
+  "noTargetOrContextChange": true,
+  "notUsedForSelection": true,
+  "noOptimizer": true,
+  "newTest": false
+}
