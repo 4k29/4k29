@@ -1,0 +1,22 @@
+{
+  "posthoc": true,
+  "reason": "Check everyday-domain dilution hypothesis at equal real1000 updates without changing the running fixed10000 trial",
+  "actualUpdatesEach": 1000,
+  "sameCanonicalHumanDev99": true,
+  "checkpoints": {
+    "round38": "b13015636dfd40eac1614fb41b733ee6f35efcb324c3d3570c29693e3b448ba9",
+    "round39": "f438bd45a50f3603aa0bcf2359d77df3f6f3b4fb45f41b84a841da1198173c54"
+  },
+  "onlyEvaluatorChanges": [
+    {
+      "original": "model, export = ev.load_model(a.model)",
+      "replacement": "checkpoint = ev.torch.load(a.model, map_location='cpu', weights_only=False)\nassert checkpoint['step'] == 1000 and {int(x['step']) for x in checkpoint['optimizer']['state'].values()} == {21000}\nmodel = ev.Decoder(checkpoint['config']); model.load_state_dict(checkpoint['model']); model.eval()\nexport = dict(tokenizer=tok)"
+    },
+    "Add explicit raw1000 numerical scope to report"
+  ],
+  "baseEvaluatorSha256": "41e5f17a7aca5154580c641a57890bc874f044ff6f4630262fc88c97a8e89542",
+  "adaptedEvaluatorSha256": "ccfd429450d3b7322b4589929fe0cab1e602ad5d111ce4ab2db66df649dd2bfa",
+  "noOptimizerUpdates": true,
+  "notUsedForCheckpointSelection": true,
+  "notNewTest": true
+}
