@@ -1,7 +1,7 @@
 """Check same prefix/observed first sentence has unchanged component judgments."""
 import pathlib,json,hashlib
 R=pathlib.Path(__file__).resolve().parents[1];read=lambda p:json.loads(p.read_text());seen={};matches=[];keys=['grammar','meaning','connection','repetition','breaks','sentenceClosed']
-for round_name in ['round38','round39']:
+for round_name in ['round39','round40']:
  E=R.parent/round_name/'execution'
  for state,gp,mp in [('selected','new-validation.json','new-manual.json'),('terminal','terminal-state-diagnostic/original17-python.json','terminal-state-diagnostic/original17-manual.json')]:
   g,m=read(E/gp),read(E/mp)
