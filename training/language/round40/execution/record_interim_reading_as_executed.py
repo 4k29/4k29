@@ -17,7 +17,7 @@ for i,(x,y,prior_read) in enumerate(zip(a['rows'],b['rows'],history['rows'],stri
  if same:r=dict(prior_read,exactOldCurrentRawCore=True)
  else:
   loop,intrusive,reason=changes[i];r=dict(id=y['id'],fullOutputMeaningful=False,fullOutputLoop=loop,intrusiveRepetition=intrusive,reason=reason,exactOldCurrentRawCore=False)
- r['prefixAndTextSha256']=hashlib.sha256((y['prefix']+'\0'+y['text']).encode()).hexdigest();newrows.append(r)
+ r['prefixAndTextSha256']=hashlib.sha256(json.dumps(dict(prefix=y['prefix'],text=y['text']),ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()).hexdigest();newrows.append(r)
 new=dict(generationSha256=sha(O/'round40.json'),actualEvaluatedUpdates=1000,all12FullPrefixesAndContinuationsActuallyRead=True,wholeMeaning=sum(r['fullOutputMeaningful'] for r in newrows),longLoopsPrimary=sum(r['fullOutputLoop'] for r in newrows),eos=sum(r['eos'] for r in b['rows']),notIndependentBlindHuman=True,notNewTest=True,notUsedForSelection=True,final10000AssessmentStillPending=True,rawFp32PythonOnly=True,rows=newrows)
 assert new['wholeMeaning']==0 and new['longLoopsPrimary']==4 and new['eos']==10
 for name,data in [('round39-reading.json',old),('round40-reading.json',new)]: (O/name).write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n')
