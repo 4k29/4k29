@@ -1,7 +1,7 @@
 """Read-only audit of already-retained immutable equal-update snapshots."""
 import pathlib,sys,json,torch,hashlib
 R=pathlib.Path(__file__).resolve().parents[1];P=R.parent/'round40';step=int(sys.argv[1]);torch.set_num_threads(1)
-sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest();ap=P/f'execution/retained-snapshots/{step}/checkpoint.pt';bp=R/f'execution/retained-snapshots/{step}/checkpoint.pt';a=torch.load(ap,map_location='cpu',weights_only=False);b=torch.load(bp,map_location='cpu',weights_only=False)
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest();ap=P/f'execution/retained-snapshots/{step}/checkpoint.pt';bp=R/f'execution/retained-snapshots/{step}/checkpoint.pt';control_manifest=json.loads((P/'execution/artifact-manifest.json').read_text());expected=next(x for x in control_manifest['assembledCheckpoints']if x['path']==str(ap.relative_to(P)));assert sha(ap)==expected['sha256'];a=torch.load(ap,map_location='cpu',weights_only=False);b=torch.load(bp,map_location='cpu',weights_only=False)
 assert a['step']==b['step']==step and a['config']==b['config']
 assert a['pythonRng']==b['pythonRng'] and torch.equal(a['torchRng'],b['torchRng'])
 assert a['seen_tokens']==b['seen_tokens'] and a['seen_bytes']==b['seen_bytes']
