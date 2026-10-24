@@ -21,3 +21,17 @@
 ## 保存領域
 
 `execution/reversible-disk-cleanup.json`はR37/R38の無視対象raw state復元コピーのみ削除した記録。全chunkのGit追跡・各SHA・連結SHA・raw SHAを削除前に検証した。unique model/optimizer/RNGは消していない。必要なrawは対応する追跡済みchunks.jsonから`checkpoint_chunks.py restore`で同一bytesへ復元できる。R39凍結成果は変更しない。
+
+## 完了状態の監査（実行済み10000更新）
+
+この実験は完了済み。再開や再訓練をせず、まず成果を監査する。
+
+```bash
+python training/language/round40/execution/verify_final_artifacts.py --require-tracked
+```
+
+実更新10000、optimizer counter30000。選択状態は9000更新/counter29000。latest checkpoint SHA256は`6474b480c226b716bed824556c0d924987f49eb33346897d5f3d111603fd21f6`、selected aligned checkpointは`31e21fe8adab07cc11b048a35857eacb47a69862fa4a201c7b9e55ef22dc99e5`。0/200/1000/5000/9000/10000の6状態は隣接するchunks.jsonとpartsからlosslessに復元できる。復元構文は`python training/language/round40/checkpoint_chunks.py --help`で確認する。rawが欠けた監査時は上記verifierもpartsを検証して復元する。
+
+`execution/artifact-manifest.json`が全成果・凍結入力400・6状態のサイズとSHAを結ぶ。`execution/final-assessment.json`は採用false、全読解完了。`execution/ALL_FOUR_STATE_GENERATIONS.md`は旧新selected/terminalの全168出力（SHA256 `ec40dfd76ee74b601e5f22d048a6ae110bbbe7cd0b1553077388fee0dce846f9`）。生成条件・読解範囲・旧結果の再利用範囲はRESULTS.mdと各provenanceに記録する。as_executedの読解記録器はこの生成SHAにだけ対応し、将来モデルの自動採点には使わない。
+
+実行時間は10074.549516799001秒。再訓練で同じtensor/RNGを確認することと、elapsed等の実行metadataを含むserialized checkpointのbytes一致は区別する。保存partsからの復元はbytes単位一致を検証する。補助pool全文の残り192組は学習開始後の監査で読み、学習前に読んだ64組と区別する。
