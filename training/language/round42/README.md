@@ -1,5 +1,5 @@
-# R42 — auxiliary pool eligibility only
+# Round42 — 実10000更新完了、意味改善未実証
 
-実学習を継続中。初期状態、実200・1000更新の重み・optimizer・RNGを保存・監査済み。3漢字必須条件のみ撤廃し、元の2漢字候補1616組のSHA順先頭256を選択。候補SHAとR41旧256組の完全再構築を検証した。正例文書190、元poolと同じ正例30、TRAIN診断64との同一発話7。64組は未見評価ではなく7/57を分けて記録する。先頭16正例を全文読解、全256を原典/token/境界・勾配で機械検証。全正例の意味監査済みとはしない。
+補助poolの3漢字必須条件だけを撤廃。selected9000: common DEV0.9653923983→0.9654554390、人間会話DEV0.9338386936→0.9335080179。日常全文0/12、従来全文0/17、native最小行為2/8。固定gate/Pareto不合格で不採用、公開/R25anchor維持。
 
-モデル・own BPE/main40/30/30・source25/5・CE/係数0.1/every10/batch2・初期R28model/Adam20000/RNG・実10000dose・selector・全gateを保持する一条件比較。全10 core learning filesがR41と同じbytes。1000更新の中間比較では日常会話12件の全文意味成立は旧0→新0、長い反復は旧2→新4。人間会話DEV NLLは0.9434491396→0.9435959363で僅かに悪化。TRAIN64の改善は未見への一般化とはしない（新auxに含まれる7件と残り57件を別記）。中間結果で設定や選択基準を変更せず、最終10000更新を検証する。公開/R25anchor維持。
+[RESULTS.md](RESULTS.md)に全比較・8仮説・限界、[REPRODUCTION.md](REPRODUCTION.md)に復元方法、[全168生成](execution/ALL_FOUR_STATE_GENERATIONS.md)に無省略の全文。新84を実読解、Py/JS・raw/exportも84一致。TRAIN64は現auxと7組重複し7/57別集計、両方TRAINで未見評価ではない。次pool-size条件は[NEXT_EXPERIMENT.md](NEXT_EXPERIMENT.md)の別ラウンド案。

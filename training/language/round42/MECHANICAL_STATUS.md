@@ -1,5 +1,3 @@
-# Mechanical execution status — language review pending
+# Execution and assessment complete
 
-Actual retained additional optimizer updates: 10000/10000. Optimizer counters: [30000]. Pipeline exit: 0. Mechanical outputs available: True.
-
-Checkpoint includes aligned model/AdamW/Torch RNG/private Python RNG. Raw old/new JSON retains every generated token and unedited character. Semantic/full-language judgment is pending actual complete reading; no score or gate pass is guessed. No public model/site replacement or TEST generation. No new TEST data acquisition or model evaluation.
+Actual retained updates10000/10000; Adam30000; selected9000/Adam29000. Pipeline exit0. Complete new84 reading and fixed strict gate review finished; no language adoption. Numerical scope84 new full sequences matches Py/JS/raw/export. Full168 state outputs saved. Public/site/R25 anchor unchanged. automatic-publish historical pending flag refers to its earlier mechanical-publication stage; current semantic outcome is final-assessment.json. No TEST model/tokenizer evaluation.
