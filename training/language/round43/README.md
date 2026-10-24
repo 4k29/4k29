@@ -1,7 +1,5 @@
-# R43 — auxiliary pool size only
+# Round43 — 実10000更新完了、pool拡大は不採用
 
-実学習を継続中。初期0と実200・1000更新のfull model/Adam/RNGを保存・監査済み。200/1000更新はR42とmodel/moments/RNGが完全一致。1000の旧新24生成も全文core一致、日常意味0/12・反復4・EOS9、人間DEV NLL0.9435959363で一致。最終10000更新と意味改善の判定は未完了。元1616候補の同じSHA順先頭256→1024のみ変更。旧256は新poolの完全prefix。CE係数.1/every10/batch2、総10000更新/2000auxpairs、全main/モデル/LR/seed/R28fullstate/selector/gateを保持。固定TRAIN64の現pool重複は7組で別集計し未見評価とはしない。意味改善は未測定、公開/R25anchor維持。
+補助pool256→1024だけを変更。selected9000: 共通DEV0.9654554390→0.9652953327、人間会話DEV0.9335080179→0.9335869651。日常全文0/12、従来全文0/17。native最小行為2→3だが推薦の解釈次第で2、terminalは2のまま。strict gate/実用guard不合格で公開/R25anchor維持。
 
-新poolの先頭256は旧と同じため、最初1280更新はモデル/Adam/RNGがR42と一致する予測を開始前固定。初めて異なる正例を読むのは1290更新。200/1000のtensor一致を実測し、早期差や改善を捏造しない。
-
-実5000更新のfull state/Adam25000/RNGを保存。共通DEV旧0.9673295542→新0.9672927766、人間DEV旧0.9413361017→新0.9408762226。主露出/RNG一致。文脈gapは改善せず、意味改善は未実証。条件を固定して10000まで継続。
+[RESULTS.md](RESULTS.md)に全比較・8仮説・失敗/感度、[再現](REPRODUCTION.md)に復元/評価修正、[全168全文](execution/ALL_FOUR_STATE_GENERATIONS.md)に無修正生成。新84全文を実読解、Py/JS・raw/exportも84一致。固定TRAIN64は7/57を分け両方TRAIN。次の案は[NEXT_EXPERIMENT.md](NEXT_EXPERIMENT.md)。
