@@ -7,3 +7,5 @@
 今後は実10000更新、0/200/1000/5000/selected/terminal fullstates、全loss/実counter/SHA、旧新168全文・新84全文の実読解、PyJS/raw比較を保存する。既知DEVで新TESTではなく、TRAIN64の7/57も両方TRAIN。公開モデル/サイト/R25anchorは維持。予定10000を完了扱いしない。
 
 426入力を実更新0のcommit5b82cd7d81ddf83b7ab0088bd7c9508edc49bd42で凍結。実200更新では主target318964/bytes1106433とPython・Torch RNGが旧R44同時点に完全一致し、全重み/momentsはfinite。auxは20calls/40pairs、Adam20200。重み差は能力改善とはしない。初期checkpointはR28 model/Adam20000/RNGと一致、設定係数0.2を確認。初期snapshot作成前のread-only照合はFileNotFoundとなったが、作成後のwaiter照合はPASSし、訓練の再実行や追加optimizer更新はない。
+
+学習中の容量対策として、同一Git blob/SHAの旧不変データ46ファイルの作業コピーをhardlinkで共有し約828MBの重複を減らした。内容・全パス・履歴を保持し、R44/R45のパスは置換せず、426入力SHAも再検証済み。execution/archived-data-hardlink-dedup.json参照。今後その共有データを編集する場合は先に独立コピーを作る。
