@@ -1,6 +1,6 @@
 # Round41 — correct-context CE only
 
-**実1000更新の中間検証まで保存済み。学習は10000更新へ継続中で、最終結果・採用判定は未完了。** 科学対照R40、参考R39。同じR28 full model/Adam20000/RNGからの兄弟比較であり、R40terminalの延長ではない。
+**実5000更新の中間検証まで保存済み。学習は10000更新へ継続中で、最終結果・採用判定は未完了。** 科学対照R40、参考R39。同じR28 full model/Adam20000/RNGからの兄弟比較であり、R40terminalの延長ではない。
 
 唯一の変更は、同じ元の人間TRAIN256組による補助損失を`softplus(correctNll - wrongNll).mean()`から`correctNll.mean()`にすること。wrong forwardは診断だけに残し、損失・勾配に寄与しないことをテストした。モデル、独自BPE、main40/30/30、source25/5、全mainデータ、補助pool/係数0.1/every10/batch2/順序、LR、seed、10000dose、既存全目的、DEV selector、生成、全厳格ゲートは固定。補助canonical正例露出とmain露出は別計数する。
 
@@ -21,3 +21,7 @@
 新12全文を実際に読み、旧12は凍結manifest SHAと全raw core一致の後に既存読解を参照。6件は旧新で全文/token/EOS等が同じ。短い「今日は」反復、90tokensの有限説明を広いloopに含めれば新4件となる。「公園とか行くのですか？」を省略された予定確認と許せば新whole1という感度を残すが、primaryでは既出の予定への自然な接続が弱く0。原文を修正せず、[全24生成](execution/paired-daily-generation-1000/FULL_GENERATIONS.md)と[読解・感度](execution/paired-daily-generation-1000/reading-complete.json)を保存する。
 
 中間評価はraw Python FP32のみで、JS/export parityはまだ測定していない。TRAIN64は文書が重なる既存TRAIN診断でheldout/TESTではない。NLL改善や短縮だけで意味・文脈理解の改善とはしない。元の厳格ゲートは10000後の実全文で評価する。研究anchor R25と公開モデル/サイトを維持する。
+
+## 実5000更新の中間診断
+
+full model/Adam25000/Torch・Python RNGの一致した状態と11個の定期DEV記録を保存。main対象7798937tokens/27206061bytes、補助500呼出1000組、main RNGと抽出はR40に完全一致。共通DEV NLLは対照0.96718876→新0.96730560、人間DEV99は0.94185127→0.94103058。TRAIN64 correct NLLは3.52649484→3.51557327、相対gapは0.09964004→0.09710488、positive gain49→50/64。これは同じTRAIN診断のteacher-forced結果であり、heldout/意味理解の証明ではない。5kでは計画どおり自由生成を追加せず、中間1kの結果と最終10kの評価を分ける。最終採用判定は未完了。
