@@ -19,6 +19,16 @@ for n in [39,40,41,42,43,44]:
      if f in first:assert first[f][0]==v
      first[f]=(v,loc)
    refs.append(dict(round=n,state=state,group=group,generationSha256=sha(gp),manualSha256=sha(mp)))
+# Preserve this round's already-read1000 daily judgments as well as prior rounds.
+ig=E/'paired-daily-generation-1000/round45.json';im=E/'paired-daily-generation-1000/round45-reading.json'
+if ig.exists()and im.exists():
+ j,k=read(ig),read(im);assert k['generationSha256']==sha(ig)
+ assert sha(im)==read(E/'paired-daily-generation-1000/reading-complete.json')['newReadingSha256']
+ for x,y in zip(j['rows'],k['rows'],strict=True):
+  rawkey=(x['prefix'],x['text']);v=(y['fullOutputMeaningful'],y['fullOutputLoop']);loc='R45/interim1000/daily12/'+x['id']
+  if rawkey in whole:assert whole[rawkey][0]==v
+  whole[rawkey]=(v,loc)
+ refs.append(dict(round=45,state='interim1000',group='daily12',generationSha256=sha(ig),manualSha256=sha(im)))
 for state in ['selected','terminal']:
  for suffix,group,g,m,n in spec:
   name=state+suffix
