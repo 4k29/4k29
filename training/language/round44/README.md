@@ -1,13 +1,7 @@
-# R44 — main daily-conversation sampling only
+# R44 — 主会話sampling 25%→40%だけの比較
 
-実学習継続中。初期0・実200・実1000更新のfull model/Adam/RNGを保存・監査済み。予定10000更新は未完了。
+実10000更新完了。会話DEV NLLは改善したが、selected日常全文0/12・従来0/17、terminal日常2/12・従来1/17。厳格ゲート/固定実用条件は未通過で不採用。公開モデル・サイト・R25anchorは維持。
 
-唯一の学習変更はRealPersona主sampling25%→40%。JMRD5%固定、非会話70%→55%を相対比保持で縮小。資料・独自BPE・1024pool・全loss・モデル・LR・seed・R28 fullstate・10000dose・selector・全gateはR43と同じ。主draws/target量/RNGの差はこの条件に含め、各run固有の再現を検証します。426入力は開始前commit3298933で凍結済み。
+[結果と原因分析](RESULTS.md) / [旧新4状態168全文](execution/ALL_FOUR_STATE_GENERATIONS.md) / [再現・checkpoint復元](REPRODUCTION.md) / [次の一条件](NEXT_EXPERIMENT.md)。新84全文を実際に読み、83種類のprefix+全文を整合照合。Py/JSとraw/exportは84全文一致。旧R10 near-tie16/17を隠さない。
 
-実1000更新の会話DEV NLLは旧0.9435959363020515→新0.9388160688890173。共通DEVは旧0.9698808789995499→新0.970905335028921と悪化。生成12件の全文意味成立は旧0/12→新0/12、長い反復は4→5、EOS到達は9→8でした。新12全文を実際に読み、旧読解は凍結manifestと生成内容一致で再利用しました。全文・項目別判断・境界例の感度はexecution/paired-daily-generation-1000/に保存しています。中間診断であり、新TESTでも採用判断でもありません。途中の学習条件変更はありません。
-
-TRAIN文脈64件の7/57区分はいずれもTRAIN。両区分の正解NLLは改善しましたが、正しい文脈による利得は小幅に低下しており、文脈利用や未見一般化の改善は確認できません。execution/paired-human-dev-1000/context-membership-subsets.json参照。
-
-実1000更新のAdam stepは21000、全重み・momentはfinite。主target数は旧1567814/新1592603、Python/Torch RNGは両方異なります。学習変更に伴う差として保存し、旧と同一とは主張しません。公開モデル・サイト・R25anchorは維持します。
-
-実5000更新のfull model/Adam25000/RNGも保存・finite監査済み。会話DEV NLLは旧0.9408762226260542→新0.9254271005926755、共通DEVは旧0.9672927766019909→新0.9701762535293869と悪化。固定TRAIN文脈64のpool内7件・外57件では正解NLLがともに改善し、文脈利得もそれぞれ0.17179947→0.18548759、0.08638718→0.09992487へ上がりました。1k時点と傾向が変わったため両時点を残します。両区分ともTRAINであり、意味成立・未見一般化の改善とはしません。事前計画どおり5kで新たな自由生成はしていません。学習は継続中で、10000完了・最終全文評価は未実施です。
+学習後に診断用mjsのコピー漏れが判明し、評価だけ再開した。元失敗ログを保存し、最終完了はexecution/evaluation-recovery-complete.jsonとfinal-assessment.jsonで確認する。学習の追加実行や途中条件変更はない。
