@@ -1,3 +1,5 @@
-# R46 — R44に対して学習率だけ2倍
+# R46 — 学習率だけ2倍、実10,000更新完了
 
-実更新0、開始前監査中。R44の係数0.1・主sampling40%+5%・全10core files・資料・pool1024・他loss・model・seed・R28fullstate・10000dose・selector・gateを維持し、LRだけ2.2499999999999998e-5から4.4999999999999996e-5へ変更。R45は不採用の失敗参照であり科学対照ではない。公開/R25anchor維持。
+R44対照、LR0.0000225→0.000045のみ。selected9500の会話DEV NLL/byteは0.917695→0.908436、人間会話8件の全文成立は2→4。ただしselected17全文0、日常12全文0/loop4、共通DEV悪化。terminal17全文は1→3で、従来全gate・採用条件は不合格。正式採用false、公開/R25anchor維持。全84実読解・168全文・6fullstatesを保存。
+
+後処理のLRログ検査不備で元pipelineはexit1。430入力/訓練済み重みを変えず評価だけ復旧し、全84PyJS/raw-export一致を確認した。RESULTS.md/REPRODUCTION.mdとposttraining-recovery.jsonを参照。新TESTや独立盲検人手評価ではない。
