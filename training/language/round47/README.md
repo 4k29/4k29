@@ -1,3 +1,5 @@
 # R47 — sequence UL係数0.1→0.2のみ
 
-実更新0、開始前監査中。科学対照R46、初期R28fullstate/Adam20000/RNG、同じLR0.000045・正文脈CE0.1・主40%/5%・資料・pool1024・64token負例・model/seed/10000dose/selector/厳格gateを維持。反復を抑えるloss係数のみ変更する。正式anchorR25と公開モデルは維持。
+実10,000更新完了、selected9,500。R46同条件対照に比べ共通/人間会話DEV NLLは微悪化、selected日常全文0/12・長期loop4→5。改善を確認できず不採用。公開モデルとR25anchorは維持。
+
+[結果と原因分析](RESULTS.md)、[省略なし4状態全生成](execution/ALL_FOUR_STATE_GENERATIONS.md)、[再現手順](REPRODUCTION.md)。
