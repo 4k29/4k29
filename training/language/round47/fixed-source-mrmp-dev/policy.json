@@ -1,0 +1,69 @@
+{
+  "sourceRepository": "nu-dialogue/multi-relational-multi-party-chat-corpus",
+  "sourceCommit": "e6e39cb896df88781c7a2e0451226a527c5f1e2e",
+  "sourceLicense": "CC-BY-SA-4.0",
+  "sourceAttribution": "Taro Tsuda, Sanae Yamashita, Koji Inoue, Tatsuya Kawahara, Ryuichiro Higashinaka (2025), Constructing a Multi-Party Conversational Corpus Focusing on Interlocutor Relationships, SemDial, pp193–202",
+  "policyFrozenUtc": "2026-10-20T08:19:32.738876+00:00",
+  "use": "Fresh supplementary source-disjoint human DEV; not R32 TRAIN, checkpoint selector, replacement gate or TEST",
+  "currentRoundLearningConditionChanged": false,
+  "prospectiveSpeakerFold": {
+    "rule": "int(SHA256(UTF8(r32-mrmp-v1|speaker| + original public speaker ID)),16) mod100",
+    "futureTrainNotAdmitted": [
+      0,
+      49
+    ],
+    "development": [
+      50,
+      74
+    ],
+    "reservedTest": [
+      75,
+      99
+    ],
+    "dialogue": "Admit fold only if every original interlocutor has same fold. Cross-fold dialogues excluded. Speaker identifiers are pseudonyms, not identity inference; no profiles or attributes used."
+  },
+  "excludePreviouslyDisplayedReadmeExampleDialogueIds": [
+    "B10008"
+  ],
+  "acquisition": "Pinned tarball; retain/hash exact dialogue raw files outside repo, LICENSE/README/VERSION. No profile file extraction. Parse reserved raw JSON only for speaker-ID/fold metadata; never encode, model-evaluate or semantically display reserved text.",
+  "contextEligibility": {
+    "originalUtteranceEndIndexMinimum": 5,
+    "lastUtteranceUnicodeCharacters": [
+      20,
+      100
+    ],
+    "precedingTurns": 1,
+    "totalOriginalTurns": 2,
+    "allOriginalTextUnchanged": true,
+    "serialization": "Original adjacent texts joined by one newline and terminal newline, no role/persona insertion",
+    "ownCanonicalPrefixIncludingBosMaximum": 64,
+    "rejectContextContaining": [
+      "＊＊",
+      "@",
+      "empty-or-whitespace utterance",
+      "ASCII controls except newline tab carriage-return"
+    ],
+    "nextOriginalUtteranceMustExist": true
+  },
+  "selection": {
+    "perDocument": "Lowest SHA256(r32-mrmp-prefix-v1|sourcePath|utteranceEndIndex) eligible context, no model generation/target scoring",
+    "withinFamily": "Rank source documents by SHA256(r32-mrmp-document-v1|sourcePath). Family is original dialogue ID first4 characters (speaker-combination series).",
+    "acrossFamilies": "Sort families by SHA256(r32-mrmp-family-v1|family); choose first ranked document from each family then second ranked document from each, round-robin until min8/all candidates.",
+    "requestedMaximumContexts": 8,
+    "insufficient": "Keep actual available count. Never change salt/folds/criteria or resample after outcomes."
+  },
+  "evaluation": {
+    "when": "Only after actual R32 additional10000 optimizer updates; freeze probes in Git before any old/new generation",
+    "models": [
+      "adopted round25 selected final",
+      "round32 lowest fixed original DEV NLL selected final"
+    ],
+    "generation": "Identical unrestricted own-vocabulary greedy192, true EOS, Python1 thread; raw full outputs and JS comparison, no repairs",
+    "notUsedForTrainingOrCheckpointSelection": true,
+    "allResultsBecomeExposedDevelopmentAfterFirstMeasurement": true,
+    "noFreshTestClaim": true,
+    "originalStrictGatesUnchanged": true
+  },
+  "privacy": "Language-only original utterances. No de-anonymization, impersonation, persona/profile/psychology/attribute use.",
+  "limits": "Three-party chat is a different conversational setting; speaker identity across independent corpora not verified or inferred. Multiple source documents may share speaker combination; report effective families/subjects and do not treat8 as independent speakers. Source-disjoint does not certify absence of short/fuzzy wording overlaps."
+}

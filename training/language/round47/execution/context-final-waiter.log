@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "/workspace/4k29/training/language/round47/execution/context_final_diagnostic.py", line 12, in <module>
+    cp=torch.load(path,map_location='cpu',weights_only=False);m=ev.Decoder(cp['config']);m.load_state_dict(cp['model']);m.eval();groups={}
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/torch/serialization.py", line 1565, in load
+    with _open_file_like(f, "rb") as opened_file:
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/torch/serialization.py", line 795, in _open_file_like
+    return _open_file(name_or_buffer, mode)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/torch/serialization.py", line 776, in __init__
+    super().__init__(open(name, mode))  # noqa: SIM115
+                     ^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/workspace/4k29/training/language/round46/continue-10000/best-aligned-checkpoint.pt'
+Traceback (most recent call last):
+  File "/workspace/4k29/training/language/round47/execution/wait_final_context.py", line 8, in <module>
+    subprocess.run([sys.executable,str(E/'context_final_diagnostic.py')],cwd=R.parents[2],check=True)
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python', '/workspace/4k29/training/language/round47/execution/context_final_diagnostic.py']' returned non-zero exit status 1.
