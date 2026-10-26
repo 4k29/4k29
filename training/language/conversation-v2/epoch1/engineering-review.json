@@ -1,0 +1,51 @@
+{
+  "role": "Independent Engineering Reviewer",
+  "reviewedAtUtc": "2026-10-26T08:32:27.629195+00:00",
+  "sourceSha256": "8d3567accf4a051847e2f21964a73b5925f072c019a1ff0bad05f2d599679db6",
+  "scope": "Pre-training static audit; pending exception/input-hash changes and runtime evidence",
+  "decision": "GO_WITH_FROZEN_RESUME_AMENDMENT",
+  "blockingFindings": [
+    {
+      "id": "CLI_RESUME_PREFLIGHT_PATH_COLLISION",
+      "detail": "Initial and --resume executions both choose run-zero-update-preflight.json and refuse overwriting; therefore actual CLI resume fails before optimizer updates",
+      "discoveryTiming": "Reported to root before reviewer knew training had launched; root confirms actual launch preceded receipt. Original frozen source and plan must remain unchanged.",
+      "resolution": "Graceful stop, preserve actual counts/full state, separately frozen resume wrapper/amendment changing only receipt pathname",
+      "resolutionStatus": "Separately frozen wrapper reviewed; only audit pathname changes; actual process resume pending"
+    }
+  ],
+  "checks": {
+    "initialStateRestore": "Full model, Adam, Torch RNG, private RNG, order, cursor and history exact()",
+    "dose": "13878-2048=11830windows, ceil/4=2958updates; finalbatch2; loopcannotreshuffle",
+    "actualReplay": "514checkpoint→516reference, restore514 then two countedreplayupdates; perarm2960actualmaximum",
+    "terminalCounters": "512+2958=3470Adam retained, inherited514actual+2960=3474cumulativeactual",
+    "learningRate": "Constant terminal3e-5, no warmup/cosinereset",
+    "rng": "Zero-updateauditrestoresTorch RNG; restoreinitial private RNG; no sampler drawsafterfixedorder",
+    "corruption": "Chunk-byte/size and concatenationSHA verified beforetorchload; newchunkSHA readback beforemanifestreplace",
+    "resume": "Ledger/checkpointgap rejected, gracefulboundarysave includesfulltrajectory; not automatic crashgaprecovery",
+    "inputContract": "32oldcases preserveordinarytokens/EOS/order;19roleswaps, allBOSrole3; originalTRAINunchanged",
+    "newDev": "24distinctsourceDEVdocs separateold32, allverbatimhumanreferences, sealedTESTunused"
+  },
+  "limitations": [
+    "tmpfs survives process restart, not host loss; finalGitarchive mandatory",
+    "Atomic manifest usesrename but not persistent-volume fsync guarantee; tmpfs explicitlydeclared",
+    "Arbitrary crash after updates beyond128checkpoint createsledgergap and blocks automaticresume; no uncountedreplay",
+    "Final Adam moments finite/nonnegative needpost-trainingaudit",
+    "Sourcepanel hashumanprivatefacts, not AI factualresponsebenchmark; advice/conditionalinstructioncoverageabsent"
+  ],
+  "requiredBeforeLaunch": [
+    "Freeze currentfinalcode+PLAN+inputhashes",
+    "Preserve zeroPFreceipts beforemainruntimeaudits",
+    "Unexpectedexception mustrecord actualledgercounts/latestdurablestate withoutfabricatingcompletedupdates"
+  ],
+  "trainingPerformedByReviewer": false,
+  "runtimeEvidence": {
+    "model": "medium",
+    "gracefulStopUniqueUpdates": 580,
+    "actualContinuationUpdates": 70,
+    "replayUpdates": 2,
+    "checkpointSha256": "1e08342b8fbcb75bc80a1c0e265664f718f813c50c65c58387e8575908cf4c60",
+    "resumeNumericBitwise": true,
+    "processResumeNotYetDemonstrated": true
+  },
+  "resumeAmendmentReview": "resume-independent-review.json"
+}
