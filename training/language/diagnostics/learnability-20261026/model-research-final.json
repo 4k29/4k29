@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "reviewer": "Model Researcher /root/assay_model_research",
+  "createdUtc": "2026-10-26T04:47:45.606292+00:00",
+  "independence": {
+    "rootResultsDraftRead": false,
+    "rootDiagnosisDraftRead": false,
+    "blindFitReadingCompletedBeforeUnblinding": true,
+    "performanceDataReadOnlyAfterParentUnblinded": true,
+    "newOptimizerUpdates": 0,
+    "newModelInference": 0,
+    "notes": "Parent supplied numeric outcome summary, then source summaries were independently inspected. No model or training code modified."
+  },
+  "primaryConclusion": "The current fixed architecture and inherited Adam state can fit and autoregressively retrieve a small finite table of context-response associations, including arbitrary permuted associations. This does not demonstrate semantic conversational correspondence learning or transfer. Both arms overfit the assay and degrade all32 held-aside correct-response teacher-forced NLLs; whole-output conversational ability did not improve.",
+  "evidence": {
+    "fitCases": 64,
+    "fitGoldTokens": 1465,
+    "fitOwnAssignmentTop1Rate": {
+      "A_correct": 1.0,
+      "B_permuted": 1.0
+    },
+    "fitOwnAssignmentMacroNll": {
+      "baseline_correct": 3.187860108408636,
+      "A_correct": 0.01690403311366257,
+      "baseline_permuted": 3.410836079871716,
+      "B_permuted": 0.019632471201643766
+    },
+    "heldasideCorrectMacroNll": {
+      "baseline": 3.0989285191471816,
+      "A": 4.129098071216639,
+      "B": 4.222126020592221
+    },
+    "heldasideCasesWorsenedAgainstBaseline": {
+      "A": 32,
+      "B": 32
+    },
+    "fitGeneratedWholeGoldPrefix": {
+      "A_correct": {
+        "exact": 16,
+        "cases": 16,
+        "continuedAfterGold": 14
+      },
+      "B_permuted": {
+        "exact": 16,
+        "cases": 16,
+        "continuedAfterGold": 13
+      }
+    },
+    "fitCorrectBlindWholeMeaning": {
+      "baseline": 7,
+      "A": 2,
+      "B": 3,
+      "cases": 16
+    },
+    "fitCorrectBlindAppropriateWhole": {
+      "baseline": 2,
+      "A": 2,
+      "B": 0,
+      "cases": 16
+    },
+    "fitCorrectBlindSpecificContentAppropriate": {
+      "baseline": 1,
+      "A": 2,
+      "B": 0,
+      "cases": 16
+    },
+    "fitCorrectBlindHarmfulRepetition": {
+      "baseline": 3,
+      "A": 14,
+      "B": 12,
+      "cases": 16
+    },
+    "heldasideCorrectBlindAppropriateWhole": {
+      "baseline": 2,
+      "A": 0,
+      "B": 0,
+      "cases": 16
+    },
+    "fitCorrectGoldEndEosProbability": {
+      "baseline": 0.23483850575303222,
+      "A": 0.021301739849645118,
+      "B": 0.03946435999405673
+    },
+    "fitCorrectGreedyEos": {
+      "baseline": 14,
+      "A": 2,
+      "B": 6,
+      "cases": 16
+    },
+    "heldasideGainDifferenceAminusB": 0.02931099820513637,
+    "heldasideGainDifferenceClusterCI95": [
+      -0.04757109973716826,
+      0.10835857234533151
+    ]
+  },
+  "whatCanBeInferred": [
+    "A failure to fit64 examples is not the current limiting result: both real and permuted tables become almost exactly predictable. Complete own-model greedy retrieval in16 sampled trained prompts in each own assignment additionally rules out interpreting all100percent teacher-forced top1 as only easy suffix prediction.",
+    "Conditioning on a trained prefix can select a learned arbitrary target. This is narrow conditional memorization, not evidence that the model understands why a human reply follows its original conversation.",
+    "A-minus-B context gain on fit is expected when each arm memorizes its assigned table. It cannot itself distinguish semantic learning from arbitrary associations. A own-versus-baseline and held-aside language outcomes matter.",
+    "All32 held-aside correct-response NLLs worsen, and both arms lose their few appropriate full generated continuations there. This is consistent with concentration-driven overfitting, interference or forgetting rather than useful transfer under this recipe.",
+    "A very low content CE is compatible with a poor complete response. In14/16 A trained prompts, the correct complete human reply is generated and then generation continues into repetition or collapse. The reply content and its termination are distinct learned behaviours."
+  ],
+  "eosInterpretation": {
+    "supportedHypothesis": "The EOS-free response-only assay has a strong termination-objective mismatch: it improves every content token while leaving the gold-end EOS untrained, and softmax training can suppress EOS globally. Gold-end EOS probability drops even under teacher-forced correct history, so the new failure cannot be attributed solely to earlier self-generated-history errors.",
+    "notEstablished": "No EOS-versus-no-EOS causal comparison has been run, so EOS omission is a well-supported mechanism hypothesis, not a measured causal share. Adding EOS need not remove wrong-topic responses or held-aside content prediction damage.",
+    "importantBoundary": "BaselineR46 already terminates14/16 fit correct generations. The severe EOS suppression is introduced by this narrow assay; it is not evidence that inadequate EOS alone caused the pre-existing R46 Japanese-meaning failures. Stopping at a memorized gold reply is not a general language-ability solution."
+  },
+  "capacityDataObjectiveRanking": [
+    {
+      "priority": 1,
+      "topic": "Data distribution and update allocation / retention",
+      "reason": "Only64 repeated pairs drive near-perfect finite-table fit while every heldaside correct NLL worsens. The practical unresolved issue is acquiring useful responses without narrowing to the fitted table or damaging other conversations. Broader distribution or preservation is better motivated than growing capacity from this result."
+    },
+    {
+      "priority": 2,
+      "topic": "Learning objective at response boundaries",
+      "reason": "The EOS-free diagnostic has an explicit boundary blind spot. EOS-only is a useful cheap mechanism control, especially before treating memorized-answer continuation as evidence of general autoregressive failure. It cannot by itself establish transfer and should not become an open-ended loss-coefficient search."
+    },
+    {
+      "priority": 3,
+      "topic": "Model capacity and representation",
+      "reason": "Finite memorization capacity and the ability to form general Japanese representations are different. These results neither prove sufficient capacity for conversation nor show capacity shortage; a later capacity-only controlled comparison remains justified if distribution-preserving training still fails."
+    }
+  ],
+  "nextExperimentPriority": {
+    "status": "Proposal only; not executed and requires a separately frozen experiment design",
+    "choice": "Retention/data-allocation comparison before an EOS-only follow-up as the main next ability-oriented experiment",
+    "whyNotEosOnlyFirst": "EOS-only would primarily repair a defect of this disposable recipe and could make memorized responses stop cleanly without reducing the full32-case held-aside content-NLL degradation. The main goal is useful transferable conversation rather than a cleaner finite lookup table.",
+    "oneFactor": "Enable versus disable ordinary human-response CE replay on a fixed admitted original TRAIN reservoir, with the64 fitting stream kept unchanged. This is one fixed rehearsal-allocation switch using the same existing CE, not mass concentration, architecture expansion or a new generated-positive objective.",
+    "possibleDesign": [
+      "Both arms start from exactly the same R46 selected fullstate/model/Adam/RNG. Keep the same64 fit examples, per-example CE definition, fitting example order and fitting target doses, LR, update count and fixed evaluation panel.",
+      "Construct and freeze a human-original TRAIN replay reservoir disjoint from the evaluation documents, normalized families and RP speakers, with provenance and utterance boundaries audited. Replay data are not model-produced answers.",
+      "Both arms compute the same fixed replay batches for equal computational work. The only changed allocation is whether the existing replay CE gradient is enabled, using a preregistered fixed weight rather than a post-result coefficient search. Keep the64-fit CE coefficient and normalization unchanged.",
+      "Audit combined gradient norms/clipping before any updates. The changed total gradient and interference are consequences of the one replay-allocation switch and must be measured, not normalized away via another condition.",
+      "Keep EOS treatment identical across the paired arms and report termination separately, so an allocation effect is not mixed with EOS repair. A later EOS-only control can test the distinct boundary hypothesis.",
+      "Use a complete-epoch planned fitting schedule or a prebalanced schedule so per-context cumulative doses match exactly; count all resume-validation optimizer calls within the new separately authorized budget. Do not repair the current198-update outcome by rerunning it."
+    ],
+    "successEvidence": "A favourable allocation must preserve or improve held-aside content prediction and increase whole context-appropriate raw generation, without only lowering memorized fit CE. Mere reduction of damage compared with the concentrated control is a retention result, not yet acquired unseen-dialogue ability.",
+    "limits": "Replay may slow memorization, change clipping and still fail at generation. Any coefficient choice is a new predeclared experimental setting, not an optimized rescue. Held-aside original TRAIN remains insufficient to prove unseen generalization. No automatic adoption even on a favourable result."
+  },
+  "eosOnlyAlternative": {
+    "scope": "Optional subsequent tightly bounded mechanism diagnostic, not a new broad loss search or the current work",
+    "oneChangedCondition": "Whether the authentic reply-end EOS is included as a supervised target, while content CE normalization/dose, all original inputs and optimizer trajectory setup remain fixed.",
+    "discriminatingOutcome": "If it restores termination and trained whole responses but held-aside content NLL and meaningful generation remain bad, it isolates stopping from transfer. If repetition persists despite correct EOS learning, other self-history dynamics remain.",
+    "noInferenceTrick": "No forced stop at gold length, token suppression, template, text correction or altered decoding policy can substitute for this learning comparison."
+  },
+  "remainingUncertainties": [
+    "The heldaside pool was already supervised inR46, so this is retention/within-TRAIN transfer, not unseen TEST generalization.",
+    "Only16fit and16heldaside prompts per condition were freely generated, assistant assessments are not independent human validation, and exact natural gold wording is not uniquely required.",
+    "Some permuted targets are semantically plausible and reviewers disagree; all-row primary and clear-mismatch-intersection summaries must remain separate.",
+    "198unique updates leave a partial epoch:24 context identities have one different cumulative exposure across arms, total variation0.0075758. Thus exact marginal-matched one-factor causal claims are unavailable, though within-arm finite-table fit is directly observed.",
+    "The inherited Adam moments and no-dropout response-only optimization are a special diagnostic recipe; results do not identify optimal production training, compute sufficiency, tokenizer quality or whether a larger model would generalize better.",
+    "Python numerical reference consistency here does not add new JavaScript equivalence evidence. No sealedTEST or public model change is justified."
+  ],
+  "operationalChecks": {
+    "actualOptimizerUpdatesTotal": 400,
+    "uniqueUpdatesTotal": 396,
+    "replayCallsTotal": 4,
+    "resumeFullStateTraceExact": true,
+    "initialModelOptimizerRngMatched": true,
+    "noNonfiniteReported": true,
+    "originalCheckpointUnchanged": true,
+    "diagnosticWeightsNeverAdopt": true,
+    "round48MassConcentrationStillHeld": true
+  },
+  "evidenceHashes": {
+    "PLAN.json": "b64c560edb6faea4bba4f8a5a3854e11bb40b3e54e15797e82047f815b896cda",
+    "results/analysis.json": "f5618c680de25358ef6b8d1efa1f497363327a2f452b2f798d61b99d03fa4028",
+    "results/reading-summary.json": "cd5d5310884105e74a821c8e68f02949f7fd1a2658e77c302bf20ad00136cad3",
+    "results/generation-mechanics.json": "85b707c977b890d3d1114a41526b2fd76e94f7ed2dfad256b117fd20097d7c77",
+    "engineering-final-review.json": "bf81ec4818ecb559439ac13ddf4f09e8cefc0e117018f2c0f12312473e773220",
+    "results/fit-blind-reading.json": "2fa01e559810eb7f2b44eb9fdab2485c16ca5828210c819a8a969e0c0a5f760c"
+  }
+}
