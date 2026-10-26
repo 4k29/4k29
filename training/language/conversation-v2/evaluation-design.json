@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 1,
+  "status": "PROPOSED_SPEC_NOT_A_FROZEN_STIMULUS_MANIFEST",
+  "authorRole": "Independent Evaluation Analyst /root/v2_eval",
+  "dateJst": "2026-10-26",
+  "modelOrOptimizerExecutionForThisDesign": false,
+  "sealedTestOpened": false,
+  "goal": "GOAL.md: actual natural, relevant, content-bearing Japanese conversation, not lower NLL or narrow memorization",
+  "evidence": {
+    "GOAL.md": "7afa4717103d14a6353e6adae4e0ecf9aa4e60e88ea8512279f894465e5c46a2",
+    "training/language/diagnostics/context-use-20261025/RESULTS.md": "340cc1f9c8ff4e495ecbe8005af6cd54f28dbcaaca3bab4a8ef504fc0b4dc87e",
+    "training/language/diagnostics/learnability-20261026/DIAGNOSIS.json": "3fb8b0f06b10e7ac1e9045e811ef2b81171e09736654b13fbb9bae81fe1761ae",
+    "training/language/diagnostics/learnability-20261026/evaluation-final-review.json": "4e6e2991446a39cd460a5622c971b47a19dedc00cbbc1612198c560adbc9f55a"
+  },
+  "conclusionsFromPriorEvidence": [
+    "Context can alter predictions and words without providing a relevant coherent full reply.",
+    "A/B64 canonical body top1=100% and exact generated gold prefix16/16 establish finite conditional memorization, not meaning or generalization.",
+    "Whole output and true response end must be evaluated: learned body followed by14/16 A overruns is not success.",
+    "Heldaside32 in the assay were previously supervised TRAIN: all32 NLL worsened and relevant whole outputs0/16. Do not rename them unseen TEST.",
+    "B plausibility and finite partial-epoch context dose limited the prior causal comparison. New comparisons must predeclare exposure and complete-epoch/token accounting."
+  ],
+  "partitionContract": {
+    "TRAIN": "Only weights/tokenizer/statistical preprocessing fit. Preserve original speaker, document/family, turn order, licensing and target end.",
+    "DEV_SELECT": "Fixed scalar selector or fixed terminal decided before training; if using a selector, balance conversational and general Japanese sources with frozen weights. No generation-driven checkpoint cherry-picking.",
+    "DEV_DIAGNOSTIC": "Fixed generation, context contrast and rollout probes; exposed after use, retained for diagnosis, never promoted to new TEST.",
+    "FUTURE_SEALED_TEST": "Not instantiated by this document. New licensed original human documents/families, or genuinely human-authored evaluation material, independently frozen before model outputs. Existing sealed TEST remains closed.",
+    "familyIsolation": [
+      "original document/conversation id",
+      "normalized exact document and utterance overlaps",
+      "speaker/pair identity where available",
+      "question/paraphrase/problem family",
+      "near-duplicate audit with thresholds fixed before scoring"
+    ],
+    "crossCheckpointExposureLedgerRequired": true,
+    "exposureLedgerFields": [
+      "weightsSeen",
+      "tokenizerSeen",
+      "hyperparameterOrCheckpointSelectionSeen",
+      "qualitativeOutputsSeen",
+      "sourceDocumentFamily",
+      "sourceCommitAndSha",
+      "split"
+    ],
+    "oldTrainHoldoutCaveat": "A new scratch model may not see held old-TRAIN examples in weights, but R46 did; an inherited BPE also saw old TRAIN. Such comparisons are diagnostic only, not a common unseen benchmark.",
+    "newTokenizerContract": "Fit a new own tokenizer on new TRAIN only. Otherwise mark tokenizer exposure and do not claim complete pipeline-unseen generalization."
+  },
+  "modes": {
+    "japanese_continuation": "Continue human original prose/dialogue. Measures generation; does not establish direct assistant instruction following.",
+    "human_dialogue_continuation": "Continue original human speaker turns. First-person human facts are narrative source facts, not AI autobiographical truth.",
+    "assistant_reply": "Respond as an AI to a human; no fabricated personal experiences or source persona. Requires distinct human-authored assistant-oriented supervision and rubric.",
+    "modeMustBeFrozenPerCase": true
+  },
+  "pilot": {
+    "role": "Resource-bounded scratch foundation/capacity diagnostic; no conversational deployment or Phase1 certification",
+    "outputsPerEndpoint": 32,
+    "teacherForcedHeldWindowsPerNewEndpoint": 64,
+    "newEndpoints": [
+      "scratch_small_dim192",
+      "scratch_wide_dim320"
+    ],
+    "oldReferenceEndpoint": "R46 selected9500 plain-format previously trained reference, not an equal-exposure causal capacity arm",
+    "expectedFullOutputsIfAll3EndpointsRun": 96,
+    "dataSource": "RealPersona original human conversations only in this pilot; no genre-wide representativeness claim",
+    "mode": "human_dialogue_continuation",
+    "format": "New models: role3/4 human A/B and EOS2 utterance end; oldR46 plain newline history/old ownBPE. Format/tokenizer/exposure differences block attributing old-new differences to capacity alone.",
+    "inputsStatus": "Actual32 case source validity/content annotation and exact hashes pending data builder; this design does not invent human stimuli.",
+    "subsetSelection": "Source/format validity and frozen speaker-family split followed by fixed SHA order, before any model outputs. No score-driven re-selection.",
+    "generation": "32 original full source prefixes, complete unmodified greedy192 outputs, true EOS2; new ownBPE and old plain history lengths must each fit context256 or old coverage is separate.",
+    "checkpointSelection": "Root must freeze final matching-step rule before outputs. Recommended fixed512 retained updates, with common milestones128/256/512 available if wall budget interrupts either arm; choose only by completed update count, never score.",
+    "withinNewComparison": "Same fresh optimizer/seed policy, shared new TRAIN-only BPE, example order/body-target+EOS dose/batch/updates and generation; only width192vs320 changes. Count replay actual steps separately.",
+    "primaryLanguageMetric": "Whole compositeSuccess on all32; content-required subset additionally requires specificContentAppropriate. Preserve per-axis/null counts and raw reasons.",
+    "exploratoryCapacitySignal": {
+      "minimumPairedCompositeSuccessCountGain": 4,
+      "denominator": 32,
+      "requireHarmfulRepetitionNotIncrease": true,
+      "requireInvalidUtf8OrUnintendedSpecialTokensNotIncrease": true,
+      "requireRawFullOutputsRead": true,
+      "meaning": "Prospective practical diagnostic flag only, not statistically proven capacity superiority, language acquisition or adoption. Report paired family intervals and all discordant cases; no signal does not prove capacity irrelevant."
+    },
+    "tfSignal": "Same new ownBPE allows token CE comparison; also nats/UTF8byte, body/EOS separately. Newwidth lower NLL without full-language improvement is not conversational progress.",
+    "optionalRollout": "4 episodes on original source daily topics with actual self-generated history; keep separate from32 primary, freeze users/state/script applicability before output. No gold-history substitution.",
+    "successMeaning": "Technical run integrity and descriptive early-language effect sizes.32 single-source cases cannot establish stable unknown everyday conversation.",
+    "noPostHocChanges": "No changing benchmark, language flag, decoding, step selection or training after seeing candidate outputs."
+  },
+  "formalBenchmarkProposal": {
+    "status": "Prospective design; no stimuli collected and no new TEST result claimed",
+    "totalGeneratedRepliesPerModel": 252,
+    "components": [
+      {
+        "id": "JP60",
+        "cases": 60,
+        "mode": "japanese_continuation",
+        "distribution": "20 short,20 medium,20 longer continuations; licensed modern natural Japanese from at least3 independently separated source/family strata; conversation-like text included",
+        "primary": "Whole grammar, coherence, appropriate natural end; prefix copying is not success"
+      },
+      {
+        "id": "REPLY80",
+        "cases": 80,
+        "mode": "assistant_reply",
+        "distribution": "20 questions,20 everyday explanations,20 consultation/support,20 small talk requiring content; separate pure-greeting sentinel set if desired",
+        "primary": "Appropriate content for human intent, full natural meaning; generic sympathy alone does not answer content-required cases"
+      },
+      {
+        "id": "CTX40",
+        "pairs": 20,
+        "cases": 40,
+        "mode": "assistant_reply",
+        "distribution": "Same final human utterance with preceding history that changes a required answer/reference/preference/constraint",
+        "primary": "Both replies must be appropriate and show the required semantic distinction. Different wording/topic-word pickup/generic same reply is not success"
+      },
+      {
+        "id": "ROLL72",
+        "episodes": 24,
+        "repliesPerEpisode": 3,
+        "cases": 72,
+        "mode": "assistant_reply",
+        "distribution": "References, preference/constraint retention, topic continuation/switch; human-written user turns and expected state frozen",
+        "primary": "Use actual own previous replies, evaluate all replies and episode consistency; keep gold-history counterpart separate"
+      }
+    ],
+    "rolloutFailurePolicy": "Track earliest model failure and script applicability. If later fixed user text becomes inapplicable because model diverged, mark applicability separately; do not invent new gold or replace model history with human gold. Clarification can be valid where predetermined rubric allows it.",
+    "notPermitted": "No generated synthetic answer as a human gold, no external model/API grading as primary evidence, no corrected outputs or nearest-fixed-answer inference"
+  },
+  "generationContract": {
+    "freezeBeforeAnyOutput": [
+      "model/config/weight SHA",
+      "tokenizer/source SHA",
+      "actual split/exposure receipt",
+      "prompt text and speaker/turn serialization",
+      "decoding algorithm/temperature/seed/max length/special token behavior",
+      "context overflow and stop rules",
+      "checkpoint/terminal rule",
+      "rubric/required content/minimal-pair distinction/uncertainty handling",
+      "blind random ids and independent scoring order"
+    ],
+    "baselineControl": "Within a causal comparison change one major factor; pair raw inputs, source order, sample/target dose, full-epoch counts and inherited or fresh optimizer/RNG policy. Do not label a new multi-change model series a single-factor test versus R46.",
+    "commonR46CompatiblePanel": "Where retained, exact full prefix<=64 own-BPE tokens and max_new192 within context256, no rolling/truncation; common text/conditions and explicit exposure caveat.",
+    "newNativeContextPanel": "Longer context separately scored with full history. If old model cannot fit, record capability coverage, not forced silent crop or unfair identical-context claim.",
+    "crossTokenizer": "Same raw texts and text categories. Token NLL and max token length are not directly comparable across vocabularies: report nats/UTF8byte, bytes/token, generated bytes/chars, and actual context coverage; include EOS separately. Do not treat different segmentation lengths as linguistic superiority.",
+    "rawStorage": [
+      "full unmodified prefix and generated continuation",
+      "all token ids including actual terminal special tokens",
+      "exact UTF8 bytes and strict decode validity",
+      "stop reason and all generated lengths",
+      "per-step logit/top1 gap where numeric audit sampled",
+      "gold-history and self-history metrics labeled separately"
+    ],
+    "primaryDecode": "Full vocabulary greedy with true EOS/EOT and no repetition penalty or output repair; stochastic robustness only as a separately predeclared supplementary panel.",
+    "eosVsEot": "Response-end EOT and document/conversation EOS must have explicit distinct semantics if architecture uses both. Terminal token counts are not quality: empty, premature, malformed or max-length cuts fail successful natural termination."
+  },
+  "rubric": {
+    "scoringUnit": "Whole raw continuation; per-reply and episode for rollout. No first-sentence-only success.",
+    "axes": {
+      "naturalWhole": "Grammatical morphology/order/phrase links throughout, allowing natural colloquial ellipsis but not incoherent fragments.",
+      "meaningfulWhole": "Internal meaning and sentence connections remain coherent throughout.",
+      "appropriateWhole": "A natural meaningful full reply that responds to actual human intent/topic and respects prior constraints; unsupported AI personal facts fail assistant mode.",
+      "specificContentAppropriate": "Appropriate reply supplies case-specific needed information, suggestion, clarification or follow-up; lexical overlap alone insufficient.",
+      "genericOnly": "Only reusable acknowledgement/filler; can be natural, but does not pass content-required criterion.",
+      "harmfulRepetition": "Semantic phrase/run loops or pointless repetition; mechanical repeated token ngrams remain supplementary.",
+      "contextConsistency": "References, subjects, facts, preferences and constraints are respected across history.",
+      "naturalTermination": "A complete appropriate utterance ends by actual intended EOS/EOT without empty/premature/truncated/looped tail.",
+      "unknownOrUnanswerableHandling": "Asking a suitable clarifying question or acknowledging unavailable information can be correct; human gold is not unique.",
+      "uncertain": "null with a reason; cannot be silently counted as a pass."
+    },
+    "compositeWholeSuccess": "naturalWhole AND meaningfulWhole AND appropriateWhole AND naturalTermination AND NOT harmfulRepetition; require specificContentAppropriate when contentRequired=true.",
+    "contentRequirementMustBeInputAnnotatedBeforeOutput": true,
+    "independentScoring": "Pilot may use blind assistants with all limitations; formal milestone requires at least2 independent native-Japanese human raters, hidden model/condition/score, all outputs read in full, disagreements retained/adjudicated by a predeclared rule.",
+    "blindingLimits": "Shared prompts, identical outputs or remembered source sentences can reveal condition. Store all unique prefix+text pairs and require consistent same-output core judgments."
+  },
+  "prospectiveMilestones": {
+    "notAReplacementForLegacyAdoption": true,
+    "numericalThresholdStatus": "Proposed prospective product/research requirements, not empirical proof and not yet an instantiated benchmark. Root must accept/freeze before any scored candidate outputs; never tune after viewing results.",
+    "Phase1NaturalJapanese": {
+      "panel": "JP60 DEV plus independently frozen future test counterpart",
+      "criteria": {
+        "naturalWholeRateAtLeast": 0.9,
+        "meaningfulWholeRateAtLeast": 0.9,
+        "eachLengthStratumWholeMeaningAtLeast": 0.85,
+        "harmfulRepetitionRateAtMost": 0.02,
+        "topicDriftRateAtMost": 0.05,
+        "naturalTerminationRateAtLeast": 0.95,
+        "invalidUtf8OrUnintendedSpecialTokens": 0
+      },
+      "decision": "Replicated across at least2 preregistered training seeds and distinct source/family test counterpart; passing exposed DEV alone does not establish generalization."
+    },
+    "Phase2EverydayReply": {
+      "panel": "REPLY80",
+      "criteria": {
+        "appropriateWholeRateAtLeast": 0.85,
+        "specificContentAppropriateRateAtLeast": 0.8,
+        "eachIntentStratumAppropriateRateAtLeast": 0.75,
+        "genericOnlyOnContentRequiredRateAtMost": 0.1,
+        "harmfulRepetitionRateAtMost": 0.02,
+        "naturalTerminationRateAtLeast": 0.95
+      },
+      "decision": "Phase1 maintained and unknown source/family counterpart passes; no knowledge/reasoning claim."
+    },
+    "Phase3MultipleTurns": {
+      "panel": "CTX40+ROLL72",
+      "criteria": {
+        "bothMembersSemanticContextPairPassAtLeast": 0.85,
+        "all3RepliesConsistentAndAppropriateEpisodeRateAtLeast": 0.8,
+        "harmfulRepetitionRateAtMost": 0.02,
+        "naturalTerminationRateAtLeast": 0.95
+      },
+      "decision": "Phase1/2 maintained; actual self-generated history, not only gold-history support."
+    },
+    "uncertainty": "Report rates, raw n/N, nulls and family/episode-cluster intervals. At these small n a point threshold is not a statistical guarantee. For promotion aggregate at least200 fully independently rated heldout responses and publish95% cluster intervals; require further evidence if interval is too wide.",
+    "publicPromotion": "Legacy17/13/9 strict gates, original Pareto and unchanged practical guards remain mandatory in addition to any new milestone. No public replacement/merge in this task."
+  },
+  "analysisPlan": {
+    "NllRole": "Diagnostic/selector only where frozen; never primary conversational ability success. Separate body CE and EOS/EOT probabilities; canonical gold not unique.",
+    "contextUse": "Correct vs different/absent histories TF auxiliary; do not require all mismatched human gold to be semantically invalid. Minimal pairs require human-defined semantic distinction.",
+    "selfHistory": "Locate actual human-read repetition/drift/grammar collapse; first gold token departure is not a quality onset. Counterfactual same-index gold NLL after departure is not aligned accuracy.",
+    "aggregation": "Source, intent, length, content requirement, exposure, checkpoint selected/terminal, decoding and mode remain separate. Macro and token/byte-weighted scores both retained.",
+    "pairedInference": "Use document/family/episode or exchange-pair clusters, paired per-case outcomes and intervals; token bootstrap is not independent evidence.",
+    "memorizationAudit": "Train-fit versus heldout families, nearest TRAIN exact/normalized/near duplicate overlap, shared-speaker/persona notes; matching human original can be memorization and does not prove understanding.",
+    "noPostHocChanges": "Freeze all labels/thresholds/source exclusions before outputs. Problems found after exposure are reported; a revised protocol is a new experiment, not a repaired pass."
+  },
+  "legacyPreservation": {
+    "formalAnchor": "R25",
+    "scientificOldBaseline": "R46 selected9500",
+    "R47": "completed, not adopted",
+    "R48FullMassCE": "No-Go; no coefficient/threshold retry",
+    "old17_13_9Gates": "Unchanged byte-for-byte; new rubric is separate and cannot overwrite historical judgments",
+    "ParetoAndEverydayLoopGuard": "Unchanged existing references, no ratchet to a worse recent control",
+    "publicModelOrSiteChangedByDesign": false
+  },
+  "implementationBlockersBeforeClaimingBenchmarkReady": [
+    "Actual licensed human stimuli/family split and exposure receipts not instantiated by this document",
+    "Future sealed test independent custody and unseen source availability not established",
+    "Human raters not recruited or evaluated",
+    "New native context/tokenization/turn-serialization generation policy must be fixed with actual model implementation",
+    "Pilot actual subset/budget and output manifest must be frozen by main agent before inference"
+  ]
+}
