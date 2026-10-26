@@ -14,6 +14,12 @@ def main():
     relation={r['id']:r['permutedTargetRelation']for r in read(H/'independent-data-review.json')['rows']}
     second={r['id']:r for r in read(H/'independent-evaluation-preflight.json')['rows']}
     groups={g:[c['id'] for c in p['cases']if c['group']==g]for g in ['fit','heldaside']}
+    for g in ['fit','heldaside']:
+        base=groups[g]
+        groups[g+'/both-reviewers-clear']=[i for i in base if relation[i]=='clear_mismatch' and second[i]['BRelation']=='clear_mismatch']
+        groups[g+'/other-or-disputed']=[i for i in base if i not in groups[g+'/both-reviewers-clear']]
+        groups[g+'/target-at-most24tokens']=[i for i in base if len(cs[i]['goldTokens'])<=24]
+        groups[g+'/target-over24tokens']=[i for i in base if len(cs[i]['goldTokens'])>24]
     result={'scope':'Descriptive TRAIN assay; heldaside not updated by this assay but previously supervised by R46; not unseen TEST',
         'bootstrap':'2000 exchange-pair cluster replicates, seed2049, percentile2.5/97.5; panel-conditional, not population generalization', 'groups':[],'caseMetrics':[]}
     for g,ids in groups.items():
@@ -35,10 +41,10 @@ def main():
                 'ownFitDropB':n['baseline','mismatched']-n['B','mismatched']})
         pairvalues=[mean([deltas[i]for i in pair['rowIds']])for pair in p['permutationPairs']if pair['group']==g]
         result.setdefault('pairedEffects',[]).append({'group':g,'contextGainAminusB':mean(list(deltas.values())),
-            'clusterBootstrap95':interval(pairvalues),'exchangePairs':len(pairvalues),
+            'clusterBootstrap95':interval(pairvalues) if pairvalues else None,'exchangePairs':len(pairvalues),
             'positiveCases':sum(d>0 for d in deltas.values()),
             'ownFitImprovedA':sum(x['ownFitDropA']>0 for x in case),'ownFitImprovedB':sum(x['ownFitDropB']>0 for x in case)})
-        result['caseMetrics'].extend(case)
+        if '/' not in g: result['caseMetrics'].extend(case)
     write(H/'results/analysis.json',result)
     print(json.dumps({k:v for k,v in result.items()if k!='caseMetrics'},ensure_ascii=False,indent=2))
     allgen=[]
