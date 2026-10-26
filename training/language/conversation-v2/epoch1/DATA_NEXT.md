@@ -39,7 +39,7 @@ metadataのlicense確認は、個々の原文の誤転載・プライバシー�
 
 環境はGPUなし、CPU2core quota、RAM hard8GiB、disk32GB、調査開始時空き約233MiB。8GiBをhost表示9.7GiBと取り違えない。この環境でWikipedia3.94GB圧縮/7.04GB展開や多数の大きいcheckpointを新たに置くことはNo-Go。今回も大規模取得をしていない。
 
-前pilotの実測は中型415,321targets/366.44秒 ≈1,133targets/秒、小型≈2,106targets/秒（paddingや保存等を含むpilot end-to-end）。長期CPU性能は同一とは保証しないが、中型100M/200M/300M処理tokensなら約24.5/49.0/73.5時間、20Nの224.5Mなら約55.0時間に相当する。90分以内の1epoch継続と桁が違い、現CPUで本格学習を無断延長する理由にはならない。
+前pilotの実測は中型415,321targets/366.44秒 ≈1,133targets/秒、小型≈2,106targets/秒（paddingや保存等を含むpilot end-to-end）。長期CPU性能は同一とは保証しないが、中型100M/200M/300M処理tokensなら約24.5/49.0/73.5時間、20Nの224.5Mなら約55.0時間に相当する。今回の1epoch継続と桁が違い、現CPUで本格学習を無断延長する理由にはならない。今回の許可された目標は最初の1epochであり、時間上限解除を次epochの自動開始や無制限学習の許可とは扱わない。
 
 | 自作構成候補 | パラメータ | FP32 weight+grad+Adam静的 | full checkpoint1個概算 | 処理token予算の例 | GPU試験の開始目安 |
 |---|---:|---:|---:|---:|---|
