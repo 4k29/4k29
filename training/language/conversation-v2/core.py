@@ -119,6 +119,26 @@ def causal_ce(logits, targets):
     return loss
 
 
+@torch.no_grad()
+def clip_grad_accurate(parameters, max_norm=1.0):
+    """Same global-L2 clipping rule with FP64 norm aggregation for both widths.
+
+    Parameters, gradients and optimizer remain FP32. A scalar FP64 reduction
+    avoids width-dependent FP32 norm underestimation; its common clipping
+    coefficient is rounded once to each gradient's dtype before multiplication.
+    """
+    gradients = [p.grad for p in parameters if p.grad is not None]
+    if not gradients or not math.isfinite(max_norm) or max_norm <= 0:
+        raise ValueError('Require finite positive max norm and genuine gradients')
+    squares = torch.stack([g.detach().double().square().sum() for g in gradients])
+    norm = squares.sum().sqrt()
+    if not bool(torch.isfinite(norm)): raise ValueError('Nonfinite global gradient norm')
+    coefficient = (max_norm/(norm+1e-6)).clamp(max=1.0)
+    for gradient in gradients:
+        gradient.mul_(coefficient.to(device=gradient.device, dtype=gradient.dtype))
+    return norm
+
+
 def next_batch(rng, order, cursor, count, batch):
     selected = []
     while len(selected) < batch:

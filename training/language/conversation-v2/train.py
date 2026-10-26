@@ -11,7 +11,7 @@ import time
 
 import torch
 
-from core import (REPO, HERE, causal_ce, decoder, digest, exact, initialize, learning_rate,
+from core import (REPO, HERE, causal_ce, clip_grad_accurate, decoder, digest, exact, initialize, learning_rate,
                   next_batch, open_tokens, pack, restore, sha, trajectory)
 
 
@@ -66,11 +66,15 @@ def preflight(model, optimizer, rng, values, windows, settings):
             # FP64 sum is an audit reference, not a change in FP32 training.
             squares = sum(float(g.detach().double().square().sum()) for g in gradients)
             norm64 = squares**.5
-            clip = torch.nn.utils.clip_grad_norm_(model.parameters(), 1., error_if_nonfinite=True)
+            clip = clip_grad_accurate(model.parameters(), 1.)
             if abs(float(clip)-norm64) > 2e-5+2e-5*abs(norm64):
                 raise AssertionError('Gradient norm disagreement with FP64 reference')
+            clipped_norm64=sum(float(g.detach().double().square().sum())for g in gradients)**.5
+            if clipped_norm64>1.+2e-5:raise AssertionError('Clipped gradient exceeds fixed maximum')
             times.append(time.monotonic()-started)
-        report = dict(**stats,scalarLoss=float(loss.detach()),gradientNormFp64=norm64,clipNormFp32=float(clip),
+        report = dict(**stats,scalarLoss=float(loss.detach()),gradientNormFp64=norm64,clippingNormFp64=float(clip),
+            actualClippedNormFp64=clipped_norm64,maxGradientNorm=1.,
+            clippingImplementation='FP64 global-L2 norm, common FP32 coefficient; max1 epsilon1e-6',
             finiteGradients=True,parameterTensors=len(gradients),parameters=sum(p.numel()for p in model.parameters()),
             secondsForwardBackward=times,secondBatchSeconds=times[-1],maximumRssKiB=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
             actualOptimizerUpdates=0,indices=indices)
@@ -143,7 +147,7 @@ def run(a):
         loss.backward()
         if any(p.grad is None or not bool(torch.isfinite(p.grad).all())for p in model.parameters()):
             raise ValueError('Missing/nonfinite gradient before optimizer step')
-        norm=torch.nn.utils.clip_grad_norm_(model.parameters(),1.,error_if_nonfinite=True)
+        norm=clip_grad_accurate(model.parameters(),1.)
         emit(dict(event='before-step',actualUpdate=actual+1,uniqueUpdate=step,replay=replay))
         optimizer.step();actual+=1
         emit(dict(event='after-step',actualUpdate=actual,uniqueUpdate=step,replay=replay))

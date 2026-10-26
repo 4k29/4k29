@@ -1,0 +1,23 @@
+{
+  "scope": "Pretraining common numerical implementation correction for both new-series widths; no model optimizer updates",
+  "originalPreflightPlan": "PREFLIGHT_PLAN.json",
+  "originalSourceHashes": {
+    "training/language/conversation-v2/core.py": "c224d447fc0a0cba3b2dc3df7590790cbbbe66750dadf2bf3e50a29af99c8a6d",
+    "training/language/conversation-v2/train.py": "2eed1d021d895cd9d1f44f1eba1670d35c72e2b949837d8bca274aee46904179",
+    "training/language/model.py": "fa4f8a42143c7231e50e6828141e072af5510b2a278e95696faa67f5815c716f"
+  },
+  "independentAudit": "independent-norm-audit.json",
+  "independentAuditSha256": "edee156eeb1c3f6c680740c721dcd2585988b1b94e2d991a2281f7035ed5700e",
+  "finalSourceHashes": {
+    "training/language/conversation-v2/core.py": "52a74ecb7250a6671a432d3aa38ad9ed0ffbe1a3be5601fde3b721f1e735b83d",
+    "training/language/conversation-v2/train.py": "47d6af637b4aa0047aa675fb3ae182c5a064f1691c05dd1ec6049d1e399cbb8f"
+  },
+  "change": "Global-L2 norm aggregation FP64, original maxnorm1 and epsilon1e-6, coefficient cast to FP32 and applied equally to every gradient. Parameters/gradients/optimizer stayFP32. Same implementation for both widths.",
+  "unchangedAuditTolerances": {
+    "atol": 2e-05,
+    "rtol": 2e-05
+  },
+  "auditSourceNote": "The independent audit exercised final core.py helper; train.py subsequently renamed its preflight clipping metric from clipNormFp32 to clippingNormFp64 and added post-clipped-norm checking; final actual-model preflights must be rerun by parent.",
+  "legacyProductionSourceChanged": false,
+  "actualOptimizerUpdates": 0
+}
