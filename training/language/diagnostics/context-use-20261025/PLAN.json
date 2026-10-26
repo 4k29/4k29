@@ -1,0 +1,60 @@
+{
+  "scope": "Fixed-checkpoint inference diagnosis only; no training/optimizer construction/updates/selection/promotion",
+  "createdUtc": "2026-10-26T00:03:14.212066+00:00",
+  "primaryCaseCount": 25,
+  "auxiliaryCaseCount": 1024,
+  "maxNewTokens": 192,
+  "threads": 1,
+  "model": "Own R46 raw FP32 selected9500, verified equal full aligned model/beststate",
+  "conditions": [
+    "correct",
+    "mismatched",
+    "none"
+  ],
+  "sameGoldTokensAcrossConditions": true,
+  "mismatchedHistoryLengthExactlyMatchesCorrect": true,
+  "nonePrefix": [
+    1
+  ],
+  "nonePositionConfound": "BOS-only changes absolute positions; correct versus mismatched is controlled contrast",
+  "primarySelection": "Prior fixed first6TRAIN semantic samples per source plus all13 existing exposed native/MRMP DEV probes; no model-score selection",
+  "auxiliarySelection": "All1024 preexisting supervised TRAIN correct-context auxiliary pool pairs,403targetdocs; separately reported, not heldout",
+  "donorPolicy": "Whole authentic TRAIN preceding-two-turn contexts, exact original own-BPE length, SHA rank; four same-topic candidates excluded by manual source/ordinal review before any model output; preserve all receipts",
+  "targetPolicy": "Complete original next utterance, no EOS in targetNLL; separately score EOS at complete gold end; no cropping/repair",
+  "contentPolicy": "Manual41 lexical/inflected spans across20cases frozen before scores; 5generic minimal-gold cases tagged; BPE alignment and raw token coverage disclosed",
+  "metrics": [
+    "macro/token-weighted full targetNLL, top1, rank, margins",
+    "percase mismatch-minus-correct and none-minus-correct gains and sign counts",
+    "firsttarget/first8/later gold positions separately",
+    "manual content span NLL/rank/top1 and correct-vs-mismatch gains",
+    "full unedited greedy and mechanical repeat3/4gram onset",
+    "same-gold generated-history counterfactual sensitivity pre/at/post first departure",
+    "manual full-output grammar, wholemeaning, relevance, generic-only, first harmful grammar/repetition/topic onset"
+  ],
+  "historyProbeCaution": "After token departure originalgold positions are counterfactual, not aligned language accuracy; fluent alternate outputs are allowed",
+  "numericalReferenceTolerance": 0.0002,
+  "referenceScope": "Same preceding history TF-vs-incremental rawPython; record near-tie divergences rather than suppress; no newJSclaim",
+  "manualReview": "Read all75 fullprefixes/continuations; independent assistant analysis, not blinded independent human evaluation; prior identical prefix/text grades preserved",
+  "uncertainty": "Primary25 is small fixed diagnostic panel; auxiliary1024 is supervised/anchor-selected and403clusters. Descriptive gains do not prove generalization or context understanding",
+  "hypotheses": {
+    "A": "Poor gold prediction even with correct context may reflect data/knowledge/segmentation/capacity/objective/optimization; a particular human reply is not uniquecorrect",
+    "B": "Gold-prefix predictability versus actual free-generation coherence may indicate self-generated-history error accumulation; counterfactual NLL alone is not proof",
+    "C": "Small context gains plus semantically invariant/generic outputs can indicate weak contextuse; lexical change alone does not establish understanding"
+  },
+  "historicalPoolReference": {
+    "path": "training/language/round46/execution/context-final-diagnostic/new-selected.json",
+    "sha256": "75dda2bee3bd5afe5e897e11357bf4a21c0b77b181b7dbfe552679a67454e816",
+    "meanContextGain": 0.23156294622458518,
+    "scope": "Numerical consistency diagnostic, not an adoption threshold"
+  },
+  "noAdoptionGateChanges": true,
+  "noNewTest": true,
+  "publicModelChanged": false,
+  "panelSha256": "206554068ff6b4981d482f43bd882897b00568e1b6558b6812e378d387bfb314",
+  "panelFinalizationSha256": "1cff5d83bd7e7de47d4af78326a7b0af0254ffaeaa56fa889b5bff867ef752e0",
+  "codeHashes": {
+    "run_diagnostic.py": "d57313bc0d94debeb0359f8e36dba8b1c879a74ff01810f0dc3227d1d2fdf88d",
+    "diagnostic_core.py": "15e47bdebb245fd463f9d38ce7c2cfe1142a3dd6236f660e12a8bca83e9c6fa7",
+    "test_diagnostic.py": "25cd353fe675d9d1cb2319932216c4028b0f9431bbd165d057aa282cfc03af67"
+  }
+}
