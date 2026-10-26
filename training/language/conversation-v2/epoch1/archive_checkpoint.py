@@ -4,7 +4,7 @@ Only new epoch1 archive paths are written. Each part is checked against the
 source manifest, staged, checked through Git, and excluded from this workspace
 afterwards. Git objects remain authoritative and are pushed with the draft PR.
 """
-import argparse, hashlib, json, pathlib, shutil, subprocess
+import argparse, hashlib, json, pathlib, subprocess
 
 HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parents[3]
@@ -26,11 +26,13 @@ def archive(source, name):
         if not dst.resolve().is_relative_to(destination.resolve()):raise ValueError('Unsafe part path')
         if src.stat().st_size!=part['bytes'] or checksum(src)!=part['sha256']:raise ValueError('Source part mismatch')
         if dst.exists():raise ValueError('Refuse archive overwrite')
-        dst.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(src,dst)
+        dst.parent.mkdir(parents=True,exist_ok=True)
         relative=str(dst.relative_to(REPO))
-        if checksum(dst)!=part['sha256']:raise ValueError('Archive copy differs')
-        subprocess.run(['git','add','--',relative],cwd=REPO,check=True)
-        blob=subprocess.check_output(['git','rev-parse',':'+relative],cwd=REPO,text=True).strip()
+        # Stream directly to the object store: even a temporary40MiB working
+        # copy would exceed the final remaining disk margin.
+        with src.open('rb') as f:
+            blob=subprocess.check_output(['git','hash-object','-w','--stdin'],cwd=REPO,stdin=f,text=True).strip()
+        subprocess.run(['git','update-index','--add','--cacheinfo','100644',blob,relative],cwd=REPO,check=True)
         h=hashlib.sha256(); size=0
         process=subprocess.Popen(['git','cat-file','blob',blob],cwd=REPO,stdout=subprocess.PIPE)
         for b in iter(lambda:process.stdout.read(1048576),b''):
@@ -39,7 +41,6 @@ def archive(source, name):
         if process.wait()!=0 or h.hexdigest()!=part['sha256'] or size!=part['bytes']:raise ValueError('Staged Git blob differs')
         # Exclude only this verified, fully reproducible workspace copy.
         subprocess.run(['git','update-index','--skip-worktree','--',relative],cwd=REPO,check=True)
-        dst.unlink()
         patterns=REPO/'.git/info/sparse-checkout'
         with patterns.open('a') as f:f.write('!/'+relative+'\n')
         receipts.append(dict(path=relative,gitBlob=blob,bytes=size,sha256=h.hexdigest()))
