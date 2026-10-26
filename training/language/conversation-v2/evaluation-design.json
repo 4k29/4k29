@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "PROPOSED_SPEC_NOT_A_FROZEN_STIMULUS_MANIFEST",
+  "status": "PILOT_INPUTS_BUILT_AND_ANNOTATED_BEFORE_MODEL_OUTPUT; FORMAL_BENCHMARK_PROPOSAL_ONLY",
   "authorRole": "Independent Evaluation Analyst /root/v2_eval",
   "dateJst": "2026-10-26",
   "modelOrOptimizerExecutionForThisDesign": false,
@@ -23,7 +23,7 @@
     "TRAIN": "Only weights/tokenizer/statistical preprocessing fit. Preserve original speaker, document/family, turn order, licensing and target end.",
     "DEV_SELECT": "Fixed scalar selector or fixed terminal decided before training; if using a selector, balance conversational and general Japanese sources with frozen weights. No generation-driven checkpoint cherry-picking.",
     "DEV_DIAGNOSTIC": "Fixed generation, context contrast and rollout probes; exposed after use, retained for diagnosis, never promoted to new TEST.",
-    "FUTURE_SEALED_TEST": "Not instantiated by this document. New licensed original human documents/families, or genuinely human-authored evaluation material, independently frozen before model outputs. Existing sealed TEST remains closed.",
+    "FUTURE_SEALED_TEST": "Not instantiated by this document. New licensed original human documents/families, or genuinely human-authored evaluation material, independently frozen before model outputs. Existing sealed TEST remains closed. Once test content/results are exposed, later development must label them exposed DEV or use a genuinely new sealed counterpart; repeated model tuning cannot preserve an unseen claim.",
     "familyIsolation": [
       "original document/conversation id",
       "normalized exact document and utterance overlaps",
@@ -63,7 +63,7 @@
     "dataSource": "RealPersona original human conversations only in this pilot; no genre-wide representativeness claim",
     "mode": "human_dialogue_continuation",
     "format": "New models: role3/4 human A/B and EOS2 utterance end; oldR46 plain newline history/old ownBPE. Format/tokenizer/exposure differences block attributing old-new differences to capacity alone.",
-    "inputsStatus": "Actual32 case source validity/content annotation and exact hashes pending data builder; this design does not invent human stimuli.",
+    "inputsStatus": "data/benchmark-dev.json built by data agent; all32 source histories/original targets read before model output by evaluation analyst",
     "subsetSelection": "Source/format validity and frozen speaker-family split followed by fixed SHA order, before any model outputs. No score-driven re-selection.",
     "generation": "32 original full source prefixes, complete unmodified greedy192 outputs, true EOS2; new ownBPE and old plain history lengths must each fit context256 or old coverage is separate.",
     "checkpointSelection": "Root must freeze final matching-step rule before outputs. Recommended fixed512 retained updates, with common milestones128/256/512 available if wall budget interrupts either arm; choose only by completed update count, never score.",
@@ -80,7 +80,15 @@
     "tfSignal": "Same new ownBPE allows token CE comparison; also nats/UTF8byte, body/EOS separately. Newwidth lower NLL without full-language improvement is not conversational progress.",
     "optionalRollout": "4 episodes on original source daily topics with actual self-generated history; keep separate from32 primary, freeze users/state/script applicability before output. No gold-history substitution.",
     "successMeaning": "Technical run integrity and descriptive early-language effect sizes.32 single-source cases cannot establish stable unknown everyday conversation.",
-    "noPostHocChanges": "No changing benchmark, language flag, decoding, step selection or training after seeing candidate outputs."
+    "noPostHocChanges": "No changing benchmark, language flag, decoding, step selection or training after seeing candidate outputs.",
+    "benchmarkSha256": "de5aa25071eb340c1f68797cf3220690832e461cdc2458af2279b0f53e8e41bc",
+    "preoutputAnnotationsPath": "benchmark-preoutput-annotations.json",
+    "preoutputAnnotationsSha256": "34da15b7ba9912b51cbbfc854ecd0bcdc872a636a073a6367b801f0ce78ac3c9",
+    "actualInputCoverage": {
+      "contentRequired": 5,
+      "contentOpportunity": 30,
+      "scope": "Not intent-balanced; weak evidence for content-answer competence even if whole-language score rises"
+    }
   },
   "formalBenchmarkProposal": {
     "status": "Prospective design; no stimuli collected and no new TEST result claimed",
@@ -227,7 +235,7 @@
     "publicModelOrSiteChangedByDesign": false
   },
   "implementationBlockersBeforeClaimingBenchmarkReady": [
-    "Actual licensed human stimuli/family split and exposure receipts not instantiated by this document",
+    "Pilot32 inputs and pre-output labels exist; final plan/code/generation/step-rule hashes still require root freeze before candidate inference. Formal252 stimuli and genuinely independent future test are not instantiated.",
     "Future sealed test independent custody and unseen source availability not established",
     "Human raters not recruited or evaluated",
     "New native context/tokenization/turn-serialization generation policy must be fixed with actual model implementation",

@@ -128,6 +128,7 @@ def run(a):
         if a.model=='r46':
             prefix=[1]+encode(c['prefixText']);gold=encode(c['targetText'])
             additive=encode(c['prefixText']+c['targetText'])==prefix[1:]+gold
+            if b''.join(pieces[t]for t in prefix[1:])!=c['prefixText'].encode('utf8'):raise ValueError('Legacy prefix bytes differ')
         else:prefix=c['prefixTokens'];gold=c['goldTokens'];additive=True
         if b''.join(pieces[t]for t in gold)!=c['targetText'].encode('utf8'):raise ValueError('Human gold bytes differ')
         base=dict(id=c['id'],document=c['document'],endpoint=a.model,prefixText=c['prefixText'],prefixTokens=prefix,

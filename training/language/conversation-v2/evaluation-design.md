@@ -77,4 +77,6 @@ CTXは両履歴への適切な返答と要求された意味差がそろって�
 
 ## まだ必要なこと
 
-実際の32件とTF64windowsのsource/family/Tokenizer exposure receipt、出力前annotation、generation/step rule/hashの固定が必要。将来252benchmarkの独立source、封印custody、人間ratersは未確保。新native長contextや新Tokenizerを入れた場合は実際のbytes/token/coverageを固定し直し、異なるtoken NLLを直接比較しない。この不足を「benchmark完成」や「言語能力合格」と記録しない。
+pilot32件とTF64windowsはdata builderが構築済みで、全32件の原典履歴/返答の出力前annotationを `benchmark-preoutput-annotations.json` に保存した。内容が必要な入力は5/32、内容の機会がある入力は30/32で、intent-balancedな応答benchmarkではない。最終のgeneration/step rule/code/hashはmain agentがモデル出力前に固定する必要がある。将来252benchmarkの独立source、封印custody、人間ratersは未確保。新native長contextや新Tokenizerを入れた場合は実際のbytes/token/coverageを固定し直し、異なるtoken NLLを直接比較しない。この不足を「benchmark完成」や「言語能力合格」と記録しない。
+
+一度内容/結果を見た新TESTも、以後の開発では露出DEVとして扱うか、新しい独立封印counterpartを用意する。固定benchmarkの反復調整を未知への合格と呼ばない。

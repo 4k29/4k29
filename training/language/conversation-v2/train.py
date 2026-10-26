@@ -5,6 +5,7 @@ import json
 import os
 import pathlib
 import resource
+import shutil
 import signal
 import sys
 import time
@@ -161,6 +162,12 @@ def run(a):
         while unique < settings['uniqueUpdates']:
             if stopped['signal'] or time.time() >= a.deadline:
                 status='stopped-at-complete-update-resource-bound';break
+            # Reserve enough room for an atomic full Adam checkpoint plus
+            # fixed headroom before starting another update. Cache cleanup is
+            # never performed by the trainer.
+            reserve=12*sum(p.numel() for p in model.parameters())+64*1024*1024
+            if shutil.disk_usage(HERE).free < reserve:
+                status='stopped-at-complete-update-disk-bound';break
             step=unique+1;history.append(update(step));unique=step
             if unique==2:
                 temp=mid.with_suffix('.tmp');torch.save(trajectory(model,optimizer,rng,order,cursor,history,unique),temp);temp.replace(mid)
