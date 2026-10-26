@@ -12,6 +12,14 @@ def verify():
         for relative,expected in plan.get('panelSha256',{}).items():
             assert sha(HERE/relative)==expected
         frozen.append(dict(plan=name,sha256=sha(HERE/name)))
+    for name in ['RESUME_AMENDMENT.json','RECOVERY_AMENDMENT.json']:
+        plan=read(HERE/name)
+        for relative,expected in plan['codeAndInputReceipts'].items():
+            assert sha(REPO/relative)==expected,(name,relative)
+        frozen.append(dict(plan=name,sha256=sha(HERE/name)))
+    monitor=read(HERE/'FINAL_EVAL_MONITOR_PLAN.json')
+    for relative,expected in monitor['sourceReceipts'].items():
+        assert sha(REPO/relative)==expected,relative
     assert read(HERE/'input-contract-preflight.json')['passed']
     audits=read(HERE/'training-audit.json');assert len(audits)==2 and all(x['passed']for x in audits)
     archives=[]
@@ -48,13 +56,14 @@ def verify():
     assert changed and all(p.startswith('training/language/conversation-v2/epoch1/')for p in changed)
     files=[]
     for path in sorted(HERE.rglob('*')):
-        if not path.is_file() or '__pycache__'in path.parts or path.name=='verification.json':continue
+        if not path.is_file() or '__pycache__'in path.parts or path.name in {'verification.json','verification.log'}:continue
         files.append(dict(path=str(path.relative_to(REPO)),bytes=path.stat().st_size,sha256=sha(path)))
     result=dict(passed=True,frozenPlans=frozen,actualNewOptimizerUpdates=6012,cumulativeActualIncludingPilot=7040,
         retainedTerminalUpdatesPerModel=3470,totalFirstEpochTargetsPerModel=2816905,
         newTargetsPerModel=2401584,archiveStates=archives,singleTurnFullGenerations=224,
         selfplayEpisodes=16,blindReaders=readers,limitedPythonJavascriptParity=parity,
         priorFilesChanged=False,sealedTestUsed=False,adopted=False,artifactFiles=files,
+        candidateSourceAudit=read(HERE/'jaquad-candidate/verification.json'),
         scope='Reproducibility and measured evidence; not a formal natural-language capability pass')
     out=HERE/'verification.json';out.write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps({k:v for k,v in result.items()if k!='artifactFiles'},indent=2))
