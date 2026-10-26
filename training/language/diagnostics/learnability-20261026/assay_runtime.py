@@ -114,12 +114,14 @@ def first_batch_preflight(model,opt,rng,rows,arm):
     loss.backward(); grads=[p.grad for p in model.parameters()]
     if any(g is None or not bool(torch.isfinite(g).all()) for g in grads): raise ValueError('Invalid preflight gradients')
     flat=torch.cat([g.detach().reshape(-1) for g in grads])
-    norm=torch.linalg.vector_norm(flat)
+    # Audit reference uses FP64: flattening 4.66M FP32 values accumulates
+    # substantially more reduction error than the real per-parameter clip.
+    norm=torch.linalg.vector_norm(flat.double())
     clipped=torch.nn.utils.clip_grad_norm_(model.parameters(),1.,error_if_nonfinite=True)
     record.update(loss=float(loss.detach()),preclipGradientNorm=float(norm),clipped=bool(norm>1),
         gradientElementVariance=float(flat.double().var(unbiased=False)),gradientMaxAbs=float(flat.abs().max()),
         parameterGradientTensors=len(grads),optimizerUpdates=0)
-    if not torch.allclose(norm,clipped,atol=2e-5,rtol=2e-5): raise AssertionError('Gradient norm disagreement')
+    if not torch.allclose(norm,clipped.double(),atol=2e-5,rtol=2e-5): raise AssertionError('Gradient norm disagreement')
     opt.zero_grad(set_to_none=True)
     # Independently execute the immutable original R46 implementation, including
     # its unused wrong-context forward rows, to verify the intended CE exactly.
