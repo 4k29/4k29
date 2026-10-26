@@ -1,0 +1,74 @@
+{
+  "decision": "CONDITIONAL_GO_AFTER_ZERO_PF_AND_AUTHORIZED_FREEZE",
+  "scope": "Independent review of explicit process-loss work accounting amendment",
+  "originalNumericSourceSha256": "8d3567accf4a051847e2f21964a73b5925f072c019a1ff0bad05f2d599679db6",
+  "candidateAmendmentSha256": "0ab27d3f5dd9ced3bd60c4138ee25b4d4c87a0369f6389f56769d16f342d65ae",
+  "effectiveTransformAudit": {
+    "medium": {
+      "exactDeclaredChangesOnly": true,
+      "allOtherAstNodesIdentical": true,
+      "replacements": [
+        {
+          "old": "if a.deadline>plan['globalDeadlineUnix']:",
+          "new": "if a.deadline>RECOVERY['deadlineUnix']:"
+        },
+        {
+          "old": "pfpath=out/('preflight-v2.json' if a.preflight_only else 'run-zero-update-preflight.json')",
+          "new": "pfpath=out/(f'recovery-zero-update-{unique}-{actual}-{time.time_ns()}.json' if a.resume else ('preflight-v2.json' if a.preflight_only else 'run-zero-update-preflight.json'))"
+        },
+        {
+          "old": "if actual>=2960:",
+          "new": "if actual>=RECOVERY['actualCaps'][a.model]:"
+        },
+        {
+          "old": "            update()\n",
+          "new": "            update(replay=(unique<RECOVERY['lostThroughUniqueUpdate']))\n"
+        }
+      ],
+      "effectiveSourceSha256": "d901061701061814a6ca3c98a4b3509757dc7b64cda1071716ce43c527f5e916"
+    },
+    "small": {
+      "exactDeclaredChangesOnly": true,
+      "allOtherAstNodesIdentical": true,
+      "replacements": [
+        {
+          "old": "if a.deadline>plan['globalDeadlineUnix']:",
+          "new": "if a.deadline>RECOVERY['deadlineUnix']:"
+        }
+      ],
+      "effectiveSourceSha256": "f57de1e16b6ab9e3506a3fc8bfa732ed82dfcc8195656a496f465096c56e6462"
+    }
+  },
+  "preservedCheckpointAndLedgerReceipt": {
+    "scope": "Preserved unexpected process-loss evidence before any recovery writes",
+    "checkpointSha256": "7e247faf598d73e7da29727218745bce584cd1eb1c96b3eab29d1654aa21575c",
+    "checkpointPreservedManifest": "/dev/shm/conversation-v2-epoch1-preserved2560/medium/checkpoint.pt.chunks.json",
+    "preservedVia": "Hardlinked tmpfs chunks; survives deletion of rolling original paths, not host memory loss",
+    "ledgerLines": 4284,
+    "lastLedgerEvent": {
+      "event": "after-step",
+      "actualUpdate": 2142,
+      "uniqueUpdate": 2652,
+      "replay": false
+    },
+    "files": {
+      "training/language/conversation-v2/epoch1/medium/recovery2560/checkpoint-manifest.json": "4f0f9bdc7b9ea5f68fe026d19df568e18dc551643265712cca55d38238e31d20",
+      "training/language/conversation-v2/epoch1/medium/recovery2560/training-medium-resumed.log": "149b135c713ed8f74eacbd280cd97a18a958fb1f3cbfb2d12a12c4dafdea3f0d",
+      "training/language/conversation-v2/epoch1/medium/recovery2560/optimizer-ledger.jsonl": "fa434c30db6f265d1ce70dff0219d3e50ca519e89358cd0f5d5928a47c6176e6",
+      "training/language/conversation-v2/epoch1/medium/recovery2560/sequential-monitor.log": "cb8e91c06fde51a462da48fc1e25559c29fce8611d24d822499f484ad583246a"
+    },
+    "cause": "Unknown; no surviving process, no failure-state receipt; cgroup oom and oom_kill zero",
+    "optimizerUpdatesByPreservation": 0
+  },
+  "lostCompletedUpdates": 92,
+  "lostTargetTokens": 75678,
+  "mediumExpectedFinalRetained": 3470,
+  "mediumExpectedFinalActualContinuation": 3052,
+  "smallExpectedFinalActualContinuation": 2960,
+  "bothActualContinuation": 6012,
+  "includingPilotActual": 7040,
+  "allUnchanged": "Model/Adam/RNG/order/history/LR/target loss/first epoch retained dose/evaluation and checkpoint choice",
+  "changed": "Operational clock sentinel, resume receipt pathname, actual-work metadata/cap, redo replay labeling only",
+  "noLostTensorBitwiseClaim": true,
+  "zeroOptimizerUpdatesByReviewer": true
+}
