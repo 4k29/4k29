@@ -1,0 +1,23 @@
+name: SNS conversation data audit
+on:
+  pull_request:
+    paths:
+      - 'training/language/conversation-v2/sns-data/**'
+      - '.github/workflows/sns-data-audit.yml'
+permissions:
+  contents: read
+jobs:
+  data-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Offline data, privacy and serialization contracts
+        run: |
+          for suite in governance pipeline quality research; do
+            python -m unittest discover -s "training/language/conversation-v2/sns-data/$suite" -p 'test_*.py' -v
+          done
+      - name: Frozen artifact and source integrity
+        run: python training/language/conversation-v2/sns-data/verify.py
