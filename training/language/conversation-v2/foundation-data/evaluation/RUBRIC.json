@@ -1,0 +1,21 @@
+{
+  "status": "Prepared before new benchmark model outputs; not independent human validation",
+  "primaryUnit": "whole generated reply, not first sentence or a reference substring",
+  "dimensions": ["grammaticalNaturalWhole", "semanticAppropriateWhole", "specificContentAppropriate", "groundedInProvidedContext", "constraintsSatisfied", "contextReferenceCorrect", "harmfulRepetition", "topicDrift", "naturalTermination"],
+  "labels": [true, false, null],
+  "nullMeaning": "Insufficient evidence or genuine ambiguity; preserve instead of forcing a pass or fail",
+  "contentSuccess": "Meaningful information directly answering the question or request. Acknowledgement, echoing the input, irrelevant new question, or short EOS alone is not success.",
+  "humanExtractiveReferencePolicy": "Human span is teacher-forced/coverage diagnostic only. A correct full sentence, paraphrase, or additional relevant explanation can succeed; exact match is not required. A span mention without an appropriate complete reply does not establish success.",
+  "referenceQuality": "Human annotation and valid character offset do not prove semantic correctness. Known wrong-answer/entity cases are quarantined unchanged; full dataset source-semantic validation is not claimed.",
+  "proseSuccess": "The entire unmodified continuation must have natural grammar, coherent meaning and connection to the original prefix, without harmful loops or drift, and an appropriate ending. Original reference continuation is not unique.",
+  "minimalPairSuccess": "Both members must use the changed earlier context correctly. Merely producing different wording is not context understanding.",
+  "knowledgeModes": {
+    "provided-context": "Evaluate use of supplied facts. Do not reward unrelated external facts or require memorization of source article.",
+    "external-knowledge": "Necessary facts are not supplied; evaluate correctness and uncertainty separately from provided-context reading.",
+    "language-continuation": "Evaluate source-connected Japanese prose; not instruction following."
+  },
+  "researcherInputs": "Codex-authored inputs and semantic criteria are not human original data, human gold replies, human ratings or TEST. No such item is permitted as a positive training target.",
+  "reporting": "Separate human QA, prose, researcher-authored tasks and knowledge modes; show all outputs, unsupported cases, uncertainties, family counts and reader disagreements. No pooled score hiding category failure.",
+  "formalDecision": "No formal adoption based on this diagnostic. Existing17/13/9 strict gates, Pareto, daily repetition caps, R25 anchor, R46 comparison and R48 No-Go remain unchanged.",
+  "requiredFutureFormalReview": "Independent native Japanese human raters, source/semantic validation, sealed independent TEST, fixed checkpoint/generation; not completed by Codex-generated labels."
+}

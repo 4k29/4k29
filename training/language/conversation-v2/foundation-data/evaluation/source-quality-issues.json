@@ -1,0 +1,39 @@
+{
+  "scope": "Source-semantic audit before any model inference; no original text or annotation repair",
+  "reviewer": "Codex assistant source reading; not independent native-human validation",
+  "excludeQuestionIds": ["tr-597-09-003", "tr-247-20-001"],
+  "issues": [
+    {
+      "questionId": "tr-597-09-003",
+      "severity": "quarantine-benchmark-reference",
+      "reason": "Question asks reprint year for 官板実測日本地図. Provided context states 明治3年(1870年) for the reprint, but human annotation 1873年 is the separate year of the 皇居 fire. Offset validity does not establish semantic correctness.",
+      "originalHumanAnswer": "1873年",
+      "annotationChanged": false,
+      "replacementGoldCreated": false
+    },
+    {
+      "questionId": "tr-247-20-001",
+      "severity": "quarantine-question-entity-mismatch",
+      "reason": "Question names スクールメイト, while supplied context names スタークルメイト. Do not silently repair the human original or score a possibly different entity as a clean task.",
+      "originalHumanAnswer": "三井化学アグロ",
+      "annotationChanged": false,
+      "replacementGoldCreated": false
+    },
+    {
+      "questionId": "tr-365-00-000",
+      "severity": "retained-source-wording-concern",
+      "reason": "Human question uses 大量で読んだ; wording is unnatural but intended manga type is intelligible from the unmodified source. Flag rather than paraphrase."
+    }
+  ],
+  "categoryOverrides": {
+    "tr-666-03-002": "question-answer",
+    "tr-377-14-001": "question-answer",
+    "tr-449-09-002": "question-answer",
+    "tr-365-00-000": "question-answer",
+    "tr-472-02-000": "question-answer"
+  },
+  "categoryNote": "The selected lexical candidates are mostly entity/fact questions, not full explanations or reasons. Overrides reflect full provided-context reading, not generated model results. No human advice/conditional gold is claimed.",
+  "fullSourceQaDatasetValidated": false,
+  "modelCallsBeforeAudit": 0,
+  "optimizerUpdates": 0
+}
