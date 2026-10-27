@@ -133,7 +133,7 @@ def summarize_jmultiwoz(path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--out", default=".local-dialogue-acquisition", help="Private output directory; keep untracked.")
+    parser.add_argument("--out", default=str(Path(__file__).parent / ".local-dialogue-acquisition"), help="Private output directory; keep untracked.")
     parser.add_argument("--source", nargs="+", choices=[*SOURCES.keys(), "all"], default=["all"])
     args = parser.parse_args()
     root = Path(args.out).resolve()
