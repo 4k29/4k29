@@ -1,0 +1,74 @@
+{
+  "status": "DRAFT_NO_GO_NOT_AUTHORIZED_FOR_OPTIMIZER_UPDATES",
+  "purpose": "Test whether adding licensed, quality-audited modern Japanese prose improves full Japanese continuation and contentful replies; NLL alone is not success",
+  "trainingAuthorized": false,
+  "optimizerUpdatesPerformed": 0,
+  "formalAdoption": false,
+  "initialState": {
+    "model": "conversation-v2 medium terminal3470",
+    "checkpointSha256": "5ad249d2c8d5910090c9baba94f94483e9c037139d15b9c4360fd3e975409544",
+    "inherit": ["all model tensors", "Adam moments and step3470", "Torch RNG", "private sampler RNG", "old epoch order/cursor/history provenance"],
+    "neverResetWarmupOrOptimizer": true
+  },
+  "architecture": {"layers":8,"dim":320,"heads":4,"hidden":1280,"vocabulary":3997,"context":256,"parameters":11225280},
+  "singleChangedCondition": "Replace two of four RP full genuine-target windows with native modern-prose windows; source representation and changed body/EOS/role frequencies are measured consequences of this data condition",
+  "controlBatch": "4 RP TRAIN windows",
+  "treatmentBatch": "2 exactly shared RP windows + 2 new prose TRAIN windows",
+  "fixedNumericalConditions": {
+    "batch":4,"genuineTargetsPerWindow":256,"genuineTargetsPerUpdate":1024,
+    "learningRate":0.00003,"optimizer":"inherited AdamW","precision":"FP32","clipGlobalNorm":1,
+    "clipNormReduction":"existing FP64 global norm, common FP32 coefficient, epsilon1e-6",
+    "loss":"ordinary all genuine-target causal CE; no new masks or concentration/auxiliary coefficients",
+    "padding":"none in this full-window comparison; excluded short-final windows audited as selection bias"
+  },
+  "candidateDoseNotYetFrozen": {
+    "fullWindowDoseProposalIsNotLearningReady":true,
+    "blockingEndingCoverageIssue":"Dropping partial final windows excludes true prose document EOS except lengths congruent1mod256. Must quantify and resolve ending coverage before training; no fake EOS or silent masks. Prefer matched-active-length partial windows across arms, then recompute exact frozen target budget rather than claim1024 targets/update.",
+    "retainedUpdatesPerArm":2048,"allTargetTokensPerArm":2097152,
+    "newProseTargetsInTreatment":1048576,"newDistinctFullTrainWindowsRequired":4096,
+    "finalRetainedAdamStepIfExecuted":5518,
+    "candidateTwoUpdateReplayAuditPerArm":2,"maximumActualUpdatesBothIfNoCrash":4100,
+    "bodyTargetsExactlyMatched":false,
+    "reason":"Matching body and all-target totals simultaneously would generally require changing masks or structural-token distribution. Primary dose is all genuine targets; body/EOS/role dose is reported separately.",
+    "noViewsOrRepetitionsCountedAsIndependentRawData":true
+  },
+  "framing": {
+    "rp":"original BOS, human A/B roles, original utterance bodies and EOS",
+    "prose":"BOS, original derived article body with declared paragraph join, EOS only at true article end",
+    "noFakeHumanRoles":true,"noCrossDocumentAttention":true,"noFakeWindowEos":true,
+    "aiUserAssistantInstructionLearningClaim":false
+  },
+  "samplerToFreeze": {
+    "policy":"Precompute schedule from fixed final TRAIN pools; same common RP slots and deterministic source-order rule. Preserve old sampler state as provenance and save explicit new-stage source sampler states/schedule cursor.",
+    "torchRng":"Same inherited state and equal tensor shapes consume identical dropout-mask draws per update",
+    "stageScheduleSha256":null,"trainPoolSha256":null,"normalizationDedupSplitSha256":null
+  },
+  "missingFrozenInputs": {
+    "sourceAdmissionAndLicenseManifestSha256":null,"newTrainDataSha256":null,
+    "actualIndependentSourceCharsAndOwnBpeTokens":null,
+    "devBenchmarkAndRubricSha256":null,"generationConditionsSha256":null,
+    "trainingRunnerCodeSha256":null,"durableResourceBudgetAndStorageReceipt":null
+  },
+  "checkpointSelection":"terminal at fixed dose only; not best NLL, no generation-selected or post-hoc condition adjustment",
+  "evaluation": {
+    "providedContextVsExternalKnowledge":"separate fixed labels and scores",
+    "primary":"full Japanese grammar, whole-text meaning, response relevance/content, context consistency, repetition/drift and appropriate EOS",
+    "nllPerTokenAndByte":"diagnostic only, EOS/role/body separated",
+    "sealedTest":"do not open; visible reserve manifests are not an independently sealed TEST",
+    "oldStrictGates":"17/13/9, Pareto, repetition constraints, R25 formal anchor, R46 scientific reference unchanged",
+    "humanEvaluation":"independent native Japanese raters still required; assistant-generated input probes never called human originals"
+  },
+  "preflightBeforeAnyTraining": [
+    "source licenses/provenance and candidate admission resolved",
+    "exact/normalized/near duplicates and document/article/speaker/family split audits pass",
+    "new TRAIN has at least4096 distinct eligible full windows after exclusions",
+    "byte roundtrip, unknown glyph/fallback and context-length audits completed",
+    "true prose document-ending EOS coverage retained; full-window-only proposal cannot authorize learning until ending policy and exact dose are fixed",
+    "data IDs, sampling schedule, code, evaluator and resource plan SHA fixed before output or gradient checks",
+    "zero-update full-state restore/finite gradient/clipping/unchanged model Adam RNG audit",
+    "durable atomic full model/Adam/RNG/order checkpoint capacity with actual-update journal",
+    "new-updated-state process resume equality must be separately verified only if optimizer updates are later authorized"
+  ],
+  "goDecision":"NO_GO_FOR_LEARNING; preparation and explicitly frozen zero-update audits only",
+  "paidGpuUsed":false,"publicModelChanged":false,"mergePerformed":false,"sealedTestRead":false
+}
