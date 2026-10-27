@@ -17,7 +17,7 @@ Python 3.9+ standard library; **requires ordinary public-network access**:
 
 \`\`\`sh
 python3 training/language/conversation-v2/external-dialogue-acquisition/acquire.py \
-    --out .local-dialogue-acquisition --source all
+    --source all
 \`\`\`
 
 The script pulls **fixed upstream commit SHAs**, performs bounded downloads, checks
