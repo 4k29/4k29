@@ -9,8 +9,13 @@ def archive(raw,out,remove=False):
    with tmp.open('wb')as dest:dest.write(b);dest.flush();os.fsync(dest.fileno())
    os.replace(tmp,p);h=hashlib.sha256(b).hexdigest();assert sha(p)==h;whole.update(b);chunks.append(dict(path=p.name,bytes=len(b),sha256=h))
  st=obj['trajectory'];manifest=dict(sha256=whole.hexdigest(),bytes=raw.stat().st_size,chunks=chunks,active_cursor=obj['active_cursor'],optimizer_step_values=sorted({int(v['step'])for v in st['optimizer']['state'].values()}),model_retained_update_counter=st['uniqueUpdates'],trajectory_digest=digest(st),plan_sha256=obj['plan_sha256'],formal_adoption=False,contains='full model/Adam/Torch RNG/private RNG/sampler cursor/trace')
- write(out/'checkpoint.json',manifest);check=loader.load_checkpoint(out/'checkpoint.json',manifest['sha256']);assert digest(check)==digest(obj)
- if remove:raw.unlink()
+
+ manifest_path=out/'checkpoint.json';pending=out/'checkpoint.pending'
+ with pending.open('w')as f:f.write(json.dumps(manifest,indent=2)+'\n');f.flush();os.fsync(f.fileno())
+ os.replace(pending,manifest_path);fd=os.open(out,os.O_RDONLY);os.fsync(fd);os.close(fd)
+ check=loader.load_checkpoint(out/'checkpoint.json',manifest['sha256']);assert digest(check)==digest(obj)
+ if remove:
+  raw.unlink();fd=os.open(raw.parent,os.O_RDONLY);os.fsync(fd);os.close(fd)
  print(str(out),manifest['sha256'],flush=True)
  return manifest
 if __name__=='__main__':

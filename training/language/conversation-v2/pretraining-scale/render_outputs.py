@@ -12,6 +12,7 @@ for f in sorted((P/'evaluation').glob('*.json')):
    # byte_payload uses utf8 text; inspect raw schema if no ordinary field present.
    for key in ['textUtf8','textUtf8Replacement','decoded']:
     if key in r:text=r[key];break
+  if text is None:text='[strict UTF-8 invalid; rawBytesHex='+r.get('rawBytesHex','')+']'
   lines+=['### '+str(r.get('panel',''))+' '+str(r.get('id','')), '', '入力token: '+json.dumps(r.get('prefix',[])), '', '終了: '+str(r.get('stopReason'))+' / EOS='+str(r.get('eos')), '', '~~~text',text,'~~~','']
  if 'self_history'in d:
   for e in d['self_history']:
