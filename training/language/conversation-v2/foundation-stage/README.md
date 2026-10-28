@@ -27,3 +27,17 @@ SIGTERM/SIGINTは次の更新境界でatomic保存し、`python train.py --resum
 原型 `../grounded-objective` のcheckpoint作業コピーだけをGit blob照合後にsparse省略して空きを確保。元blob、履歴、正式モデルは保持し、必要時は旧共通loaderのGit fallbackで復元できる。
 
 学習/評価/次段階の実績は後続REPORTとRESUME_STATUSへ保存する。自然な文章と適切な応答は別評価とし、NLL改善だけで次段階達成にしない。
+
+## 完了した比較と再現時の注意
+
+原文のみは `PLAN.json/train.py`、同じtarget予算の人間会話混合は `MIXED_PLAN.json/train_mixed.py`、そのLRだけを上げた条件は `LR_PLAN.json/train_lr.py`。各初期状態は同じ3470であり、直前の条件から続けていない。実行は `launch.py` の無指定/`--mixed`/`--lr`。既に完了したreceiptがあるこの作業ディレクトリでは再学習を拒否する。再現する場合は別checkout/別出力領域で既存証拠を保持し、固定PLANのcode/data SHAを検証する。
+
+応答A/Bは `RESPONSE_DIAGNOSTIC_PROTOCOL.md` と `RESPONSE_PLAN.json` を参照。主生成ゲートを通過した通常の段階移行ではなく、失敗を残したまま別途事前固定した事後探索診断。初期は混合3e-5の固定terminalで、LR比較のbestを選んでいない。`response_train.py` は完了済み/中断済みledgerの無断再実行を拒否する。実更新2→4の別プロセス再開は各armで完全一致を検証。64更新ごとのfull状態/active_cursorと固定scheduleを保存する。一般的な中断再開CLIはこの短い診断には実装しておらず、事故時は保存cursor以降のintent/completedを照合して明示的な復旧が必要。意図だけ残った更新を完了と推測しない。
+
+`checkpoint_io.py <name>` はこの研究の新しいraw checkpointだけを32MiB以下へ分割し、chunk/full SHAとfull trajectory/traceの再読一致後にraw作業コピーを除く。`runtime.snapshot(name)` はrawまたはarchiveを復元する。作業コピーがsparse省略されていても旧loaderのGit blob fallbackを使う。完全checkpointにはmodel/Adam/Torch RNG/private sampler RNG/旧sampler来歴/現schedule cursor/traceを含む。今回の固定scheduleの再開位置はactive_cursorであり、旧sampler cursorではない。
+
+各完成snapshotの評価は `evaluate_v2.py --model <name>`、`evaluate_qa.py`、`evaluate_rp.py`、`evaluate_boundary.py`。追加の応答診断は `evaluate_response_probe.py`。全出力は既存ファイルの上書きを拒否する。旧 `evaluate.py` はBOS前提の失敗を追跡するため残しており、現行評価に使わない。旧の共有推論コードや公開推論は変更していない。
+
+既知の数値/境界問題：24の文字位置prefix中4件は元全文BPEの切れ目と異なる。主評価を上書きせず、`TOKEN_BOUNDARY_PROTOCOL.json` に別のsource-token境界評価を固定した。BOS-freeの原文fragmentに偽BOSを足す代わりに、独立decoderで旧BOS検査だけを除いた。Python/JS parityは短い固定probeに限定し、全生成・全hardwareでの一致を証明しない。
+
+最終結果は `REPORT.md` / `SUMMARY.json` / `GENERATIONS.md`。`verify.py` はstdlibだけでsource/artifact SHAと全checkpoint byte streamを検証する。`test_results.py` はTorch不要のCI用、他の `test_*.py` は実装の意味のある局所試験。`resource_estimates.py` のGPU時間は実測ではない。有料資源や外部生成APIを利用していない。
