@@ -111,6 +111,8 @@ Python/JavaScriptは同じrawFP32重みの固定3prefix×最大4tokensで検証�
 
 ## テスト・成果物の確認
 
+既存全体Nodeテストはローカルで962件中942合格、20件は旧R2–R10のsparse省略fixtureが存在しないためENOENTで失敗。全該当パスがGitに残りskip-worktreeであることを照合し、`LOCAL_FULL_SUITE.json`と全ログへ保存した。容量を使い切って旧fixtureを全展開する代わりに、完全checkoutのGitHub CIを別途確認する。`docs/app.js`構文検査は合格。
+
 局所テスト19件合格（境界/教師位置・原文/既知family独立性・atomic故障・decoder互換性・同予算配分・実更新/replay台帳・raw bytes無修正を確認）。`verify.py` はstdlibで全source/artifact SHAと5 checkpointの全byte streamを確認する。GitHubの現在headのCI結果は [Draft PR101](https://github.com/4k29/4k29/pull/101/checks) を正本とし、古いheadの合格を新headの完了と記録しない。
 
 ## 次の判断
