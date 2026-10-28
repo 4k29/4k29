@@ -16,6 +16,7 @@ def save(p,obj):
 def ledger(p,d):
  with p.open('a')as f:f.write(json.dumps(d)+'\n');f.flush();os.fsync(f.fileno())
 def main():
+ if (H/'run/receipt.json').exists() or (H/'run/full-512/archive/checkpoint.json').exists():raise SystemExit('Completed experiment: refusing additional updates. Reproduce in a fresh checkout at fcef305.')
  a=argparse.ArgumentParser();a.add_argument('--child',choices=['full','response']);args=a.parse_args();torch.set_num_threads(2);torch.use_deterministic_algorithms(True);plan=json.loads((H/'PLAN.json').read_text());assert hashlib.sha256((H/'data.json').read_bytes()).hexdigest()==plan['data_sha256'];assert hashlib.sha256((H/'train.py').read_bytes()).hexdigest()==plan['train_code_sha256'];data=json.loads((H/'data.json').read_text())['train'];assert len(data)>=2048;out=H/'run';out.mkdir(exist_ok=True)
  s=importlib.util.spec_from_file_location('own_loader',V/'foundation-data/research/zero_update_preflight.py');m=importlib.util.module_from_spec(s);s.loader.exec_module(m);base=m.load_checkpoint(V/'epoch1/medium/archive/checkpoint.pt.chunks.json',plan['initial_checkpoint_sha256']);initial_digest=digest(base['trajectory']);settings=json.loads((V/'PLAN.json').read_text())['training']
  for arm in ([args.child]if args.child else['full','response']):

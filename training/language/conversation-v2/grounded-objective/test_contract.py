@@ -1,6 +1,6 @@
-import copy,json,pathlib,unittest
-from train import batch
+import copy,importlib.util,json,pathlib,unittest
 H=pathlib.Path(__file__).resolve().parent
+spec=importlib.util.spec_from_file_location('grounded_contract_runner',H/'train.py');runner=importlib.util.module_from_spec(spec);spec.loader.exec_module(runner);batch=runner.batch
 class Contract(unittest.TestCase):
  def test_teacher_shift_and_EOS(self):
   r={'sequence':[1,3,10,2,4,20,21,2],'answer_start':5,'answer_ids':[20,21,2]};x,y,d=batch([r],'response');self.assertEqual(y[0,:7].tolist(),[-100,-100,-100,-100,20,21,2]);self.assertEqual(x[0,4].item(),4);self.assertEqual(d['supervised_targets'],3)
