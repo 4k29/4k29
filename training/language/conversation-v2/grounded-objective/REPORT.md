@@ -67,6 +67,8 @@ gradientは全てfinite。最初512でpre-clip norm平均/最大はA2.706/7.862�
 
 主評価は学習前固定の新36DEV、max64/full vocabulary/greedy、無修正。既存24内容必須/23資料付きDEVと自己履歴2会話×3turnも別系列で保存した。評価時optimizer更新は0。checkpointは32/512という固定endpointであり、DEVでbestを選んでいない。追加96のplanは主512結果を見た後、追加更新の前に固定。追加後に悪化しても主512を上書きしていない。
 
+主36件のID/greedy/max64は学習前のPLANにある。一方、自己履歴の最大24tokensと後続質問の正確な文面は、初段学習後・生成を見る前の `EVAL_PROTOCOL.json` で固定した補足であり、全てが学習前事前登録済みとは称さない。後段の `EVAL_EXTRA_PROTOCOL.json` と文脈/NLL/parityのprotocolについても、主学習前固定条件と事後固定診断を区別する。
+
 |endpoint|共通返答+EOS NLL|新36DEV・全文読解|4gram反復検出|EOS|
 |---|---:|---:|---:|---:|
 |初期3470|5.0424|自動候補0（正式読解集計なし）|0|36/36|
