@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/workspace/4k29/training/language/conversation-v2/boundary-study/preflight.py", line 13, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/workspace/4k29/training/language/conversation-v2/boundary-study/preflight.py", line 10, in main
+    x,y=pack(b);opt.zero_grad(set_to_none=True);loss=causal_ce(model(x),y);loss.backward();norm=float(clip_grad_accurate(model.parameters(),1));assert torch.isfinite(loss)and all(torch.isfinite(p.grad).all()for p in model.parameters());n+=int(y.ne(-100).sum());rows.append(dict(arm=arm,loss=float(loss.detach()),gradient_norm=norm))
+        ^^^^^^^
+  File "/workspace/4k29/training/language/conversation-v2/foundation-stage/mixed_runtime.py", line 7, in pack
+    if w.get('source_kind')!='original_human_A_B':assert not(set(s)&{3,4})
+                                                         ^^^^^^^^^^^^^^^^^
+AssertionError
