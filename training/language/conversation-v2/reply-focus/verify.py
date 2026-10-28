@@ -1,5 +1,5 @@
 """Offline result and source integrity verification. Never performs updates."""
-import argparse,hashlib,json,pathlib
+import argparse,hashlib,json,pathlib,os
 H=pathlib.Path(__file__).resolve().parent;V=H.parent
 
 def sha(p):
@@ -11,8 +11,8 @@ def main(freeze=False):
  manifest=H/'MANIFEST.json'
  if freeze:
   files=[p for p in sorted(H.rglob('*'))if p.is_file()and'__pycache__'not in p.parts and p.name not in ['MANIFEST.json','verification.log']and p.suffix!='.pt']
-  inputs=[V/'data/data.json',V/'data/tokenizer.json',V/'data/train.docs.jsonl',V/'data/dev.docs.jsonl',V/'response-data/final/active-dev.json',V/'epoch1/content-dev.json',V/'allocation-study/schedule.json',V/'core.py']
-  manifest.write_text(json.dumps({'artifacts':[{'path':str(p.relative_to(H)),'bytes':p.stat().st_size,'sha256':sha(p)}for p in files],'source_receipts':[{'path':str(p.relative_to(V)),'sha256':sha(p)}for p in inputs]},indent=2)+'\n')
+  inputs=[V/'data/data.json',V/'data/tokenizer.json',V/'data/train.docs.jsonl',V/'data/dev.docs.jsonl',V/'response-data/final/active-dev.json',V/'epoch1/content-dev.json',V/'allocation-study/schedule.json',V/'core.py',V/'eval_core.py',V/'new_tokenizer.py',V.parent/'model.py',V.parent/'round10/word_bpe.py',V.parents[1]/'dialogue/tokenizer.py',V/'sns-data/pipeline/publication-policy.json']
+  manifest.write_text(json.dumps({'artifacts':[{'path':str(p.relative_to(H)),'bytes':p.stat().st_size,'sha256':sha(p)}for p in files],'source_receipts':[{'path':os.path.relpath(p,V),'sha256':sha(p)}for p in inputs]},indent=2)+'\n')
  d=json.loads(manifest.read_text())
  for r in d['artifacts']:
   p=H/r['path'];assert p.resolve().is_relative_to(H.resolve());assert p.stat().st_size==r['bytes'];assert sha(p)==r['sha256'],r['path']
