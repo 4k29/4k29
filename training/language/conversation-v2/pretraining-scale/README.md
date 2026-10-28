@@ -8,6 +8,6 @@ GOAL.mdを上位目標とし、PR102の結果から続く独立した探索的�
 
 再現順: `prepare_candidates.py` → 固定標本全文読解/`admit.py` → `freeze.py` → `preflight.py` → `workflow.py`。現在は実学習開始済みなのでデータやPLANを再生成しない。`WORKFLOW_STATUS.json`と実ledger/receiptを確認してから、保存状態から明示的 `train.py --arm A --until 512 --resume`。完了receiptがあれば再実行を拒否。ambiguous intentは自動推測しない。
 
-独立セッションsupervisorは有限A/B/C比較のみ実行する。最終的な系列選択は固定規則に従って保存し、選択した1系列のみ2966更新/2039964targetsの一回読みへ。途中出力を理由にLR、配分、採点ゲートを変更しない。
+独立セッションsupervisorは有限A/B/C比較のみ実行する。最終的な系列選択は固定規則に従って保存し、選択した1系列のみ2966更新/2039651targetsの一回読みへ。途中出力を理由にLR、配分、採点ゲートを変更しない。
 
 `python -m unittest discover -s training/language/conversation-v2/pretraining-scale -p 'test_*.py'`。

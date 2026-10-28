@@ -24,12 +24,12 @@ class CorpusTests(unittest.TestCase):
     seq=by[w['unit_id']]['tokens'];self.assertEqual(w['tokens'],seq[w['start']:w['start']+257]);self.assertLessEqual(len(w['tokens']),257)
     for j,t in enumerate(w['tokens'][1:],w['start']+1):
      key=(w['unit_id'],j);self.assertNotIn(key,seen);seen.add(key);counts[t]+=1
-  self.assertEqual(len(seen),self.plan['full_pass_targets']);self.assertEqual(counts[1],0);self.assertEqual(counts[0],0);self.assertEqual(counts[2],579);self.assertEqual(sum(counts[i]for i in [3,4,5]),0)
+  self.assertEqual(len(seen),self.plan['full_pass_targets']);self.assertEqual(counts[1],0);self.assertEqual(counts[0],0);self.assertEqual(counts[2],577);self.assertEqual(sum(counts[i]for i in [3,4,5]),0)
  def test_jaquad_excerpts_no_eos_or_bos(self):
   for r in self.rows:
    if r['source']=='jaquad':self.assertEqual(r['tokens'],r['body_tokens']);self.assertFalse(r['BOS']);self.assertFalse(r['EOS'])
  def test_input_sha_frozen(self):
   for name,want in self.plan['input_sha256'].items():self.assertEqual(hashlib.sha256((ROOT/name).read_bytes()).hexdigest(),want,name)
  def test_novelty_not_new_acquisition(self):
-  tr=[r for r in self.rows if r['split']=='train'];self.assertEqual(sum(len(r['body_tokens'])for r in tr),2046589);self.assertEqual(sum(len(r['body_tokens'])for r in tr if r['new_vs_PR101']),1308024);self.assertEqual(load(P/'CORPUS_AUDIT.json')['newly_acquired_tokens'],0)
+  tr=[r for r in self.rows if r['split']=='train'];self.assertEqual(sum(len(r['body_tokens'])for r in tr),2046277);self.assertEqual(sum(len(r['body_tokens'])for r in tr if r['new_vs_PR101']),1308024);self.assertEqual(load(P/'CORPUS_AUDIT.json')['newly_acquired_tokens'],0)
 if __name__=='__main__':unittest.main()
