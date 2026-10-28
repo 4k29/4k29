@@ -21,7 +21,7 @@ def main():
  pure=json.load(gzip.open(H/'schedule.json.gz','rt'));mix=json.load(gzip.open(H/'mixed-schedule.json.gz','rt'));freq={}
  for label,ws in [('prose_TRAIN',[w for b in pure['batches']for w in b]),('prose_DEV',pure['dev']),('mixed_TRAIN',[w for b in mix['batches']for w in b])]:freq[label]=teacher_frequency(ws)
  qa=json.loads((H/'qa-data.json').read_text());freq['QA_TRAIN']=dict(examples=len(qa['train']),reply_targets=sum(len(r['answer_ids'])for r in qa['train']),EOS=len(qa['train']));freq['QA_DEV']=dict(examples=len(qa['dev']),reply_targets=sum(len(r['answer_ids'])for r in qa['dev']),EOS=len(qa['dev']))
- write(out/'FREQUENCY.json',freq);write(out/'PROTOCOL.json',dict(models=['initial','foundation','foundation-mixed','foundation-lr','qa-only','qa-rehearsal'],source_protocol_sha=sha(H/'TOKEN_BOUNDARY_PROTOCOL.json'),scope='All fixed24 source-token-boundary saved greedy histories; full causal forward scores every saved position without changing chosen tokens. Teacher/reference path is original source remainder. Group masses are token spelling proxies; no semantic interpretation of first token departure.',token_groups=groups,optimizer_updates=0))
+ write(out/'FREQUENCY.json',freq);write(out/'PROTOCOL.json',dict(models=['control','boundary','clip5'],source_protocol_sha=sha(H/'TOKEN_BOUNDARY_PROTOCOL.json'),scope='All fixed24 source-token-boundary saved greedy histories; full causal forward scores every saved position without changing chosen tokens. Teacher/reference path is original source remainder. Group masses are token spelling proxies; no semantic interpretation of first token departure.',token_groups=groups,optimizer_updates=0))
  eos_windows={p:[w for w in ws if 2 in w['tokens'][1:]]for p,ws in [('train',[w for b in pure['batches']for w in b]),('dev',pure['dev'])]}
  summary=json.loads((out/'SUMMARY.json').read_text())if(out/'SUMMARY.json').exists()else{}
  for name in args.models:
@@ -33,7 +33,7 @@ def main():
      p=pa[j];seen=set(gen[max(0,j-16):j]);z=dict(position=j,history_length=len(pre)+j,saved_chosen=gen[j],rescored_argmax=int(p.argmax()),p_chosen=float(p[gen[j]]),p_EOS=float(p[2]),p_previous16_tokens=float(p[list(seen)].sum())if seen else 0,**{'p_'+key:float(p[ids].sum())for key,ids in groups.items()})
      if j<K:z.update(gold=gold[j],p_gold_self_history=float(p[gold[j]]),p_gold_correct_history=float(pt[j,gold[j]]),p_EOS_correct_history=float(pt[j,2]),correct_history_argmax=int(pt[j].argmax()),KL_correct_to_self=float((pt[j]*(pt[j].log()-p.log())).sum()))
      steps.append(z)
-    rows.append(dict(id=r['id'],prefix=pre,prefix_text=r['prefix_text'],tokensIncludingEos=gen,rawBytesHex=r['rawBytesHex'],text=r['text'],eos=r['eos'],stopReason=r['stopReason'],repeated4gram=r['repeated4gram'],first_gold_departure=r['firstGoldDeparturePosition'],max_history_length=len(pre)+len(gen)-1,steps=steps))
+    rows.append(dict(id=r['id'],prefix=pre,prefix_text=r['prefix_text'],tokensIncludingEos=gen,rawBytesHex=r['rawBytesHex'],text=r['text'],eos=r['eos'],stopReason=r['stopReason'],repeated4gram=r['repeated4gram'],first_gold_departure=next((j for j,(a,b)in enumerate(zip(gen,gold))if a!=b),None),max_history_length=len(pre)+len(gen)-1,steps=steps))
    for partition,ws in eos_windows.items():
     probs=[]
     for i in range(0,len(ws),4):
