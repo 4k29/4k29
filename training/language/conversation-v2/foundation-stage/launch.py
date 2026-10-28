@@ -10,12 +10,12 @@ def live_worker():
  if not p.exists():return False
  r=json.loads(p.read_text());return identity(r['pid'])==r
 def main():
- p=argparse.ArgumentParser();p.add_argument('--resume',action='store_true');p.add_argument('--mixed',action='store_true');a=p.parse_args();folder=H/'run';folder.mkdir(exist_ok=True)
+ p=argparse.ArgumentParser();p.add_argument('--resume',action='store_true');m=p.add_mutually_exclusive_group();m.add_argument('--mixed',action='store_true');m.add_argument('--lr',action='store_true');a=p.parse_args();folder=H/'run';folder.mkdir(exist_ok=True)
  with(folder/'worker.lock').open('a')as lock:
   try:fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
   except BlockingIOError:raise SystemExit('Supervisor already running; no additional updates')
   if live_worker():raise SystemExit('Live worker detected; refusing second run')
-  command=[sys.executable,str(H/('train_mixed.py'if a.mixed else'train.py'))]+(['--resume']if a.resume else[]);worker=subprocess.Popen(command)
+  command=[sys.executable,str(H/('train_lr.py'if a.lr else'train_mixed.py'if a.mixed else'train.py'))]+(['--resume']if a.resume else[]);worker=subprocess.Popen(command)
   (folder/'PROCESS.json').write_text(json.dumps(identity(worker.pid),indent=2)+'\n')
   for s in [signal.SIGTERM,signal.SIGINT]:signal.signal(s,lambda sig,frame:worker.send_signal(sig))
   raise SystemExit(worker.wait())
