@@ -1,4 +1,5 @@
 """Fixed fourteen-update execution validation. Explicitly counts discarded replay."""
+import copy
 import argparse,array,hashlib,importlib.util,json,math,os,pathlib,shutil,subprocess,sys
 H=pathlib.Path(__file__).resolve().parent;V=H.parent;sys.path.insert(0,str(V))
 import torch
@@ -23,7 +24,7 @@ def main():
    if (out/(arm+'.pt')).exists():raise ValueError('Refuse completed-arm overwrite')
    if shutil.disk_usage(out).free<3*135802269+32*1024**2:raise OSError('Insufficient atomic reserve')
    state=base['trajectory'];trace=[];start=0
-  model,opt,rng=restore(state,settings);assert all(g['lr']==3e-5 for g in opt.param_groups);history=state['history']
+  model,opt,rng=restore(copy.deepcopy(state),settings);assert all(g['lr']==3e-5 for g in opt.param_groups);history=state['history'];assert all(int(s['step'])==3470+start for s in opt.state_dict()['state'].values())
   for row in schedule[start:]:
    ids=row[arm+'_window_ids'];x,y,dose=pack(values,meta['trainWindows'],ids,model.config['vocabulary']);opt.zero_grad(set_to_none=True);loss=causal_ce(model(x),y);loss.backward();assert all(p.grad is not None and torch.isfinite(p.grad).all()for p in model.parameters()if p.requires_grad);norm=float(clip_grad_accurate(model.parameters(),1.));assert math.isfinite(norm)
    ledger(out/'updates.jsonl',{'arm':arm,'step':row['step'],'replay':bool(args.child),'event':'intent'})
