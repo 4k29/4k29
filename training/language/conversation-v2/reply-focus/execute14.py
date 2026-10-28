@@ -14,6 +14,7 @@ def ledger(path,event):
  with path.open('a')as f:f.write(json.dumps(event)+'\n');f.flush();os.fsync(f.fileno())
 def main():
  a=argparse.ArgumentParser();a.add_argument('--child',choices=['control','treatment']);args=a.parse_args();torch.set_num_threads(2);torch.use_deterministic_algorithms(True)
+ if not args.child and ((H/'execution14/receipt.json').exists() or (H/'execution14/control/archive/checkpoint.json').exists()):raise ValueError('Completed or archived execution must not be rerun in place; use recorded commit in a fresh study')
  plan=json.loads((H/'PLAN14.json').read_text());assert plan['actual_optimizer_step_ceiling']==42 and plan['retained_updates_per_arm']==14
  assert hashlib.sha256((H/'execute14.py').read_bytes()).hexdigest()==plan['runner_sha256']
  schedule=json.loads((V/'allocation-study/schedule.json').read_text());assert hashlib.sha256((V/'allocation-study/schedule.json').read_bytes()).hexdigest()==plan['schedule_sha256'];schedule=schedule['rows'];assert len(schedule)==14

@@ -1,0 +1,27 @@
+name: Reply focus execution results
+on:
+  pull_request:
+    paths:
+      - 'training/language/conversation-v2/reply-focus/**'
+      - '.github/workflows/reply-focus.yml'
+permissions:
+  contents: read
+jobs:
+  reply-focus-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            training/language/conversation-v2/reply-focus
+            training/language/conversation-v2/data
+            training/language/conversation-v2/response-data/final/active-dev.json
+            training/language/conversation-v2/epoch1/content-dev.json
+            training/language/conversation-v2/allocation-study/schedule.json
+            training/language/conversation-v2/core.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python training/language/conversation-v2/reply-focus/verify.py
+      - run: python -m unittest discover -s training/language/conversation-v2/reply-focus -p 'test_*.py' -v
