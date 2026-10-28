@@ -24,4 +24,3 @@ class TrainingGate(unittest.TestCase):
    r=subprocess.run([sys.executable,str(H/'run_comparison.py'),'--plan-sha256',sha,'--output',str(pathlib.Path(td)/'output')],capture_output=True,text=True)
    self.assertNotEqual(r.returncode,0);self.assertIn('optimizer updates prohibited',r.stderr);self.assertFalse((pathlib.Path(td)/'output').exists())
 if __name__=='__main__':unittest.main()
-
