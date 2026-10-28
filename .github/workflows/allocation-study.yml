@@ -1,0 +1,26 @@
+name: Existing dialogue allocation audit
+on:
+  pull_request:
+    paths:
+      - 'training/language/conversation-v2/allocation-study/**'
+      - '.github/workflows/allocation-study.yml'
+permissions:
+  contents: read
+jobs:
+  allocation-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            training/language/conversation-v2/allocation-study
+            training/language/conversation-v2/data
+            training/language/conversation-v2/core.py
+            training/language/conversation-v2/response-data/final/active-dev.json
+            training/language/conversation-v2/response-data/research/matched_schedule.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python training/language/conversation-v2/allocation-study/verify.py
+      - run: python -m unittest discover -s training/language/conversation-v2/allocation-study -p 'test_*.py' -v
