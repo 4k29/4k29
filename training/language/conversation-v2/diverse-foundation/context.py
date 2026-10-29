@@ -1,7 +1,7 @@
 """Fixed nine-family zero-update context use diagnostic; no new TEST or optimizer changes."""
 import argparse,math
 from common import *
-from evaluate import load
+from study_checkpoint import load,model_history
 
 def protocol():
  cases=read(P/'DEV_PROTOCOL.json')['cases'];by={r['id']:r for r in gzrows(P/'corpus-clean.jsonl.gz')};rows=[]

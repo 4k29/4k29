@@ -1,14 +1,14 @@
 """Fixed prose and retained response panels; full-vocabulary, no repair, no TEST."""
 import argparse,gzip,json,pathlib
 from common import D as N,H,V,torch,initial,restore_isolated,sha,pack
-from evaluate import load
+from study_checkpoint import load,model_history
 from prose_decode import greedy
 from new_tokenizer import Encoder
 def write(p,d):p.write_text(json.dumps(d,ensure_ascii=False,indent=2,allow_nan=False)+'\n')
 def main():
  p=argparse.ArgumentParser();p.add_argument('--model',default='initial');a=p.parse_args();out=N/'panels';out.mkdir(exist_ok=True)
  assert not(out/(a.model+'.json')).exists(),'Never overwrite past evaluation'
- torch.set_num_threads(2);torch.use_deterministic_algorithms(True);model,cursor=load(a.model);base={'trajectory':{'uniqueUpdates':cursor}};model.eval();tok=json.loads((V/'data/tokenizer.json').read_text());enc=Encoder(tok);pieces=[bytes.fromhex(t)for t in tok['bytes']];schedule=json.load(gzip.open(H/'schedule.json.gz','rt'));cases=json.loads((H/'TOKEN_BOUNDARY_PROTOCOL.json').read_text())['cases'];prose=[];tot=nt=0;losses=[]
+ torch.set_num_threads(2);torch.use_deterministic_algorithms(True);model,cursor=load(a.model);base={'trajectory':{'uniqueUpdates':model_history(a.model)}};model.eval();tok=json.loads((V/'data/tokenizer.json').read_text());enc=Encoder(tok);pieces=[bytes.fromhex(t)for t in tok['bytes']];schedule=json.load(gzip.open(H/'schedule.json.gz','rt'));cases=json.loads((H/'TOKEN_BOUNDARY_PROTOCOL.json').read_text())['cases'];prose=[];tot=nt=0;losses=[]
  with torch.no_grad():
   for i in range(0,len(schedule['dev']),4):
    windows=schedule['dev'][i:i+4];x,y=pack(windows);logits=model(x);loss=torch.nn.functional.cross_entropy(logits.reshape(-1,3997),y.reshape(-1),ignore_index=-100,reduction='sum');n=int(y.ne(-100).sum());tot+=float(loss);nt+=n;losses.append(dict(window_ids=[w['id']for w in windows],nll_sum=float(loss),targets=n))
@@ -37,6 +37,6 @@ def main():
     if not g['eos']:break
     if k<2:ids+=[3]+enc(c['followups'][k])+[2,4]
    episodes.append(dict(**c,turns=turns))
- result=dict(model=a.model,source_checkpoint_unique_updates=base['trajectory']['uniqueUpdates'],actual_optimizer_updates=0,prose_dev=prose,prose_tf_nll=tot/nt,prose_tf_targets=nt,prose_tf_batches=losses,grounded36=old_rows,legacy=legacy,legacy_baseline_reuse=reuse,context12=contexts,self_history=episodes,formal_human_evaluation=False)
+ result=dict(model=a.model,source_checkpoint_unique_updates=base['trajectory']['uniqueUpdates'],source_checkpoint_study_cursor=cursor,actual_optimizer_updates=0,prose_dev=prose,prose_tf_nll=tot/nt,prose_tf_targets=nt,prose_tf_batches=losses,grounded36=old_rows,legacy=legacy,legacy_baseline_reuse=reuse,context12=contexts,self_history=episodes,formal_human_evaluation=False)
  write(out/(a.model+'.json'),result);summary=dict(prose_tf_nll=tot/nt,prose_count=len(prose),prose_EOS=sum(r['eos']for r in prose),prose_repetition=sum(r['repeated4gram']is not None for r in prose),old_native24_generation_count=sum(r['panel']=='native24'for r in legacy),meaning_success_not_automatically_inferred=True);write(out/(a.model+'-summary.json'),summary);print(a.model,summary,flush=True)
 if __name__=='__main__':main()

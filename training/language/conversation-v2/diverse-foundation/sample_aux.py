@@ -1,7 +1,7 @@
 """One fixed raw categorical sample per prefix. Auxiliary distribution diagnosis, not primary success."""
 import argparse
 from common import *
-from evaluate import load
+from study_checkpoint import load,model_history
 from eval_core import byte_payload,repeated_gram
 
 def main():

@@ -1,7 +1,7 @@
 """Zero-update audit: probabilities along saved greedy and exact source teacher histories."""
 import argparse,math,statistics
 from common import *
-from evaluate import load
+from study_checkpoint import load,model_history
 
 def main():
  ap=argparse.ArgumentParser();ap.add_argument('--arm',required=True);ap.add_argument('--label',required=True);a=ap.parse_args();torch.set_num_threads(2);torch.use_deterministic_algorithms(True);out=D/'probabilities';out.mkdir(exist_ok=True);assert not(out/(a.label+'.json')).exists()
@@ -26,12 +26,13 @@ def main():
     if j<len(gold):z.update(gold=gold[j],p_gold_correct=float(tf[j,gold[j]]),p_gold_self=float(p[gold[j]]),correct_history_argmax=int(tf[j].argmax()))
     steps.append(z)
    rows.append(dict(id=r['id'],panel=r['panel'],eos=r['eos'],repeated4gram=r['repeated4gram'],steps=steps))
-  train=sorted([r for r in gzrows(D/'corpus.jsonl.gz')if r['split']=='train'and r['EOS']],key=lambda r:rank('endpoint|'+r['id']))[:32];dev=read(V/'boundary-study/paragraphs.json')['dev']
+  pool=[r for r in gzrows(D/'corpus.jsonl.gz')if r['split']=='train'and r['EOS']];train=[]
+  for source,n in [('realpersona',16),('jma',8),('jawikibooks',4),('jawikivoyage',4)]:train+=sorted([r for r in pool if r['source']==source],key=lambda r:rank('endpoint|'+r['id']))[:n];dev=read(V/'boundary-study/paragraphs.json')['dev']
   if isinstance(dev,dict):dev=dev.get('dev',dev.get('cases',[]))
   for label,source in [('train32',train),('old_complete_DEV3',dev)]:
    values=[]
    for r in source:
-    seq=r['tokens'];start=((len(seq)-2)//256)*256;seq=seq[start:];assert len(seq)<=257 and seq[-1]==2;p=model(torch.tensor([seq[:-1]]))[0,-1].softmax(-1);values.append(dict(id=r['id'],p_EOS=float(p[2]),top1=int(p.argmax())))
+    seq=r['tokens'];start=((len(seq)-2)//256)*256;seq=seq[start:];assert len(seq)<=257 and seq[-1]==2;p=model(torch.tensor([seq[:-1]]))[0,-1].softmax(-1);values.append(dict(id=r['id'],source=r.get('source','old-complete-DEV'),p_EOS=float(p[2]),top1=int(p.argmax())))
    ends[label]=dict(rows=values,mean_pEOS=statistics.mean(z['p_EOS']for z in values),EOS_top1=sum(z['top1']==2 for z in values))
  flat=[s for r in rows if r['panel']=='old24'for s in r['steps']];paired=[z for z in flat if z['position0']<8 and'gold'in z];summary=dict(label=a.label,fixed_first8_TF_positions=len(fixed_tf_first8),fixed_first8_TF_NLL=statistics.mean(-math.log(max(v,1e-40))for v in fixed_tf_first8),paired_actual_first8_positions=len(paired),early_EOS_censoring_scope='Paired TF/self means compare the same actually generated positions within each checkpoint; they are not uncensored cross-checkpoint means.',old24_first8_gold_NLL_correct=statistics.mean(-math.log(max(z['p_gold_correct'],1e-40))for z in paired),old24_first8_gold_NLL_self=statistics.mean(-math.log(max(z['p_gold_self'],1e-40))for z in paired),old24_first8_gold_top1_correct=sum(z['correct_history_argmax']==z['gold']for z in paired)/len(paired),old24_first8_gold_top1_self=sum(z['rescored_argmax']==z['gold']for z in paired)/len(paired),old24_first8_pEOS=statistics.mean(z['p_EOS']for z in flat if z['position0']<8),rescoring_argmax_disagreements=sum(z['token']!=z['rescored_argmax']for r in rows for z in r['steps']),median_repeat_completion_position0=statistics.median(r['repeated4gram']['completion']for r in rows if r['repeated4gram'])if any(r['repeated4gram']for r in rows)else None,endpoint_summary={k:{kk:vv for kk,vv in d.items()if kk!='rows'}for k,d in ends.items()},optimizer_updates=0,first_gold_departure_not_semantic_failure=True)
  write(out/(a.label+'.json'),dict(summary=summary,cases=rows,endpoints=ends));write(out/(a.label+'-summary.json'),summary);print(summary,flush=True)

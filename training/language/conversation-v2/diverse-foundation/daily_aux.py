@@ -1,7 +1,7 @@
 """Ordinary daily prose side panel: AI-authored prompts, no targets/training, no adoption gate changes."""
 import argparse
 from common import *
-from evaluate import load
+from study_checkpoint import load,model_history
 from prose_decode import greedy
 
 def main():

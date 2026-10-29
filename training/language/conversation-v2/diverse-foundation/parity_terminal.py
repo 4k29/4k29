@@ -17,17 +17,17 @@ from parity import emit_binary, py_greedy
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def write(p,d):p.write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument("--models",nargs="+",required=True);args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument("--models",nargs="+",required=True);parser.add_argument("--tag",default="terminal");args=parser.parse_args()
     torch.set_num_threads(1);torch.use_deterministic_algorithms(True)
     cases=json.loads((H/'TOKEN_BOUNDARY_PROTOCOL.json').read_text())['cases'][:3]
     protocol=dict(case_ids=[c['id']for c in cases],max_new_tokens=4,tolerance=2e-4,
       checkpoints=args.models,
       scope='Post-training engineering check fixed before parity outputs; first three fixed prose prefixes, including BOS-free original fragments; at most four tokens. Not complete replies, native benchmarks, every hardware or new UI parity.',
       code_sha256={str(p.relative_to(H.parents[3])):sha(p)for p in [V/'parity.py',V/'parity.mjs',V.parent.parent/'dialogue/inference.mjs']})
-    write(N/'PARITY_TERMINAL_PROTOCOL.json',protocol)
+    write(N/('PARITY_'+args.tag.upper()+'_PROTOCOL.json'),protocol)
     summary={};settings=json.loads((V/'PLAN.json').read_text())['training']
     for name in protocol['checkpoints']:
-        folder=N/'parity-terminal'/name
+        folder=N/('parity-'+args.tag)/name
         if folder.exists():raise RuntimeError('Never overwrite previous parity results')
         folder.mkdir(parents=True)
         state=load(name)['trajectory'];model,_,_=restore(copy.deepcopy(state),settings);model.eval();before=digest(model.state_dict());rng=torch.get_rng_state().clone()
@@ -52,5 +52,5 @@ def main():
                 rows.append(dict(id=p['id'],position=a['position'],maximum_absolute_logit_error=error,argmax_equal=a['argmax']==b['argmax'],python_gap=a['topTwoLogitGap'],javascript_gap=b['topTwoLogitGap']))
         assert before==digest(model.state_dict())and torch.equal(rng,torch.get_rng_state())
         summary[name]=dict(comparison_positions=len(rows),max_absolute_logit_error=max(r['maximum_absolute_logit_error']for r in rows),tolerance=2e-4,tolerance_exceedances=sum(r['maximum_absolute_logit_error']>2e-4 for r in rows),same_history_argmax_disagreements=sum(not r['argmax_equal']for r in rows),independent_short_generation_divergences=departures,optimizer_updates=0,complete_reply_parity_established=False)
-        write(folder/'receipt.json',dict(**summary[name],comparisons=rows));binary.unlink();write(N/'parity-terminal-summary.json',summary);print(name,summary[name],flush=True)
+        write(folder/'receipt.json',dict(**summary[name],comparisons=rows));binary.unlink();write(N/('parity-'+args.tag+'-summary.json'),summary);print(name,summary[name],flush=True)
 if __name__=='__main__':main()
