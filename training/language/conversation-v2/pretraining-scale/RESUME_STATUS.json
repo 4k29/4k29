@@ -1,34 +1,91 @@
 {
-  "UTC": "2026-10-28T23:34:41.659840+00:00",
-  "revision": "v2 two source families excluded before any new comparison update",
+  "UTC": "2026-10-29T00:05:17.156611+00:00",
+  "stage": {
+    "supervisor": 2449,
+    "stage": [
+      "train_clean.py",
+      "--arm",
+      "A",
+      "--until",
+      "1024",
+      "--resume"
+    ],
+    "UTC": "2026-10-28T23:59:57.111966+00:00",
+    "fixed_final_targets": 2039162
+  },
   "arms": {
-    "A": {
+    "B": {
       "actual_calls": 514,
       "retained": 512,
       "resume_validation": 2,
-      "recovery_replay": 0,
-      "ambiguous_intents": 0,
       "retained_targets": 351219,
-      "receipt": false
-    },
-    "B": {
-      "actual_calls": 219,
-      "retained": 217,
-      "resume_validation": 2,
-      "recovery_replay": 0,
-      "ambiguous_intents": 0,
-      "retained_targets": 146800,
-      "receipt": false
+      "complete": true
     },
     "C": {
-      "actual_calls": 0,
-      "retained": 0,
-      "resume_validation": 0,
-      "recovery_replay": 0,
-      "ambiguous_intents": 0,
-      "retained_targets": 0,
-      "receipt": false
+      "actual_calls": 514,
+      "retained": 512,
+      "resume_validation": 2,
+      "retained_targets": 351219,
+      "complete": true
+    },
+    "A": {
+      "actual_calls": 1268,
+      "original_v2_calls": 789,
+      "clean_calls": 479,
+      "retained_unique_updates": 989,
+      "recovery_replay_calls": 247,
+      "resume_validation_calls": 4,
+      "excluded_tail_updates": 28,
+      "retained_trace_targets": 678137,
+      "complete": false
     }
+  },
+  "source_family_fix": {
+    "reason": "Article title 飲食を楽しむ is in linked component 健康を維持する; title-string hold failed. Resolve component from original document ID instead.",
+    "held_component": "jawikivoyage|健康を維持する",
+    "held_ids": [
+      "jawikivoyage:5053:13",
+      "jawikivoyage:5053:5",
+      "jawikivoyage:5053:6",
+      "jawikivoyage:5078:2"
+    ],
+    "held_body_tokens": 491,
+    "schedule_hits": [
+      {
+        "step": 760,
+        "id": "jawikivoyage:5053:5",
+        "targets": 96
+      },
+      {
+        "step": 902,
+        "id": "jawikivoyage:5078:2",
+        "targets": 82
+      },
+      {
+        "step": 1307,
+        "id": "jawikivoyage:5053:13",
+        "targets": 157
+      },
+      {
+        "step": 2221,
+        "id": "jawikivoyage:5053:6",
+        "targets": 154
+      }
+    ],
+    "first_family_update": 760,
+    "stopped_cursor": 787,
+    "excluded_tail_updates": 28,
+    "earlier_513_to759_recovery_updates": 247,
+    "original_matched512_unaffected": true,
+    "prefix_batches_identical_through759": true,
+    "source512_model_Adam_RNG_unchanged": true,
+    "new_full_pass_targets": 2039162,
+    "new_unique_body_tokens": 2045786,
+    "newly_admitted_vs_PR101_tokens": 1307614,
+    "new_EOS_teachers": 576,
+    "old_ledger_sha256": "5d642a6e95bce47de7b2859db2638fe783c374dfc0a53b7317886d7e2579d4a6",
+    "comparison_results_not_overwritten": true,
+    "original_source_excerpt_5078_not_exposed_but_one_same_family_5053_exposed": true
   },
   "excluded_pilot": {
     "reason": "Additional pre-generation source review identified unverified travel-safety/legal advice; isolate affected source families and restart fixed comparison, no generation-based tuning",
@@ -50,19 +107,20 @@
     "identified_held_source_exposures_in_discarded_pilot": 0,
     "disposition": "frozen schedule revision; old numeric work preserved, excluded from matched comparison regardless of exposure"
   },
-  "workflow": {
-    "supervisor": 1774,
-    "stage": [
-      "train.py",
-      "--arm",
-      "B",
-      "--until",
-      "512"
-    ],
-    "UTC": "2026-10-28T23:32:09.717202+00:00"
+  "overfit": {
+    "actual_optimizer_calls": 64,
+    "retained_updates": 64,
+    "targets": 5120,
+    "unique_body_tokens": 79,
+    "full_sequence_repetitions": 64,
+    "exact_train_sequences": 1,
+    "train_sequences": 1,
+    "elapsed_seconds": 14.582525172999794,
+    "unknown_generalization_proven": false,
+    "formal_adoption": false
   },
   "formal_adoption": false,
   "subagents_used": false,
-  "resume": "Check supervisor PID/start time and full-state checkpoint, ledger intents/completions and receipt first. Never repeat completed stage. Explicit --resume only; ambiguous intent halts.",
-  "plan_sha256": "aa77fb2a96339a0a4615af27a37ac8d42d616080e20da20346225b2b78beb1fa"
+  "clean_plan_sha256": "a97985ae0f2c3acea011957a652adbfb4e5bf32925490d082fe0c35022cf8910",
+  "resume": "Use continue_clean.py only. Check live supervisor PID/start_ticks, receipts and full-state checkpoint before resuming. Original train.py and continue_workflow.py are superseded for A continuation; they must not restart completed comparison or excluded suffix."
 }
