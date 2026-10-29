@@ -1,0 +1,28 @@
+Traceback (most recent call last):
+  File "/workspace/4k29/training/language/conversation-v2/diverse-foundation/resource_probe.py", line 25, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/workspace/4k29/training/language/conversation-v2/diverse-foundation/resource_probe.py", line 22, in main
+    x=torch.tensor([r['tokens'][:args.context]for r in selected]);y=torch.tensor([r['tokens'][1:args.context+1]for r in selected]);torch.manual_seed(61029);model=decoder(cfg);n=sum(p.numel()for p in model.parameters());assert n<55_000_000;model.train();wall=time.monotonic();cpu=time.process_time();loss=causal_ce(model(x),y);loss.backward();norm=float(clip_grad_accurate(model.parameters(),float('inf')));assert math.isfinite(norm)and all(p.grad is not None and torch.isfinite(p.grad).all()for p in model.parameters());elapsed=time.monotonic()-wall;cpus=time.process_time()-cpu
+                                                                                                                                                                                                                                                                                                                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/4k29/training/language/conversation-v2/core.py", line 132, in clip_grad_accurate
+    raise ValueError('Require finite positive max norm and genuine gradients')
+ValueError: Require finite positive max norm and genuine gradients
+Traceback (most recent call last):
+  File "/workspace/4k29/training/language/conversation-v2/diverse-foundation/resource_probe.py", line 25, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/workspace/4k29/training/language/conversation-v2/diverse-foundation/resource_probe.py", line 10, in main
+    if not p.exists():subprocess.run([sys.executable,str(D/'resource_probe.py'),'--dim',str(dim),'--context',str(ctx)],check=True,timeout=120)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python', '/workspace/4k29/training/language/conversation-v2/diverse-foundation/resource_probe.py', '--dim', '320', '--context', '256']' returned non-zero exit status 1.
+320 256 11225280 11.741426467997371 645480
+512 256 27397632 6.6597344869987865 849120
+704 256 50647872 9.987817756998993 1076192
+320 512 11307200 13.915438140000333 936700
+320 1024 11471040 11.05303578800158 1517840
