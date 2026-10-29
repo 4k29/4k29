@@ -11,6 +11,8 @@ def checkpoint(p):
 
 def main():
  a=argparse.ArgumentParser();a.add_argument('--write',action='store_true');args=a.parse_args();tok=read(P.parent/'data/tokenizer.json');pieces=[bytes.fromhex(v)for v in tok['bytes']];evaluations=0
+ for dep in read(P/'DEPENDENCIES.json')['files']:
+  f=ROOT/dep['path'];raw=f.read_bytes()if f.exists()else subprocess.check_output(['git','show','HEAD:'+dep['path']],cwd=ROOT);assert hashlib.sha256(raw).hexdigest()==dep['sha256']
  for f in(P/'evaluation').glob('*.json'):
   d=read(f)
   if'cases'in d and isinstance(d['cases'],list)and d['cases']and'tokensIncludingEos'in d['cases'][0]:rows=d['cases']

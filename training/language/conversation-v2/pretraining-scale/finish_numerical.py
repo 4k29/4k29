@@ -1,6 +1,8 @@
 """Run only after finite clean training and fixed primary/panel evaluation complete. No optimizer calls."""
 import subprocess,sys,os
 from common import *
+if(P/'NUMERICAL_POSTPROCESS.json').exists():
+ print('Completed zero-update postprocess; retain existing outputs and manual review');sys.exit(0)
 assert read(P/'CONTINUATION_STATUS.json')['stage']=='FINITE_ONE_PASS_COMPLETE';assert read(P/'run/A/receipt.json')['retained_updates']==2966
 
 def run(args,log):

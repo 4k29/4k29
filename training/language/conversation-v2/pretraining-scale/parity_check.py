@@ -26,7 +26,7 @@ def main():
         state=load(name)['trajectory'];model,_,_=restore(copy.deepcopy(state),settings);model.eval();before=digest(model.state_dict());rng=torch.get_rng_state().clone()
         binary=folder/'weights.f32';specs,count=emit_binary(state['model'],binary)
         tok=json.loads((V/'data/tokenizer.json').read_text());metadata=folder/'weights-metadata.json'
-        write(metadata,dict(binaryPath=str(binary),bytes=count*4,binarySha256=sha(binary),tensors=specs,config=state['config'],tokenizer=tok,checkpointSha256=sha(N/'run'/name/'checkpoint.pt')))
+        write(metadata,dict(binaryPath=str(binary),bytes=count*4,binarySha256=sha(binary),tensors=specs,config=state['config'],tokenizer=tok,checkpointSha256=sha(N/'run'/name/'checkpoint.pt')if(N/'run'/name/'checkpoint.pt').exists()else json.loads((N/'run'/name/'archive/checkpoint.json').read_text())['sha256']))
         py=[];req=[]
         with torch.inference_mode():
             for c in cases:

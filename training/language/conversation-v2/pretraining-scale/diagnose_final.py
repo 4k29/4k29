@@ -27,7 +27,7 @@ def main():
     if j<len(gold):z.update(gold=gold[j],p_gold_correct=float(tf[j,gold[j]]),p_gold_self=float(p[gold[j]]),correct_history_argmax=int(tf[j].argmax()))
     steps.append(z)
    rows.append(dict(id=r['id'],panel=r['panel'],eos=r['eos'],repeated4gram=r['repeated4gram'],steps=steps))
-  train=sorted([r for r in gzrows(P/'corpus-clean.jsonl.gz')if r['split']=='train'and r['EOS']],key=lambda r:rank('endpoint|'+r['id']))[:32];dev=read(N/'paragraph-dev.json')
+  train=sorted([r for r in gzrows(P/'corpus-clean.jsonl.gz')if r['split']=='train'and r['EOS']],key=lambda r:rank('endpoint|'+r['id']))[:32];dev=read(N/'paragraphs.json')['dev']
   if isinstance(dev,dict):dev=dev.get('dev',dev.get('cases',[]))
   for label,source in [('train32',train),('old_complete_DEV3',dev)]:
    values=[]
