@@ -22,4 +22,8 @@ for p in sorted((D/'panels').glob('*.json'))if(D/'panels').exists()else[]:
 for folder in ['sampling','daily-prose']:
  for p in sorted((D/folder).glob('*.json'))if(D/folder).exists()else[]:
   for c in read(p)['cases']:emit(c,p.stem+'/'+folder)
+for milestone in read(D/'health/evaluations.json'):
+ for c in milestone['cases']:emit(c,'health-memorization-only-'+str(milestone['step']))
+for p in sorted((D/'context-edge').glob('*.json')):
+ for r in read(p)['rows']:emit(dict(prefix=r['prefix_tokens'],id=r['unit_id'],**r['edge_generation']),p.stem+'/context-edge-not-language-score')
 (D/'GENERATIONS.md').write_text('\n'.join(lines)+'\n')

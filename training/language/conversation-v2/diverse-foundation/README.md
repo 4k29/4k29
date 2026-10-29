@@ -25,14 +25,26 @@ A：旧medium3470重み＋新規Adam。B：同じ独自構造をseed41029でfres
 5. `preflight.py`→`health.py`（完了済みを再学習しない）→`workflow.py`。workerは明示的`--resume`以外で既存ledgerを再実行しない。
 6. 比較後は全文を読んで固定規則に従いSELECTION.jsonを作り、選択armを`train.py --arm B --until 4232 --resume`のように次の固定地点へ進める。Bの採用を事前の能力成功とは扱わない。
 
+実際の主系列選択はA。Aの終端失敗時にだけBの未処理部分を完了する追加条件を、A終端結果の確認前にFRESH_COMPLETION_PROTOCOLへ登録した。主系列の選択をBへ上書きせず、追加epochや学習率の変更も行わない。各receiptが存在する完了済み地点を再学習しない。完了後は次の非更新処理で原本を検証できる。
+
+```
+python training/language/conversation-v2/diverse-foundation/verify.py
+```
+
+共有数値実装13ファイルがPR103親から不変であることはDEPENDENCIES.jsonへ記録する。数値処理を再現する場合の環境はENVIRONMENT.json（Python3.12.14、Torch2.14.1+cpu、NumPy2.3.5、CPU2、FP32）。別のバージョンやhardwareでのbitwise一致を保証しない。CIはstdlibでデータ契約、記録された教師位置/LR、確率対応、全archive bytes、raw生成を検証し、Torchの実更新・再開証拠は保存済みreceiptを参照する。
+
 ## 復旧と保存
 
 未完pendingは完成済みcheckpoint.ptを置き換えない。intentsとcompletedが一致しなければ実更新数を推測せず停止する。最後の完成checkpointから先にcompletedだけが存在する場合、recovery-replayとして既存traceに照合し、実呼出しを別に数える。初期2更新の特殊保存after2.ptしかない場合は、そのSHA/trajectory/ledgerを検証してから作業用checkpoint.ptへatomic復旧し、更新2以降を同様に再開する。確認不能なintentを削除してなかったことにしない。
 
 全状態はarchive.pyで32MiB以下にlossless分割し、wholeSHA・全状態digestの読み戻し確認後だけraw作業コピーを整理。Git履歴・正式R25/R46と元checkpointを保持する。STORAGE.jsonは旧encoded TRAINの作業コピーのSHA確認済みsparse省略。今回のoverlayでは物理空きの大幅増加は観測されず、削除対象サイズを回収済み容量としない。実際の開始空き約3GiBとcheckpoint保存予算で実行する。
 
+新しいarchive作業コピーをGit blob/SHA一致後に省略した記録はWORKING_COPY_OMISSIONS.json。復元例は `python training/language/conversation-v2/diverse-foundation/restore_checkpoint.py training/language/conversation-v2/diverse-foundation/run/A/archive-06459/checkpoint.json /tmp/diverse-A-terminal.pt`。出力先が既存なら停止し、working chunksがなければHEADのGit blobから復元する。`/tmp`も同じoverlayで容量が必要。省略したGit原本を消去したという意味ではない。
+
 ## 評価の限界
 
 旧24、新9、新JMA12、TRAIN probes4を全語彙greedyで比較し、raw token列/bytes/停止理由/無修正全文を保存。既存の内容24/資料23/限定36/反転12/自己履歴4episodeも保持。すべて研究DEVで、封印TESTや独立人間評価ではない。新JMAは3ページfamilyの分離であり全著者・広いtopic独立性の証明ではない。原典にも時点依存の運用情報や単純化された説明があり、参照文を無条件の事実正解としない。未確認の人間評価を実施済みと記録しない。
 
 全文の意味成立・反復・EOS・文脈適合を別判定。短い正しい文末補完と、段落の展開能力と、内容応答を区別する。PR103との違いはデータ、Adam初期状態、shuffle等を含むため、横断比較を純粋なデータ要因効果とは呼ばない。
+
+原文49件と旧応答panelの全文はGENERATIONS.md、厳密なtoken列/raw bytesはevaluation/panels/sampling/daily-proseのJSON。主・補助診断とTRAIN probesを区別する。内容の判定はTERMINAL_REVIEW/B_TERMINAL_REVIEW/CAPABILITY_REVIEWが正本。blind-reviewは未採点の準備物で、独立評価を実施した証拠ではない。次の研究条件はNEXT_STRATEGY.md、実測資源と外挿の限界はRESOURCE_PLAN.mdへ保存する。

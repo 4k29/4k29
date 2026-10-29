@@ -13,6 +13,7 @@ def main():
   if not(D/'fit'/f'{name}.json').exists():run('fit_diagnostic.py',['--model',name],f'fit-{name}.log')
   if not(D/'sampling'/f'{name}.json').exists():run('sample_aux.py',['--model',name],f'sampling-{name}.log')
   if not(D/'daily-prose'/f'{name}.json').exists():run('daily_aux.py',['--model',name],f'daily-{name}.log')
+  if not(D/'context-edge'/f'{name}.json').exists():run('context_edge.py',['--model',name],f'context-edge-{name}.log')
  if not(D/'parity-terminal-summary.json').exists():run('parity_terminal.py',['--models',*args.models],'parity-terminal.log')
  else:
   known=read(D/'parity-terminal-summary.json')

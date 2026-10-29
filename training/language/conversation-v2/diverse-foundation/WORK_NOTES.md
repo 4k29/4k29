@@ -26,3 +26,9 @@
 7. REPORT/NEXT_STRATEGY/resource estimates/SUMMARYを実測に基づいて完成。予測精度≠自由生成、初期既往学習差、未達10M、全人間執筆/著者独立性未証明等も明記。正式R25/17/13/9/Pareto/public採用No-Go維持。
 8. 最終status.py、8契約testとverify.py。verify.pyはstdlibでfrozenSHA/全archive byte streams/全raw生成/ledger実数を検証（Git fallback）。最終MANIFEST generatorはまだ未実装。Git ls-files対象だけ、自己/circular outputとmutable live filesは除く。
 9. 全worker完了→最終Git commit/push、Draft PR104本文をREST gh api PATCH JSONで更新、現headの専用CI/root CIを確認。rootcheckout約20分、finalheadを待つ。マージ・公開置換・paid resourcesはなし。
+
+## 最終実績
+
+A/Bはともに6459保持更新/4,871,648targetsの一巡完了。補助health64と更新後再開検証4を含め実optimizer呼出し12,986、実処理9,768,244targets。コーパスは4,518,175本文位置で、新規取得の採用JMAは15,496のみ。原文位置の周回は0。全49×8モデル時点に加え旧応答panel、補助sampling/日常文/health/context-edgeのrawを保存。主・終端とも段落展開は0、内容24/資料23/限定36/自己履歴は0。主ゲート未達なので応答追加学習なし。独立人間評価0、未採点の90件packageのみ。正式採用/公開置換No-Go。
+
+ローカル旧root全体は935pass/27ENOENT（省略した作業コピー）。3つの影響test fileをGit/SHA一時復元して通した後、別testで多数の旧checkpointが必要となり850MiB容量guardで停止した。失敗・復元履歴は保持。残りの独立18コマンドは通過。ローカル全体を通過したとしない。GitHub clean checkoutの最終head結果をPR104 Checksで確認する。新研究の13テストはskipなし通過、全7状態/836 raw生成を照合。
