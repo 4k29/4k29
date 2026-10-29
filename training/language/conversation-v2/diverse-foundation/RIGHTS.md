@@ -11,5 +11,3 @@
 - MRMPCの3話者、JMultiWOZの旧DEV接続隔離、OASST29件の条件付き審査を変更しない。ライブSNS、NC/ND資料、未許諾原文を追加しない。
 
 CC BY-SA原文とPDL原文の帰属を単一licenseで消さず、個々のprovenanceを維持。加工本文は原文検索による再識別や第三者権利の残存リスクがある。申立て時はsource ID/familyとcheckpointの系譜から対象を特定し、原文と派生corpusを再構築する。Gitからの完全消去・既学習重みのunlearningは保証しない。正式採用/本番公開は従来ゲートが未達の間No-Go。
-
-JMAの取得時刻にはACQUISITION_CAVEAT.jsonの制限がある。保存済みacquired_utcはcache抽出時のreceipt作成時刻であり、最初のHTTP取得秒・元のresponse headersは残っていない。2026-10-29確認のsnapshotとSHAを根拠とし、厳密な取得秒が分かると主張しない。frozen原文/corpus/PLANを時刻修正のため書換えず、再取得版も現在の実験へ差し替えない。
