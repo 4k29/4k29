@@ -18,10 +18,10 @@ def main():
   else:
    dp=json.loads((V/'grounded-objective/data.json').read_text());plan=json.loads((V/'grounded-objective/PLAN.json').read_text());by={r['id']:r for r in dp['dev']};old_rows=[]
    for ident in plan['evaluation']['dev_ids']:
-    r=by[ident];old_rows.append(dict(id=r['id'],task=r['task'],prompt=r['prompt'],program_teacher=r['answer'],**greedy(model,r['prefix'],pieces,max_new=64)))
+    r=by[ident];old_rows.append(dict(id=r['id'],task=r['task'],prefix=r['prefix'],prompt=r['prompt'],program_teacher=r['answer'],**greedy(model,r['prefix'],pieces,max_new=64)))
    legacy=[];native=json.loads((V/'epoch1/content-dev.json').read_text())['cases'];provided=json.loads((V/'response-data/final/active-dev.json').read_text())['cases']
-   for c in native:legacy.append(dict(id=c['id'],panel='native24',requirement=c['minimumSemanticRequirement'],**greedy(model,c['prefixTokens'],pieces,max_new=192)))
-   for c in provided:legacy.append(dict(id=c['id'],panel='provided23',**greedy(model,[1,3]+enc(c['prompt'])+[2,4],pieces,max_new=c['generation']['max_new_tokens'])))
+   for c in native:legacy.append(dict(id=c['id'],panel='native24',prefix=c['prefixTokens'],prompt=c['prefixText'],requirement=c['minimumSemanticRequirement'],**greedy(model,c['prefixTokens'],pieces,max_new=192)))
+   for c in provided:legacy.append(dict(id=c['id'],panel='provided23',prefix=[1,3]+enc(c['prompt'])+[2,4],prompt=c['prompt'],**greedy(model,[1,3]+enc(c['prompt'])+[2,4],pieces,max_new=c['generation']['max_new_tokens'])))
    reuse=None
   cf=json.loads((V/'grounded-objective/CONTEXT_PROBE_PLAN.json').read_text())['cases'];contexts=[]
   for c in cf:contexts.append({**c,**greedy(model,c['prefix'],pieces,max_new=48)})

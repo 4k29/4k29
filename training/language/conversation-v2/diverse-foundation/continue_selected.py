@@ -4,6 +4,7 @@ from common import *
 from restore_checkpoint import restore
 
 def main():
+ for r in read(D/'DEPENDENCIES.json'):assert sha(ROOT/r['path'])==r['sha256'],r['path']
  a=argparse.ArgumentParser();a.add_argument('--until',type=int,required=True);args=a.parse_args();plan=read(D/'PLAN.json');selection=read(D/'SELECTION.json');arm=selection['selected_arm'];assert args.until in [plan['midpoint_updates'],plan['full_pass_updates']];assert selection['rule_unchanged'];out=D/'run'/arm;raw=out/'checkpoint.pt'
  if not raw.exists():restore(out/f"archive-{plan['comparison_updates']:05d}"/'checkpoint.json',raw)
  if args.until==plan['full_pass_updates']:assert read(D/'MIDPOINT_REVIEW.json')['continue_frozen_pass']and read(D/'MIDPOINT_REVIEW.json')['not_extra_epoch']

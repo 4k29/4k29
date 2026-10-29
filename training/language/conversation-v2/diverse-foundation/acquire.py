@@ -26,6 +26,7 @@ class FAQ(HTMLParser):
  def finish(self):
   if self.cur:self.sections.append(self.cur)
   return self.sections
+prior={r['url']:r for r in read(D/'ACQUISITION.json')}if(D/'ACQUISITION.json').exists()else{}
 receipts=[];rows=[]
 for n in [1,2,3,4,5,6,8,9,13,14,19,20,21,22,33]:
  url=f'https://www.jma.go.jp/jma/kishou/know/faq/faq{n}.html';p=S/f'jma-faq{n}.html'
@@ -35,6 +36,9 @@ for n in [1,2,3,4,5,6,8,9,13,14,19,20,21,22,33]:
   p.write_bytes(b);time.sleep(1)
  else:b=p.read_bytes();headers={}
  receipt=dict(url=url,acquired_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),sha256=sha(p),bytes=len(b),version='HTTP snapshot; revision ID unavailable',response_headers=headers,license='PDL-1.0 subject to JMA terms and third-party exclusions',terms_url='https://www.jma.go.jp/jma/kishou/info/coment.html',method='one bounded GET per page; cached reruns; no authentication or access circumvention')
+ if url in prior:
+  assert prior[url]['sha256']==sha(p),'Frozen source changed; use separate acquisition/version, never silently replace'
+  receipt=prior[url]
  receipts.append(receipt);parser=FAQ();parser.feed(b.decode('utf-8'));sections=parser.finish()
  for i,r in enumerate(sections):
   text=r['question']+'\n'+'\n'.join(r['paragraphs']);reason=None
