@@ -1,0 +1,24 @@
+name: Diverse Japanese foundation evidence
+on:
+  pull_request:
+    paths:
+      - 'training/language/conversation-v2/diverse-foundation/**'
+      - '.github/workflows/diverse-foundation.yml'
+permissions:
+  contents: read
+jobs:
+  data-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            training/language/conversation-v2/diverse-foundation
+            training/language/conversation-v2/data/tokenizer.json
+            training/language/conversation-v2/core.py
+            training/language/model.py
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s training/language/conversation-v2/diverse-foundation -p 'test_*.py' -v

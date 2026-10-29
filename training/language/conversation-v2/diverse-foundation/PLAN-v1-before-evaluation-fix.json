@@ -1,0 +1,89 @@
+{
+  "series": "diverse-foundation-v1",
+  "initial_source": "medium3470 before all experimental pretraining",
+  "initial_sha256": "5ad249d2c8d5910090c9baba94f94483e9c037139d15b9c4360fd3e975409544",
+  "arms": {
+    "A": "old3470 model + zero Adam",
+    "B": "own fresh seed41029 model + zero Adam"
+  },
+  "optimizer_rationale": "PR103 reset alone did not fix generation; reset BOTH here to isolate model weights/history (PR103 B/C design). Not comparison of inherited Adam versus fresh Adam.",
+  "training_rng": "exact inherited3470 torch/private RNG after all model construction; initialization draws isolated",
+  "sampler_seed": 41030,
+  "model": {
+    "vocabulary": 3997,
+    "context": 256,
+    "dim": 320,
+    "layers": 8,
+    "heads": 4,
+    "hidden": 1280,
+    "dropout": 0.1,
+    "epsilon": 1e-05
+  },
+  "BPE": 3997,
+  "context": 256,
+  "batch": 4,
+  "loss": "all genuine causal teacher positions; original human role/EOS targets retained; no response CE or auxiliary changes",
+  "lr": {
+    "peak": 0.0002,
+    "end": 3e-05,
+    "warmup": 128,
+    "schedule": "same full-pass linear warmup/cosine"
+  },
+  "adam": {
+    "type": "AdamW",
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "weight_decay": 0.05
+  },
+  "clipping": 1.0,
+  "comparison_updates": 1983,
+  "comparison_targets": 1500394,
+  "midpoint_updates": 4232,
+  "midpoint_targets": 3200477,
+  "full_pass_updates": 6459,
+  "full_pass_targets": 4871648,
+  "body_tokens": 4518175,
+  "maximum_main_epochs": 1,
+  "checkpoint_retention": "A/B comparison, chosen arm midpoint and terminal; rolling every128. Other snapshots replaced only after atomic full-state success. Archive chunks <=32MiB.",
+  "selection": "Compare strict semantic old24 + oldNew9 + newJMA. If A has more strict full successes, select A; if B has more select B. If tied, select B fresh to answer preregistered fresh-learning question rather than lock old prior by NLL alone. NLL reported separately; not capability. Chosen arm gets remaining unique one-pass corpus only.",
+  "success": "Exploratory material language improvement requires strict old prose>=4/24 and improvement>=2, >=3/12 new FAQ, harmful repetition reduction, full-output reading, no unsupported topic replacement. Unchanged formal17/13/9/Pareto gates NOT claimed passed.",
+  "stop": "nonfinite, source SHA mismatch, ambiguous intent, restart mismatch, disk<600MiB: stop/preserve last checkpoint. NLL-only improvement permits initially frozen one-pass undertraining diagnosis, never extra epochs or response phase. If new established semantic gains regress>=2 cases or harmful repeats increase>=4, pause before next stage for recorded analysis.",
+  "response_gate": "Only after genuine unknown-family base-generation gains and no substantial regression; otherwise no response training",
+  "health": {
+    "max_updates": 384,
+    "check_every": 64,
+    "lr": 0.0003,
+    "loss": "full causal",
+    "three_distinct_prefixes": true,
+    "criterion": "all3 exact continuation including genuine EOS; memorization only, not generalization"
+  },
+  "limits": {
+    "subagents": false,
+    "paid_resources": false,
+    "sealed_TEST": false,
+    "public_replacement": false,
+    "merge": false
+  },
+  "source_history": "A already saw RP during its old2.82Mtarget first epoch; B saw none. Equal additional targets is NOT equal cumulative training.",
+  "free_bytes_at_freeze": 3386146816,
+  "input_sha256": {
+    "training/language/conversation-v2/diverse-foundation/corpus.jsonl.gz": "a09c03dd95d007bc97b0566fdbe6d43cce2b6b19b146426c32a4a7c43a9ea247",
+    "training/language/conversation-v2/diverse-foundation/schedule.json.gz": "f2cdaed8b475daa8310ae495015c2e991be0b67259d36138285ac74d10ce4663",
+    "training/language/conversation-v2/diverse-foundation/EVALUATION.json": "a709cb31f397b61149f5584e85af1433a0b1bed1609c5fa93a00c6e8bdd936c7",
+    "training/language/conversation-v2/diverse-foundation/HEALTH_SOURCES.json": "0c95f49ad4605fd10fdfc4c3ed54b18c9750985f39a57001af95fd72c52a3f67",
+    "training/language/conversation-v2/diverse-foundation/QUALITY_REVIEW.json": "fdc27286f883c7a01ff077578d960dc3464fa4cd44aae6aac0e0ec9a33250b12",
+    "training/language/conversation-v2/diverse-foundation/RIGHTS.md": "ec13e90dce1fb2b8cc6bad87e23403f9693d0554e3eae77c4f160989833ff9c3",
+    "training/language/conversation-v2/data/tokenizer.json": "6d079e4ba0a954ae32ad34a35ddd15384eb48b8eceaf3f3529a66e4266b1da06",
+    "training/language/model.py": "fa4f8a42143c7231e50e6828141e072af5510b2a278e95696faa67f5815c716f",
+    "training/language/conversation-v2/core.py": "52a74ecb7250a6671a432d3aa38ad9ed0ffbe1a3be5601fde3b721f1e735b83d",
+    "training/language/conversation-v2/diverse-foundation/common.py": "4270992aa25acdd1b299d571539e311dea4d6230255e18708ff484e691309bbb",
+    "training/language/conversation-v2/diverse-foundation/state.py": "d4ff38a0024d2ff35dd2e0f6de39d2e2a5043f725e3ec144629abe469eabba6d",
+    "training/language/conversation-v2/diverse-foundation/train.py": "274613fead201283914d8e10e1afd05a57b66e85eeb208d6c9fbbb9ed817afdd",
+    "training/language/conversation-v2/diverse-foundation/preflight.py": "e4fcfe7421d39b0447cf3d079e4fcdd59cea275fabb171acf8ef0d25adb27f50",
+    "training/language/conversation-v2/diverse-foundation/health.py": "bbd57029e38ccd16d636f51d564b18ea65cc9d74870d090decd481a59b885612",
+    "training/language/conversation-v2/diverse-foundation/evaluate.py": "00a1edbf841c8d15998a98f23b3909f5a28452409aeed5cfa6664ef0a4ce42b6"
+  }
+}
