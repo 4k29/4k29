@@ -19,4 +19,7 @@ for p in sorted((D/'panels').glob('*.json'))if(D/'panels').exists()else[]:
   for c in r[key]:emit(c,p.stem+'/'+key)
  for e in r['self_history']:
   for i,c in enumerate(e['turns']):emit(dict(id=e['id']+':turn'+str(i),**c),p.stem+'/self_history')
+for folder in ['sampling','daily-prose']:
+ for p in sorted((D/folder).glob('*.json'))if(D/folder).exists()else[]:
+  for c in read(p)['cases']:emit(c,p.stem+'/'+folder)
 (D/'GENERATIONS.md').write_text('\n'.join(lines)+'\n')

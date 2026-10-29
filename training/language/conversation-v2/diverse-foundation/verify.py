@@ -22,7 +22,7 @@ def verify():
   try:text=raw.decode('utf8','strict')
   except UnicodeError:text=None
   assert text==c['text']and(c['strictUtf8'])==(text is not None);ngen+=1
- for folder in ['evaluation','sampling']:
+ for folder in ['evaluation','sampling','daily-prose']:
   for p in sorted((D/folder).glob('*.json'))if(D/folder).exists()else[]:
    if p.name.endswith('-summary.json'):continue
    for c in read(p)['cases']:case(c)
