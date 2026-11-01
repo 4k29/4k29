@@ -23,3 +23,13 @@ class Regression(unittest.TestCase):
   text='自然な説明文です。'*10;r=extract('<p>'+text+'</p><h2>別の話題</h2><p>'+text+'</p>');self.assertGreater(r[1]['source_block_index']-r[0]['source_block_index'],1)
  def test_boolean_class_attribute_is_not_an_extraction_failure(self):
   text='これは日常の出来事を説明する文章です。'*6;r=extract('<p class>'+text+'</p>')[0];self.assertEqual(r['text'],text);self.assertEqual(r['exclusion_reasons'],[])
+
+class ExpandedQuoteRegressions(unittest.TestCase):
+ def test_translation_wrapper_is_quote(self):
+  from extract_prose import extract
+  rows=extract('<div class="translation"><p>'+('引用された日本語の文章です。'*8)+'</p></div>')
+  self.assertIn('structural_quote_caption_embed',rows[0]['exclusion_reasons'])
+ def test_named_interview_turn_not_narrative(self):
+  from extract_prose import extract
+  rows=extract('<p>発言者氏 (AM) : '+('これはインタビューの応答です。'*8)+'</p>')
+  self.assertIn('interview_turn_not_prose',rows[0]['exclusion_reasons'])

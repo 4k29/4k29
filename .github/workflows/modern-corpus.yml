@@ -1,0 +1,20 @@
+name: Modern Japanese corpus evidence
+on:
+  pull_request:
+    paths:
+      - 'training/language/conversation-v2/modern-corpus/**'
+      - '.github/workflows/modern-corpus.yml'
+permissions:
+  contents: read
+jobs:
+  extraction-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: training/language/conversation-v2/modern-corpus
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s training/language/conversation-v2/modern-corpus -p 'test_*.py' -v
+      - run: python training/language/conversation-v2/modern-corpus/verify_public.py

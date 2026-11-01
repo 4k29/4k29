@@ -11,7 +11,7 @@ class Paragraphs(HTMLParser):
  def handle_starttag(self,tag,attrs):
   
   if tag in self.forbidden or tag in {'p','h1','h2','h3','h4','h5','h6'}:self.block_index+=1
-  attrs=dict(attrs);classes=(attrs.get('class')or'').lower();bad=tag in self.forbidden or any(c in classes for c in ['caption','twitter-tweet','instagram-media','credit','embed'])
+  attrs=dict(attrs);classes=(attrs.get('class')or'').lower();bad=tag in self.forbidden or any(c in classes for c in ['caption','twitter-tweet','instagram-media','credit','embed','translation'])
   inherited=any(x[1]for x in self.stack)
   if tag=='p':
    if self.current is not None:self.finish()
@@ -31,7 +31,8 @@ class Paragraphs(HTMLParser):
   if re.search(r'写真|撮影|画像|スクリーンショット|転載|使用許可|許可を得|校正[:：]|原文掲載|訳[注註]|https?://|@',text):reasons.append('caption_credit_link_or_permission')
   if re.search(r'「[^」]{40,}」|“[^”]{40,}”|『[^』]{80,}』',text):reasons.append('long_inline_quote')
   if re.search(r'語った|述べる|こう述べ|述べた|ツイート|引用|声明|と協調|と強調|と指摘',text):reasons.append('attributed_speech_or_orphan_quote_intro')
-  if re.match(r'^(?:[A-Z]{1,6}|グローバル[・－]ボイス)\s*[:：]',text):reasons.append('interview_turn_not_prose')
+  if re.match(r'^(?:[A-Z]{1,6}|グローバル[・－]ボイス)\s*[:：]',text)or re.match(r'^.{1,40}?[（(][A-Z]{1,8}[）)]\s*[:：]',text):reasons.append('interview_turn_not_prose')
+  if re.search(r'この記事はもともと|翻訳されました|献身的なメンバー|コンテンツ共有合意|ここに再掲',text):reasons.append('credit_or_republication_note')
   if not re.search(r'[ぁ-ゖァ-ヺ]',text):reasons.append('not_japanese_prose')
   if len(text)<60:reasons.append('short_or_heading')
   if not text.endswith(('。','！','？')):reasons.append('unconfirmed_paragraph_end')
