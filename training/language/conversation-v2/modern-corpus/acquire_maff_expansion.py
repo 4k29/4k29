@@ -27,7 +27,8 @@ class Links(HTMLParser):
  def __init__(self):super().__init__();self.links=[]
  def handle_starttag(self,t,a):
   if t=='a':self.links.append(dict(a).get('href')or'')
-prior_failure=json.loads((D/'MAFF_EXPANSION_FAILURE.json').read_text());denied={prior_failure['failed_url']};errors=[dict(url=prior_failure['failed_url'],status=403,attempt='prior run; not retried')]
+prior_failure=json.loads((D/'MAFF_EXPANSION_FAILURE.json').read_text());errors=json.loads((D/'MAFF_HTTP_ERRORS.json').read_text())if(D/'MAFF_HTTP_ERRORS.json').exists()else[dict(url=prior_failure['failed_url'],status=403,attempt='prior run; not retried')];denied={e['url']for e in errors if e['status']==403}
+if len(denied)>=protocol['max_forbidden_responses']:raise RuntimeError('Persisted403 limit reached; no more acquisition until source conditions change')
 def allowed_get(url):
  if url in denied:return None
  try:return get(url)
@@ -51,6 +52,6 @@ for cat in CATEGORIES:chosen+=sorted([u for u,c in pool.items()if c==cat],key=la
 for i,u in enumerate(chosen):
  assert robot.can_fetch('4k29-Japanese-research',u)
  if allowed_get(u)is None:continue
- status=dict(answer_pages_completed=i+1,selected_answer_pages=len(chosen),receipts=receipts,new_HTTP_responses=sum(r['acquisition']=='new HTTP'for r in receipts),reused_prior_responses=sum(r['acquisition']!='new HTTP'for r in receipts),complete=False,admitted_tokens=0,optimizer_updates=0)
+ status=dict(selected_position=i+1,answer_pages_completed=sum(r['url']in chosen for r in receipts),selected_answer_pages=len(chosen),receipts=receipts,new_HTTP_responses=sum(r['acquisition']=='new HTTP'for r in receipts),reused_prior_responses=sum(r['acquisition']!='new HTTP'for r in receipts),complete=False,admitted_tokens=0,optimizer_updates=0)
  temp=D/'MAFF_EXPANSION_STATUS.pending';temp.write_text(json.dumps(status,indent=2)+'\n');os.replace(temp,D/'MAFF_EXPANSION_STATUS.json');print('MAFF',i+1,'/',len(chosen),flush=True)
 status['complete']=True;(D/'MAFF_EXPANSION_STATUS.json').write_text(json.dumps(status,indent=2)+'\n')

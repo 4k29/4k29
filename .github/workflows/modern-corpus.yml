@@ -12,9 +12,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          sparse-checkout: training/language/conversation-v2/modern-corpus
+          sparse-checkout: |
+            training/language/conversation-v2/modern-corpus
+            training/language/conversation-v2/data/tokenizer.json
+          sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - run: python -m unittest discover -s training/language/conversation-v2/modern-corpus -p 'test_*.py' -v
       - run: python training/language/conversation-v2/modern-corpus/verify_public.py
+      - run: python training/language/conversation-v2/modern-corpus/verify_caption_mix.py
