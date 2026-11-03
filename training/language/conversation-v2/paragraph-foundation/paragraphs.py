@@ -13,6 +13,7 @@ class Paragraphs(HTMLParser):
   classes=set(attrs.get('class','').split());blocked=parent['blocked']or tag in {'script','style','table','blockquote','figure','nav','footer'}or bool(classes&{'column','figblock','fig','caption','source','contact','inquiry'})
   if tag not in VOID:self.stack.append(dict(tag=tag,inside=inside,blocked=blocked))
   if not inside:return
+  if tag in {'div','ul','ol','table','figure'}and self.current:self.finish()
   if blocked and not parent['blocked']:
    if self.current:self.current['blocked']=True
    else:self.events.append(dict(kind='barrier',reason='omitted_DOM_block'))
