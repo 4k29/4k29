@@ -1,0 +1,46 @@
+{
+  "analysis_only_no_schedule_or_model_changes": true,
+  "arms": {
+    "A": {
+      "counts": {
+        "rows": 32534,
+        "targets": 591997,
+        "rows_after_original_context256_boundary": 0,
+        "rows_created_by_extra_batch_budget_split": 552,
+        "targets_with_less_context_than_original256_window": 5322,
+        "summed_missing_prefix_context_tokens": 5787,
+        "maximum_lost_context_tokens": 51,
+        "actual_history_reset_rows": 552,
+        "history_reset_after_sentence_mark": 0,
+        "history_reset_inside_UTF8_codepoint": 2,
+        "targets_with_at_most16_left_tokens": 491076,
+        "targets_with_at_most32_left_tokens": 588135
+      },
+      "fraction_targets_extra_batch_split_context_loss": 0.008989910421843354,
+      "mean_current_left_context": 10.41578420160913,
+      "max_padded_positions_if_original_window_prefix_restored": 1309
+    },
+    "B": {
+      "counts": {
+        "rows": 3612,
+        "targets": 591997,
+        "rows_after_original_context256_boundary": 1683,
+        "rows_created_by_extra_batch_budget_split": 578,
+        "targets_with_less_context_than_original256_window": 64164,
+        "summed_missing_prefix_context_tokens": 68059,
+        "maximum_lost_context_tokens": 240,
+        "actual_history_reset_rows": 2040,
+        "history_reset_after_sentence_mark": 31,
+        "history_reset_inside_UTF8_codepoint": 1,
+        "targets_with_at_most16_left_tokens": 56705,
+        "targets_with_at_most32_left_tokens": 111005
+      },
+      "fraction_targets_extra_batch_split_context_loss": 0.10838568438691412,
+      "mean_current_left_context": 102.50812757497081,
+      "max_padded_positions_if_original_window_prefix_restored": 1890
+    }
+  },
+  "finding": "Exact1024-target batching can split a256-target source window again. The next row retains only one input token and resets positions; targets remain genuine and nonduplicated, but available history is shorter than the original window. Quantify rather than attributing a failed paragraph result to capacity alone.",
+  "possible_separate_followup": "Same initial state/data/teacher positions/targets/LR/optimizer: restore the original256-window prefix at batch-created splits and mask prefix-only labels. This changes conditioning and position layout, not vocabulary/context size or loss on actual teacher positions. Do not mix into the running A/B comparison.",
+  "future_proof_required": "Exact teacher-position masks, gradients, replay, padding/memory and original-window causal-score equivalence before any followup updates."
+}
