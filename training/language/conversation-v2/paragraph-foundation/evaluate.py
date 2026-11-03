@@ -3,6 +3,7 @@ import argparse,collections,time
 from study_runtime import *
 from load_model import load
 from prose_decode import greedy
+from evaluation_schema import combine_case
 
 def history_metrics(model,c,g,pieces):
  prefix=c['prefix'];reference=c.get('reference_tokens',[]);emitted=g['tokensIncludingEos'];n=min(64,len(reference),len(emitted),256-len(prefix));result={}
@@ -27,7 +28,9 @@ def main():
    limit=160 if c['panel']=='new_source_heldout_paragraph5'else 128;assert len(c['prefix'])+limit<=256
    g=greedy(model,c['prefix'],pieces,max_new=limit);g['stopReason']='genuine-source-unit-end-token2'if g['eos']else'fixed-max-new-tokens'
    if c['panel']=='new_source_heldout_paragraph5':g['history_diagnostic']=history_metrics(model,c,g,pieces)
-   cases.append(dict(**c,**g));print(args.model,c['panel'],c['id'],'EOS',g['eos'],flush=True)
+   combined=combine_case(c,g);cases.append(combined)
+   record(P/'private'/('generation-progress-'+args.model+'.jsonl'),dict(plan_sha256=sha(P/'PLAN.json'),case=combined))
+   print(args.model,c['panel'],c['id'],'EOS',g['eos'],flush=True)
  panels={name:dict(cases=sum(c['panel']==name for c in cases),EOS=sum(c['eos']for c in cases if c['panel']==name),repeat4=sum(c['repeated4gram']is not None for c in cases if c['panel']==name))for name in sorted({c['panel']for c in cases})}
  checkpoint_sha=plan['initial_checkpoint_sha256']if args.model=='base-0'else(read(P/'artifacts'/args.model/'checkpoint.json')['sha256']if(P/'artifacts'/args.model/'checkpoint.json').exists()else sha(P/'private/run'/args.model.split('-')[0]/'checkpoint.pt'))
  summary=dict(model=args.model,checkpoint_sha256=checkpoint_sha,checkpoint_initial_SHA=plan['initial_checkpoint_sha256'],panels=panels,NLL={k:dict(nll=v[0]/v[1],targets=v[1])for k,v in totals.items()},seconds=time.monotonic()-started,optimizer_updates=0,paragraph_protocol_sha256=sha(P/'PARAGRAPH_DEV_PROTOCOL.json'),evaluation_is_exposed_research_DEV=True,independent_human_evaluation=False,semantic_success='Requires entire unmodified generation reading; not inferred from NLL/EOS or first sentence')
