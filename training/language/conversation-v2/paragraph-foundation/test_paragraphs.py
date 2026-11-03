@@ -15,4 +15,8 @@ class Boundaries(unittest.TestCase):
   r=self.parse('<body><p>'+A+'</p><p>'+B+'</p></body>','legacy_body');self.assertEqual(r[0]['text'],A+'\n\n'+B)
  def test_nested_script_blocks_whole_paragraph(self):
   self.assertEqual(self.parse('<body><p>'+A+'<script>bad()</script></p></body>','legacy_body'),[])
+ def test_list_summaries_are_not_joined(self):
+  r=self.parse('<body><ul><li><p>'+A+'</p></li><li><p>'+B+'</p></li></ul></body>','legacy_body');self.assertEqual(len(r),2);self.assertFalse(r[0]['EOS'])
+ def test_blocked_heading_does_not_create_end(self):
+  r=self.parse('<body><p>'+A+'</p><div class="column"><h3>引用欄</h3><p>'+B+'</p></div></body>','legacy_body');self.assertEqual(len(r),1);self.assertFalse(r[0]['EOS'])
 if __name__=='__main__':unittest.main()
