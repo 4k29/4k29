@@ -60,7 +60,7 @@ def exclusion(event):
 
 def units(events):
  """Consecutive original paragraphs under one original heading; hold gaps are barriers."""
- result=[];block=[];heading='';reasons={};serial=0;at_section_start=True;block_section_start=False
+ result=[];block=[];heading='';heading_level=0;reasons={};serial=0;at_section_start=True;block_section_start=False
  def flush(natural_end):
   nonlocal block,serial
   if not block:return
@@ -73,8 +73,8 @@ def units(events):
  for event in events:
   if event['kind']=='barrier':flush(False);at_section_start=False;continue
   if event['kind']=='heading':
-   flush(not event.get('blocked',False))
-   if not event.get('blocked',False):heading=event['text'];at_section_start=True
+   flush(not event.get('blocked',False)and heading_level>0 and event['level']<=heading_level)
+   if not event.get('blocked',False):heading=event['text'];heading_level=event['level'];at_section_start=True
    else:at_section_start=False
    continue
   why=exclusion(event)

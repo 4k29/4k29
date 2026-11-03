@@ -9,6 +9,14 @@ def references(corpus,indices):
   for start in range(0,len(tokens)-1,256):refs.append(dict(record=index,start=start,length=min(257,len(tokens)-start)))
  return sorted(refs,key=lambda r:(r['length'],rank(corpus[r['record']]['id']+'|'+str(r['start']))))
 def batches(corpus,refs,budget,batch_targets=1024):
+ # Select before length bucketing: cutting a length-sorted pool would silently
+ # select only the shortest control captions when its pool exceeds B's budget.
+ selected=[];remaining=budget
+ for ref in sorted(refs,key=lambda r:rank(corpus[r['record']]['id']+'|'+str(r['start']))):
+  if not remaining:break
+  n=min(ref['length']-1,remaining);selected.append(dict(record=ref['record'],start=ref['start'],length=n+1));remaining-=n
+ assert remaining==0
+ refs=sorted(selected,key=lambda r:(r['length'],rank(corpus[r['record']]['id']+'|'+str(r['start']))))
  result=[];current=[];count=0;total=0
  for ref in refs:
   used=0;valid=ref['length']-1

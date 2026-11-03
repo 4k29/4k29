@@ -15,7 +15,7 @@ def main():
   rs=[r for r in rows if r['source']==source];lengths=[r['body_token_count']for r in rs];counts=collections.Counter();unknown=collections.Counter();genre_tokens=collections.Counter();sentence_lengths=[]
   for r in rs:
    text=r['text'];counts['characters']+=len(text);counts['body_tokens']+=r['body_token_count'];counts['units']+=1;counts['BOS']+=r['BOS'];counts['EOS']+=r['EOS'];counts['fits_context256']+=len(r['tokens'])<=257
-   unknown.update(c for c in text if c not in enc.glyphs);counts['sentence_marks']+=text.count('。');counts['units_at_least3_sentences']+=text.count('。')>=3
+   unknown.update(c for c in text if c not in enc.glyphs);counts['sentence_marks']+=text.count('。');counts['units_with_at_least3_sentence_marks_proxy']+=text.count('。')>=3
    ends=[];cumulative=0
    for t in r['tokens']:cumulative+=len(bytes.fromhex(enc.tok['bytes'][t]));ends.append(cumulative)
    for start in range(256,len(r['tokens'])-1,256):
@@ -25,6 +25,6 @@ def main():
    if source=='env_whitepaper':
     for g in genre(r):genre_tokens[g]+=r['body_token_count']
   stats[source]=dict(counts=dict(counts),body_tokens_per_character=counts['body_tokens']/counts['characters'],body_token_length_quantiles=quantiles(lengths),unknown_glyph_characters=sum(unknown.values()),unknown_glyph_types=len(unknown),unknown_handling='Own byte fallback; exact encoded byte recovery separately verified, never replacement characters inserted',genre_proxy_tokens_overlapping=dict(genre_tokens),genre_proxy_not_semantic_review=True)
- out=dict(sources=stats,ordered_source_paragraphs_preserved=True,no_cross_document_rows=True,no_false_window_EOS=True,unknown_glyph_is_not_UNK_loss=True,notes=['Window stride256 preserves every real target once, but only one preceding token is carried into the next independent window; long-range relationships beyond that window are not trained in that row.','Context cuts may divide UTF8 byte-token sequences; full-stream byte recovery remains exact. This is measured, not silently repaired.','Genre tags overlap and are proxies, not human quality labels.','Source text and full original unit token counts differ from the subset of teacher positions processed at equal A/B budget.'])
+ out=dict(sources=stats,ordered_source_paragraphs_preserved=True,no_cross_document_rows=True,no_false_window_EOS=True,unknown_glyph_is_not_UNK_loss=True,notes=['Window stride256 preserves every real target once, but only one preceding token is carried into the next independent window; long-range relationships beyond that window are not trained in that row.','Context cuts may divide UTF8 byte-token sequences; full-stream byte recovery remains exact. This is measured, not silently repaired.','Genre tags and Japanese period counts are proxies, not human quality labels; legal abbreviations may contain periods inside parentheses.','Source text and full original unit token counts differ from the subset of teacher positions processed at equal A/B budget.'])
  (P/'CONTEXT_GENRE_TOKENIZER_AUDIT.json').write_text(json.dumps(out,ensure_ascii=False,indent=2)+'\n');print(json.dumps(out,ensure_ascii=False))
 if __name__=='__main__':main()

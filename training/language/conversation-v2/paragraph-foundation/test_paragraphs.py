@@ -19,4 +19,8 @@ class Boundaries(unittest.TestCase):
   r=self.parse('<body><ul><li><p>'+A+'</p></li><li><p>'+B+'</p></li></ul></body>','legacy_body');self.assertEqual(len(r),2);self.assertFalse(r[0]['EOS'])
  def test_blocked_heading_does_not_create_end(self):
   r=self.parse('<body><p>'+A+'</p><div class="column"><h3>引用欄</h3><p>'+B+'</p></div></body>','legacy_body');self.assertEqual(len(r),1);self.assertFalse(r[0]['EOS'])
+ def test_parent_introduction_is_not_section_end(self):
+  r=self.parse('<body><h2>生活</h2><p>'+A+'</p><h3>買い物</h3><p>'+B+'</p></body>','legacy_body');self.assertEqual(len(r),2);self.assertFalse(r[0]['EOS'])
+ def test_peer_heading_closes_original_section(self):
+  r=self.parse('<body><h3>生活</h3><p>'+A+'</p><h3>買い物</h3><p>'+B+'</p></body>','legacy_body');self.assertTrue(r[0]['EOS'])
 if __name__=='__main__':unittest.main()
