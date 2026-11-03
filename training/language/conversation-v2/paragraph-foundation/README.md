@@ -51,3 +51,7 @@ Process-level updated-state replay and fixed-stage Git-only recovery are tested.
 `python -m unittest discover -s training/language/conversation-v2/paragraph-foundation -p 'test_*.py'` runs lightweight boundary, deduplication, schedule and output-schema contracts. GitHub CI runs the same tests. Python/JS parity uses short raw-FP32 probes only and does not establish complete-reply equivalence.
 
 The capacity comparison resource gate is separate. A27.40M model needs at least925,978,624 bytes for two FP32 model/Adam generations plus reserve, before overhead, exceeding current persistent free space. Its old zero-update probe is not language or training-throughput evidence.
+
+## Completed result
+
+See [REPORT.md](REPORT.md), [NEXT_STRATEGY.md](NEXT_STRATEGY.md), RESULTS.json and UPDATE_ACCOUNTING.json. Both arms completed579 retained updates/591,997 targets. New connected paragraphs0/5 and old developed prose0/45; formal adoption remainsNo-Go. Capacity feasibility subsequently executed fresh11M/27.40M each4 retained+2 replay using separately tested remote-previous/single-local storage, without relaxing256MiB reserve. This supersedes only the bounded resource-probe execution status, not the original two-local-generation No-Go or the absence of language capacity evidence. No job is left running.

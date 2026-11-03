@@ -1,21 +1,83 @@
-# Paragraph foundation research — work in progress
+# 短文補完から複数文生成への比較結果 — PR106
 
-Goal: independently generated, coherent Japanese of at least two to three new sentences. Caption-ending completion is a separate capability. Public models, sites and formal adoption criteria remain unchanged.
+2026-11-03。GOAL.md、PR92–105を継承。主エージェント単体。独自11.23M/BPE3997/context256を維持した研究用比較であり、正式採用・公開置換は **No-Go**。新規段落DEVはA/Bとも **0/5**、従来の展開文章45件も **0/45**。段落資料を追加するだけでは、この予算で複数文生成を獲得できなかった。Bでは短文能力も退行した。NLL改善、終了tokenの出現、語尾補完を段落能力と認定していない。
 
-Base: PR #105, commit 60f0ddaeb38b2d1c7e60f0858af721af10c5efb6. Candidate initial full state: B-6361, SHA 8109d11f80edba3e4ba6acbb513890db42c1b2fb8b612f79f5fc3d5d27c74e2e. No optimizer updates have been performed in this study.
+## 取得・採用・品質
 
-## Current work
+環境省の公式白書8年度（2010/12/14/16/18/19/20/21）437ページ、HTML9,112,185bytesを実取得。本文抽出・canonical/近重複・既存資料との照合後、候補1,576単位592,979本文tokens。事前固定32標本を全文読解し27採用、1件は年代付き表現資料として条件付き、4件は保留。該当する見出しfamilyを除外し、研究用に **1,572単位／359ページ／592,132独立本文tokens**を採用した。既存RealPersona/STAIR/JaQuADを新規量に含めていない。2–5Mの新規目標には未達。
 
-A bounded acquisition of 437 officially hosted historical Environment Ministry whitepaper HTML pages is running. Acquisition is not TRAIN approval. The official policy, PDL 1.0, source receipts, robots rules and fixed URL selection are recorded. Third-party columns, quotations, images, maps, figures and dependent prose are excluded or held. Environmental prose remains a concentrated genre; annual editions are correlated and require near-duplicate audits.
+利用根拠は環境省利用規約とPublic Data License1.0（CC BY4.0互換規定）。省自身の文章に対象を限定し、図表、第三者執筆・引用、依存する文章、権利不明・連絡先等をフィルタ。個別URL、年度、原文/加工SHA、取得receipt、帰属・加工表示を保存した。原HTMLは非公開監査領域、公開コーパスは採用抽出本文のみ。詳細は `SOURCE_RIGHTS_DECISION.json`、`DATA-LICENSE.md`、`SEMANTIC_REVIEW.json`、`ADMISSION_DECISION.json`、`DUPLICATE_AUDIT.json`。初期権利decisionの「採用0」は審査前の履歴であり、最終採用数はADMISSIONに従う。
 
-The extractor preserves consecutive original paragraphs, with explicit barriers for omitted material. Empty modern HTML main anchors and legacy body layouts are handled separately. Five boundary tests pass. Candidate quantity in PARTIAL_EXTRACTION_AUDIT.json is provisional, not admitted data. Full semantic review, source/family separation and final corpus/token budgets are pending.
+単一提供元で政策・施策proxyが約68.5%。全体の人間執筆性、事実正確性、引用権利を標本だけで保証しない。TRAIN probe19には後続の一覧に依存する導入句が残った。抽出・標本審査にも限界があり、全単位が自足した完結説明とはいえない。凍結データを事後修正して結果を良く見せていない。Global Voices、青空文庫等の未解決資料は未採用。
 
-## Storage
+## 境界・context・独立性
 
-Deleting SHA-identical derived lower-layer working caches did not reclaim overlay space. R46/R47 references and Git history were retained; STORAGE_RECLAMATION.json records the actual outcome and restoration method. Working scratch and new Git objects are on non-durable /tmp tmpfs. Durable full-state atomic replacement was tested on /workspace with two real generations: the observed minimum free space exceeded the 256MiB reserve. This proves byte-level storage only, not optimizer/RNG restoration or update-resume equivalence. Those checks remain mandatory before training.
+原文の文順・段落順を維持し、無関係な本文は連結しない。byte/BPE往復、出典SHA、window teacher対応を検証。任意の256境界にはEOSを付けない。抽出v1の親見出し→子見出しを末端とする不具合を学習前に修正し、94の誤EOSを除去。同一32標本と旧版を保存した。
 
-## Evaluation and control limitations
+B単位長中央値310tokens、context256に収まるのは552/1,572（35.1%）。1,020単位は窓をまたぐ。元窓切断1,462のうち句点直後21、UTF-8 byte途中1。token列として完全復元できても、窓ごとの条件情報は失われ得る。token/文字0.8773、語彙外文字1,303/674,927（0.193%、116種類）は独自byte fallbackで復元。
 
-All existing DEV sets remain exposed research diagnostics. No sealed TEST or independent native-speaker evaluation is used. New paragraph DEV and scoring rules must be frozen before model outputs. Unused STAIR annotation text is available for a short-text control, but its image families were already encountered in PR105; it is not new-scene data. New paragraph source, length, genre and EOS distribution will differ, so any A/B result cannot isolate paragraph length alone.
+さらに正確なtarget予算用batch分割がBの64,164targets（10.84%）、Aの5,322（0.899%）で元窓より履歴を短縮していた。凍結済み比較を改変せず、元prefixを復元しprefix教師をmaskする次実験用処理とテストを別に実装。32固定TRAIN行の元窓logit完全一致を確認した。B579の同一3,727targetsでは短縮NLL3.76834、復元3.77093で、復元による改善は確認できない。履歴保持の問題は測定できたが、崩壊の主因と断定しない。
 
-No training, formal adoption, public replacement, merge, paid resources, external pretrained models/tokenizers, external generation APIs or subagents have been used. Acquisition and implementation continue; this is not a completed-results report.
+新DEVは大阪府の別出典5件。大阪資料全体をTRAINから外し、文書/family/canonical/近重複照合を固定。5件では検出力が弱い。既存45文章・caption32・内容24等は露出済み診断。新5件も今回閲覧後はDEVであって独立TESTではない。母語話者による独立評価は未実施。旧17/13/9ゲートは変更せず、今回の再合格も主張しない。封印TESTは使用していない。
+
+## 実学習
+
+共通初期状態はPR105 B-6361完全checkpoint（SHA `8109d11f80edba3e4ba6acbb513890db42c1b2fb8b612f79f5fc3d5d27c74e2e`）。model/Adam/全RNGを継承。LRは継承済みfloor **1e-5固定**、clip1、通常causal CE、独自BPE/context/構造は共通。新規固定scheduleはcursor0。古いsamplerを新コーパスへそのまま継続したとは主張しない。Adam状態は条件ごとに非共有。
+
+- A：未消費のSTAIR原文31,982annotation、27,731画像family。実露出本文位置560,016、EOS教師31,981。
+- B：新段落本文592,132位置、本文教師591,433、EOS教師564、BOS入力873。
+- 各条件 **579保持更新／591,997有効教師targets**、固定保存点4/289/579。terminalを主比較とし、最良checkpoint選択なし。同一教師位置を予算埋めに再周回していない。
+- A画像familyはPR105で別captionを既に経験したもの。未消費テキストであって全family未学習ではない。DEV画像familyは除外を維持。
+- 出典、ジャンル、長さ、EOS密度、dropout tensor形状が変わる。純粋な段落長だけの因果効果とはいえない。
+
+実optimizer呼出しは **1,180**：A581（保持579＋再開一致replay2）、B581、隔離した実行検証6、fresh11M/27M資源診断各6。回復replay0、失敗optimizer更新0。複数条件の更新を単一モデルの更新数と合算しない。`UPDATE_ACCOUNTING.json`と全intent/completed ledgerを参照。学習loss・勾配・clipping・各工程時間は各実行receipt/traceに保存。`elapsed_current_process_seconds`は分割実行の当該部分であり、全作業時間ではない。CPU2/RAM8GiB/GPUなし、有料資源なし。
+
+## 固定greedy生成結果
+
+| 指標 | 初期B-6361 | A短文579 | B段落579 |
+|---|---:|---:|---:|
+| 新DEV：新たに2文以上つながる段落 | 0/5 | 0/5 | 0/5 |
+| 旧展開文章 | 0/45 | 0/45 | 0/45 |
+| caption：prefix込み自然短文候補 | 21/32 | 24/32 | 2/32 |
+| caption：不確実、合格に含めず | 4 | 2 | 1 |
+| caption：自然候補中、語尾補完中心 | 4 | 5 | 0 |
+| caption EOS | 32/32 | 32/32 | 4/32 |
+| caption 有害反復proxy | 0/32 | 0/32 | 28/32 |
+| 内容24 strict | 0/24 | 0/24 | 0/24 |
+| 資料23／限定36／条件反転12 strict | 各0 | 各0 | 各0 |
+| 自己履歴会話 strict | 0/4 | 0/4 | 0/4 |
+| 原文共通DEV NLL | 4.17629 | 4.23284 | 4.39627 |
+| caption DEV NLL | 2.39566 | 2.35989 | 3.34318 |
+| MAFF DEV NLL | 4.37774 | 4.44335 | 4.32184 |
+
+captionは与えたprefix込みの短い文の成立であり、BOSからの独立文章生成や画像に対する事実正解ではない。例えば語尾だけの「います。」で旧展開文章を合格にはしていない。Aの短文候補増加を段落能力向上と扱わない。B内容24の1件（014）は肯定的態度を部分的に示すが対象が曖昧なため不確実、strictには含めず保存。形式的な3ターン到達はA1/4、B0/4だが、Aも無関係なお菓子等の反復で会話成功ではない。
+
+主要評価は全語彙greedy、条件固定、出力修正なし。`evaluation/{base-0,A-289,B-289,A-579,B-579}.json`に全入力・token列・raw bytes・停止理由、`panels/`に内容/資料/限定/条件反転/自己履歴、`train-probes/`にTRAIN診断を保存。`*-READING.json`と`*-CONTENT_REVIEW.json`に判定と不確実性。中間点の主要新5件は全文判定済みだが、旧全パネルの独立意味採点は終端と同じ範囲では実施していない。既存明白反復のscreenと全文読解は区別。人間による盲検採点とは称さない。停止理由にsource-unitと記されても、EOS token発生を意味するだけで意味的に適切な終端を保証しない。
+
+## 予測と自己生成の差
+
+B新TRAIN10件でteacher-forced NLLは4.38867→3.76826だが、自由生成は10件すべて反復、EOSなし、原文完全再現0/10。未知familyだけの失敗ではない。
+
+元B教師列の改行runは2個連続が1,853回、3個以上は0。それにもかかわらず、固定32の実TRAIN「改行2個の後、正解は非改行」履歴で、次token改行argmaxは初期1/32、A11/32、B32/32。平均改行確率は初期0.04989、A0.05049、B0.39344。正解履歴でも重要境界を誤り、その後自己履歴で増幅する。新DEVで冒頭から改行連鎖へ入るため、context256到達後だけの問題ではない。正解tokenとの分岐、確率、反復位置を `NEWLINE_COLLAPSE_DIAGNOSIS.json` に保存した。生成後修正、改行抑制、反復penaltyで隠していない。
+
+データ密度、元モデルへの分布干渉、少量・低LR学習、条件付け、容量、自己生成分布差が併存し得る。これだけで唯一の原因、容量不足、段落学習の無効を断定できない。
+
+## 保存・復旧・数値一致
+
+A/Bの4/289/579全状態、実行検証状態、容量診断11M/27Mの0/2/4状態をlossless分割・whole/chunk SHA付きでGit保存。固定点はpush確認後にGit-only再構成しmodel/Adam/全RNG/sampler/cursor/traceを検証した。更新後の別プロセスreplayは完全一致。terminal SHAはA `725d362f5188867dfb33f97db358b9a956db532ecdd5dfe277a0daf47b9caeb2`、B `3cebff9801302bd9969601e539adccaca7e0ea83943cc96bf2dc0b35f0906b9c`。
+
+Python/JS rawFP32は各状態3prefix×4位置のみ。初期/A/Bの最大logit誤差は5.722e-6/5.722e-6/4.768e-6、閾値2e-4超過0、argmax相違0、独立4token生成分岐0。長文・別環境・量子化・公開推論経路まで一致すると主張しない。
+
+永続overlay残量約591MiB。通常の27M二世代ローカル保存はNo-Goを維持。一方、前状態をpush確認＋実Git-only復元してから使い捨てコピーを解放し、次状態をatomic保存する別topologyを実容量で検証。同じ256MiB reserveを維持し最少288,604,160bytesを確認した。この限定方式でfresh11Mと27.40Mを各4更新4096targets、さらに各2replay実行。計算部分11M3.59秒、27M7.93秒、RSS約1.27/1.63GiB。両者の完全再開一致を確認したが、**言語能力は未評価、容量の優劣は不明**。大規模学習をこの小probeから正当化しない。
+
+初回baseline評価は出力辞書key衝突で失敗、0更新。修正後97既存ケースのprefix/token/raw bytesが旧出力と完全一致。凍結後metadata編集もSHA guardで次更新前に停止し元bytesを復元。失敗履歴・旧PLAN・旧抽出器を保存し隠していない。詳しくは `OPERATIONAL_FAILURES.json` とREADME。
+
+## 次の研究判断
+
+本比較は完了。追加epochや同じ少数段落の反復は行わない。まず行政白書以外の、現代的な理由・手順・生活・読み物の許諾済み連続原文を増やし、参照欠落や見出し依存を除く。既存未解決候補を無理に採用しない。次に同一データ/BPE/context、同一fresh初期化規約の11M対27Mを、両者が一巡できる有効targetsで事前固定比較する。4更新は資源実行可能性の証拠に留める。
+
+履歴保存修正は独立条件として比較し、改行境界TFと全文自由生成を同時評価。prefix復元の小さなNLL差を解決策と決めつけない。Tokenizer/context/LR変更は同時に混ぜない。初期日本語生成が未達のためassistant応答追加学習は開始しない。持続的な学習には最低2GiB程度のcheckpoint作業余裕と、原文・複数世代・Git保存を含め8GiB以上の余裕を別途確保する。
+
+GOAL.mdへの順序は、未知familyで自然な2–3文と妥当な終了を安定生成→未知入力への具体的応答→自己履歴を含む複数ターン→根拠・知識・推論。各段階は固定DEVと独立母語話者評価の準備で判断し、NLL、処理量、暗記だけで次段階の能力を認定しない。正式R25/R46、公開モデル・サイト、Git履歴は維持、マージなし。
+
+主要学習workerの固定3区間の経過時間合計はA 426.29秒、B 523.17秒（保存・局所検証を含み、取得/生成評価/Git保存は含まない）。最大RSSはA 1672956KiB、B 1795432KiB。全研究作業の壁時計時間や純粋forward/backward時間とは区別する。`MAIN_RESOURCE_TOTALS.json`。
