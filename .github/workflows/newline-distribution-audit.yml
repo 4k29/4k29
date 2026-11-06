@@ -1,0 +1,51 @@
+name: Newline distribution read-only audit
+on:
+  push:
+    branches: ['research/newline-distribution-audit']
+    paths:
+      - '.github/workflows/newline-distribution-audit.yml'
+      - 'training/language/conversation-v2/paragraph-foundation/newline-distribution/**'
+permissions:
+  contents: write
+jobs:
+  input-discovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/conversation-v2/paragraph-foundation/PLAN.json
+            /training/language/conversation-v2/paragraph-foundation/corpus.jsonl.gz
+            /training/language/conversation-v2/paragraph-foundation/schedule.json.gz
+            /training/language/conversation-v2/diverse-foundation/corpus.jsonl.gz
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Read existing TRAIN metadata only
+        run: |
+          python - <<'PY'
+          import pathlib,gzip,json,collections,hashlib
+          root=pathlib.Path('training/language/conversation-v2')
+          result={'optimizer_updates':0,'model_forward_calls':0,'new_corpus_acquisition':False,'input_origin_commit':'aa5d426ba9d550b74e9aa5348ca0ae6936565998','files':{}}
+          for rel in ['paragraph-foundation/corpus.jsonl.gz','diverse-foundation/corpus.jsonl.gz']:
+              p=root/rel; counts=collections.Counter(); kinds={}; n=0
+              with gzip.open(p,'rt') as f:
+                  for line in f:
+                      r=json.loads(line); source=str(r.get('source','missing'));counts[source]+=1;n+=1
+                      if source not in kinds:
+                          kinds[source]={'keys':sorted(r),'token_count':len(r.get('tokens',[])),'has_text':isinstance(r.get('text'),str),'sample_metadata':{k:r[k] for k in ['source','kind','BOS','EOS','family','document_family','split'] if k in r}}
+              result['files'][rel]={'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'records':n,'sources':dict(counts),'schema_by_source':kinds}
+          out=root/'paragraph-foundation/newline-distribution';out.mkdir(parents=True,exist_ok=True)
+          (out/'DISCOVERY.json').write_text(json.dumps(result,ensure_ascii=False,indent=2)+'\n')
+          print(json.dumps({k: v['records'] for k,v in result['files'].items()}))
+          PY
+      - name: Save discovery evidence to isolated research branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config pack.threads 2
+          git add --sparse training/language/conversation-v2/paragraph-foundation/newline-distribution/DISCOVERY.json
+          git commit -m "Record existing TRAIN input discovery [skip ci]"
+          git push origin HEAD:research/newline-distribution-audit
