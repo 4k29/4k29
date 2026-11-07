@@ -1,0 +1,29 @@
+name: Paragraph context-use contracts
+on:
+  push:
+    branches: ['research/paragraph-context-use']
+    paths:
+      - 'training/language/conversation-v2/paragraph-foundation/paragraph-context-use/**'
+      - '.github/workflows/paragraph-context-use.yml'
+permissions:
+  contents: read
+jobs:
+  frozen-pair-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/conversation-v2/paragraph-foundation/paragraph-context-use/
+            /training/language/conversation-v2/paragraph-foundation/corpus.jsonl.gz
+            /training/language/conversation-v2/paragraph-foundation/schedule.json.gz
+            /training/language/conversation-v2/paragraph-foundation/NEWLINE_COLLAPSE_DIAGNOSIS.json
+            /training/language/conversation-v2/paragraph-foundation/newline-followup/EIGHT_CASE_AUDIT.json
+            /training/language/conversation-v2/data/tokenizer.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s training/language/conversation-v2/paragraph-foundation/paragraph-context-use -p 'test_metrics.py'
+      - run: python training/language/conversation-v2/paragraph-foundation/paragraph-context-use/validate_inputs.py
