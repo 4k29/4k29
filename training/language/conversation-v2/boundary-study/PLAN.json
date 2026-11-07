@@ -1,0 +1,61 @@
+{
+  "study": "Natural whole-paragraph allocation vs cut-fragment allocation, shared human dialogue",
+  "initial_checkpoint_sha256": "5ad249d2c8d5910090c9baba94f94483e9c037139d15b9c4360fd3e975409544",
+  "initial_unique_updates": 3470,
+  "updates_each": 512,
+  "targets_each": 379767,
+  "lr": 3e-05,
+  "batch_shape": [
+    4,
+    256
+  ],
+  "dtype": "FP32",
+  "threads": 2,
+  "arms": {
+    "control": {
+      "schedule": "control",
+      "clip": 1
+    },
+    "boundary": {
+      "schedule": "boundary",
+      "clip": 1
+    },
+    "clip5": {
+      "schedule": "boundary",
+      "clip": 5,
+      "conditional": true
+    }
+  },
+  "clip5_condition": "Only after boundary main result fails fixed language improvement and >=95% updates clip at1 with median preclip norm>1.5; keep identical schedule/init/budget; no LR/model/tokenizer changes",
+  "selection": "fixed terminal only; no best checkpoint selection",
+  "checkpoints": "run/<arm>/checkpoint.pt then lossless archive, every128 plus actual2->4 restart audit",
+  "generation": "Same full-vocabulary greedy; source-token-boundary24 primary, old exposed24/23/36/counterfactual12/self4 unchanged, separate three existing DEV complete-paragraph probes",
+  "primary_success": "strict coherent full prose >=4/24, >=2 more than control, harmful repetition no higher than initial0; original formal17/13/9/Pareto/limits not relaxed. Additional paragraph probes descriptive, never substitute primary success.",
+  "mid_abort": "nonfinite loss/gradient, source mismatch, replay mismatch, ambiguous call count, disk below save threshold; no guessed updates",
+  "research_scope": "No paid resource/sealed TEST/public replacement/merge/subagents. No further data-scale expansion or QA phase unless actual coherent full generation improves.",
+  "original_corpus_increase_beyond_PR101": 0,
+  "standalone_paragraph_original_body_tokens": 123767,
+  "input_sha256": {
+    "training/language/conversation-v2/boundary-study/schedule.json.gz": "03d50f64b7170cc2aa9f49f7e8e055cb6b0e033e5ffb6deae8d6f9ae84504bb1",
+    "training/language/conversation-v2/boundary-study/paragraphs.json": "2dba1ceebd3fa6e0e5ca75aa13506984f27a498066460f969551b9ff35e4e3d2",
+    "training/language/conversation-v2/boundary-study/paragraph-dev.json": "26dfbd5384950372de86afc0ecf9007b6c14449a01e212dae2c1a85ec6e4eaa7",
+    "training/language/conversation-v2/boundary-study/train.py": "25597fdae3fc07d904d47418094f6263549612671270080eb0a7b24301fad4a3",
+    "training/language/conversation-v2/boundary-study/common.py": "a69b961559c42ae2d7d8e6fcaf36c95ae4a36405a2483c966454b7e60349117f",
+    "training/language/conversation-v2/boundary-study/eval_runtime.py": "543da0a1c14ab25ab64fb20d3ef57c6364c4da7cfd95f416f8fd84b929fa0941",
+    "training/language/conversation-v2/boundary-study/evaluate.py": "1dbfea02e28731dc1391ad0948c230cbc14a4b27c1d317cb425fc14441470623",
+    "training/language/conversation-v2/boundary-study/evaluate_paragraphs.py": "455ffb70bce56f38c3f1683a99a179a580444a55b4b856cba3dbebbd49b19415",
+    "training/language/conversation-v2/boundary-study/evaluate_qa.py": "e40b45b9af391c0e7be530e6c33531053901a64d48f6448d5b966f6c28139029",
+    "training/language/conversation-v2/boundary-study/PARAGRAPH_REVIEW.json": "9ac4515b7fd160a816ba756da4e6c3e0506c78e17184ea6af79269bbfd3a135d",
+    "training/language/conversation-v2/boundary-study/DATA_AUDIT.json": "0d9c46f9303675dee77657e91ee6755d818a34d6fb192952cacc934a87e11ceb",
+    "training/language/conversation-v2/foundation-stage/runtime.py": "c0b4a25142666a4e6a6efe652598dc4952880eb8aee498008c4cd3b1bbce1368",
+    "training/language/conversation-v2/foundation-stage/mixed_runtime.py": "8eede29a398bd92debf8054f8be99518139e54d52b5169d5fc82ff927fbbc007",
+    "training/language/conversation-v2/foundation-stage/prose_decode.py": "fc567c30957a87c812f035600b7513b75f6c562c2f78eb2271b4e7e7f7a8fb0c",
+    "training/language/conversation-v2/foundation-stage/TOKEN_BOUNDARY_PROTOCOL.json": "84f1ae9102ec2b0fefcf7eb162306eef23ab08f6d4f787e3cc2254c57dfc2d77",
+    "training/language/conversation-v2/core.py": "52a74ecb7250a6671a432d3aa38ad9ed0ffbe1a3be5601fde3b721f1e735b83d",
+    "training/language/conversation-v2/PLAN.json": "c457f7510965e7dbe72475eb4b93c2441b6d9a541bdf7ed26db4c79714f6aaa8",
+    "training/language/conversation-v2/eval_core.py": "a50c778a7debacfc755265a07e25beae9ec141f36671b1ae9e59de2770339839",
+    "training/language/conversation-v2/data/tokenizer.json": "6d079e4ba0a954ae32ad34a35ddd15384eb48b8eceaf3f3529a66e4266b1da06",
+    "training/language/conversation-v2/epoch1/medium/archive/checkpoint.pt.chunks.json": "de65f1dd15514026788e82cb8e2e03970be25324cda7ef83f52d0a82fbb93a73",
+    "training/language/model.py": "fa4f8a42143c7231e50e6828141e072af5510b2a278e95696faa67f5815c716f"
+  }
+}

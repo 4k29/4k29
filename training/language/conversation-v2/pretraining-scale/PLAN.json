@@ -1,0 +1,97 @@
+{
+  "series": "Japanese pretraining scale v1",
+  "arms": {
+    "A": {
+      "model": "inherited3470",
+      "adam": "inherited3470"
+    },
+    "B": {
+      "model": "inherited3470",
+      "adam": "zero"
+    },
+    "C": {
+      "model": "fresh own architecture seed31028",
+      "adam": "zero"
+    }
+  },
+  "initial_sha256": "5ad249d2c8d5910090c9baba94f94483e9c037139d15b9c4360fd3e975409544",
+  "config": {
+    "vocabulary": 3997,
+    "context": 256,
+    "dim": 320,
+    "layers": 8,
+    "heads": 4,
+    "hidden": 1280,
+    "dropout": 0.1,
+    "epsilon": 1e-05
+  },
+  "comparison_updates": 512,
+  "comparison_targets": 351219,
+  "full_pass_updates": 2966,
+  "full_pass_targets": 2039651,
+  "unique_body_tokens": 2046277,
+  "new_vs_PR101_tokens": 1308024,
+  "batch": 4,
+  "context": 256,
+  "lr": {
+    "peak": 0.0002,
+    "warmup": 128,
+    "end": 3e-05,
+    "policy": "common linear warmup then cosine across full fixed one-pass schedule; reset LR schedule is new shared research condition"
+  },
+  "adam": {
+    "type": "AdamW",
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "weight_decay": 0.05
+  },
+  "clipping": 1.0,
+  "fp32": true,
+  "training_torch_rng": "exact inherited3470 torchRng after all model/Adam initialization",
+  "sampler_seed": 31029,
+  "checkpoints": {
+    "comparison": 512,
+    "continuation_every": 512,
+    "terminal": 2966,
+    "rolling_every": 128
+  },
+  "selection": "At common512 choose highest strict prose success over old24+new9; then lowest repeat count; then lowest aggregate teacher DEV NLL; ties A,B,C order. All-zero success permits exactly ONE full admitted-data pass as undertraining diagnosis, not capability success. DEV selection bias explicit.",
+  "success": "old strict gate unchanged; exploratory improvement requires>=4/24 strict old prose, >=2 more than inherited initial, and harmful repeats<=initial0; new9 separate and necessary qualitative check. EOS or NLL alone insufficient.",
+  "continuation_gate": "finite losses/gradients, exact resume, no safety/data failure, valid storage; all-zero comparison can proceed to ONE corpus pass; no repeated epoch; if later NLL improves but repetition increases relative previous milestone, record regression and do not extend beyond fixed pass",
+  "stop": "nonfinite, ambiguous optimizer intent, mismatched source SHA, resume discrepancy, free disk below600MiB; save or preserve last atomic state; no fabricated count",
+  "response_gate": "Only if strict natural prose materially improves without repeated/irrelevant replacement; else no response phase",
+  "limits": {
+    "no_subagents": true,
+    "paid_resources": false,
+    "public_replacement": false,
+    "sealed_TEST": false,
+    "maximum_extra_epochs": 0
+  },
+  "EOS_teachers": 577,
+  "BOS_teachers": 0,
+  "completed_short_units": 455,
+  "input_sha256": {
+    "training/language/conversation-v2/pretraining-scale/corpus.jsonl.gz": "2aac55ae9f2225a5d0ab1200c10b078bad28585a9c41390df120b99e5dc1e71f",
+    "training/language/conversation-v2/pretraining-scale/schedule.json.gz": "af7d784b3f10deabd9cbba46d0c217758c28d1111e88d8d5cd115821ff60c99a",
+    "training/language/conversation-v2/pretraining-scale/DEV_PROTOCOL.json": "6ddac4e8e673872a9f2d8b5e1386eea479e9ce944cd9c4cd0f66cd1527792218",
+    "training/language/conversation-v2/pretraining-scale/QUALITY_REVIEW.json": "5a9c55b2345be891fa5f8f2d77e324bcef5eb793ce0dd995ba87493d902bcf3c",
+    "training/language/conversation-v2/data/tokenizer.json": "6d079e4ba0a954ae32ad34a35ddd15384eb48b8eceaf3f3529a66e4266b1da06",
+    "training/language/model.py": "fa4f8a42143c7231e50e6828141e072af5510b2a278e95696faa67f5815c716f",
+    "training/language/conversation-v2/core.py": "52a74ecb7250a6671a432d3aa38ad9ed0ffbe1a3be5601fde3b721f1e735b83d",
+    "training/language/conversation-v2/pretraining-scale/common.py": "995cbb2cb4bd9c9ce388e8a2d8b503a7f770b95275c26d13596a19311b3ae38b",
+    "training/language/conversation-v2/pretraining-scale/state.py": "52ed299292c8ed39ab6fcbb3e1e14fa8cd55692d4bef336e40e89123a0c9daa1",
+    "training/language/conversation-v2/pretraining-scale/preflight.py": "4b4208ce2f74171cb578fb2b5c0e81e0cce5b26dc1647e0b0a7b9ab44ab3c939",
+    "training/language/conversation-v2/pretraining-scale/train.py": "69094b628d14bf69df0cb041e8e679bc8e62544b9b0294df2e688a45f4af9fa7",
+    "training/language/conversation-v2/pretraining-scale/evaluate.py": "74192f8574f9dc3358072ea1a2abe311c76d8f8dc635c2a8741121ef4e9461ea",
+    "training/language/conversation-v2/pretraining-scale/workflow.py": "e3ce0867c92f5b8b1391c1ae53329e27a5a1536b0cd1bb7457f13d2cf09559c8",
+    "training/language/conversation-v2/pretraining-scale/prepare_candidates.py": "31c94464c64b370f3d240e169482fb633cd752afa9b24dab4db43baf128dbc23",
+    "training/language/conversation-v2/pretraining-scale/admit.py": "2996f30ccaa294ef2d5f73fa49d856480a2f1bf0c16ff41590891a2468168ae6",
+    "training/language/conversation-v2/pretraining-scale/freeze.py": "b435eae5ba3f22ad035e36e7ee0efbd8c7098de5a531a38cf6fb9f9723092e01",
+    "training/language/conversation-v2/pretraining-scale/CORPUS_AUDIT.json": "fb7828bb2fd3e6f56bd7f6bfdf3f79f18f4dda9263af998817069750d38d9677"
+  },
+  "revision": "v2 two source families excluded before any new comparison update",
+  "excluded_pilot_reference": "EXCLUDED_PILOT.json"
+}

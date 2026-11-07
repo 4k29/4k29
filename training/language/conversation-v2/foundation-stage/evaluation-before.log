@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/workspace/4k29/training/language/conversation-v2/foundation-stage/evaluate.py", line 41, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/workspace/4k29/training/language/conversation-v2/foundation-stage/evaluate.py", line 14, in main
+    for c in cases:prose.append({**c,**greedy(model,c['prefix'],pieces,max_new=128)})
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/agent/.local/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/4k29/training/language/conversation-v2/eval_core.py", line 73, in greedy
+    if not prefix or prefix[0]!=1 or len(prefix)+max_new>model.config['context']:raise ValueError('Full fixed generation must fit; no crop/rolling')
+                                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Full fixed generation must fit; no crop/rolling

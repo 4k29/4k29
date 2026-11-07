@@ -1,0 +1,93 @@
+{
+  "config": {
+    "vocabulary": 5455,
+    "dim": 192,
+    "layers": 8,
+    "heads": 4,
+    "hidden": 768,
+    "context": 256,
+    "dropout": 0.1,
+    "epsilon": 1e-05
+  },
+  "settings": {
+    "merges": 512,
+    "steps": 10000,
+    "dim": 192,
+    "layers": 8,
+    "heads": 4,
+    "batch": 8,
+    "threads": 2,
+    "seed": 2049,
+    "lr": 2.2499999999999998e-05,
+    "validation_every": 500,
+    "run": "continue-10000",
+    "compile": false,
+    "ancestor": null,
+    "precision": "float32",
+    "sourceSha256": "877ddf08933a3a159d9e6bd64690e1c7c328ce464e16d460121e9e7819ce8abb",
+    "splitSha256": "81725bdbf99ce0e620bfc5459dfc132694b6a6ce51f213328e8988c94290e529",
+    "tokenizerSha256": "453e93eafe8bf745e47c5241f9c7e9ed9e0b7dd3dc2bb912c21255b654bf5613",
+    "genreSampling": {
+      "aozora": 0.45,
+      "mic": 0.1,
+      "env": 0.1,
+      "mdn": 0.15,
+      "jma": 0.1,
+      "maff": 0.025,
+      "stat": 0.05,
+      "bunka": 0.025
+    },
+    "newSourceManifestSha256": "3153086537fd80cbfe405db88da6a96d2ee1a00078ce914bdaeab977fd937028",
+    "newSourceDocumentsSha256": "1d12a0328cbfba2e884c0e6e4a95734ec8074b7512ffb9c58da521224d2a2048",
+    "rawUnitsSha256": "853603583f51ea492ae256fe48cc1feb6d0b74a349b71c738dc099c975d4e0e3",
+    "wordMerges": 512,
+    "preparedDataSha256": "1e0610caaa4b609ad08cc9ea239410283f3fd50499234733a5661d2f84810087",
+    "trainingViews": {
+      "canonical": 0.4,
+      "glyph": 0.3,
+      "randomCharacterCuts": 0.3
+    },
+    "validationViews": {
+      "canonical": 0.4,
+      "glyph": 0.3,
+      "randomCharacterCuts": 0.3
+    },
+    "objective": "CE + 0.1 causal token unlikelihood on unique past64 non-special tokens excluding the true next token; same raw targets",
+    "unlikelihood": {
+      "coefficient": 0.1,
+      "historyWindow": 64,
+      "uniqueCandidates": true,
+      "excludeCurrentGold": true,
+      "excludeIdsBelow": 6,
+      "validTargetsOnly": true,
+      "normalization": "sum negative penalties / valid target count",
+      "probabilityClampMax": 0.999999,
+      "validation": "unchanged CE only",
+      "futureTokensUsed": false,
+      "generatedTeachersUsed": false
+    },
+    "externalWeights": false,
+    "externalTokenizer": false,
+    "externalInferenceAPI": false,
+    "parentCheckpointSha256": "6637813862d68c2e9d291bf0ae4d0bc8ba2fc35e51c8c233d519517af1067f49",
+    "parentSelectedLineageUpdates": 49000,
+    "parentWeightSelection": "Latest optimizer-aligned state, not beststate",
+    "parentOptimizerUpdates": 10000,
+    "parentSeenTargetTokens": 15422254,
+    "parentSeenTargetUtf8Bytes": 54017389,
+    "initialization": "Our Round11 latest model + AdamW moments + Torch/Python RNG; hold terminal learning rate",
+    "experimentPolicySha256": "0c4e57941f8c41d7d38fe8a920d064dd2107d4888aef40479bdf71ffe30c5e1e",
+    "savedComparisonSnapshotStep": 0,
+    "schedule": "Hold exact Round11 terminal LR throughout additional10000; preserve moments and RNG, no restart",
+    "validationStatus": "Previously exposed development sources; not independent unseen validation",
+    "lengthBucketMasses": {
+      "64": 0.04911312273076579,
+      "128": 0.11314243671831545,
+      "256": 0.8377444405509188
+    },
+    "batching": "Conditional length buckets64/128/256; same marginal row probabilities, correlated batch lengths; no target truncation. Different update trajectory from unbucketed pilots.",
+    "trainerSourceSha256": "a3313915eb080c6433739a47a345c93c50f35a0ff0de0410a0a8d52bfdbededb"
+  },
+  "parameters": 4655808,
+  "selection": "Lowest predeclared weighted development segmentation NLL/byte; test not read"
+}

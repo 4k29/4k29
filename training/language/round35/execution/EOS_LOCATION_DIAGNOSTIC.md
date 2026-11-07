@@ -1,0 +1,11 @@
+# Exploratory TRAIN-position EOS effect at actual5000
+
+This read-only diagnostic was added after the5000 training state existed. It fixes the first4 human TRAIN rows per segmentation view by a declared unit/start SHA salt, independent of model scores. Both own raw FP32 models are evaluated at their matched5000 full checkpoints on the identical12 rows; no generations, heldout data or optimizer updates occur. Row identities, code/data/feature/checkpoint SHA and all counts are in eos-location-effect-5000.json. The12 rows and many correlated token positions are not independent replications or broad language evidence.
+
+At67 eligible original utterance-end positions, mean EOS probability changes0.032817→0.369663; EOS argmax0→37; mean original gold-next-token NLL0.892809→1.328342. This supports the intended increase in EOS preference and shows the competing original-newline supervision cost on this subset.
+
+At1,840 original non-newline content-token positions, EOS mean probability changes0.001823→0.012167; EOS argmax3→45; original-gold NLL3.280942→3.294975. This raises a concern about termination preference spreading beyond the auxiliary positions. It does not by itself establish that every alternate EOS is ungrammatical or irrelevant. Original context can admit a different valid continuation; the final complete generated texts must determine actual premature-ending failures.
+
+The broader otherOriginalNonStandaloneNewlineTargets category also includes compound newline tokens and must not be described as entirely within utterances. nonNewlineOriginalContent explicitly excludes any token containing newline bytes. The original dialogue-final EOS category contains only6 positions, so no broad estimate is supported.
+
+These per-token subset losses are not the global weighted NLL/UTF-8 byte selector, and should not be numerically compared as that metric. The total treatment includes natural downstream changes in self-generated negative continuations; this analysis does not isolate direct EOS gradients from those mediated effects. Coefficient1.0 and all learning conditions remain unchanged through the full10000-update trial. No second coefficient trial or output-based checkpoint selection is performed in this round.

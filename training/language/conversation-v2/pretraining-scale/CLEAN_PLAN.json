@@ -1,0 +1,100 @@
+{
+  "series": "Japanese pretraining scale v1",
+  "arms": {
+    "A": {
+      "model": "inherited3470",
+      "adam": "inherited3470"
+    },
+    "B": {
+      "model": "inherited3470",
+      "adam": "zero"
+    },
+    "C": {
+      "model": "fresh own architecture seed31028",
+      "adam": "zero"
+    }
+  },
+  "initial_sha256": "5ad249d2c8d5910090c9baba94f94483e9c037139d15b9c4360fd3e975409544",
+  "config": {
+    "vocabulary": 3997,
+    "context": 256,
+    "dim": 320,
+    "layers": 8,
+    "heads": 4,
+    "hidden": 1280,
+    "dropout": 0.1,
+    "epsilon": 1e-05
+  },
+  "comparison_updates": 512,
+  "comparison_targets": 351219,
+  "full_pass_updates": 2966,
+  "full_pass_targets": 2039162,
+  "unique_body_tokens": 2045786,
+  "new_vs_PR101_tokens": 1307614,
+  "batch": 4,
+  "context": 256,
+  "lr": {
+    "peak": 0.0002,
+    "warmup": 128,
+    "end": 3e-05,
+    "policy": "common linear warmup then cosine across full fixed one-pass schedule; reset LR schedule is new shared research condition"
+  },
+  "adam": {
+    "type": "AdamW",
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "eps": 1e-08,
+    "weight_decay": 0.05
+  },
+  "clipping": 1.0,
+  "fp32": true,
+  "training_torch_rng": "exact inherited3470 torchRng after all model/Adam initialization",
+  "sampler_seed": 31029,
+  "checkpoints": {
+    "comparison": 512,
+    "continuation_every": 512,
+    "terminal": 2966,
+    "rolling_every": 128
+  },
+  "selection": "At common512 choose highest strict prose success over old24+new9; then lowest repeat count; then lowest aggregate teacher DEV NLL; ties A,B,C order. All-zero success permits exactly ONE full admitted-data pass as undertraining diagnosis, not capability success. DEV selection bias explicit.",
+  "success": "old strict gate unchanged; exploratory improvement requires>=4/24 strict old prose, >=2 more than inherited initial, and harmful repeats<=initial0; new9 separate and necessary qualitative check. EOS or NLL alone insufficient.",
+  "continuation_gate": "finite losses/gradients, exact resume, no safety/data failure, valid storage; all-zero comparison can proceed to ONE corpus pass; no repeated epoch; if later NLL improves but repetition increases relative previous milestone, record regression and do not extend beyond fixed pass",
+  "stop": "nonfinite, ambiguous optimizer intent, mismatched source SHA, resume discrepancy, free disk below600MiB; save or preserve last atomic state; no fabricated count",
+  "response_gate": "Only if strict natural prose materially improves without repeated/irrelevant replacement; else no response phase",
+  "limits": {
+    "no_subagents": true,
+    "paid_resources": false,
+    "public_replacement": false,
+    "sealed_TEST": false,
+    "maximum_extra_epochs": 0
+  },
+  "EOS_teachers": 576,
+  "BOS_teachers": 0,
+  "completed_short_units": 455,
+  "input_sha256": {
+    "training/language/conversation-v2/pretraining-scale/corpus-clean.jsonl.gz": "e22bc9f2abc3b085e9b946113595ec9ea91182bc7b4e788f9351e1ff92d29587",
+    "training/language/conversation-v2/pretraining-scale/schedule-clean.json.gz": "5ac0495b9451cde216a995ee085634e45bc54190bac07c31b9a3df94aba607f4",
+    "training/language/conversation-v2/pretraining-scale/train_clean.py": "943320e3d219f44ab4763279c64ee6282959b84e0fc98d610b363416cb7b158c",
+    "training/language/conversation-v2/pretraining-scale/common.py": "995cbb2cb4bd9c9ce388e8a2d8b503a7f770b95275c26d13596a19311b3ae38b",
+    "training/language/conversation-v2/pretraining-scale/state.py": "52ed299292c8ed39ab6fcbb3e1e14fa8cd55692d4bef336e40e89123a0c9daa1",
+    "training/language/conversation-v2/pretraining-scale/PLAN.json": "aa77fb2a96339a0a4615af27a37ac8d42d616080e20da20346225b2b78beb1fa",
+    "training/language/conversation-v2/pretraining-scale/run/A/updates-v2.jsonl": "5d642a6e95bce47de7b2859db2638fe783c374dfc0a53b7317886d7e2579d4a6"
+  },
+  "revision": "v3 source-ID-resolved family exclusion before continuation; original comparison unchanged",
+  "excluded_pilot_reference": "EXCLUDED_PILOT.json",
+  "bridge_cursor": 512,
+  "resume_test_first": 514,
+  "resume_test_second": 516,
+  "old_ledger": "run/A/updates-v2.jsonl",
+  "known_uncontaminated_through": 759,
+  "superseded_steps": [
+    760,
+    787
+  ],
+  "original_comparison_plan_sha256": "aa77fb2a96339a0a4615af27a37ac8d42d616080e20da20346225b2b78beb1fa",
+  "original_512_state_sha256": "a021da6943dde4aad319548793670b74e1f562c6099224862181222e25f7257e",
+  "old_v2_elapsed": 550.1502813930001,
+  "base512_elapsed": 360.66902642700006
+}

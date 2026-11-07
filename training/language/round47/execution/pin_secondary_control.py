@@ -1,0 +1,10 @@
+"""Pin existing no-auxiliary R39 development evidence; no new generation or training."""
+import pathlib,json,hashlib,os
+R=pathlib.Path(__file__).resolve().parents[1];P=R.parent/'round39';E=R/'execution';read=lambda p:json.loads(p.read_text());sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest();manifest=P/'execution/artifact-manifest.json';bound={x['path']:x for x in read(manifest)['files']};paths=['execution/final-assessment.json','execution/new-validation.json','execution/new-review.json','execution/daily-new-python.json','execution/daily-new-reading.json','execution/content-native-dev/new-python.json','execution/content-native-dev/new-reading.json','execution/fixed-source-mrmp-dev/new-python.json','execution/fixed-source-mrmp-dev/new-reading.json'];rows=[]
+for n in paths:
+ p=P/n;assert p.stat().st_size==bound[n]['bytes'] and sha(p)==bound[n]['sha256'];rows.append(dict(path=os.path.relpath(p,R),sha256=sha(p),bytes=p.stat().st_size))
+for n in ['objective.py','sequence_objective.py','rollout_trace.py','initialization.py','prefix_selection.py','utterance_end_objective.py','end_main_ce.py']:assert (R/n).read_bytes()==(P/n).read_bytes(),n
+assert (R/'multiview/train.tokens.bin').read_bytes()==(P/'multiview/train.tokens.bin').read_bytes()
+assert (R/'batching.py').read_bytes().replace(b"'realpersona':.40",b"'realpersona':.25")==(P/'batching.py').read_bytes()
+a=read(P/'execution/final-assessment.json');out=dict(secondaryControl='round39',scientificPrimaryControl='round46',sameR28InitialStateAndMainDataExceptDeclaredSamplingProbability=True,comparisonPurpose='No-auxiliary reference; one new sequence-UL-coefficient training condition inR47 only',artifactManifestSha256=sha(manifest),files=rows,existingDevelopmentNotNewTest=True,noNewGenerationOrJudgment=True,additionalOptimizerUpdates=0,commonDevNll=a['commonDevNll'],humanDevNll=a['humanDevNll'],dailyWhole=a['selectedSupplemental']['daily12']['wholeMeaning'])
+(E/'secondary-control-reference.json').write_text(json.dumps(out,indent=2)+'\n');print('Pinned historical R39 no-auxiliary evidence; no new generations or updates')

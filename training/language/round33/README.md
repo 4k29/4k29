@@ -1,0 +1,7 @@
+# Round33 — continuation dose completed
+
+Actual10000 additional updates completed from the aligned Round28 model/AdamW/Torch/private Python RNG, same8x192/vocab5455/BPE40/30/30/human30%/objectives/LR. Latest Adam30000 and lineage69000; selected8000 has its own aligned Adam28000/RNG, lineage67000. Latest and selected full states are retained losslessly. No external weights/tokenizer/API/generated positive targets.
+
+Common exposed DEV NLL: parent0.9718989571 → selected0.9676790776; terminal0.9689717457. Human DEV99: parent0.9281904078 → selected0.9057714756; terminal0.9023347358. These improvements do not establish conversational meaning. Original17 old first7/nonloop6/full0 → selected10/5/primary2 (conservative sensitivity0); terminal7/5/0. Strict gates fail. Daily12/native8/source5 whole meaning remain0 at both selected and terminal. All84 new full outputs actually read; all126 old/selected/terminal full texts saved. No new TEST claim.
+
+Not promoted as the research standard; anchorR25 and public model/site unchanged. Primary Pareto versus R25 permits optional NLL-only retention, but daily meaning and ambiguity block optional promotion; versus parentR28 original17 nonloop declines. See RESULTS.md, execution/adoption-decision.json, per-row SHA-bound judgments, numerical checks and full outputs. Next one-factor trial is a paired sibling from the same aligned R28 initial state/dose, changing only human self-negative prefix endpoint policy.

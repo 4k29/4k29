@@ -1,0 +1,20 @@
+import pathlib,sys,unittest,json,hashlib,torch
+R=pathlib.Path(__file__).resolve().parents[1];sys.path.insert(0,str(R));from context_preference import preference_loss,load_pool
+sys.path.insert(0,str(R.parent));from model import Decoder
+class Contracts(unittest.TestCase):
+ def setUp(self):
+  torch.set_num_threads(1);torch.manual_seed(7);self.m=Decoder(dict(vocabulary=32,dim=8,layers=1,heads=2,hidden=16,context=32,dropout=.3,epsilon=1e-5));self.pool=[dict(prefixTokens=[6,7,8],wrongPrefixTokens=[9,10,11],targetTokens=[12,13,14])]
+ def test_rng_mode_targets_and_gradient(self):
+  self.m.train();before=torch.get_rng_state().clone();copy=json.dumps(self.pool);loss,rec=preference_loss(self.m,self.pool,0);loss.backward();self.assertTrue(self.m.training);self.assertTrue(torch.equal(before,torch.get_rng_state()));self.assertEqual(json.dumps(self.pool),copy);self.assertTrue(torch.isfinite(loss));self.assertTrue(all(p.grad is not None and torch.isfinite(p.grad).all() for p in self.m.parameters()));self.assertGreater(sum(float(p.grad.abs().sum()) for p in self.m.parameters()),0)
+ def test_identical_context_retains_positive_gradient(self):
+  self.pool[0]['wrongPrefixTokens']=self.pool[0]['prefixTokens'][:];self.m.eval();loss,rec=preference_loss(self.m,self.pool,0);loss.backward();self.assertAlmostEqual(float(loss.detach()),rec['meanCorrectNll'],places=6);self.assertAlmostEqual(rec['meanContextGain'],0,places=7);self.assertGreater(sum(float(p.grad.abs().sum()) for p in self.m.parameters()),1e-5);self.assertFalse(self.m.training)
+ def test_wrong_context_diagnostic_has_no_effect_on_loss_or_gradients(self):
+  self.m.eval();loss,a=preference_loss(self.m,self.pool,0);loss.backward();grads=[p.grad.clone() for p in self.m.parameters()];self.m.zero_grad(set_to_none=True);self.pool[0]['wrongPrefixTokens']=[15,16,17];other,b=preference_loss(self.m,self.pool,0);other.backward();self.assertEqual(float(loss.detach()),float(other.detach()));self.assertNotEqual(a['meanMismatchedNll'],b['meanMismatchedNll']);self.assertTrue(all(torch.equal(g,p.grad) for g,p in zip(grads,self.m.parameters())))
+ def test_exact_original_target_ce_and_mask(self):
+  self.m.eval();loss,_=preference_loss(self.m,self.pool,0,batch=1);r=self.pool[0];prefix=[1]+r['prefixTokens'];seq=prefix+r['targetTokens'];logits=self.m(torch.tensor([seq[:-1]]))[0,len(prefix)-1:];reference=torch.nn.functional.cross_entropy(logits,torch.tensor(r['targetTokens']));self.assertAlmostEqual(float(loss.detach()),float(reference.detach()),places=6)
+ def test_swapping_changes_gain_sign(self):
+  _,a=preference_loss(self.m,self.pool,0);r=self.pool[0];r['prefixTokens'],r['wrongPrefixTokens']=r['wrongPrefixTokens'],r['prefixTokens'];_,b=preference_loss(self.m,self.pool,0);self.assertAlmostEqual(a['meanContextGain'],-b['meanContextGain'],places=6)
+ def test_pool_hash_binding(self):
+  policy=json.loads((R/'policy.json').read_text())['contextPreference'];rows=load_pool(R/policy['pool'],policy['poolSha256']);self.assertEqual(len(rows),1024)
+  with self.assertRaises(AssertionError):load_pool(R/policy['pool'],'0'*64)
+if __name__=='__main__':unittest.main()

@@ -1,0 +1,3 @@
+# Actual10000 training and full-output reading complete
+
+Initial automatic pipeline failed in post-training reporting at missing creation-context.json; retained training10000 and aligned checkpoints were already saved and published. The reporting-only metadata was restored from frozen scientific-control audit and complete_missing_evaluations.sh ran the remaining steps without more optimizer updates. Original automatic pending status is historical. Final-assessment.json and RESULTS.md supersede its pending semantic status. All42 new full outputs actually read; strict gates fail, not adopted. Public model/site unchanged.

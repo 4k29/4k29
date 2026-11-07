@@ -1,0 +1,28 @@
+{
+  "utc": "2026-10-17T21:32:34.138789+00:00",
+  "scientificControl": "round25",
+  "controlManifestSha256": "cf3f0704eea96690a5d250c626ff43ae4f631ba8eae9b3489b5f9f5ab386382e",
+  "oneChangedFactor": "Human everyday-conversation TRAIN corpus mass0→0.30; existing source masses×0.70",
+  "corpus": "nu-dialogue/real-persona-chat",
+  "sourceCommit": "28d0b6b3865b29cabc26c230a2db37cdf315e937",
+  "license": "CC-BY-SA-4.0",
+  "fixedSpeakerFoldSha256": "cd4bb1681325ff778f6b39953581dc6f47fb86f4f3640bc9882d3e0cb10816b6",
+  "onlyBothSpeakersTrain": true,
+  "publicReadmeExampleExcluded": true,
+  "llmLogAndProfilesExcluded": true,
+  "serialization": "Original human utterances unchanged, joined by one newline; no role names or generated targets",
+  "filtering": {
+    "emptyOrUnexpectedControl": "exclude whole dialogue",
+    "originalRedactionMask": "exclude whole dialogue containing ＊＊",
+    "exactDuplicateDialogue": "keep first sourcePath lexicographically within TRAIN, never identify by ambiguous dialogueId",
+    "exactTrainHeldDialogue": "exclude TRAIN dialogue only",
+    "protectedContiguousOverlap": "exclude whole new TRAIN dialogue with any64-Unicode-character exact contiguous overlap with any old R10 units (all folds), all R22 source documents, or human DEV/reserved TEST; hash-only source hygiene, not model evaluation"
+  },
+  "reservedTestAccess": "Raw text parsed for hashes/overlap only; never tokenizer/model/loss/generation or semantic reading; no TEST text included in report",
+  "developmentUnchanged": true,
+  "newDailyDevNotSelector": true,
+  "defaultNllSelector": "Existing fixed mixed-view document DEV; every500 updates",
+  "learningConditions": "Round25 byteidentical model/tokenizer/train code/objective/LR/seed;10000actual updates; no capacity increase",
+  "adoption": "Original fixed strict gates/Pareto unchanged; retain last adopted control if tradeoff. Additional prospective practical guard: human DEV99 NLL and daily full/nonloop counts must not regress. NLL alone never establishes language success.",
+  "modelTrainingUpdatesAtPolicyFreeze": 0
+}

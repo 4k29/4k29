@@ -1,0 +1,3 @@
+# First durable progress snapshot — actual100/10000
+
+This is a historical full-state snapshot, not final training or a language result. The detached trainer continues beyond this count. Contains aligned latest weights, AdamW moments/counters10100, Torch/private Python RNG, selected state and history. Retained log/own-rollout trace matches exactly. No training conditions changed and no signal/pause sent. Only use for recovery if no live process and no newer retained checkpoint. See snapshot.json for hashes and exact recovery rules. Original zero-state checkpoint parts are in ../../continue-10000.

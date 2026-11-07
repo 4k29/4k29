@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "seed": "paragraph-context-use-v1|20261107",
+  "topic_keyword_dictionary": {
+    "climate_energy": [
+      "温暖",
+      "温室",
+      "炭素",
+      "エネルギー",
+      "気候",
+      "CO2",
+      "再生可能",
+      "排出量"
+    ],
+    "waste_recycling": [
+      "廃棄物",
+      "リサイクル",
+      "循環",
+      "再資源",
+      "ごみ"
+    ],
+    "biodiversity": [
+      "生物多様性",
+      "生態系",
+      "野生",
+      "自然公園",
+      "外来",
+      "絶滅",
+      "里地",
+      "里山",
+      "国立公園",
+      "国定公園",
+      "動植物",
+      "鳥類",
+      "生息"
+    ],
+    "water_marine": [
+      "水質",
+      "海洋",
+      "海域",
+      "河川",
+      "湖沼",
+      "地下水",
+      "水環境",
+      "赤潮"
+    ],
+    "chemicals_pollution": [
+      "化学物質",
+      "大気",
+      "公害",
+      "騒音",
+      "振動",
+      "アスベスト",
+      "環境リスク",
+      "土壌"
+    ],
+    "society_economy": [
+      "環境教育",
+      "環境学習",
+      "環境産業",
+      "環境配慮",
+      "金融",
+      "消費",
+      "地域づくり",
+      "人口",
+      "ESG",
+      "環境経済",
+      "教育",
+      "学習",
+      "教材"
+    ],
+    "disaster_radiation": [
+      "東日本",
+      "震災",
+      "放射",
+      "除染",
+      "福島"
+    ]
+  },
+  "optimizer_updates": 0,
+  "model": "Only own PR106 B-579",
+  "checkpoint_sha256": "3cebff9801302bd9969601e539adccaca7e0ea83943cc96bf2dc0b35f0906b9c",
+  "criteria": {
+    "history_min": 64,
+    "history_max": 248,
+    "BOS_or_other_special_tokens": "Exclude all in C/U; no artificial BOS insertion",
+    "UTF8": "Require exact UTF8 history and8-token tail recovery; never retokenize/repair",
+    "readability": "At least one。and30 Japanese characters in retained histories",
+    "year_group": "Exactly2 cases per8 years per group, if constraints can be met; otherwise stop without inference",
+    "page": "32 distinct C pages and32 disjoint U pages",
+    "heading": "64 distinct NFKC/number-prefix-normalized heading strings, not semantic-family independence",
+    "topic": "Fixed keyword proxy; different primary topics, no reciprocal specific-keyword overlap; human full-history review required before freeze",
+    "nonmata": "8 content/other,4 demonstrative,4 other connector; max2 per gold BPE ID",
+    "donor": "Prefer same year; if unavailable choose other year and record. Left crop original token prefix to exact C length; require UTF8, readability and no specials."
+  },
+  "decoder": "Default positions0..L-1, batch1/no padding, eval/dropout off, full3997-vocab softmax; no LF/special exclusion or penalties",
+  "principal": "Delta=logP(g|C)-logP(g|U), strict-positive count; not semantic success. Report overall balanced sample plus each16-case group; not population-representative.",
+  "delta_bins": [
+    "<-1",
+    "[-1,-.1)",
+    "[-.1,0]",
+    "(0,.1]",
+    "(.1,1]",
+    ">1"
+  ],
+  "near_zero_reporting_threshold_nats": 0.01,
+  "no_independent_sample_p_values": true,
+  "primary_condition_count": 64,
+  "logits_reuse": "Reuse exact B checkpoint+input token tuple from saved B archive; no reuse from other checkpoints.",
+  "auxiliary": {
+    "representatives": [
+      15,
+      9,
+      2,
+      13,
+      18,
+      20,
+      26,
+      22
+    ],
+    "teacher_tokens": 8,
+    "additional_forward_max": 16,
+    "primary_first": true,
+    "limits": "Same original C tail given to both histories; prefix+7<=255; not free generation or knowledge-of-word segmentation."
+  },
+  "freeze": "Write FREEZE only after semantic pair review; runner checks all source/code/input hashes.",
+  "source_sha256": {
+    "training/language/conversation-v2/paragraph-foundation/corpus.jsonl.gz": "e41ae0bf295611aab8f384d37c3fb620dfef5ea203155c99678adf1615e5cd12",
+    "training/language/conversation-v2/paragraph-foundation/schedule.json.gz": "ddb300b189cd1004befd746c2bd306b0004bb0b5d8e44c99fc74b9b518cfd6e7",
+    "training/language/conversation-v2/data/tokenizer.json": "6d079e4ba0a954ae32ad34a35ddd15384eb48b8eceaf3f3529a66e4266b1da06",
+    "training/language/conversation-v2/paragraph-foundation/NEWLINE_COLLAPSE_DIAGNOSIS.json": "93091032500cfccef239e42dc3c226e05f1dbd522bf048125c7f10da185a4ceb",
+    "training/language/conversation-v2/paragraph-foundation/newline-followup/EIGHT_CASE_AUDIT.json": "c78dad2918f8ed413c454e2b3279b0d9da5b55cb94cd59f332238802f3ffd888"
+  },
+  "sampling": "16/16 and4 cases per year are deliberately balanced, NOT a population sample; TRAIN Mata prior241/1853.",
+  "train_mata_prior": 0.1300593631948192,
+  "auxiliary_prefix_logit_tolerance": 0.0002,
+  "auxiliary_argmax_divergence": "Record any numeric branch; do not silently alter primary predictions.",
+  "model_forward_budget_max": 80,
+  "actual_optimizer_call_budget": 0,
+  "semantic_review": "PAIR_REVIEW.json, including pre-inference refinement history. No predictions used in selection."
+}

@@ -1,0 +1,42 @@
+{
+  "exactDeclaredChangesOnly": true,
+  "allOtherAstNodesIdentical": true,
+  "replacements": [
+    {
+      "old": "if a.deadline>plan['globalDeadlineUnix']:",
+      "new": "if a.deadline>RECOVERY['deadlineUnix']:"
+    },
+    {
+      "old": "pfpath=out/('preflight-v2.json' if a.preflight_only else 'run-zero-update-preflight.json')",
+      "new": "pfpath=out/(f'recovery-zero-update-{unique}-{actual}-{time.time_ns()}.json' if a.resume else ('preflight-v2.json' if a.preflight_only else 'run-zero-update-preflight.json'))"
+    },
+    {
+      "old": "if actual>=2960:",
+      "new": "if actual>=RECOVERY['actualCaps'][a.model]:"
+    },
+    {
+      "old": "            update()\n",
+      "new": "            update(replay=(unique<RECOVERY['lostThroughUniqueUpdate']))\n"
+    }
+  ],
+  "effectiveSourceSha256": "d901061701061814a6ca3c98a4b3509757dc7b64cda1071716ce43c527f5e916",
+  "amendmentSha256": "d8a2373fefbd050362fafa3cfad084e0b48d31ba48ba89444054b8a5e486c618",
+  "originalPlanSha256": "f458f073d06632b42e641a6d4fd3475bb6c15b86e54d35e84a0611f582a488a1",
+  "originalSourceSha256": "8d3567accf4a051847e2f21964a73b5925f072c019a1ff0bad05f2d599679db6",
+  "model": "medium",
+  "stateMetadataMigration": {
+    "beforeTrajectoryDigest": "3216b0b3631f96b65509a8e9937cc8e5c2004076c75c8e7cf1da43a5e680cb5b",
+    "afterTrajectoryDigest": "3216b0b3631f96b65509a8e9937cc8e5c2004076c75c8e7cf1da43a5e680cb5b",
+    "allTrajectoryFieldsUnchanged": true,
+    "originalActualContinuationUpdates": 2050,
+    "migratedActualContinuationUpdates": 2142,
+    "actualCompletedButNotDurableUpdates": 92,
+    "originalDeadline": 1793017725.3553445,
+    "newDeadline": 1000000000000.0,
+    "unavailableLostStateBitwiseComparison": true,
+    "originalStoredCheckpointUnmodified": true
+  },
+  "optimizerUpdatesByWrapperAudit": 0,
+  "lossOrGenerationSelected": false,
+  "firstEpochDoseChanged": false
+}

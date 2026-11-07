@@ -1,0 +1,19 @@
+set -eu
+bash training/language/round25/execution/run.sh > training/language/round25/execution/train.log 2>&1
+python training/language/round25/execution/verify_initial.py
+python training/language/round25/execution/audit.py
+python training/language/round25/execution/replay_sampler.py
+python training/language/round25/execution/verify_paired_exposure.py
+python training/language/round25/execution/compare_losses.py
+python training/language/round25/execution/decode_training_rollouts.py
+bash training/language/round25/execution/compare.sh
+python training/language/round25/execution/rebind_old.py
+python training/language/round25/execution/check_export_rounding.py
+python training/language/round25/execution/diagnose_parity.py
+python training/language/round25/execution/diagnose_generation.py
+python training/language/round25/execution/diagnose_gap.py
+python training/language/round25/execution/measure_repetition.py
+python training/language/round25/execution/measure_added_train.py
+python training/language/round25/execution/assemble_numerical.py
+bash training/language/round25/execution/repository-checks.sh
+python training/language/round25/execution/diagnose_sequence_saturation.py

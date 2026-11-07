@@ -1,0 +1,1 @@
+prepare_trial.py, fix_trial_metadata.py, correct_lr_timing.py は実更新0の作成履歴。既存roundへ再実行しない。fix_trial_metadataの暫定LR例外はcorrect_lr_timingで訂正済み。初期checkpointは親LRのまま完全一致し、実update開始時にtrain.pyが固定policy LRへ設定する。

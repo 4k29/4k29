@@ -1,0 +1,8 @@
+"""Post-freeze TRAIN-only raw-space statistics; never changes training.
+The original units JSON contains all fold records; only TRAIN text is analyzed."""
+import pathlib,json,re,collections,hashlib
+ROOT=pathlib.Path(__file__).resolve().parents[1];source=ROOT.parent/'round10/units.json';units=json.loads(source.read_text());train=[u for u in units if u['partition']=='train'];by=collections.defaultdict(lambda:dict(units=0,characters=0,utf8Bytes=0,fullwidthSpaceCharacters=0,maxConsecutiveFullwidthSpaces=0,unitsWithAtLeast8ConsecutiveFullwidthSpaces=0))
+for u in train:
+ text=u['text'];site=u.get('site',u['document'].split(':')[0]);d=by[site];d['units']+=1;d['characters']+=len(text);d['utf8Bytes']+=len(text.encode());d['fullwidthSpaceCharacters']+=text.count('　');maximum=max((len(x) for x in re.findall('　+',text)),default=0);d['maxConsecutiveFullwidthSpaces']=max(d['maxConsecutiveFullwidthSpaces'],maximum);d['unitsWithAtLeast8ConsecutiveFullwidthSpaces']+=maximum>=8
+record=dict(partition='train',sourceSha256=hashlib.sha256(source.read_bytes()).hexdigest(),originalUnits=len(train),sites=dict(sorted(by.items())),maxConsecutiveFullwidthSpaces=max(x['maxConsecutiveFullwidthSpaces'] for x in by.values()),unitsWithAtLeast8ConsecutiveFullwidthSpaces=sum(x['unitsWithAtLeast8ConsecutiveFullwidthSpaces'] for x in by.values()),purpose='Post-freeze TRAIN-only diagnostic of raw-space exposure; no data/config/weights changes; held records are ignored, no TEST encoding/generation/selection')
+(ROOT/'execution/train-space-diagnostic.json').write_text(json.dumps(record,ensure_ascii=False,indent=2)+'\n');print(json.dumps(record,ensure_ascii=False))

@@ -1,0 +1,5 @@
+# Historical native dialogue diagnostic
+
+All16 complete unedited outputs actually read: Round28 and29 each whole meaning0/8, long loops8/8, EOS0/8. Frequent acknowledgements become more conversation-like than Round25 narrative/technical intrusions, but entire outputs loop. An initially plausible acknowledgement is not itself a failure; the full repetition and failure to advance or preserve the specific discussion are. No EOS alone is not a semantic failure, since original training units contain multiple turns.
+
+These frozen original mid-dialogue inputs have no artificial user/assistant labels. Failure is therefore not explained solely by those labels in the older daily diagnostic. This does not isolate every serialization/EOS effect. Human-corpus NLL improvement demonstrates learning corpus likelihood and style, not sustained meaning. The old trials are not newly trained or adopted, and original strict gates are unchanged. This supplementary known-DEV diagnostic is not independent unseen generalization or part of Round31 weight selection.
