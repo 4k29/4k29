@@ -15,7 +15,7 @@
 
 ## 学習を行わない検証
 
-リポジトリrootから：
+`research/paragraph-lf1`をcheckoutしたリポジトリrootから：
 
 ```sh
 python -m unittest discover -s training/language/conversation-v2/lf-boundary-study -p test_transform.py

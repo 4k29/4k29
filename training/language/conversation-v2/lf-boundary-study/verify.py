@@ -1,6 +1,7 @@
 """Verify completed records and exact output bytes, no forward or optimizer calls."""
 from lf_runtime import *
 from build import collapse
+assert read(P/'GIT_FULL_STATE_RESTORE_AUDIT.json')['passed']
 pieces=[bytes.fromhex(x) for x in read(V/'data/tokenizer.json')['bytes']];plan=read(P/'PLAN.json')
 for rel,h in plan['sha256'].items():assert sha(ROOT/rel)==h,rel
 for n in [4,289,579]:

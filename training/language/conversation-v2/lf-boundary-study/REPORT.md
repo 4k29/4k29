@@ -41,7 +41,7 @@ PLANとコード・データSHAは比較更新前に固定してcommit `87f758b`
 
 更新後の保存・全状態復元・次更新の一致検証に合格（model/Adam/Torch/private Python/global Python/NumPy RNG/sampler/cursor/trace）。289からの段階再開時にもcheckpointとledgerの一致を確認した。`resume_guard.py`はledgerがcheckpointより進んでいる場合やintentが不確実な場合に停止し、勝手に保持更新としてreplayしない。初期model/Adam状態の共有・変更は検証で否定した。
 
-4／289／579の全状態をatomic保存し、32MiB lossless分割でGitへpushした。全3点をローカルcheckpointやobject alternatesに依存しないGit-only取得で再構成し、chunk・whole SHAを確認した。終端SHAは `76813f6958977f83451ba673d7796580c00f5cef86ac04684dc3a634601c9c5c`。Adam step6940、継承model counter12820→13399。CHECKPOINT_INDEXとrestore_git.pyを参照。
+4／289／579の全状態をatomic保存し、32MiB lossless分割でGitへpushした。全3点をローカルcheckpointやobject alternatesに依存しないGit-only取得で再構成し、chunk・whole SHAを確認した。さらに全3ファイルを別のGit-only作業コピーから実ファイルへ復元してdeserializeし、全状態integrity・Adam step・sampler・traceの一致を検証した（GIT_FULL_STATE_RESTORE_AUDIT）。終端SHAは `76813f6958977f83451ba673d7796580c00f5cef86ac04684dc3a634601c9c5c`。Adam step6940、継承model counter12820→13399。CHECKPOINT_INDEXとrestore_git.pyを参照。
 
 CPU2、RAM制限8GiB、GPUなし。Python3.12.14／Torch2.14.1+cpu。3学習区間のreceipt時間合計1,298.53秒（保存・検証を含む。評価/Git/全作業時間とは異なり、他の評価とCPUを共有した）。最大学習RSS1,272,364KiB。scratchは/tmp 4.9GiBを使用し、更新ごとに空き500MiB・RAM余裕1GiBを検査。永続overlayは開始時約311MiBしかなく、weightsはGit保存・Git-only復元で保護し、実呼出しledgerは永続領域へfsyncした。既存Git履歴・正式checkpointは整理していない。
 
@@ -88,9 +88,9 @@ TFには同じ非境界の正解8tokensを与え、本文2–8位置だけを比
 
 ## 工学的照合と判断
 
-専用CIの4軽量テストと凍結LF1コーパス・schedule・重複targets監査に合格：run42439177814／42439897751。checkpointをCIへ大量checkoutせず、無関係に起動されたstatic-profile CIは取消した。最後の成果物commitで無関係なCIを再実行せず、専用CIを指定して確認する。
+専用CIの4軽量テストと凍結LF1コーパス・schedule・重複targets監査に合格：run42439177814／42439897751と最終の[run42441905935](https://github.com/4k29/4k29/actions/runs/42441905935)（commit377e281）。その後の追加は復元検証・報告メタデータで、凍結した学習・変換・評価コードやデータは不変。checkpointをCIへ大量checkoutせず、無関係に起動されたstatic-profile CIは取消した。最後の成果物commitで無関係なCIを再実行せず、専用CIを指定して確認する。
 
-Python／JS rawFP32照合は旧固定3prefix×4位置のみ。照合時のPythonは1thread、Nodeはv24.19.0。最大logit差4.76837e−6、閾値2e−4超過0、argmax相違0、独立4token生成の分岐0。長文・別hardware・量子化・公開推論経路の一致とは称さない。厳格ゲートや既知の数値差を隠していない。
+Python／JS rawFP32照合は旧固定3prefix×4位置のみ。照合時のPythonは1thread、Nodeはv24.19.0。最大logit差4.76837e−6、閾値2e−4超過0、argmax相違0、独立4token生成の分岐0。長文・別hardware・量子化・公開推論経路の一致とは称さない。厳格ゲートや既知の数値差を隠していない。実Python model.forwardは36,967回（学習・検証583、推論36,384）、JS score queryは24回。自由生成単発447件と自己履歴14発話のbyte/token整合を照合した。
 
 境界表現／終了遷移は原因の一部だったが、LFループを減らすだけでは本文内容や自己生成履歴の安定性は獲得できない。白書への分布干渉を疑う根拠は、学習前のcaption21件から2件への退行と、地域・国際・生物等への無関係な逸脱である。ただし、一巡・約59万targets・低LR・旧重みからの継続であり、データ不足、最適化、容量のどれか一つを原因と断定しない。
 
