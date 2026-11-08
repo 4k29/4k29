@@ -1,0 +1,26 @@
+name: LF boundary study lightweight audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [research/paragraph-lf1]
+    paths:
+      - 'training/language/conversation-v2/lf-boundary-study/**'
+      - '.github/workflows/lf-boundary-study.yml'
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            /training/language/conversation-v2/lf-boundary-study/*
+            !/training/language/conversation-v2/lf-boundary-study/artifacts/
+            !/training/language/conversation-v2/lf-boundary-study/evaluation/
+            training/language/conversation-v2/new_tokenizer.py
+            training/language/round10/word_bpe.py
+            training/dialogue/tokenizer.py
+          sparse-checkout-cone-mode: false
+      - run: python -m unittest discover -s training/language/conversation-v2/lf-boundary-study -p test_transform.py
+      - run: python training/language/conversation-v2/lf-boundary-study/ci_audit.py
