@@ -6,6 +6,7 @@ from next_runtime import torch,restore_isolated,trajectory,digest,save,record,ca
 
 def sha(p):return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
 def capacity():
+ assert shutil.disk_usage('/workspace').free>64*1024**2,'Persistent ledger reserve insufficient'
  assert shutil.disk_usage(SCRATCH).free>500*1024**2,'Checkpoint atomic reserve insufficient'
  used=int(pathlib.Path('/sys/fs/cgroup/memory.current').read_text());lim=int(pathlib.Path('/sys/fs/cgroup/memory.max').read_text());assert lim-used>1024**3
 

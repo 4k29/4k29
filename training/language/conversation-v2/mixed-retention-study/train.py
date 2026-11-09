@@ -37,7 +37,9 @@ def main():
   assert not any(json.loads(l)['phase']=='retained' for l in (P/'UPDATES.jsonl').read_text().splitlines());m,o,r=fresh();trace=[];start=0
  assert start<args.until
  for i in range(start,args.until):
-  z=step(m,o,r,c,bs[i],i,'retained',trace)
+  try:z=step(m,o,r,c,bs[i],i,'retained',trace)
+  except AssertionError as exc:
+   obj=payload(m,o,r,i,trace);save(path,obj);save(SCRATCH/f'MIX-{i}.pt',obj);write(P/'PAUSED.json',dict(cursor=i,reason=str(exc),checkpoint_sha256=sha(path)));raise
   if i+1 in [4,289,579] or (i+1)%64==0:
    obj=payload(m,o,r,i+1,trace);save(path,obj);assert integrity(torch.load(path,map_location='cpu',weights_only=False))==obj['integrity']
    if i+1 in [4,289,579]:save(SCRATCH/f'MIX-{i+1}.pt',obj)
