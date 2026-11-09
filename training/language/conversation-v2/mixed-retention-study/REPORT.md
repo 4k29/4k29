@@ -97,7 +97,7 @@ STAIR本文NLLは初期2.531874→白書3.404857→混合2.547235。忘却抑制
 
 Python/JSは固定3prefix×4位置の限定照合のみ。最大rawlogit差4.76837e-6、閾値2e-4超過0、同履歴argmax差0、独立4token生成分岐0。長文・別hardware・量子化・公開経路での完全一致とは主張しない。
 
-新規Python model.forward計18,823回（更新583、混合中間9,017、終端8,812、3条件sourceNLL399、限定parity12）。JS score query24。新規単発raw出力298件・自己履歴16発話。初期と対照の全文・境界は既存保存結果の再利用で、再推論したと主張しない。全30固定入力SHA＋8評価入力SHA、298出力と16発話のtoken/byte整合、3保存点のcold Git復旧に合格。専用4軽量テストとCI用artifact監査に合格。最終専用CIのrun/headはCI_RECEIPTを参照。
+新規Python model.forward計18,823回（更新583、混合中間9,017、終端8,812、3条件sourceNLL399、限定parity12）。JS score query24。新規単発raw出力298件・自己履歴16発話。初期と対照の全文・境界は既存保存結果の再利用で、再推論したと主張しない。全30固定入力SHA＋8評価入力SHA、298出力と16発話のtoken/byte整合、3保存点のcold Git復旧に合格。専用4軽量テストとCI用artifact監査に合格。最終専用CI [run42561740648](https://github.com/4k29/4k29/actions/runs/42561740648) はcommit `5e9d5110f583cdc5aec9b73e38ebfa629da18dd9`でsuccess。後続はCI receiptと報告メタデータのみで、凍結コード・データは不変。初回登録時の無関係static-profile run42557899052は取消し、合格とは記録しない。
 
 今回支持されたのは、同じ総予算での多ジャンル保持配分が、白書単独に比べcaption退行とsource予測悪化を抑えたこと。獲得できなかったのは、未知familyでの意味の通る2–3文と適切な内容応答。データ量・分布、低LRと継承Adam、全更新clip、自己履歴の誤差増幅、モデル容量・context・BPEの制約は残り、今回だけで一因に断定しない。
 
