@@ -1,0 +1,22 @@
+name: Mixed volume study audit
+on:
+  push:
+    branches: [research/mixed-volume-extension]
+    paths: ['training/language/conversation-v2/mixed-volume-study/**', '.github/workflows/mixed-volume-study.yml']
+  workflow_dispatch:
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/conversation-v2/mixed-volume-study/*
+            !/training/language/conversation-v2/mixed-volume-study/artifacts/
+            !/training/language/conversation-v2/mixed-volume-study/evaluation/
+            !/training/language/conversation-v2/mixed-volume-study/NLL/
+      - run: python -m unittest discover -s training/language/conversation-v2/mixed-volume-study -p test_contract.py
+      - run: python training/language/conversation-v2/mixed-volume-study/ci_audit.py
