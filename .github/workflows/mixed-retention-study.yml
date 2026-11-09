@@ -1,0 +1,28 @@
+name: Mixed retention study audit
+on:
+  push:
+    branches: [research/mixed-retention]
+    paths:
+      - 'training/language/conversation-v2/mixed-retention-study/**'
+      - '.github/workflows/mixed-retention-study.yml'
+  workflow_dispatch:
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/conversation-v2/mixed-retention-study/*
+            !/training/language/conversation-v2/mixed-retention-study/artifacts/
+            !/training/language/conversation-v2/mixed-retention-study/evaluation/
+            !/training/language/conversation-v2/mixed-retention-study/NLL/
+            !/training/language/conversation-v2/mixed-retention-study/parity-terminal/
+            /training/language/conversation-v2/new_tokenizer.py
+            /training/language/round10/word_bpe.py
+            /training/dialogue/tokenizer.py
+      - run: python -m unittest discover -s training/language/conversation-v2/mixed-retention-study -p test_contract.py
+      - run: python training/language/conversation-v2/mixed-retention-study/ci_audit.py
