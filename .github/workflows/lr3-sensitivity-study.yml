@@ -104,6 +104,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12.14'
+      - name: Compile isolated candidate scripts before any model work
+        run: python -m compileall -q training/language/conversation-v2/lr-sensitivity-study
       - name: Install exact numerical versions
         run: |
           python -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.14.1+cpu
