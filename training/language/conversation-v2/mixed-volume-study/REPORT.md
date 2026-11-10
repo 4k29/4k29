@@ -111,4 +111,4 @@ clip401/401、clip前norm1.92061–8.87204、平均2.37333。全loss/gradient有
 
 限定Python/JSは12位置、最大logit差5.72205e-6、閾値2e-4超過0、同履歴argmax差0、独立4token分岐0。長文・別hardware・量子化・公開経路の一致とは主張しない。
 
-専用4軽量テスト、凍結artifact/ledger監査、完了結果監査に合格。最終専用CIのrun/headはCI_RECEIPTへ保存する。公開モデル・サイト、PR108以前の結果、正式R25/R46、既存ゲート、封印TESTは変更していない。Draft PR109、未マージ。
+専用4軽量テスト、凍結artifact/ledger監査、完了結果監査に合格。最終専用CI [run42745955598](https://github.com/4k29/4k29/actions/runs/42745955598) はcommit `f0e4ea5370f9fa6ea485a17e1c41c901ac849784`でsuccess。後続commitはCI receiptと報告メタデータだけで、凍結コード・データは不変。公開モデル・サイト、PR108以前の結果、正式R25/R46、既存ゲート、封印TESTは変更していない。Draft PR109、未マージ。
