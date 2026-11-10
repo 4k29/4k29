@@ -29,7 +29,7 @@ def main():
   import subprocess
   subprocess.run([sys.executable,str(P/'train.py'),'--until','4','--replay-preflight'],check=True);proof=read(P/'REPLAY_PROOF.json');assert proof==dict(integrity=integrity(target),trace=trace)
   assert digest(src['trajectory'])==initial_digest
-  write(P/'PREFLIGHT.json',dict(passed=True,separate_process_resume_exact=True,full_state_resume_exact=True,checkpoint_sha256=h,actual_optimizer_calls=4,retained_updates=0,discarded_original_calls=3,replay_calls=1,source_state_unchanged=True,Adam_storage_isolated=True,seconds=time.monotonic()-started,free_scratch_bytes=shutil.disk_usage(SCRATCH).free,free_persistent_bytes=shutil.disk_usage('/workspace').free,torch=torch.__version__,cpu_threads=2,projected_serial_training_seconds=(time.monotonic()-started)*401/4));return
+  write(P/'PREFLIGHT.json',dict(passed=True,separate_process_resume_exact=True,full_state_resume_exact=True,checkpoint_sha256=h,actual_optimizer_calls=4,retained_updates=0,discarded_original_calls=3,replay_calls=1,source_state_unchanged=True,Adam_storage_isolated=True,seconds=time.monotonic()-started,free_scratch_bytes=shutil.disk_usage(SCRATCH).free,free_persistent_bytes=shutil.disk_usage(ROOT).free,torch=torch.__version__,cpu_threads=2,projected_serial_training_seconds=(time.monotonic()-started)*401/4));return
  assert read(P/'PREFLIGHT.json')['passed'];assert args.until in [4,205,401]
  path=SCRATCH/'LR3-latest.pt'
  if path.exists():
