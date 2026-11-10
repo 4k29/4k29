@@ -1,0 +1,137 @@
+name: LR3 fixed401 update study
+on:
+  push:
+    branches: [research/inherited-adam-lr3]
+    paths: ['training/language/conversation-v2/lr-sensitivity-study/GO.json']
+jobs:
+  experiment:
+    if: github.event.repository.visibility == 'public'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: write
+    env:
+      OMP_NUM_THREADS: '2'
+      MKL_NUM_THREADS: '2'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /GOAL.md
+            /training/**/*.py
+            /training/**/*.mjs
+            /training/language/conversation-v2/PLAN.json
+            /training/language/conversation-v2/lr-sensitivity-study/*
+            /training/language/conversation-v2/mixed-retention-study/test_contract.py
+            /training/language/conversation-v2/mixed-retention-study/nll.py
+            /training/language/conversation-v2/mixed-retention-study/prepare_nll.py
+            /training/language/conversation-v2/mixed-retention-study/audit.py
+            /training/language/conversation-v2/mixed-retention-study/train.py
+            /training/language/conversation-v2/mixed-retention-study/archive.py
+            /training/language/conversation-v2/mixed-retention-study/evaluate.py
+            /training/language/conversation-v2/mixed-retention-study/mix_runtime.py
+            /training/language/conversation-v2/mixed-retention-study/build.py
+            /training/language/conversation-v2/mixed-retention-study/DEV_BODY_NLL.json.gz
+            /training/language/conversation-v2/mixed-retention-study/POSITION_MAP.json.gz
+            /training/language/conversation-v2/mixed-retention-study/schedule.json.gz
+            /training/language/conversation-v2/mixed-retention-study/corpus.json.gz
+            /training/language/conversation-v2/mixed-retention-study/SOURCE_AUDIT.json
+            /training/language/conversation-v2/mixed-retention-study/TEACHER_AUDIT.json
+            /training/language/conversation-v2/mixed-retention-study/SAMPLING_PROTOCOL.json
+            /training/language/conversation-v2/mixed-retention-study/BOUNDARY_EXPOSURE.json
+            /training/language/conversation-v2/modern-corpus/next-foundation/corpus.jsonl.gz
+            /training/language/conversation-v2/modern-corpus/next-foundation/DATASET_AUDIT.json
+            /training/language/conversation-v2/modern-corpus/next-foundation/EVALUATION.json
+            /training/language/conversation-v2/modern-corpus/next-foundation/LICENSE_NOTICE.md
+            /training/language/conversation-v2/diverse-foundation/LICENSE_NOTICE.md
+            /training/language/conversation-v2/paragraph-foundation/corpus.jsonl.gz
+            /training/language/conversation-v2/paragraph-foundation/paragraph-context-use/INPUT_PAIRS.json
+            /training/language/conversation-v2/paragraph-foundation/newline-followup/EIGHT_CASE_AUDIT.json
+            /training/language/conversation-v2/data/tokenizer.json
+            /training/language/conversation-v2/core.py
+            /training/language/conversation-v2/modern-corpus/next_runtime.py
+            /training/language/conversation-v2/foundation-stage/runtime.py
+            /training/language/conversation-v2/lf-boundary-study/PLAN.json
+            /training/language/conversation-v2/mixed-volume-study/ci_audit.py
+            /training/language/conversation-v2/mixed-volume-study/test_contract.py
+            /training/language/conversation-v2/mixed-volume-study/audit.py
+            /training/language/conversation-v2/mixed-volume-study/restore_checkpoint.py
+            /training/language/conversation-v2/mixed-volume-study/verify_git.py
+            /training/language/conversation-v2/mixed-volume-study/archive.py
+            /training/language/conversation-v2/mixed-volume-study/nll.py
+            /training/language/conversation-v2/mixed-volume-study/evaluate.py
+            /training/language/conversation-v2/mixed-volume-study/train.py
+            /training/language/conversation-v2/mixed-volume-study/mix_runtime.py
+            /training/language/conversation-v2/mixed-volume-study/build.py
+            /training/language/conversation-v2/mixed-volume-study/corpus.json.gz
+            /training/language/conversation-v2/mixed-volume-study/schedule.json.gz
+            /training/language/conversation-v2/mixed-volume-study/POSITION_MAP.json.gz
+            /training/language/conversation-v2/mixed-volume-study/SOURCE_AUDIT.json
+            /training/language/conversation-v2/mixed-volume-study/TEACHER_AUDIT.json
+            /training/language/conversation-v2/mixed-volume-study/DEV_BODY_NLL.json.gz
+            /training/language/conversation-v2/mixed-retention-study/UPDATES.jsonl
+            /training/language/conversation-v2/mixed-retention-study/evaluation/terminal-MIX.json
+            /.github/workflows/lr3-sensitivity-study.yml
+      - name: Reject reruns or advanced branch before any model work
+        id: guard
+        env:
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          test "$RUN_ATTEMPT" = 1
+          test "$(git ls-remote origin refs/heads/research/inherited-adam-lr3 | cut -f1)" = "$GITHUB_SHA"
+          python3 - <<'PY'
+          import json,subprocess,os
+          p="training/language/conversation-v2/lr-sensitivity-study/GO.json"
+          g=json.load(open(p))
+          assert subprocess.check_output(["git","rev-parse",os.environ["GITHUB_SHA"]+"^"],text=True).strip()==g["expected_code_commit"]
+          assert g["planned_updates"]==401 and g["candidate_LR"]==3e-5
+          PY
+      - name: Save launch receipt before package or model work
+        run: |
+          python3 - <<'PY'
+          import json,pathlib,os
+          p=pathlib.Path("training/language/conversation-v2/lr-sensitivity-study/RUN_LAUNCH.json")
+          p.write_text(json.dumps(dict(workflow_run_id=int(os.environ["GITHUB_RUN_ID"]),source_trigger_commit=os.environ["GITHUB_SHA"],status="RESOURCE_SETUP",optimizer_calls=0,model_forwards=0),indent=2)+"\n")
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --sparse training/language/conversation-v2/lr-sensitivity-study/RUN_LAUNCH.json
+          git commit -m 'Record isolated public CPU LR3 launch [skip ci]'
+          git push origin HEAD:research/inherited-adam-lr3
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.14'
+      - name: Install exact numerical versions
+        run: |
+          python -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.14.1+cpu
+          python -m pip install --no-cache-dir numpy==2.3.5
+      - name: Recheck source numerical identity on actual training host
+        env:
+          TORCH_SETUP_OUTCOME: success
+        run: python training/language/conversation-v2/lr-sensitivity-study/probe_main.py
+      - name: Freeze, preflight, train401, cold restore, evaluate and audit
+        run: python training/language/conversation-v2/lr-sensitivity-study/run.py
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: lr3-failure-full-state-${{ github.run_id }}
+          retention-days: 7
+          path: |
+            training/language/conversation-v2/lr-sensitivity-study/
+            scratch/*.pt
+      - name: Preserve pre-optimizer failure receipt
+        if: failure() && steps.guard.outcome == 'success'
+        run: |
+          python3 - <<'PY'
+          import pathlib,json
+          p=pathlib.Path("training/language/conversation-v2/lr-sensitivity-study/RUN_STATUS.json")
+          if not p.exists():
+              gate=p.with_name("RESOURCE_MAIN_CPU.json")
+              p.write_text(json.dumps(dict(status="SETUP_OR_RESOURCE_GATE_FAILED",optimizer_calls=0,model_forwards=json.loads(gate.read_text()).get("model_forwards",0) if gate.exists() else 0,automatic_replay=0),indent=2)+"\n")
+          PY
+          git add --sparse training/language/conversation-v2/lr-sensitivity-study
+          git diff --cached --quiet || git commit -m 'Preserve LR3 stopped-state evidence without replay [skip ci]'
+          git push origin HEAD:research/inherited-adam-lr3
