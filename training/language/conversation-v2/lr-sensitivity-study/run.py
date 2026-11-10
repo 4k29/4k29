@@ -27,7 +27,7 @@ def cold(n,commit):
 def main():
  assert os.environ.get("GITHUB_RUN_ATTEMPT","1")=="1","No unattended job rerun/replay"
  go=json.loads((P/"GO.json").read_text());assert go["candidate_LR"]==3e-5 and go["planned_updates"]==401
- parent=subprocess.check_output(["git","rev-parse","HEAD^"],cwd=ROOT,text=True).strip();assert parent==go["expected_code_commit"]
+ parent=subprocess.check_output(["git","rev-parse",os.environ.get("GITHUB_SHA","HEAD")+"^"],cwd=ROOT,text=True).strip();assert parent==go["expected_code_commit"]
  cmd([sys.executable,str(P/"prepare.py")])
  publish("Freeze PLAN and all input SHAs before first LR3 optimizer call")
  cmd([sys.executable,"-m","unittest","discover","-s",str(P),"-p","test_contract.py"])
