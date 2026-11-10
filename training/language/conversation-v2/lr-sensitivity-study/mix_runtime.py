@@ -24,7 +24,10 @@ def payload(m,o,r,cursor,trace):
 
 def step(m,opt,r,c,b,i,phase,trace):
  capacity();x,y=pack(rows(c,b));m.train();opt.zero_grad(set_to_none=True)
- for g in opt.param_groups:g['lr']=3e-5
+ for g in opt.param_groups:
+  assert tuple(g['betas'])==(.9,.999) and g['eps']==1e-8 and g['weight_decay']==.05
+  g['lr']=3e-5
+ assert {g['lr'] for g in opt.param_groups}=={3e-5}
  loss=causal_ce(m(x),y);loss.backward();norm=float(clip_grad_accurate(m.parameters(),1.))
  assert torch.isfinite(loss) and all(p.grad is not None and torch.isfinite(p.grad).all() for p in m.parameters()) and __import__('math').isfinite(norm)
  assert int(y.ne(-100).sum())==sum(len(r['tokens'])-1 for r in rows(c,b))
