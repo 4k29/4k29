@@ -1,0 +1,107 @@
+name: LR3 resource and numeric probe
+on:
+  pull_request:
+    types: [opened]
+    branches: [research/mixed-volume-extension]
+jobs:
+  probe:
+    if: github.event.repository.visibility == 'public' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'research/inherited-adam-lr3'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /GOAL.md
+            /training/**/*.py
+            /training/**/*.mjs
+            /training/language/conversation-v2/PLAN.json
+            /training/language/conversation-v2/lr-sensitivity-study/*
+            /training/language/conversation-v2/mixed-retention-study/test_contract.py
+            /training/language/conversation-v2/mixed-retention-study/nll.py
+            /training/language/conversation-v2/mixed-retention-study/prepare_nll.py
+            /training/language/conversation-v2/mixed-retention-study/audit.py
+            /training/language/conversation-v2/mixed-retention-study/train.py
+            /training/language/conversation-v2/mixed-retention-study/archive.py
+            /training/language/conversation-v2/mixed-retention-study/evaluate.py
+            /training/language/conversation-v2/mixed-retention-study/mix_runtime.py
+            /training/language/conversation-v2/mixed-retention-study/build.py
+            /training/language/conversation-v2/mixed-retention-study/DEV_BODY_NLL.json.gz
+            /training/language/conversation-v2/mixed-retention-study/POSITION_MAP.json.gz
+            /training/language/conversation-v2/mixed-retention-study/schedule.json.gz
+            /training/language/conversation-v2/mixed-retention-study/corpus.json.gz
+            /training/language/conversation-v2/mixed-retention-study/SOURCE_AUDIT.json
+            /training/language/conversation-v2/mixed-retention-study/TEACHER_AUDIT.json
+            /training/language/conversation-v2/mixed-retention-study/SAMPLING_PROTOCOL.json
+            /training/language/conversation-v2/mixed-retention-study/BOUNDARY_EXPOSURE.json
+            /training/language/conversation-v2/modern-corpus/next-foundation/corpus.jsonl.gz
+            /training/language/conversation-v2/modern-corpus/next-foundation/DATASET_AUDIT.json
+            /training/language/conversation-v2/modern-corpus/next-foundation/EVALUATION.json
+            /training/language/conversation-v2/modern-corpus/next-foundation/LICENSE_NOTICE.md
+            /training/language/conversation-v2/diverse-foundation/LICENSE_NOTICE.md
+            /training/language/conversation-v2/paragraph-foundation/corpus.jsonl.gz
+            /training/language/conversation-v2/paragraph-foundation/paragraph-context-use/INPUT_PAIRS.json
+            /training/language/conversation-v2/paragraph-foundation/newline-followup/EIGHT_CASE_AUDIT.json
+            /training/language/conversation-v2/data/tokenizer.json
+            /training/language/conversation-v2/core.py
+            /training/language/conversation-v2/modern-corpus/next_runtime.py
+            /training/language/conversation-v2/foundation-stage/runtime.py
+            /training/language/conversation-v2/lf-boundary-study/PLAN.json
+            /training/language/conversation-v2/mixed-volume-study/ci_audit.py
+            /training/language/conversation-v2/mixed-volume-study/test_contract.py
+            /training/language/conversation-v2/mixed-volume-study/audit.py
+            /training/language/conversation-v2/mixed-volume-study/restore_checkpoint.py
+            /training/language/conversation-v2/mixed-volume-study/verify_git.py
+            /training/language/conversation-v2/mixed-volume-study/archive.py
+            /training/language/conversation-v2/mixed-volume-study/nll.py
+            /training/language/conversation-v2/mixed-volume-study/evaluate.py
+            /training/language/conversation-v2/mixed-volume-study/train.py
+            /training/language/conversation-v2/mixed-volume-study/mix_runtime.py
+            /training/language/conversation-v2/mixed-volume-study/build.py
+            /training/language/conversation-v2/mixed-volume-study/corpus.json.gz
+            /training/language/conversation-v2/mixed-volume-study/schedule.json.gz
+            /training/language/conversation-v2/mixed-volume-study/POSITION_MAP.json.gz
+            /training/language/conversation-v2/mixed-volume-study/SOURCE_AUDIT.json
+            /training/language/conversation-v2/mixed-volume-study/TEACHER_AUDIT.json
+            /training/language/conversation-v2/mixed-volume-study/DEV_BODY_NLL.json.gz
+            /training/language/conversation-v2/mixed-retention-study/UPDATES.jsonl
+            /training/language/conversation-v2/mixed-retention-study/evaluation/terminal-MIX.json
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: '3.12.14'
+      - name: Install fixed numerical dependencies
+        id: numeric
+        continue-on-error: true
+        run: |
+          python -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.14.1+cpu
+          python -m pip install --no-cache-dir numpy==2.3.5
+      - name: Zero-update artifact and numeric audit
+        if: always()
+        continue-on-error: true
+        env:
+          TORCH_SETUP_OUTCOME: ${{ steps.numeric.outcome }}
+        run: python training/language/conversation-v2/lr-sensitivity-study/probe.py
+      - name: Persist probe receipt only
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import pathlib,json
+          p=pathlib.Path("training/language/conversation-v2/lr-sensitivity-study/RESOURCE_PROBE.json")
+          if not p.exists():
+              p.parent.mkdir(parents=True,exist_ok=True)
+              p.write_text(json.dumps(dict(passed=False,optimizer_calls=0,model_forwards=0,error="Setup failed before probe receipt"),indent=2)+"\n")
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --sparse training/language/conversation-v2/lr-sensitivity-study/RESOURCE_PROBE.json
+          git commit -m 'Save zero-update public CPU resource probe [skip ci]'
+          git push origin HEAD:research/inherited-adam-lr3
+      - name: Enforce gate result
+        if: always()
+        run: python3 -c "import json; assert json.load(open('training/language/conversation-v2/lr-sensitivity-study/RESOURCE_PROBE.json'))['passed']"

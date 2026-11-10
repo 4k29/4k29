@@ -1,0 +1,38 @@
+name: LR sensitivity result integrity
+on:
+  push:
+    branches: [research/inherited-adam-lr3]
+    paths: [training/language/conversation-v2/lr-sensitivity-study/RESULTS_READY.json]
+permissions:
+  contents: write
+jobs:
+  results-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: training/language/conversation-v2/lr-sensitivity-study
+      - name: Reject reruns, aggregate and test without models
+        env:
+          STUDY: training/language/conversation-v2/lr-sensitivity-study
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = "1"
+          python "$STUDY/summarize_results.py"
+          python -m unittest discover -s "$STUDY" -p test_results.py
+          python - <<'PY'
+          import os,json,pathlib,hashlib
+          p=pathlib.Path(os.environ["STUDY"])
+          names=["PLAN.json","ADJUDICATION-mid205.json","ADJUDICATION-terminal401.json","BASELINE_REFERENCE.json","summarize_results.py","test_results.py","RESULTS_SUMMARY.json","REPORT.md","TABLES.md"]
+          receipt=dict(passed=True,run_id=os.environ["GITHUB_RUN_ID"],input_commit=os.environ["GITHUB_SHA"],tests=7,optimizer_calls=0,model_forwards=0,semantic_labels_verified_as_independent_human=False,scope="Post-reading numerical and coverage consistency only; no training or semantic judging",sha256={n:hashlib.sha256((p/n).read_bytes()).hexdigest() for n in names})
+          (p/"RESULTS_CI.json").write_text(json.dumps(receipt,indent=2)+"\n")
+          PY
+      - name: Save completed read-only result checks
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add training/language/conversation-v2/lr-sensitivity-study/RESULTS_SUMMARY.json training/language/conversation-v2/lr-sensitivity-study/RESULTS_CI.json
+          git commit -m "Verify completed LR study semantic coverage and result aggregation [skip ci]"
+          git push origin HEAD:research/inherited-adam-lr3
