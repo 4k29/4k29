@@ -6,9 +6,15 @@ from next_runtime import torch,restore_isolated,trajectory,digest,save,record,ca
 
 def sha(p):return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
 def capacity():
- assert shutil.disk_usage('/workspace').free>64*1024**2,'Persistent ledger reserve insufficient'
+ assert shutil.disk_usage(ROOT).free>64*1024**2,'Persistent ledger reserve insufficient'
  assert shutil.disk_usage(SCRATCH).free>500*1024**2,'Checkpoint atomic reserve insufficient'
- used=int(pathlib.Path('/sys/fs/cgroup/memory.current').read_text());lim=int(pathlib.Path('/sys/fs/cgroup/memory.max').read_text());assert lim-used>1024**3
+ lim_path=pathlib.Path('/sys/fs/cgroup/memory.max')
+ lim_text=lim_path.read_text().strip() if lim_path.exists() else 'max'
+ if lim_text!='max':
+  available=int(lim_text)-int(pathlib.Path('/sys/fs/cgroup/memory.current').read_text())
+ else:
+  available=int(next(s.split()[1] for s in pathlib.Path('/proc/meminfo').read_text().splitlines() if s.startswith('MemAvailable:')))*1024
+ assert available>1024**3,'Insufficient available RAM'
 
 def data():return json.load(gzip.open(P/'corpus.json.gz','rt')),json.load(gzip.open(P/'schedule.json.gz','rt'))
 def rows(c,b):return [dict(tokens=c[r['record']]['tokens'][r['start']:r['start']+r['length']]) for r in b]
