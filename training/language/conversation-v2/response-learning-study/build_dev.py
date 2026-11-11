@@ -1,8 +1,8 @@
 """Freeze supplementary assistant-authored grounded queries, never training teachers."""
-import json,pathlib,sys,hashlib
-P=pathlib.Path(__file__).resolve().parent;ROOT=pathlib.Path('/workspace/4k29');V=ROOT/'training/language/conversation-v2'
+import json,pathlib,sys,hashlib,os
+P=pathlib.Path(__file__).resolve().parent;V=pathlib.Path(os.environ.get('CE_V2_ROOT',str(P.parent)))
 sys.path.insert(0,str(V));from new_tokenizer import Encoder
-enc=Encoder(json.loads((V/'data/tokenizer.json').read_text()));old=json.loads(pathlib.Path('/dev/shm/response-ce-study/CANDIDATE_SPANS.json').read_text())['parts']['dev'];new=json.loads((P/'ADDITIONAL_DATA.json').read_text())['parts']['dev'];byid={r['id']:r for r in old+new}
+enc=Encoder(json.loads((V/'data/tokenizer.json').read_text()));old=json.loads((pathlib.Path(os.environ.get('CE_PRIOR_ROOT',str(V/'response-ce-study')))/'CANDIDATE_SPANS.json').read_text())['parts']['dev'];new=json.loads((P/'ADDITIONAL_DATA.json').read_text())['parts']['dev'];byid={r['id']:r for r in old+new}
 spec=[
 ('realpersona:13656:11','パンを食べなくなった理由は何でしたか？',['B','F'],['オーブンレンジに買い替えた','パンがうまく焼けなくなった'],'食欲不振や健康目的など原文にない原因へ置換しない。'),
 ('realpersona:06911:11','コーヒーの時はパンと米のどちらですか？',['C','D','F'],['コーヒー時にはパン'],'米が嫌いとは言っていない。選択のみでは比較理由の成功としない。'),
