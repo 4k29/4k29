@@ -58,7 +58,11 @@ def step(m,o,r,arm,i,label,tr):
  audit=None
  if i==0:
   g=captured[0].grad;his=sum(float(g[j,:row['response_body_start']-1].double().square().sum())for j,row in enumerate(rows));assert his>0
-  audit=dict(history_embedding_activation_gradient_L2=his**.5,masked_out_logit_gradient_abs_sum=outside,history_tokens_remain_in_attention=True,semantic_context_understanding_proven=False,logit_SHA=digest(logits.detach()))
+  qsum=0.0
+  for j,row in enumerate(rows):
+   prior=row['tokens'][:row['response_body_start']-1];role=max(k for k,t in enumerate(prior)if t in[3,4]);qsum+=float(g[j,role+1:row['response_body_start']-2].double().square().sum())
+  assert qsum>0
+  audit=dict(question_body_activation_gradient_L2=qsum**.5,history_embedding_activation_gradient_L2=his**.5,masked_out_logit_gradient_abs_sum=outside,history_tokens_remain_in_attention=True,semantic_context_understanding_proven=False,logit_SHA=digest(logits.detach()))
  before=[p.detach().clone()for p in m.parameters()]
  z=dict(step=i+1,loss=float(loss.detach()),input_tokens=int(y.ne(-100).sum()),active_teachers=int(yy.ne(-100).sum()),response_body_teachers=int((mask&(y>5)).sum()),response_EOS_teachers=int((mask&y.eq(2)).sum()),gradient_norm=norm,postclip_norm=post,clipped=norm>1,lr=1e-5,ids=[q['id']for q in rows],audit=audit)
  record(P/'UPDATES.jsonl',dict(event='intent',phase=label,arm=arm,trace=z));o.step();record(P/'UPDATES.jsonl',dict(event='returned',phase=label,arm=arm,trace=z))
