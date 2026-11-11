@@ -1,0 +1,81 @@
+name: Read-only response pilot DEV and evidence checks
+on:
+  push:
+    branches: [research/response-learning-pilot]
+    paths: [training/language/conversation-v2/response-learning-study/GO-extra.json]
+permissions:
+  contents: write
+jobs:
+  read-only:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      OMP_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+      PYTHONDONTWRITEBYTECODE: "1"
+      STUDY: training/language/conversation-v2/response-learning-study
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/conversation-v2/response-learning-study/
+            /training/language/conversation-v2/response-ce-study/
+            /training/language/conversation-v2/core.py
+            /training/language/conversation-v2/PLAN.json
+            /training/language/conversation-v2/data/tokenizer.json
+            /training/language/conversation-v2/data/train.docs.jsonl
+            /training/language/conversation-v2/data/dev.docs.jsonl
+            /training/language/conversation-v2/new_tokenizer.py
+            /training/language/conversation-v2/eval_core.py
+            /training/language/conversation-v2/foundation-stage/runtime.py
+            /training/language/conversation-v2/foundation-stage/prose_decode.py
+            /training/language/conversation-v2/modern-corpus/next_runtime.py
+            /training/language/conversation-v2/diverse-foundation/common.py
+            /training/language/conversation-v2/foundation-data/research/zero_update_preflight.py
+            /training/language/conversation-v2/mixed-retention-study/artifacts/MIX-579/
+            /training/language/conversation-v2/paragraph-foundation/evaluation/B-579.json
+            /training/language/conversation-v2/paragraph-foundation/panels/B-579.json
+            /training/language/model.py
+            /training/language/round10/word_bpe.py
+            /training/dialogue/tokenizer.py
+      - name: Prevent duplicated evaluation launch
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = "1"
+          test ! -f "$STUDY/EXTRA_EVALUATION.json"
+          python - <<'PY'
+          import pathlib,json,subprocess,os
+          p=pathlib.Path(os.environ["STUDY"]);go=json.loads((p/"GO-extra.json").read_text());assert subprocess.check_output(["git","rev-parse","HEAD^"],text=True).strip()==go["expected_code_commit"]
+          PY
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install same numerical libraries
+        run: |
+          python -m pip install --no-cache-dir torch==2.14.1+cpu --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install --no-cache-dir numpy==2.3.5
+      - name: Verify packed judgments and frozen evaluation inputs
+        run: |
+          python "$STUDY/unpack_data.py"
+          python - <<'PY'
+          import pathlib,json,hashlib,os
+          p=pathlib.Path(os.environ["STUDY"])
+          for f,h in json.loads((p/"EXTRA_PROTOCOL.json").read_text())["sha256"].items():assert hashlib.sha256((p/f).read_bytes()).hexdigest()==h,f
+          PY
+          python "$STUDY/test_study.py"
+      - name: Evaluate native and grounded DEV without optimizer
+        run: python "$STUDY/extra_eval.py"
+      - name: Preserve read-only evaluation and test receipt
+        run: |
+          python - <<'PY'
+          import json,pathlib,os
+          p=pathlib.Path(os.environ["STUDY"]);(p/"READONLY_CI.json").write_text(json.dumps(dict(run_id=os.environ["GITHUB_RUN_ID"],tests=7,passed=True,optimizer_calls=0,model_forwards="counted in EXTRA_EVALUATION.json",input_commit=os.environ["GITHUB_SHA"]),indent=2)+"\n")
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$STUDY/EXTRA_EVALUATION.json" "$STUDY/READONLY_CI.json"
+          git commit -m "Preserve additional fixed DEV evaluation with zero optimizer calls [skip ci]"
+          git push origin HEAD:research/response-learning-pilot
