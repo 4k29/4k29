@@ -13,3 +13,5 @@
 checkpointは`artifacts/{A,B}-PILOT{2,4}/checkpoint.json`に5分割のサイズ/SHAと全体SHAを保存する。`runtime.loader.load_checkpoint`で各部分→全体を検証し、RAMへ復元できる。COLDファイルは別bare GitでGitHubから取得した原本のみでの全model/Adam/RNG/sampler/trace一致証拠であり、通常の保存確認と区別する。
 
 本文や履歴には元の人間A/B役割を保持する。人間の自己申告をAIの自己属性とみなさない。CC-BY-SA-4.0の帰属情報は元レコードから継承し、再配布条件・削除申立ては既存response-data/sns-dataの運用に従う。保留本文を新しい公開成果物へ転載しない。自動判定だけで個人情報や全世界での話者独立性が保証されるわけではない。
+
+個別生成判定は`python response-learning-study/unpack_reading.py`で両SHAを検証してREADING.jsonを展開する。元生出力はevaluation/*.jsonとEXTRA_EVALUATION.jsonに圧縮せず保持している。
