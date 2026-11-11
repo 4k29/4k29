@@ -1,0 +1,49 @@
+name: Guarded pilot checkout cancellation
+on:
+  push:
+    branches: [research/response-pilot-control]
+    paths: [.github/workflows/response-pilot-control.yml]
+permissions:
+  actions: write
+  contents: write
+jobs:
+  cancel-before-model-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Cancel named checkout only and prove model step did not start
+        env:
+          CONTROL_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import urllib.request,json,os,time,base64
+          root="https://api.github.com/repos/4k29/4k29";headers={"Authorization":"Bearer "+os.environ["CONTROL_TOKEN"],"Accept":"application/vnd.github+json"}
+          def api(path,body=None,method=None):
+              req=urllib.request.Request(root+path,data=None if body is None else json.dumps(body).encode(),headers=headers,method=method)
+              with urllib.request.urlopen(req,timeout=30)as f:
+                  b=f.read();return json.loads(b)if b else None
+          jobs=api("/actions/runs/42965651932/jobs")["jobs"];j=jobs[0]
+          assert next(s for s in j["steps"]if s["number"]==2)["status"]=="in_progress"
+          assert next(s for s in j["steps"]if s["number"]==7)["status"]=="pending"
+          api("/actions/runs/42965651932/cancel",{},method="POST")
+          for _ in range(40):
+              r=api("/actions/runs/42965651932")
+              if r["status"]=="completed":break
+              time.sleep(3)
+          assert r["status"]=="completed"and r["conclusion"]=="cancelled"
+          j=api("/actions/runs/42965651932/jobs")["jobs"][0]
+          model=next(s for s in j["steps"]if s["number"]==7)
+          assert model["conclusion"]=="skipped" and not model.get("started_at")
+          cancelled=[]
+          for rid in [42965655356]:
+              q=api("/actions/runs/"+str(rid))
+              if q["status"]!="completed":api("/actions/runs/"+str(rid)+"/cancel",{},method="POST");cancelled.append(rid)
+          own=api("/actions/runs?branch=research%2Fresponse-pilot-control&per_page=8")["workflow_runs"]
+          for q in own:
+              if q["name"]=="Check static profile"and q["head_sha"]==os.environ["GITHUB_SHA"]and q["status"]!="completed":
+                  api("/actions/runs/"+str(q["id"])+"/cancel",{},method="POST");cancelled.append(q["id"])
+          receipt=dict(passed=True,cancelled_pilot_run=42965651932,model_step=model,optimizer_calls=0,model_forwards=0,reason="Full checkout too broad; replace with sparse exact inputs before model work",cancelled_own_unrelated_profile_runs=cancelled,controller_run=os.environ["GITHUB_RUN_ID"])
+          path="/contents/training/language/conversation-v2/response-learning-study/CHECKOUT_CANCELLATION.json"
+          api(path,dict(branch="research/response-pilot-control",message="Record confirmed pre-model cancellation, optimizer0 [skip ci]",content=base64.b64encode((json.dumps(receipt,indent=2)+"\n").encode()).decode()),method="PUT")
+          print(json.dumps(receipt))
+          PY
