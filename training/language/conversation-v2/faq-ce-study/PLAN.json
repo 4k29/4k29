@@ -1,0 +1,65 @@
+{
+  "frozen_before_optimizer": true,
+  "scope": "One-pass government FAQ A/B research;36695 reply body tokens below50000 goal, permitted bounded research; no general dialogue capability claim",
+  "initial": "PR108 MIX-579 fullstate fc24624bcd3a298e3d0b32ecf8b419af32354c6196c764544249d05abcd980f7",
+  "model": "own11.23M BPE3997 context256",
+  "arms": {
+    "A": "all52502 nonpadding shifted teachers",
+    "B": "same input36695 response body+393trueEOS=37088teachers"
+  },
+  "LR": 1e-05,
+  "clip": 1,
+  "optimizer": "inherited AdamW moments, step6940, betas.9/.999 eps1e-8 decay.05",
+  "normalization": "global active-teacher batch mean for each arm",
+  "N": 99,
+  "midpoint": 50,
+  "one_pass": true,
+  "retained_optimizer_calls": 198,
+  "discarded_original": 4,
+  "resume_replay": 2,
+  "anticipated_total_actual_calls": 204,
+  "evaluate": [
+    0,
+    50,
+    99
+  ],
+  "legacy_evaluation": "terminal old129+ASDC15+self4; initial saved common results reused",
+  "FAQ_generation": "all-vocabulary greedy toEOS or remaining256-token context; no suppression, penalties, insertion or repair",
+  "FAQ_DEV": 19,
+  "grounded_DEV": 4,
+  "grounded_type": "program constructed from unchanged held-out original answers; no training; same families as FAQ DEV, not human original extra QA",
+  "ASDC_training": 0,
+  "FAQ_type": "external knowledge, official source snapshot not guaranteed2026-current",
+  "checkpoint": [
+    50,
+    99
+  ],
+  "archive": "atomic fullstate +32MiB chunks, remote-only Git coldrestore",
+  "stop": [
+    "nonfinite",
+    "ledger mismatch",
+    "initial logits differ",
+    "update resume mismatch",
+    "save or SHA failure",
+    "diskfree<2GiB"
+  ],
+  "no_auto_replay": true,
+  "sha256": {
+    "training/language/conversation-v2/faq-ce-study/DATA.json": "c9ea975520f1aa94ffebcbfe643e5bfdd10539a4cdfb1edcb6c84ed00222ba32",
+    "training/language/conversation-v2/faq-ce-study/DEV_PROTOCOL.json": "de2374a79af4b95818fe7f0724bbf8166006a81604ea7b2705fdfad629be2fcb",
+    "training/language/conversation-v2/faq-ce-study/GROUNDED_DEV.json": "f1ca968fab0c621fc8bf06a0296f4b83343a3c67e0f4a98749fcc9f8edcb438b",
+    "training/language/conversation-v2/faq-ce-study/RIGHTS.json": "ea96080dbb8077f45b52b2a82865ea07c1bb664472c677e6ab46ddff95db71d6",
+    "training/language/conversation-v2/faq-ce-study/DATA_AUDIT.json": "2c3ad47f36fe9c11f9fef1c088ee9c26f917c393a89c1411c29976d798cfcd27",
+    "training/language/conversation-v2/faq-ce-study/ASDC-DATA.json": "4e872a097583d3487429ff88dd8175017ced6692e09015551dc5bc9be8825267",
+    "training/language/conversation-v2/faq-ce-study/engine.py": "b2a43916eacc87db27ee0208a288afd3c27c65d14d338d75fc7e4e3ef5b6314b",
+    "training/language/conversation-v2/faq-ce-study/verify_inputs.py": "147c827a149c49ad05fdacb30fed137bc1853002b806c1d3a777e9842b118b6a",
+    "training/language/conversation-v2/data/tokenizer.json": "6d079e4ba0a954ae32ad34a35ddd15384eb48b8eceaf3f3529a66e4266b1da06",
+    "training/language/conversation-v2/core.py": "52a74ecb7250a6671a432d3aa38ad9ed0ffbe1a3be5601fde3b721f1e735b83d",
+    "training/language/conversation-v2/new_tokenizer.py": "c5f131b6a8830809cb129125c029ab83a1290732ec53012b473d22e1dc3f2bbd",
+    "training/language/conversation-v2/foundation-stage/runtime.py": "c0b4a25142666a4e6a6efe652598dc4952880eb8aee498008c4cd3b1bbce1368",
+    "training/language/conversation-v2/foundation-stage/prose_decode.py": "fc567c30957a87c812f035600b7513b75f6c562c2f78eb2271b4e7e7f7a8fb0c",
+    "training/language/conversation-v2/modern-corpus/next_runtime.py": "3f6646100da045b1bce7edb69f50ddb746291191809a8fe9ff7e9ccb59e6fe8d",
+    "training/language/conversation-v2/paragraph-foundation/evaluation/B-579.json": "7ef436c4e65a0f503debb30f1326a39cca7fa47c9ae2951d271bd278483f4cf9",
+    "training/language/conversation-v2/paragraph-foundation/panels/B-579.json": "39e8ad7ab7e642d1c206607e5aebd563863ea885e8045c9acf448238bb276a78"
+  }
+}
