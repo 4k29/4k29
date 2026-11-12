@@ -19,6 +19,7 @@ def objects(text):
    depth-=1
    if depth==0:yield start,i+1,text[start:i+1]
  if quote or depth:raise ValueError('Unterminated source record; no guessed reconstruction')
+frozen_path=P/'CANDIDATE_METADATA.json';assert frozen_path.exists(),'Run unpack_metadata.py first; never silently regenerate frozen family/partition';frozen={r['id']:r for r in json.loads(frozen_path.read_text())}if frozen_path.exists()else{}
 rows=[];parse=[];rawstats={};seen={};dups=[]
 for f in sorted((P/'PRIVATE').glob('ichikara*.json')):
  text=f.read_text();ok=bad=0
@@ -37,11 +38,13 @@ for l in (P/'PRIVATE/instruction_ja.jsonl').read_text().splitlines():
   if u['name']=='agent':rows.append(dict(id=r['id']+':'+str(j),original_id=r['id'],source='instruction_ja',history=out[:],question='\n'.join(z['text']for z in out[:-1]),answer=u['text'],authorship='model-origin English assistant, machine Japanese translation, human modification',upstream_test_reference=any('/test.'in s for s in path),upstream_sources=path,rights='MIT; all three notices required'))
 # Group exact normalized question across all sources; every alternative answer stays together.
 parent=list(range(len(rows)));find=lambda i: i if parent[i]==i else find(parent[i])
+def union(i,j):
+ a,b=find(i),find(j);parent[max(a,b)]=min(a,b)
 qs={};answers={};nearlinks=[]
 for i,r in enumerate(rows):
  q=canon(r['question']);r['question_sha256']=sha(q.encode());a=canon(r['answer']);r['answer_sha256']=sha(a.encode());
  for mapping,key in [(qs,q),(answers,a)]:
-  if key in mapping:parent[find(i)]=find(mapping[key])
+  if key in mapping:union(i,mapping[key])
   else:mapping[key]=i
 # Conservative near-question unions from shared rare5-gram candidates; not semantic proof.
 buckets=collections.defaultdict(list);checked=set()
@@ -49,10 +52,10 @@ for i,r in enumerate(rows):
  q=canon(r['question']);grams={q[j:j+5]for j in range(max(0,len(q)-4))};candidates=set()
  for g in grams:
   if len(buckets[g])<=30:candidates.update(buckets[g])
- for j in candidates:
+ for j in sorted(candidates):
   if (j,i)in checked:continue
   checked.add((j,i));p=canon(rows[j]['question'])
-  if min(len(q),len(p))/max(len(q),len(p),1)>=.9 and difflib.SequenceMatcher(None,q,p,autojunk=False).ratio()>=.9:parent[find(i)]=find(j);nearlinks.append([rows[j]['id'],r['id']])
+  if min(len(q),len(p))/max(len(q),len(p),1)>=.9 and difflib.SequenceMatcher(None,q,p,autojunk=False).ratio()>=.9:union(i,j);nearlinks.append([rows[j]['id'],r['id']])
  for g in grams:buckets[g].append(i)
 oldquestions=set();oldanswers=set()
 for part in ['train','dev']:
@@ -61,9 +64,13 @@ for part in ['train','dev']:
   for i,u in enumerate(us):
    oldanswers.add(canon(u['text']))
    if i+1<len(us):oldquestions.add(canon(u['text']))
+component_families={};family_components={}
+for i,r in enumerate(rows):
+ if frozen:
+  expected=frozen[r['id']];root=find(i);family=expected['family'];assert component_families.setdefault(root,family)==family;assert family_components.setdefault(family,root)==root;assert expected['question_sha256']==r['question_sha256']and expected['answer_sha256']==r['answer_sha256']
 stats=collections.defaultdict(collections.Counter);public=[]
 for i,r in enumerate(rows):
- r['family']='qf:'+sha(rows[find(i)]['question'].encode());n=int(sha(('new-response-v1|'+r['family']).encode()),16)%10;r['partition']='dev'if n==0 else'train';q=enc(r['question']);a=enc(r['answer']);assert b''.join(pieces[t]for t in q)==r['question'].encode()and b''.join(pieces[t]for t in a)==r['answer'].encode();tokens=[1]
+ r['family']=frozen[r['id']]['family']if frozen else'qf:'+sha(rows[find(i)]['question'].encode());n=int(sha(('new-response-v1|'+r['family']).encode()),16)%10;r['partition']=frozen[r['id']]['partition']if frozen else('dev'if n==0 else'train');q=enc(r['question']);a=enc(r['answer']);assert b''.join(pieces[t]for t in q)==r['question'].encode()and b''.join(pieces[t]for t in a)==r['answer'].encode();tokens=[1]
  if r['source']=='ichikara':tokens+=[3]+q+[2,4];s=len(tokens);tokens+=a+[2]
  else:
   for j,u in enumerate(r['history']):
