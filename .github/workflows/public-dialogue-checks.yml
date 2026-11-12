@@ -1,0 +1,67 @@
+name: Public dialogue evidence checks
+on:
+  push:
+    branches: [research/public-dialogue-ce-study]
+    paths: [training/language/conversation-v2/public-dialogue-study/GO-checks.json]
+permissions:
+  contents: write
+jobs:
+  evidence:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      STUDY: training/language/conversation-v2/public-dialogue-study
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/conversation-v2/public-dialogue-study/
+            !/training/language/conversation-v2/public-dialogue-study/artifacts/*/part-*.bin
+            /training/language/conversation-v2/core.py
+            /training/language/conversation-v2/new_tokenizer.py
+            /training/language/conversation-v2/data/tokenizer.json
+            /training/language/conversation-v2/foundation-stage/runtime.py
+            /training/language/conversation-v2/foundation-stage/prose_decode.py
+            /training/language/conversation-v2/modern-corpus/next_runtime.py
+            /training/language/conversation-v2/paragraph-foundation/evaluation/B-579.json
+            /training/language/conversation-v2/paragraph-foundation/panels/B-579.json
+            /training/language/round10/word_bpe.py
+            /training/dialogue/tokenizer.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Extract signed analysis pack and guard completed model experiment
+        run: |
+          python - <<'PY'
+          import pathlib,json,os,base64,gzip,io,tarfile,hashlib,subprocess
+          p=pathlib.Path(os.environ['STUDY']);assert json.loads((p/'RESULT.json').read_text())['actual_optimizer_returns']==40
+          go=json.loads((p/'GO-checks.json').read_text());assert subprocess.check_output(['git','rev-parse','HEAD^'],text=True).strip()==go['expected_code_commit']
+          x=json.loads((p/'ANALYSIS_BUNDLE.json').read_text());b=base64.b64decode(x['base64']);assert hashlib.sha256(b).hexdigest()==x['sha256']
+          with tarfile.open(fileobj=io.BytesIO(gzip.decompress(b))) as tf:
+              for m in tf:
+                  q=pathlib.PurePosixPath(m.name);assert m.isfile() and not q.is_absolute() and '..'not in q.parts
+                  v=tf.extractfile(m).read();assert hashlib.sha256(v).hexdigest()==x['files'][m.name]
+                  target=p/m.name;target.parent.mkdir(exist_ok=True,parents=True);target.write_bytes(v)
+          PY
+      - name: Four fixed contract tests and ledger/cold/output consistency
+        run: |
+          python -B "$STUDY/verify_inputs.py"
+          python -B "$STUDY/verify_results.py"
+      - name: Preserve evidence receipt without model execution
+        run: |
+          python - <<'PY'
+          import pathlib,os,json,hashlib
+          p=pathlib.Path(os.environ['STUDY']);receipt=dict(passed=True,run_id=os.environ['GITHUB_RUN_ID'],url='https://github.com/4k29/4k29/actions/runs/'+os.environ['GITHUB_RUN_ID'],contract_tests=4,ledger_and_cold_consistency=True,additional_optimizer_calls=0,additional_model_forwards=0,model_experiment_actual_calls=40,model_experiment_retained=34)
+          (p/'CI_RECEIPT.json').write_text(json.dumps(receipt,indent=2)+'\n')
+          status=json.loads((p/'RESUME_STATUS.json').read_text());status['state']='complete';status['dedicated_evidence_CI']=receipt;status['next_step']='No active jobs or automatic replay. Read REPORT and NEXT_STRATEGY; no further optimizer calls authorized in this completed run.';(p/'RESUME_STATUS.json').write_text(json.dumps(status,indent=2)+'\n')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$STUDY"
+          git commit -m "Verify published ASDC pilot evidence and complete research report [skip ci]"
+          git push origin HEAD:research/public-dialogue-ce-study
