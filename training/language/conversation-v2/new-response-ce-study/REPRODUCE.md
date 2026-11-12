@@ -14,6 +14,8 @@
 
 `CE_V2_ROOT=/path/to/repo/training/language/conversation-v2`を設定し、以下の順で実行する。
 
+先に公開メタデータを`unpack_metadata.py`で展開する。凍結したfamily/分割を再生成せず、再計算した連結成分と既存割当の同一性を検証する。
+
 1. `build_candidates.py`：strictなレコード単位解析、重複除去、質問family分割、独自BPE/context監査。無効JSONレコードを修復しない。
 2. `select_review.py`：固定seed/層別/一family一件で107件を選択する。PRIVATE/REVIEW_CARDS.jsonは原文を含むため公開しない。
 3. `annotate_review.py`：保存済みの主エージェント読解判定を再適用する。意味品質を自動的に認定する分類器ではない。
