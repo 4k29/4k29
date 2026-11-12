@@ -50,6 +50,9 @@ class Study(unittest.TestCase):
   self.assertIn('NC_model_publication_prohibited',start_reasons(s));s['private_model_storage_confirmed']=True;self.assertEqual(start_reasons(s),[])
  def test_current_gate_closed(self):
   p=read('PLAN.json');self.assertFalse(p['learning_authorized']);self.assertEqual(p['actual_optimizer_calls'],0);self.assertTrue(start_reasons(p['start_state']))
+ def test_rebuild_keeps_frozen_data(self):
+  r=read('REBUILD_RECEIPT.json');self.assertTrue(r['passed']);self.assertEqual(r['before_SHA256'],r['after_SHA256'])
+  for f,h in r['after_SHA256'].items():self.assertEqual(hashlib.sha256((P/f).read_bytes()).hexdigest(),h)
  def test_DEV_is_draft_not_independent_TEST(self):
   d=read('DEV_DESIGN.json');self.assertEqual(len(d['cases']),6);self.assertFalse(d['sealed_TEST_used']);self.assertFalse(d['coverage']['previous_conversation_turns']);self.assertFalse(d['independent_native_human_evaluation'])
 if __name__=='__main__':unittest.main()
