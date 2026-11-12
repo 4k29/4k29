@@ -6,7 +6,7 @@
 
 ASDCの原配布元は [megagonlabs/asdc](https://github.com/megagonlabs/asdc/tree/f37d6575c73602adcb8ae3687520726793baa672)。固定revision `f37d6575c73602adcb8ae3687520726793baa672`、公式READMEのLicense節と完全なLICENSEを確認した。コーパス・注釈・文書はCC BY 4.0、プログラムはApache2.0。Yuta Hayashibe / Megagon Labs、LREC2022/NLP2021への帰属と加工記録を保持する。今回の元の架空対話について、学習・加工・再配布・公開研究checkpointと矛盾する追加禁止条件は見つからなかった。一般的なCC表示を第三者の記事等の包括的な権利確認とは扱わない。
 
-公式archiveは9,233,018 bytes、展開90,835,597 bytes、1590ファイル。`ACQUISITION.json` に取得時刻・revision・全ファイルSHAを保存した。本文全体の取得とTRAIN採用を区別する。
+公式archiveは9,233,018 bytes、展開90,835,597 bytes、1590ファイル。`ACQUISITION.json` に取得時刻・revision・全ファイルSHAを保存した。本文全体の取得とTRAIN採用を区別する。展開ファイルには同じ原文の複数表現もあり、90.8MBを独立原文量とは呼ばない。
 
 - main：210会話（公式TRAIN125 / DEV41 / TEST44）。架空の宿泊相談を人間が演じた資料。
 - vanilla：74,799単位。質問だけ・案内役の質問→顧客の回答が多く、74,799件のassistant教師ではない。
@@ -19,7 +19,7 @@ ASDCの原配布元は [megagonlabs/asdc](https://github.com/megagonlabs/asdc/tr
 
 応答長・疑問表現等で候補を取得したが、proxyは品質合格に使用していない。固定seed・topic層別で477件を選択。自動保留342件、残る135件の履歴と返答をメインagentが全文読解した。品質保留51件、既知話者分離で追加保留3件、採用81件（TRAIN66 / DEV15）。未提供の宿の在庫・価格・設備・アレルギー対応を断定するもの、欠けた参照、入力にない数字、改変を要する誤字などを保留した。原文を修復して通していない。
 
-採用TRAINは66文書・66 explicit family、返答本文2,058 BPE tokens、全serialized入力4,946 tokens（各BOSを含む）。モデルが読む非padding入力は4,880 positions。返答長は最短24、中央値30、最大48。main6、vanilla52、supplemental8。DEV15文書の返答本文450 tokens。新規取得した採用済み返答本文はTRAIN+DEV計2,508 tokensであり、112,288単位や候補全量を採用量へ加算しない。
+採用TRAINは66文書・66 explicit family、返答本文2,058 BPE tokens、履歴を含む人手本文4,524 tokens、全serialized入力4,946 tokens（各BOSを含む）。モデルが読む非padding入力は4,880 positions。返答長は最短24、中央値30、最大48。main6、vanilla52、supplemental8。DEV15文書の返答本文450 tokens。新規取得した採用済み返答本文はTRAIN+DEV計2,508 tokensであり、112,288単位や候補全量を採用量へ加算しない。
 
 採用応答は条件の言い換え、具体的な不足情報の質問、仮の検索条件の提案である。TRAIN66件すべてがこの限定目的に有用と読解したが、「具体的な事実回答が100%」という意味ではない。14件は3発話以上の履歴、52件は複数の文を含む（相槌＋質問も含む記述統計）。理由を展開する回答・根拠付き比較・手順の十分な教師量は確保できていない。本格的な広範囲A/BはNo-Go、ユーザーが許可した条件確認pilotを実施した。採用不足は固定した審査範囲の結論であり、ASDC全体に有用な回答が存在しないという結論ではない。
 
@@ -65,4 +65,4 @@ captionは両方21/32、共通初期の合格21件をすべて保持、新規合
 
 ## 検証成果物
 
-学習専用CIで4つの入力契約テストと実モデルpreflightを通過した。追加の証拠整合CIは `verify_results.py` により、40実呼出し・34保持・一巡66入力・各mask教師数・4つのcold state・無修正144生成×2・forward ledgerを検査する。ローカル検査と原文からの完全再構築は合格。最終CIのrun URL・結論は `CI_RECEIPT.json` に保存する。旧他sourceの530窓NLLや新しいPython/JS数値比較は再実行していない。source別NLLの分解はASDC内部のmain/vanilla/supplementalであり、3つの独立sourceの比較とは呼ばない。
+学習専用CIで4つの入力契約テストと実モデルpreflightを通過した。追加の証拠整合CIは `verify_results.py` により、40実呼出し・34保持・一巡66入力・各mask教師数・4つのcold state・無修正144生成×2・forward ledgerを検査する。ローカル検査と原文からの完全再構築は合格。[最終証拠CI](https://github.com/4k29/4k29/actions/runs/43155969335) も成功し、run URL・結論を `CI_RECEIPT.json` に保存した。後から読みやすく展開した `SCHEDULE.json` / `LOSS_MASKS.json` は凍結済みDATAの決定的な派生表であり、両保持ledgerとの完全対応も検査した。旧他sourceの530窓NLLや新しいPython/JS数値比較は再実行していない。source別NLLの分解はASDC内部のmain/vanilla/supplementalであり、3つの独立sourceの比較とは呼ばない。
