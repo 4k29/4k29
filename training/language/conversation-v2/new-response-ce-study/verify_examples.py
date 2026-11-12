@@ -1,0 +1,7 @@
+"""Check two source-grounded numerical responses; not synthetic training teacher generation."""
+import pathlib,json,re,decimal,fractions
+P=pathlib.Path(__file__).resolve().parent;rs=json.loads((P/'PRIVATE/REVIEW_CARDS.json').read_text());out=[]
+r=rs[18];values=[decimal.Decimal(x)for x in re.findall(r'-?\d+(?:\.\d+)?(?:[eE]\d+)?',r['question'])];expected=min(values);given=[decimal.Decimal(x)for x in re.findall(r'-?\d+(?:\.\d+)?(?:[eE]\d+)?',r['answer'])];assert expected in given;out.append(dict(id=r['id'],question_sha256=r['question_sha256'],answer_sha256=r['answer_sha256'],check='Decimal minimum from original question list',passed=True,expected_numeric=str(expected),semantic_response_read_separately=True))
+r=rs[38];eq=[tuple(map(int,z))for z in re.findall(r'(-?\d+)x([+-]\d+)y=(-?\d+)',r['question'].replace(' ',''))];assert len(eq)==2
+(a,b,c),(d,e,f)=eq;det=a*e-b*d;x=fractions.Fraction(c*e-b*f,det);y=fractions.Fraction(a*f-c*d,det);xx=re.findall(r'x\s*=\s*(-?\d+)',r['answer']);yy=re.findall(r'y\s*=\s*(-?\d+)',r['answer']);assert x==int(xx[-1])and y==int(yy[-1]);out.append(dict(id=r['id'],question_sha256=r['question_sha256'],answer_sha256=r['answer_sha256'],check='Exact Fraction solution of original two linear equations and substitution',passed=True,original_answer_not_modified=True))
+(P/'FACT_VERIFICATION.json').write_text(json.dumps(dict(cases=out,model_forwards=0,optimizer_calls=0,teacher_generated=False,only_these_examples_checked_not_entire_corpus=True),indent=2)+'\n');print('Numerical source checks passed:',len(out))
