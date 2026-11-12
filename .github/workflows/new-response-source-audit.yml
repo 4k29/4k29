@@ -2,7 +2,7 @@ name: New response source metadata audit
 on:
   push:
     branches: [research/new-response-ce-study]
-    paths: [training/language/conversation-v2/new-response-ce-study/GO-CI.json]
+    paths: [training/language/conversation-v2/new-response-ce-study/GO-REPRO-CI.json]
 permissions:
   contents: write
 jobs:
@@ -31,7 +31,7 @@ jobs:
           test "$GITHUB_RUN_ATTEMPT" = "1"
           python - <<'PY'
           import os,pathlib,json,subprocess
-          p=pathlib.Path(os.environ["STUDY"]);g=json.loads((p/"GO-CI.json").read_text());assert subprocess.check_output(["git","rev-parse","HEAD^"],text=True).strip()==g["expected_code_commit"];assert not(p/"PRIVATE").exists()
+          p=pathlib.Path(os.environ["STUDY"]);g=json.loads((p/"GO-REPRO-CI.json").read_text());assert subprocess.check_output(["git","rev-parse","HEAD^"],text=True).strip()==g["expected_code_commit"];assert not(p/"PRIVATE").exists()
           PY
       - uses: actions/setup-python@v5
         with:
@@ -45,10 +45,10 @@ jobs:
         run: |
           python - <<'PY'
           import json,pathlib,os,platform,sys
-          p=pathlib.Path(os.environ["STUDY"]);(p/"CI_RECEIPT.json").write_text(json.dumps(dict(passed=True,tests=14,run_id=os.environ["GITHUB_RUN_ID"],input_commit=os.environ["GITHUB_SHA"],optimizer_calls=0,model_forward_calls=0,source_text_downloads=0,raw_dataset_present=False,python=sys.version,platform=platform.platform()),indent=2)+"\n")
+          p=pathlib.Path(os.environ["STUDY"]);(p/"CI_REPRO_RECEIPT.json").write_text(json.dumps(dict(passed=True,tests=15,run_id=os.environ["GITHUB_RUN_ID"],input_commit=os.environ["GITHUB_SHA"],optimizer_calls=0,model_forward_calls=0,source_text_downloads=0,raw_dataset_present=False,python=sys.version,platform=platform.platform()),indent=2)+"\n")
           PY
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$STUDY/CI_RECEIPT.json"
-          git commit -m "Record source metadata CI with zero training and no raw download [skip ci]"
+          git add "$STUDY/CI_REPRO_RECEIPT.json"
+          git commit -m "Record source rebuild metadata CI with zero training and no raw download [skip ci]"
           git push origin HEAD:research/new-response-ce-study
