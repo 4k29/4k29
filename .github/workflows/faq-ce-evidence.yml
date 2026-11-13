@@ -1,0 +1,76 @@
+name: FAQ CE evidence only
+on:
+  push:
+    branches: [research/faq-response-ce-study]
+    paths: [training/language/conversation-v2/faq-ce-verified-study/GO-evidence.json]
+permissions:
+  contents: write
+jobs:
+  evidence:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      V2_ROOT: training/language/conversation-v2
+      STUDY: training/language/conversation-v2/faq-ce-verified-study
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/conversation-v2/faq-ce-study/
+            /training/language/conversation-v2/faq-ce-clean-study/
+            /training/language/conversation-v2/faq-ce-verified-study/
+            !/training/language/conversation-v2/**/part-*.bin
+            /training/language/conversation-v2/core.py
+            /training/language/conversation-v2/new_tokenizer.py
+            /training/language/conversation-v2/data/tokenizer.json
+            /training/language/conversation-v2/foundation-stage/prose_decode.py
+            /training/language/conversation-v2/foundation-stage/runtime.py
+            /training/language/conversation-v2/modern-corpus/next_runtime.py
+            /training/language/conversation-v2/paragraph-foundation/evaluation/B-579.json
+            /training/language/conversation-v2/paragraph-foundation/panels/B-579.json
+            /training/language/round10/word_bpe.py
+            /training/dialogue/tokenizer.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Verify and unpack new analysis without touching frozen inputs
+        run: |
+          python - <<'PY'
+          import pathlib,json,base64,gzip,tarfile,io,hashlib,os,subprocess
+          p=pathlib.Path(os.environ['STUDY']);v=p.parent;go=json.loads((p/'GO-evidence.json').read_text());assert os.environ['GITHUB_RUN_ATTEMPT']=='1';assert subprocess.check_output(['git','rev-parse','HEAD^'],text=True).strip()==go['expected_code_commit']
+          b=json.loads((p/'ANALYSIS_BUNDLE.json').read_text());data=base64.b64decode(b['base64']);assert hashlib.sha256(data).hexdigest()==b['sha256']==go['bundle_sha256'];names=[]
+          with tarfile.open(fileobj=io.BytesIO(gzip.decompress(data)))as t:
+            for x in t:
+              rel=pathlib.PurePosixPath(x.name);assert x.isfile() and not rel.is_absolute() and '..'not in rel.parts and rel.parts[0]in['faq-ce-study','faq-ce-clean-study','faq-ce-verified-study'];q=v/rel;assert not q.exists(),str(q);raw=t.extractfile(x).read();assert hashlib.sha256(raw).hexdigest()==b['files'][x.name];q.parent.mkdir(parents=True,exist_ok=True);q.write_bytes(raw);names.append(x.name)
+          assert sorted(names)==sorted(b['files']);assert not list(v.glob('faq-ce-*/artifacts/*/part-*.bin'))
+          PY
+      - name: Check own input contracts, 19 tests
+        run: |
+          python -B "$V2_ROOT/faq-ce-study/verify_inputs.py"
+          python -B "$V2_ROOT/faq-ce-clean-study/verify_inputs.py"
+          python -B "$STUDY/verify_inputs.py"
+      - name: Check complete execution evidence, 7 tests
+        run: python -B "$STUDY/verify_evidence.py"
+      - name: Python JS masked CE arithmetic only
+        run: python -B "$STUDY/numerical_contract.py"
+      - name: Portable standard library import regression
+        run: |
+          cd "$V2_ROOT/faq-ce-study"
+          python -c "import pathlib,select,profile,cProfile,subprocess; p=pathlib.Path.cwd(); assert all(not getattr(m,'__file__',None) or pathlib.Path(m.__file__).resolve().parent!=p for m in [select,profile,cProfile,subprocess]); print('No stdlib shadowing; no model construction')"
+      - name: Publish analysis and exact zero-model CI receipt
+        run: |
+          python - <<'PY'
+          import pathlib,json,os,subprocess,hashlib,sys
+          p=pathlib.Path(os.environ['STUDY']);v=p.parent;b=json.loads((p/'ANALYSIS_BUNDLE.json').read_text());sha=lambda n:hashlib.sha256((p/n).read_bytes()).hexdigest()
+          r=dict(passed=True,run_id=os.environ['GITHUB_RUN_ID'],input_commit=os.environ['GITHUB_SHA'],unittest_cases=26,arithmetic_check=True,portable_import_regression=True,checkpoint_chunks_not_downloaded=True,existing_cold_restore_receipts_verified=12,optimizer_calls=0,model_forwards=0,python=sys.version,node=subprocess.check_output(['node','--version'],text=True).strip(),PLAN_sha256=sha('PLAN.json'),DATA_sha256=sha('DATA.json'),REPORT_sha256=sha('REPORT.md'),analysis_bundle_sha256=b['sha256'])
+          (p/'CI_RECEIPT.json').write_text(json.dumps(r,indent=2)+'\n');(p/'RESUME_STATUS.json').write_text(json.dumps(dict(status='complete',primary='372 source-block-verified FAQ A/B, both93 retained updates',actual_optimizer_calls_all_runs=596,primary_actual_optimizer_calls=192,primary_retained=186,model_forwards_all_runs=96426,formal_adoption='No-Go',no_active_training=True,no_automatic_more_epochs=True,CI_run=os.environ['GITHUB_RUN_ID'],next='See NEXT_STRATEGY.md; no further optimization authorized by this completed plan'),indent=2)+'\n')
+          subprocess.run(['git','config','user.name','github-actions[bot]'],check=True);subprocess.run(['git','config','user.email','41898282+github-actions[bot]@users.noreply.github.com'],check=True);paths=[str(v/n)for n in b['files']]+[str(p/'CI_RECEIPT.json'),str(p/'RESUME_STATUS.json')];subprocess.run(['git','add','--']+paths,check=True);subprocess.run(['git','commit','-m','Save completed FAQ CE analysis and dedicated zero-update CI [skip ci]'],check=True);subprocess.run(['git','push','origin','HEAD:research/faq-response-ce-study'],check=True)
+          PY
