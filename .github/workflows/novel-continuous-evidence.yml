@@ -1,0 +1,59 @@
+name: Novel continuous prose data audit
+on:
+  push:
+    branches: [research/novel-continuous-study]
+    paths: [training/language/conversation-v2/novel-continuous-study/GO-evidence.json]
+permissions:
+  contents: write
+jobs:
+  data-only:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      STUDY: training/language/conversation-v2/novel-continuous-study
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/conversation-v2/novel-continuous-study/
+            /training/language/conversation-v2/data/tokenizer.json
+            /training/language/conversation-v2/new_tokenizer.py
+            /training/language/conversation-v2/faq-ce-verified-study/DATA.json
+            /training/language/round10/word_bpe.py
+            /training/dialogue/tokenizer.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Materialize safe public audit files, preserve frozen existing DEV
+        run: |
+          python - <<'PY'
+          import pathlib,os,json,hashlib,gzip,base64
+          p=pathlib.Path(os.environ['STUDY']);idx=json.loads((p/'PUBLIC_BUNDLE_INDEX.json').read_text());g=json.loads((p/'GO-evidence.json').read_text());assert idx['sha256']==g['index_bundle_SHA'];buf=bytearray()
+          for r in idx['parts']:
+            b=(p/'staging-public'/r['path']).read_bytes();assert len(b)==r['bytes']and hashlib.sha256(b).hexdigest()==r['sha256'];buf.extend(b)
+          assert len(buf)==idx['bytes']and hashlib.sha256(buf).hexdigest()==idx['sha256'];outer=json.loads(buf);raw=gzip.decompress(base64.b64decode(outer['payload']));assert hashlib.sha256(raw).hexdigest()==outer['sha256']==idx['source_bundle_inner_SHA'];files=json.loads(raw);white=json.loads(files['PUBLIC_WHITELIST.json']['content']);assert set(files)==set(white['files'])|{'PUBLIC_WHITELIST.json'}
+          for name,r in files.items():
+            q=pathlib.PurePosixPath(name);assert not q.is_absolute()and '..'not in q.parts;b=base64.b64decode(r['content'])if r['encoding']=='base64'else r['content'].encode();assert hashlib.sha256(b).hexdigest()==r['sha256'];target=p/name
+            if target.exists():assert target.read_bytes()==b,name
+            else:target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(b)
+          PY
+      - name: Install parsers, no model libraries
+        run: python -m pip install --no-cache-dir -r "$STUDY/requirements-data.txt"
+      - name: Eleven data and extraction regressions, no forward or optimizer
+        run: python -B "$STUDY/verify_study.py"
+      - name: Preserve final evidence and state
+        run: |
+          python - <<'PY'
+          import pathlib,json,os,sys,shutil
+          p=pathlib.Path(os.environ['STUDY']);r=dict(passed=True,tests=11,optimizer_calls=0,model_forwards=0,new_checkpoints=0,training_GO=False,run_id=os.environ['GITHUB_RUN_ID'],input_commit=os.environ['GITHUB_SHA'],Python=sys.version,CPU=os.cpu_count(),disk_free_bytes=shutil.disk_usage(p).free);(p/'CI_RECEIPT.json').write_text(json.dumps(r,indent=2)+'\n')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$STUDY"
+          git commit -m "Preserve novel prose acquisition, No-Go audit and eleven regression checks [skip ci]"
+          git push origin HEAD:research/novel-continuous-study
