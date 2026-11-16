@@ -39,3 +39,7 @@ caption自然短文候補は初期21/32、B20/32、C22/32。ただし両条件�
 4・7・14更新時点を各条件で完全保存した。6state合計は約809MBで、lossless分割・各chunk/全体SHA・完全state digestを保持。すべて新しいbare Gitからremote fetchし、alternatesなしで読み戻して全state一致を確認した。既存checkpoint・研究結果・GOAL・採用基準・公開モデル/サイトは変更していない。復元結果は `CHECKPOINT_INDEX.json` / `COLD-*`、逐次ledgerは `UPDATES.jsonl` / `OPTIMIZER_CALLS.jsonl` / `FORWARDS.jsonl` にある。
 
 限定pilotの実行・保存はGo条件を満たして完了したが、能力の正式採用・公開置換はNo-Go。書き方中心の少量データ、CのEOS0、Bのsource露出・特殊token密度、形状とdropout乱数消費が異なるため、データ一般・モデル容量・Attention・Tokenizer・応答CEの無効性は示していない。元の学習量不足の仮説も残る。同じ原文の追加epochやFAQ SFTへは進めなかった。
+
+## 専用CI
+
+実学習/安全検査/生成/完全復元のrun43968663506はsuccess。完了後の軽量CI run43972261801も12テスト合格し、数値集計・個別判定の再生成一致、固定DEV/原文SHA、実ledger、全6cold receipt、raw bytesの一致を確認した。後者の追加forward/optimizerは0。生成全文・判定・報告を保存し、途中の良いcheckpointへの乗り換えや追加epochは行っていない。標本はsource/family内で相関し、captionの小差は独立人間による有意な能力差とは扱わない。
