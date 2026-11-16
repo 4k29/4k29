@@ -1,0 +1,72 @@
+{
+  "training_GO": true,
+  "study_type": "limited-distribution-pilot",
+  "purpose": "writing/study-advice-heavy new-to-base prose exposure versus same-budget old prose; transfer to existing held-family DEV. NOT demonstration of broad multigenre language ability.",
+  "teachers_each": 13656,
+  "updates_each": 14,
+  "initial": "PR108 MIX-579 fullmodel/Adam/RNG",
+  "initial_fullstate_SHA": "fc24624bcd3a298e3d0b32ecf8b419af32354c6196c764544249d05abcd980f7",
+  "model": "own11.23M",
+  "tokenizer": "ownBPE3997",
+  "context": 256,
+  "LF": 1,
+  "objective": "normal causal CE, mean over all active teacher tokens, padding/lost left-context masked",
+  "AdamW": {
+    "inherit": true,
+    "LR": 3e-05,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "epsilon": 1e-08,
+    "weight_decay": 0.05,
+    "step_initial": 6940
+  },
+  "clip": 1.0,
+  "order": "fixed SCHEDULE B prefix from PR116, C original67 then4 new; no repeated teachers, no epoch2",
+  "save_points": [
+    4,
+    7,
+    14
+  ],
+  "preflight": {
+    "each_arm_discarded_original": 2,
+    "each_arm_resume_replay": 1,
+    "kept": 0,
+    "separate_process_exact_state": true
+  },
+  "expected_optimizer_calls": 34,
+  "primary": "terminal B/C,2-3 new connected relevant sentences, independently fromEOS; evaluate fixed6+12 andcaption32; alternate natural text accepted",
+  "termination_metrics": "EOS measured separately,C supplies0 EOS teachers; do not reject/claim success based only onEOS",
+  "initial_caption_reuse32": "only exact common MIX579 checkpoint SHA/prefix/length, no model call for cache",
+  "generation": "whole-vocabulary greedy raw bytes/no repair/no penalty/no forcedtoken",
+  "single_assistant_nonblind": true,
+  "independent_human": false,
+  "evaluation_inputs_fixed_before_optimizer": true,
+  "new_GV_DEV": false,
+  "stop": [
+    "nonfinite loss/grad/model/Adam",
+    "inconsistent checkpoint/cursor/ledger: no automaticreplay",
+    "less6GiB free beforestart orless2GiB beforeupdates",
+    "failed exact updated-state resume",
+    "SHA mismatch ormodel initialstate sharing"
+  ],
+  "no_midpoint_selection": true,
+  "no_SFT": true,
+  "sha256": {
+    "training/language/conversation-v2/gv-prose-pilot/corpus-C.jsonl.gz": "f4ac9a046177194631f1747b747ff90aeef17c2d15e994d6f71eadd490cb4fec",
+    "training/language/conversation-v2/gv-prose-pilot/GV_ADDITIONAL.jsonl.gz": "288692c75e891febd91b3800df62a7701b3889ee58628ef0124b7d18adc4b2e8",
+    "training/language/conversation-v2/gv-prose-pilot/GV_REVIEW.json": "c84996f8f71c5fed4d9947adce630966744b5fbb6613bb9ee4c8386529cdefa9",
+    "training/language/conversation-v2/gv-prose-pilot/SOURCE_RECEIPTS.json": "7da427b0f2a156a8521384ed486efbd95ff8ee7c349509cc4ec19f7e247ae7bd",
+    "training/language/conversation-v2/gv-prose-pilot/DATA_AUDIT.json": "eb3359890e4a132eceef8ac9f629824a8d49a859cacc1b05a8a92ec68ff28cd6",
+    "training/language/conversation-v2/gv-prose-pilot/SCHEDULE.json": "5a526233e2fd7cb331c53c52093d0dbade11b26792a1db6e3d55dae99ddad8e1",
+    "training/language/conversation-v2/gv-prose-pilot/EVALUATION_INPUTS.json": "5e13464b774f8af61832969ffac6038470c6c9b0d8ecc046ca7d098fa9157f72",
+    "training/language/conversation-v2/gv-prose-pilot/engine.py": "b69d92d81fb16afed295b7a6bdfdacd3b3a2eb8ce06160af36ba9a3faff31246",
+    "training/language/conversation-v2/foundation-absorption-study/corpus.jsonl.gz": "2f5edf308d5d95dfd573f32a8fda2ced42e92149990a5c96593fca1dac0121b2",
+    "training/language/conversation-v2/foundation-absorption-study/SCHEDULE.json": "5de559686399395b904b169d5316ea7cf63370e7b01546c6f0383aea84c9ceaa",
+    "training/language/conversation-v2/data/tokenizer.json": "6d079e4ba0a954ae32ad34a35ddd15384eb48b8eceaf3f3529a66e4266b1da06",
+    "training/language/conversation-v2/staged-prose-study/ADDITIONAL_PROSE.jsonl.gz": "4062cd39c2e7921b85d3e3ddf287a47e534b007d2b4166d57ee21b74f5d859cf",
+    "training/language/conversation-v2/novel-continuous-study/REVIEWED_PROSE.jsonl.gz": "e1cd3b0000c0d8abb8ca8687f6c929b3c95416040b2199cb5ffe3596acaf79c4"
+  },
+  "evaluation_limits": "Existing6+12 have no new writing-family-matched unseen panel; this measures transfer to existing exposed diagnostic DEV, not broad or writing-domain generalization."
+}
