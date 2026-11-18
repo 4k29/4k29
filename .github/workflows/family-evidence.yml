@@ -1,0 +1,23 @@
+name: Family diversity evidence verification
+on:
+  push:
+    branches: [research/family-diversity]
+    paths: [training/language/conversation-v2/family-diversity/REPORT.md]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/conversation-v2/data/tokenizer.json
+            /training/language/conversation-v2/gv-prose-pilot/SEMANTIC_REVIEW.json
+            /training/language/conversation-v2/family-diversity/
+      - working-directory: training/language/conversation-v2/family-diversity
+        run: |
+          python3 verify.py
+          python3 summarize.py
+          git diff --exit-code -- METRICS.json EXPOSURES.json TABLES.md LEAKAGE.json
