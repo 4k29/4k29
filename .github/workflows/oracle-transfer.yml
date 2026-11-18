@@ -5,6 +5,8 @@ on:
     paths: [training/language/conversation-v2/oracle-memorization/TRANSFER.json]
 permissions:
   contents: write
+  actions: read
+  checks: read
 jobs:
   preserve:
     runs-on: ubuntu-latest
@@ -19,7 +21,8 @@ jobs:
           set -eu
           dir=training/language/conversation-v2/oracle-memorization
           for run in $(jq -r '.[]' "$dir/TRANSFER.json"); do
-            gh run watch "$run" --interval 15 --exit-status
+            for poll in {1..40}; do test "$(gh run view "$run" --json status --jq .status)" = completed && break; sleep 15; done
+            test "$(gh run view "$run" --json conclusion --jq .conclusion)" = success
             gh run download "$run" --dir "$RUNNER_TEMP/records/$run"
             cp "$RUNNER_TEMP/records/$run"/*/*.json.gz "$dir/"
           done
