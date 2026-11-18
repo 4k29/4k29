@@ -1,0 +1,33 @@
+name: Preserve completed oracle outputs
+on:
+  push:
+    branches: [research/oracle-memorization]
+    paths: [training/language/conversation-v2/oracle-memorization/TRANSFER.json]
+permissions:
+  contents: write
+  actions: read
+  checks: read
+jobs:
+  preserve:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: /training/language/conversation-v2/oracle-memorization/TRANSFER.json
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          dir=training/language/conversation-v2/oracle-memorization
+          for run in $(jq -r '.[]' "$dir/TRANSFER.json"); do
+            for poll in {1..40}; do test "$(gh run view "$run" --json status --jq .status)" = completed && break; sleep 15; done
+            test "$(gh run view "$run" --json conclusion --jq .conclusion)" = success
+            gh run download "$run" --dir "$RUNNER_TEMP/records/$run"
+            cp "$RUNNER_TEMP/records/$run"/*/*.json.gz "$dir/"
+          done
+          git config user.name github-actions
+          git config user.email actions@users.noreply.github.com
+          git add --sparse "$dir"/*.json.gz
+          git commit -m 'Preserve original evaluation outputs from completed public CPU jobs'
+          git push origin HEAD:refs/heads/research/oracle-results-${{ github.run_id }}
