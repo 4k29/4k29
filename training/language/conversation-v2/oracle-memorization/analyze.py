@@ -6,7 +6,7 @@ def summarize(rows):
     teacher=[s for r in rows for s in r['teacher']]
     auto=[s for r in rows for s in r['steps'] if s['p_ref'] is not None]
     reps=[r['repeat']['start'] for r in rows if r['repeat']]
-    out=dict(cases=len(rows),two=sum(r['judgment']['two'] for r in rows),exact=sum(r['generated']==r['gold'] for r in rows if r['gold']),eos=sum(r['stop']=='EOS' for r in rows),repeated=len(reps),median_repeat=statistics.median(reps) if reps else None,teacher_nll=-sum(math.log(s['p_ref']) for s in teacher)/len(teacher) if teacher else None,aligned_self_ref_nll=-sum(math.log(s['p_ref']) for s in auto)/len(auto) if auto else None,median_exact_prefix=statistics.median([r['first_mismatch'] if r['first_mismatch'] is not None else min(len(r['generated']),len(r['gold'])) for r in rows]))
+    out=dict(cases=len(rows),two=sum(r['judgment']['two'] for r in rows),exact=sum(r['generated']==r['gold'] for r in rows if r['gold']),eos=sum(r['stop']=='EOS' for r in rows),repeated=len(reps),median_repeat=statistics.median(reps) if reps else None,teacher_nll=-math.fsum(math.log(s['p_ref']) for s in teacher)/len(teacher) if teacher else None,aligned_self_ref_nll=-math.fsum(math.log(s['p_ref']) for s in auto)/len(auto) if auto else None,median_exact_prefix=statistics.median([r['first_mismatch'] if r['first_mismatch'] is not None else min(len(r['generated']),len(r['gold'])) for r in rows]))
     return out
 def main():
     names=['initial','B-terminal','C-terminal','A-100','A-300','B-100','B-300']
