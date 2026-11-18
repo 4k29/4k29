@@ -1,0 +1,47 @@
+name: Family diversity CPU experiments
+on:
+  push:
+    branches: [research/family-diversity]
+    paths: [.github/workflows/family-diversity.yml]
+permissions:
+  contents: write
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arm: [B, C]
+    env:
+      STUDY: training/language/conversation-v2/family-diversity
+      ARM: ${{ matrix.arm }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/model.py
+            /training/language/conversation-v2/core.py
+            /training/language/conversation-v2/data/tokenizer.json
+            /training/language/conversation-v2/foundation-data/research/zero_update_preflight.py
+            /training/language/conversation-v2/gv-collapse-diagnostic/ADDITIONAL.jsonl.gz
+            /training/language/conversation-v2/gv-prose-pilot/corpus-C.jsonl.gz
+            /training/language/conversation-v2/gv-prose-pilot/EVALUATION_INPUTS.json
+            /training/language/conversation-v2/mixed-retention-study/artifacts/MIX-579/
+            /training/language/conversation-v2/oracle-memorization/*.py
+            /training/language/conversation-v2/oracle-memorization/PLAN*
+            /training/language/conversation-v2/oracle-memorization/TRAIN.json
+            /training/language/conversation-v2/family-diversity/
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -m pip install numpy
+          python -m pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+      - run: python "$STUDY/run.py" "$ARM"
+      - run: |
+          git config user.name github-actions
+          git config user.email actions@users.noreply.github.com
+          git add --sparse "$STUDY"
+          git commit -m "Archive complete family study condition $ARM"
+          git push origin "HEAD:refs/heads/research/family-evidence-$ARM-${{ github.run_id }}"
