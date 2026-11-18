@@ -1,5 +1,7 @@
 """Verify archived CPU runs, token masks, records, and cold checkpoint bytes."""
 import gzip
+import io
+import torch
 import hashlib
 import json
 import subprocess
@@ -42,13 +44,19 @@ def verify():
             folder=ROOT/'artifacts'/f'{arm}-{step}'
             manifest=read(folder/'checkpoint.json')
             hash_state=hashlib.sha256()
+            archive=io.BytesIO()
             git_root=ROOT.parents[3]
             for part in manifest['chunks']:
                 path=(folder/part['path']).relative_to(git_root)
                 content=subprocess.check_output(['git','show',f'HEAD:{path}'],cwd=git_root)
                 assert hashlib.sha256(content).hexdigest()==part['sha256']
                 hash_state.update(content)
+                archive.write(content)
             assert hash_state.hexdigest()==manifest['sha256']
+            archive.seek(0)
+            state = torch.load(archive,map_location='cpu',weights_only=False)['trajectory']
+            assert state['uniqueUpdates']==step and state['history']==ledger[:step]
+            assert {int(v['step']) for v in state['optimizer']['state'].values()}=={step}
     assert len(hashes)==1
     print('PASS: common initial state, equal teacher budgets, 18 evaluation panels, six Git-only archives')
 
