@@ -1,0 +1,42 @@
+{
+ "baseline": {
+  "path": "mixed-retention-study/artifacts/MIX-579/checkpoint.json",
+  "sha": "fc24624bcd3a298e3d0b32ecf8b419af32354c6196c764544249d05abcd980f7"
+ },
+ "seed": 12103,
+ "lr": 0.0001,
+ "clip": 1,
+ "steps": [
+  0,
+  10,
+  20,
+  50,
+  100,
+  200,
+  300
+ ],
+ "save_steps": [
+  100,
+  300
+ ],
+ "diagnostic_steps": [
+  0,
+  100,
+  300
+ ],
+ "optimizer": "fresh AdamW beta=(.9,.999) eps=1e-8 decay=.01",
+ "A_reference": "PR123 condition C; replay exactly 10 frozen updates separately for missing A-10",
+ "A_schedule_SHA": "71a217b6ad0aebd22a98b1f111317c88ef8aa2a8c1de9fce581d51938dc938e7",
+ "train_SHA": "0ce5ac5ffa5cb0d381ff69095eaa01643879387d5cff3701aa3dcc3adebf7e2d",
+ "eval_SHA": "5e13464b774f8af61832969ffac6038470c6c9b0d8ecc046ca7d098fa9157f72",
+ "diagnostic": "C update 1 masks and shape, eval-mode deterministic component means and budget-weighted mixture, no optimizer",
+ "denominators": "307 x225 then 306 x75, including D, where replay is masked",
+ "schedule_rule": "C/D use identical forward inputs and padding. D masks replay. B/C floor(total seen/divisor) replay increments, balanced ordered streams.",
+ "evaluation": "PR123 full-vocabulary greedy at fixed original limits; separate complete TRAIN reproduction, prose natural two sentences, initial caption retention. No new DEV.",
+ "frozen": {
+  "REPLAY.json": "607b0e5af87c2c11b163394458c533fc5e44bb507cd0906c13f399e9333f73f0",
+  "MONITOR.json": "e1519562645746fb2ba164bc38e366bf2252dd97862144b97d301353bbfd5867",
+  "SCHEDULE.json": "96bea259fb2feea0786e832a85a0c30d12ead48a08856edfd5ce2d9ecf45450f",
+  "PROVENANCE.json": "2010890c5871e8d4b98afc880287482d14730636bcb2a23f0ac2874b46bc237e"
+ }
+}
