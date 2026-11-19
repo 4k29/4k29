@@ -23,6 +23,7 @@ def summarize():
     schedule=read(ROOT/'SCHEDULE.json')
     start={r['id'] for r in archived['C-0'] if r['caption']}
     assert len(start)==21
+    initial_tokens={r['id']:r['generated'] for r in rows('A',0) if r['panel']=='caption'}
     lookup={}
     for i,r in enumerate(train):
         tokens=r['prefix']+r['gold']
@@ -63,6 +64,8 @@ def summarize():
                 if label is not None:
                     assert label['id']==r['id']
                 caption=bool(label['caption']) if shared else i in notes.get('caption',[])
+                if panel=='caption' and r['id'] in start and tokens==initial_tokens[r['id']]:
+                    caption=True
                 two=bool(label['two']) if shared else exact or i in notes.get('two',[])
                 endings=bool(label.get('ending_only')) if shared else i in notes.get('ending',[])
                 leaked=label.get('leakage') if shared else notes.get('leakage',{}).get(str(i))
