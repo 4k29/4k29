@@ -16,7 +16,26 @@ def validate():
     monitor=read(ROOT/'MONITOR.json')
     train=read(FAMILY/'TRAIN.json')
     pieces=[bytes.fromhex(t) for t in read(BASE/'data/tokenizer.json')['bytes']]
-    held=set(read(ROOT/'PROVENANCE.json')['held_dev_ids'])
+    provenance=read(ROOT/'PROVENANCE.json')
+    held=set(provenance['held_dev_ids'])
+    sources={}
+    for path,expected in provenance['archives'].items():
+        content=blob(BASE/path)
+        assert sha(content)==expected
+        sources[(BASE/path).stem.split('.')[0]]=json.loads(gzip.decompress(content))
+    receipts={}
+    for kind,expected in provenance['receipts'].items():
+        content=blob(BASE/'modern-corpus'/f'STAIR_{kind}.json')
+        assert sha(content)==expected
+        receipts[kind]=json.loads(content)
+    held_images=set(receipts['DEV_FAMILIES']['original_TRAIN_image_ids_reserved_for_DEV'])
+    held.update(r['id'] for r in receipts['SPLIT_AUDIT']['held'])
+    for r in replay+monitor:
+        assert r['original_image_id'] not in held_images
+        old=sources['corpus'][r['old_record']]
+        assert r['tokens']==old['tokens'] and r['source_text_sha256']==old['source_text_sha256']
+        assert any(w['record']==r['old_record'] and w['start']==0 and w['length']==len(r['tokens'])
+                   for w in sources['schedule'][r['old_update']-1])
     assert len({r['family'] for r in replay+monitor})==len(replay+monitor)
     for r in replay+monitor:
         assert r['id'] not in held and r['prefix']==[1] and r['gold'][-1]==2
