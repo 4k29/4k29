@@ -1,0 +1,73 @@
+{
+ "arms": {
+  "A": [
+   6,
+   1,
+   10,
+   11,
+   5,
+   3
+  ],
+  "B": [
+   5,
+   6,
+   3,
+   2,
+   1,
+   10,
+   11,
+   9,
+   0,
+   7,
+   4,
+   8
+  ],
+  "C": [
+   5,
+   6,
+   3,
+   2,
+   1,
+   10,
+   11,
+   9,
+   0,
+   7,
+   4,
+   8,
+   12,
+   13
+  ]
+ },
+ "seed": 12103,
+ "lr": 0.0001,
+ "clip": 1.0,
+ "steps": [
+  0,
+  20,
+  50,
+  100,
+  200,
+  300
+ ],
+ "budget": 92025,
+ "objective": "Mean continuation CE only. Preserve exact original prefix and prior continuation; no synthesized EOS.",
+ "matching": "Stratified by source. A selected within PR122 pool using seed. B uses PR122 pool. C adds geography and engineering.",
+ "schedule": "Sequential cycling of source tokens across batches with exact equal per-update mask counts. A split record may expose input twice but a target has one loss exposure per cycle.",
+ "evaluation": "Use fixed prose18 and caption32 with original limits, TRAIN continuation length. Whole-vocab greedy. Two novel coherent topical sentences; caption base 21 retention.",
+ "baseline": {
+  "path": "mixed-retention-study/artifacts/MIX-579/checkpoint.json",
+  "sha": "fc24624bcd3a298e3d0b32ecf8b419af32354c6196c764544249d05abcd980f7"
+ },
+ "inputs": {
+  "gv-prose-pilot/corpus-C.jsonl.gz": "f4ac9a046177194631f1747b747ff90aeef17c2d15e994d6f71eadd490cb4fec",
+  "gv-collapse-diagnostic/ADDITIONAL.jsonl.gz": "ebf0b178005b14b732e7fb847f0c234a1c9e5fadb2e9248b260bddae41654451",
+  "data/tokenizer.json": "6d079e4ba0a954ae32ad34a35ddd15384eb48b8eceaf3f3529a66e4266b1da06",
+  "gv-prose-pilot/EVALUATION_INPUTS.json": "5e13464b774f8af61832969ffac6038470c6c9b0d8ecc046ca7d098fa9157f72"
+ },
+ "frozen": {
+  "TRAIN.json": "0ce5ac5ffa5cb0d381ff69095eaa01643879387d5cff3701aa3dcc3adebf7e2d",
+  "SCHEDULE.json": "71a217b6ad0aebd22a98b1f111317c88ef8aa2a8c1de9fce581d51938dc938e7",
+  "SOURCE_AUDIT.json": "a9c8d9b3ed95798862e5716a3fb3aa777f491f586e5b47a8db5202d78e57dbdb"
+ }
+}
