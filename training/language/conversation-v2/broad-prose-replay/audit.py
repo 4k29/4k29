@@ -7,6 +7,7 @@ def audit():
     train=read(ROOT/'TRAIN.json')
     new_dev=read(ROOT/'NEW_DEV.json')
     old=read(OLD/'SCHEDULE.json')['C']
+    pieces=[bytes.fromhex(t) for t in read(ROOT.parent/'data/tokenizer.json')['bytes']]
     plan=read(ROOT/'PLAN.json')
     results={}
     for arm,batches in read(ROOT/'SCHEDULE.json').items():
@@ -39,6 +40,8 @@ def audit():
             no_match_in_archived_pr105=len(exposure)-known-unknown,min_exposures=min(exposure.values()),
             max_exposures=max(exposure.values()),max_family_share=max(families.values())/46013,
             prefix_median=median(len(train[i]['prefix']) for i in ids),length_median=median(len(train[i]['prefix']+train[i]['gold']) for i in ids),
+            sentence_count_median=median(b''.join(pieces[t] for t in train[i]['prefix']+train[i]['gold']).decode().count('。') for i in ids),
+            translated_teacher=sum(source[s] for s in source if 'translation' in s),
             source=source,special=special,by_document=docs,by_family=families)
     assert results['C']['max_exposures']==1
     save(ROOT/'DATA_AUDIT.json',results)

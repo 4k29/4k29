@@ -19,6 +19,11 @@ def main():
     assert read(OLD/'C-receipt.json')['retained']==300
     assert read(OLD/'C-ledger.json')[299]['step']==300
     audit()
+    b=read(ROOT/'B-ledger.json')
+    c=read(ROOT/'C-ledger.json')
+    assert b[:84]==c[:84]
+    assert b[84]['step']==85 and b[84]!=c[84]
+
     pieces=[bytes.fromhex(t) for t in read(BASE/'data/tokenizer.json')['bytes']]
     for arm,batches in read(ROOT/'SCHEDULE.json').items():
         ledger=read(ROOT/f'{arm}-ledger.json')
