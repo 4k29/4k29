@@ -41,10 +41,11 @@ def measure():
             train_bank[tuple(t[j:j+12])].add(r['id'])
     new={r['id'] for r in read(BASE/'broad-prose-replay/NEW_DEV.json')}
     reference={}
-    rows=[];decisions={}
+    rows=[];decisions={};optimization={}
     forwards=0
     for arm in 'ABC':
         ledger=read(ROOT/f'{arm}-ledger.json')
+        optimization[arm]=[dict(row, path_from_150=math.fsum(x['delta'] for x in ledger[:i])) for i,row in enumerate(ledger,1)]
         for k in plan['steps']:
             key=f'{arm}-{k}'
             data=raw(arm,k)
@@ -90,6 +91,11 @@ def measure():
                     repeat=r['repeat'],first_obvious_cycle=cycle,lf=seq.count(16),spaces=r['text'].count(' '),
                     train_matches_12=hits,leakage=index.get('leakage',{}).get(str(i)),
                     before_repeat=r['steps'][max(0,point-1)] if point is not None else None))
+            for r in labels:
+                change=r['nll_delta_from_150']
+                if change is not None and r['panel'] in ('prose','new'):
+                    relation='improved' if change<0 else 'worsened' if change>0 else 'unchanged'
+                    sums[f"{r['panel']}_nll_{relation}"]+=1
             decisions[key]=labels
             stats=ROOT/f'{key}-sample.json'
             if k==150 or arm=='A' and k!=175:stats=OLD/f'B-{k}-sample.json'
@@ -103,6 +109,7 @@ def measure():
                             clip=sum(r['clipped'] for r in present)))
     save(ROOT/'JUDGMENTS.json',decisions)
     save(ROOT/'METRICS.json',rows)
+    save(ROOT/'OPTIMIZATION.json',optimization)
     save(ROOT/'CALLS.json',dict(retained=300,reconstruction=200,witness_discarded=4,optimizer_total=504,
          generated_panel_forwards=forwards,sampled_nll_forwards=306,gradient_forward=7,optimization_forward=504,
          total_forwards=forwards+306+7+504))
