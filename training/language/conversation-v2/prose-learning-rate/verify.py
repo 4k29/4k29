@@ -23,6 +23,8 @@ def main():
     assert len(ledger)==len(old)==receipt['retained']==300
     assert recovery['initial_sha']==receipt['initial_sha']
     assert recovery['calls']==200 and receipt['optimizer_calls']==302
+    assert read(ROOT/'MIDPOINT_RECEIPT.json')=={'A_reconstruction_calls':100,'B_reconstruction_calls':0,'diagnostic_optimizer_calls':0}
+    for arm in 'AB':assert read(ROOT/f'{arm}-200-grad.json')['diagnostic_optimizer_calls']==0
     inputs=read(ROOT/'INPUTS.json')
     schedule=read(SOURCE/'SCHEDULE.json')['C']
     assert len(schedule)==len(inputs)==300
