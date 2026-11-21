@@ -110,9 +110,9 @@ def measure():
     save(ROOT/'JUDGMENTS.json',decisions)
     save(ROOT/'METRICS.json',rows)
     save(ROOT/'OPTIMIZATION.json',optimization)
-    save(ROOT/'CALLS.json',dict(retained=300,reconstruction=200,witness_discarded=4,optimizer_total=504,
-         generated_panel_forwards=forwards,sampled_nll_forwards=306,gradient_forward=7,optimization_forward=504,
-         total_forwards=forwards+306+7+504))
+    save(ROOT/'CALLS.json',dict(retained=300,reconstruction=250,witness_discarded=4,confirmed_optimizer_total=554,interrupted_unlogged_calls_max=50,
+         generated_panel_forwards=forwards,sampled_nll_forwards=306,gradient_forward=7,confirmed_optimization_forward=554,
+         confirmed_total_forwards=forwards+306+7+554))
     lines=['|条件|更新|固定DEV NLL|追加DEV NLL|標本TRAIN NLL|Replay監視NLL|固定二文|追加二文|caption保持|初期からL2|',
            '|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|']
     for r in rows:
