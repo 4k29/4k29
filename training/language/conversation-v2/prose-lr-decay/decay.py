@@ -22,6 +22,7 @@ base=read(OLD/'PLAN.json')
 
 def freeze():
     rates=dict(A=[3e-5]*150,B=[3e-6+1.35e-5*(1+math.cos(math.pi*i/149)) for i in range(150)],C=[1.65e-5]*150)
+    rates['B'][0],rates['B'][-1]=3e-5,3e-6
     assert math.isclose(math.fsum(rates['B'])/150,1.65e-5,abs_tol=1e-20)
     save(ROOT/'PLAN.json',dict(rates=rates,steps=[150,175,200,250,300],checkpoints=[200,300],
          initial=base['baseline'],inherited={str(p.relative_to(ROOT.parent)):sha(p) for p in [
