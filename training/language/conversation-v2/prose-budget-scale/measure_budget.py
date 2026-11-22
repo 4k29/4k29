@@ -76,6 +76,9 @@ def build():
                 repeat_points[p].append(repeat)
             cycle=first_cycle(seq)
             hits=[i for i in range(len(seq)-11) if tuple(seq[i:i+12]) in train_grams]
+            if q and 'harmful_repetition' in q:
+                counts.update({f'{p}_harmful_repetition':int(q['harmful_repetition']),
+                               f'{p}_appropriate_eos':int(q.get('appropriate_eos',False))})
             counts.update({p:1,f'{p}_one':one,f'{p}_two':two,f'{p}_eos':r['stop']=='EOS',
                            f'{p}_clip_cycle':cycle is not None,f'{p}_match12':bool(hits)})
             if p=='caption':
@@ -86,7 +89,9 @@ def build():
             nll_delta=result_nll-baseline_nll[r['id']] if result_nll is not None else None
             detail.append(dict(id=r['id'],panel=p,nll=result_nll,nll_delta_from_300=nll_delta,
                  reference_logp_gap=math.fsum(gap)/len(gap) if gap else None,first_mismatch=mismatch,
-                 repeat=repeat,cycle=cycle,match12=hits,stop=r['stop'],lf=seq.count(16),space=r['text'].count(' '),
+                 repeat=repeat,cycle=cycle,
+                 harmful_cycle_candidate=cycle if q and q.get('harmful_repetition') else None,
+                 match12=hits,stop=r['stop'],lf=seq.count(16),space=r['text'].count(' '),
                  caption=cap,initial_caption=r['id'] in initial,one=one,two=two,manual=q,
                  before_repeat=r['steps'][max(0,repeat-1)] if repeat is not None else None))
         scores[name]=dict(counts=counts,nll={p:math.fsum(v)/len(v) for p,v in nll.items() if v},
@@ -124,6 +129,11 @@ def build():
     for k in (300,450,600):
         r=scores[f'C-{k}'];n=r['nll'];c=r['counts']
         lines.append(f"|{k}|{n['prose']:.4f}|{n['new']:.4f}|{r['train_sample']:.4f}|{r['replay']:.4f}|{c['caption_retained']}/21|{c['caption_natural']}/32|{c['prose_two']+c['new_two']}/25|")
+    lines.extend(['','|隔離診断|本文NLL|自然な一文|自然な二文|最初の機械的4-gram再出現位置|',
+                  '|---:|---:|---:|---:|---:|'])
+    for k in (300,600):
+        r=scores[f'heldout-{k}'];c=r['counts']
+        lines.append(f"|{k}|{r['nll']['heldout']:.4f}|{int(c['heldout_one'])}/1|{int(c['heldout_two'])}/1|{r['repeat_median']['heldout']}|")
     (ROOT/'TABLES.md').write_text('\n'.join(lines)+'\n')
 
 if __name__=='__main__':
