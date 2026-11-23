@@ -20,7 +20,7 @@ def save(name,obj):
     (ROOT/name).write_text(json.dumps(obj,ensure_ascii=False,indent=1)+'\n')
 
 def files(arm,k):
-    directory=(OLD if k==300 or arm=='A' and k in (450,600)
+    directory=(OLD.parent/'prose-lr-decay' if k==300 else OLD if arm=='A' and k in (450,600)
                else ROOT/'control' if arm=='A' else ROOT)
     base=directory/f'C-{k}'
     return Path(f'{base}.json.gz'),Path(f'{base}-sample.json')

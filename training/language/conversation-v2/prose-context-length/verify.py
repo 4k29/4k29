@@ -1,7 +1,7 @@
 """Verify frozen seams, label equivalence, cold states and execution evidence."""
 from collections import Counter
-from train import ROOT, BASE, OLD, prior, audit, recover, read, sha, torch
 from analyze import files, raw, POINTS
+from train import ROOT, BASE, OLD, prior, audit, recover, read, sha, torch
 
 def main():
     plan=read(ROOT/'PLAN.json')
