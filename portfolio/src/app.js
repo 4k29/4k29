@@ -64,8 +64,7 @@ const projectNodes = projects.map(item=>{
 function createGallery(id,items,article=false) {
   const gallery=byId(id);
   const heading=gallery.querySelector('h2');
-  backspace(heading);
-  const flickerHeading=descriptionTyping(heading,1);
+  const headingScramble=new Scramble(heading);
   const seed=Math.floor(Math.random()*32768);
   const variation=(index,channel)=>hash(seed+index*397+channel*883);
   const backdrop=el('div',{class:'gallery-backdrop','aria-hidden':'true'});
@@ -241,7 +240,7 @@ function createGallery(id,items,article=false) {
     if(movement) animateSelection();
 
     const headingProgress=reduced.matches ? 1 : ease(amount,0,.68);
-    flickerHeading(headingProgress,false);
+    headingScramble.render(headingProgress);
     heading.style.visibility=headingProgress>0 ? 'visible' : 'hidden';
     const opened=reduced.matches ? 1 : closing ? ease(amount,0,1) : 1-(1-amount)**1.65;
     tiles.forEach(({button},i)=>{
@@ -304,7 +303,7 @@ function backspace(container) {
     const isFlickering=!reduced.matches && amount>0 && amount<1;
     characters.forEach((glyph,i)=>{
       const nearEdge=i<remaining && i>=remaining-7;
-      const flicker=isFlickering && nearEdge && glyph.textContent.trim();
+      const flicker=isFlickering && nearEdge && !glyph.classList.contains('scramble-glyph') && glyph.textContent.trim();
       glyph.classList.toggle('erase-flicker-off',Boolean(flicker && hash(i*13+tick*71)<.18));
       if(flicker && hash(i*37+tick*19)>.35)
         glyph.dataset.eraseInk=String((i+tick)%5);
@@ -527,16 +526,27 @@ function showPanel(node,opacity,region) {
   visible(node,opacity,opacity > .94);
 }
 // Reveal strips of the actual logo while a few unsettled strips briefly drop out.
-function logoMask(progress) {
-  if(progress>=1 || reduced.matches) return 'none';
+function paintLogo(visual,progress) {
+  if(progress>=1 || reduced.matches) {
+    visual.style.clipPath='none';
+    visual.style.removeProperty('--logo-flash');
+    return;
+  }
   const frame=Math.floor(progress*24);
+  const palette=['#26e7a0','#b58cff','#ffe44d','#ff86ce','#69cbff'];
+  const colors=[];
   const strips=Array.from({length:12},(_,i)=>{
     const left=i*100/12, right=(i+1)*100/12;
     const distance=progress*12-i;
     const height=distance>1.2 || (distance>-.35 && hash(i*191+frame*67)>.34) ? 100 : 0;
+    const color=height && distance<3 && progress>0
+      ? palette[(i*2+frame)%palette.length]+'b8'
+      : 'transparent';
+    colors.push(`${color} ${left}% ${right}%`);
     return `${left}% 0, ${left}% ${height}%, ${right}% ${height}%, ${right}% 0`;
   });
-  return 'polygon(0 0, '+strips.join(', ')+')';
+  visual.style.clipPath='polygon(0 0, '+strips.join(', ')+')';
+  visual.style.setProperty('--logo-flash','linear-gradient(90deg, '+colors.join(', ')+')');
 }
 function render(s,m) {
   let frameBox = m.dormant;
@@ -616,7 +626,7 @@ function render(s,m) {
   showPanel(projectPanel,projectAlpha,frameBox);
   projectNodes.forEach((node,i)=>{
     node.hidden=i!==projectIndex;
-    node.querySelector('.project-visual').style.clipPath=logoMask(logoProgress);
+    paintLogo(node.querySelector('.project-visual'),logoProgress);
   });
   showPanel(contact,contactAlpha,m.contact);
   erase.intro(introErase);
