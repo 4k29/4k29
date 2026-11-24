@@ -845,8 +845,10 @@ function showPanel(node,opacity,region) {
 }
 // Keep the reveal deterministic when scrolling back through the same frame.
 const logoColumns=8, logoRows=5;
+// The reveal advances rightward, with neighboring columns allowed to interleave.
+const logoRevealOrder=tile=>tile%logoColumns+1.6*hash(181+tile*173);
 const logoTiles=Array.from({length:logoColumns*logoRows},(_,i)=>i)
-  .sort((a,b)=>hash(181+a*173)-hash(181+b*173));
+  .sort((a,b)=>logoRevealOrder(a)-logoRevealOrder(b));
 const logoPalette=['#26e7a0','#b58cff','#ffe44d','#ff86ce','#69cbff'];
 
 function paintLogo(visual,progress) {
