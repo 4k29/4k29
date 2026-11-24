@@ -1,0 +1,133 @@
+{
+  "status": "FROZEN_PAIRED_DISPOSABLE_ASSAY",
+  "createdUtc": "2026-10-26T01:25:53.799054+00:00",
+  "trainingAuthorized": true,
+  "panelSha256": "b6162fd113b21069dadffe539bd5219d94877210e83bc6c53d3abd464ef390dc",
+  "codeReceipts": {
+    "training/language/diagnostics/learnability-20261026/evaluate.py": "382ad7243719268873d6213be66a92222b8ea68f7101779fef3fe1dbfd066ea8",
+    "training/language/diagnostics/learnability-20261026/build_panel.py": "98237c9133b9ad61b652f590516c06261ba8e4b01f807cd6c485cf78a510b897",
+    "training/language/diagnostics/learnability-20261026/assay_runtime.py": "1ca134c2a8551635c63b41ff99edfe1eb6c5d98a2bb526295bd74e8e5246e464",
+    "training/language/model.py": "fa4f8a42143c7231e50e6828141e072af5510b2a278e95696faa67f5815c716f",
+    "training/language/round46/context_preference.py": "bb74c43e2cdb60dac73d50568ca413c53dbdded35a99bfced43a0d6b2e698097",
+    "training/language/diagnostics/context-use-20261025/diagnostic_core.py": "15e47bdebb245fd463f9d38ce7c2cfe1142a3dd6236f660e12a8bca83e9c6fa7",
+    "training/language/diagnostics/context-use-20261025/run_diagnostic.py": "d57313bc0d94debeb0359f8e36dba8b1c879a74ff01810f0dc3227d1d2fdf88d",
+    "training/language/diagnostics/learnability-20261026/analyze.py": "29d3f2c8b311b75e29a242309f3d011225773289e160935fb37898a6178708ca"
+  },
+  "initialCheckpoint": "training/language/round46/continue-10000/best-aligned-checkpoint.pt",
+  "initialCheckpointSha256": "d99f85f706d40702393410c05733274bcc59528c7c776ff9ba3cea74d2647f1d",
+  "initialSelectedStep": 9500,
+  "initialAdamCounter": 29500,
+  "arms": {
+    "A": "authentic context/target correspondence",
+    "B": "fixed equal-token-length context permutation within same64; target unchanged"
+  },
+  "onlyArmDifference": "context-target assignment; same context and target multisets, per-row history length, batchwidth, target dose, start model/Adam/RNG, update order and objective",
+  "recipe": {
+    "batch": 8,
+    "uniqueUpdatesPerArm": 198,
+    "replayedOptimizerStepsPerArm": 2,
+    "actualOptimizerStepsPerArm": 200,
+    "actualTotalBudget": 400,
+    "lr": 4.4999999999999996e-05,
+    "optimizer": "inherited AdamW including all moments/hyperparameters",
+    "objective": "existing ordinary response CE, per-example target mean then batch mean, no EOS targets, eval+fork_rng, no mass concentration, no new loss",
+    "sampleOrder": "reshuffle all64 by inherited private Python RNG each8 batches; same indices in botharms",
+    "clipGradientNorm": 1,
+    "threads": 1,
+    "precision": "CPU FP32 deterministic",
+    "checkpointSelection": "none, fixed198 unique terminal; replay not accumulated",
+    "importantScope": "One factor within this narrow assay, not one factor versus entire production R46 recipe"
+  },
+  "generationCaseIds": [
+    "fit-061",
+    "fit-000",
+    "fit-057",
+    "fit-042",
+    "fit-003",
+    "fit-060",
+    "fit-029",
+    "fit-023",
+    "fit-054",
+    "fit-045",
+    "fit-019",
+    "fit-033",
+    "fit-031",
+    "fit-024",
+    "fit-047",
+    "fit-032",
+    "heldaside-005",
+    "heldaside-010",
+    "heldaside-000",
+    "heldaside-027",
+    "heldaside-011",
+    "heldaside-018",
+    "heldaside-020",
+    "heldaside-030",
+    "heldaside-006",
+    "heldaside-002",
+    "heldaside-014",
+    "heldaside-004",
+    "heldaside-024",
+    "heldaside-016",
+    "heldaside-007",
+    "heldaside-029"
+  ],
+  "evaluation": {
+    "endpoints": [
+      "baseline",
+      "A",
+      "B"
+    ],
+    "teacherForced": "all96 fixedgold with correct/permuted contexts; EOS at goldend separate",
+    "generation": "SHA-fixed16fit+16heldaside each correct/permuted, all3 endpoints; full-vocabulary greedy192,trueEOS,no repairs/filter/penalty",
+    "generationsExpected": 192,
+    "teacherForcedRowsExpected": 576,
+    "blindAssistant": "before endpoint key disclosure, rate naturalness/whole meaning/appropriate/content-specific/generic/loops/drift; no human-validation claim",
+    "metrics": "macro/tokenweightedNLL, contextgain wrong-minus-correct, A-minus-B gain, paired own-fit drop; 2000swap-paircluster bootstrap seed2049",
+    "reportStrata": [
+      "fit versus heldaside",
+      "both-reviewers-clear mismatch versus other/disputed",
+      "target length <=24 versus >24tokens"
+    ],
+    "limitations": "heldaside not updated by assay but drawn from previously supervised original TRAIN; not unseen generalization"
+  },
+  "successInterpretation": {
+    "fit": "effect sizes/all64 cases first; illustrative strong-fit flag >=20% own-assignment macroNLL reduction and >=48/64 improve, not a learning-ability boundary",
+    "narrowAssociation": "A-specific real-context/contextgain improvement plus improved content-appropriate whole raw generations; lexical pickup/trainNLL alone insufficient; compare A/B and baseline casewise, no binaryclaim from only tiny sample",
+    "transfer": "same evidence on heldaside supports within-TRAIN transfer only",
+    "failure": "no effect at198unique does not prove capacity shortage; TF-only improvements prioritize self-history diagnostics",
+    "bootstrap": "CI descriptive for this fixed panel, not unseen population"
+  },
+  "preOutputDataReview": {
+    "first": "independent-data-review.json",
+    "second": "independent-evaluation-preflight.json",
+    "keepDisagreement": true,
+    "noRedrawOrExclusion": true,
+    "allBNegativeAssumption": false,
+    "rootVerdict": "GO limited original-correspondence/permuted assay; pure all-negative semantic benchmark NOT approved",
+    "reason": "Mathematical assignment intervention and family/length/marginal controls pass. Some B replies plausible: frozen per-case annotations and separate reporting; no examples changed. Data reviewer NoGo concerns retained, evaluation and engineering agree not fatal for this limited interpretation."
+  },
+  "technicalPreflight": {
+    "A": "e94573e179af7ebad265e2e0478681f0bb6d4c640a59225e707074446ba03f75",
+    "B": "5f4b9e33d3ecfec5473476345b5d14b7679417b66850afa5ddb4d6b44c393186",
+    "passed": true,
+    "zeroUpdates": true,
+    "measurementFix": "FP64 audit reference with same tolerances; no training-condition change; original failure retained"
+  },
+  "stopConditions": [
+    "nonfinite loss/grad/state",
+    "original CE scalar/gradient mismatch",
+    "source/plan/code hash mismatch",
+    "resume fullstate/trace mismatch",
+    "budget exceeded",
+    "unexpected TEST or overlap"
+  ],
+  "prohibited": [
+    "adoption",
+    "model/site replacement",
+    "merge",
+    "sealedTEST",
+    "R48 mass-focus restart",
+    "extension or checkpoint tuning based on results"
+  ]
+}
