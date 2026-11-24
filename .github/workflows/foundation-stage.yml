@@ -1,0 +1,48 @@
+name: Modern Japanese foundation evidence
+on:
+  pull_request:
+    paths:
+      - 'training/language/conversation-v2/foundation-stage/**'
+      - '.github/workflows/foundation-stage.yml'
+permissions:
+  contents: read
+jobs:
+  foundation-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            GOAL.md
+            .github/workflows/foundation-stage.yml
+            training/language/conversation-v2/foundation-stage
+            training/language/conversation-v2/core.py
+            training/language/conversation-v2/new_tokenizer.py
+            training/language/conversation-v2/eval_core.py
+            training/language/conversation-v2/PLAN.json
+            training/language/conversation-v2/data/tokenizer.json
+            training/language/conversation-v2/data/data.json
+            training/language/conversation-v2/data/train.tokens.bin
+            training/language/conversation-v2/data/dev.tokens.bin
+            training/language/conversation-v2/epoch1/content-dev.json
+            training/language/conversation-v2/response-data/final/active-dev.json
+            training/language/conversation-v2/foundation-data/evaluation/human-dev.json
+            training/language/conversation-v2/foundation-data/DATA-LICENSE.md
+            training/language/conversation-v2/foundation-data/catalog.json
+            training/language/conversation-v2/foundation-data/research/zero_update_preflight.py
+            training/language/conversation-v2/grounded-objective/PLAN.json
+            training/language/conversation-v2/grounded-objective/data.json
+            training/language/conversation-v2/grounded-objective/CONTEXT_PROBE_PLAN.json
+            training/language/conversation-v2/grounded-objective/evaluation/initial3470.json
+            training/language/conversation-v2/parity.py
+            training/language/conversation-v2/parity.mjs
+            training/language/model.py
+            training/language/round10/word_bpe.py
+            training/dialogue/tokenizer.py
+            training/dialogue/inference.mjs
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python training/language/conversation-v2/foundation-stage/verify.py
+      - run: python -m unittest discover -s training/language/conversation-v2/foundation-stage -p test_results.py -v
