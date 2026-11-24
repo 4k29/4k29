@@ -1,0 +1,38 @@
+{
+  "modelSourceSha256": "fa4f8a42143c7231e50e6828141e072af5510b2a278e95696faa67f5815c716f",
+  "parentModelConfig": {
+    "vocabulary": 5455,
+    "dim": 192,
+    "layers": 8,
+    "heads": 4,
+    "hidden": 768,
+    "context": 256,
+    "dropout": 0.1,
+    "epsilon": 1e-05
+  },
+  "futureSuffixPerturbations": [
+    {
+      "length": 64,
+      "sharedPrefixTokens": 32,
+      "maxEarlierLogitChange": 0.0,
+      "maxLaterLogitChange": 13.626533508300781
+    },
+    {
+      "length": 128,
+      "sharedPrefixTokens": 32,
+      "maxEarlierLogitChange": 0.0,
+      "maxLaterLogitChange": 16.952367782592773
+    },
+    {
+      "length": 256,
+      "sharedPrefixTokens": 32,
+      "maxEarlierLogitChange": 0.0,
+      "maxLaterLogitChange": 16.952367782592773
+    }
+  ],
+  "existingSmallFixtureTestsPassed": 3,
+  "additionalExperimentalOptimizerUpdates": 0,
+  "note": "Existing toy tests include their own tiny optimizer-resume fixture; no experiment optimizer updates. Actual8-layer parent tested with suffix changes at3 lengths.",
+  "inputRecipe": "a=(torch.arange(length)+6).reshape(1,-1); b=a.clone(); b[:,32:]+=131; compare first32 logits in eval/no_grad at threads1",
+  "fixtureTestSourceSha256": "5253a54c6e5ed414238134720271bbbc2dcfc891916a31ccd730425d4d4b27a3"
+}
