@@ -143,6 +143,24 @@ def objective():
         if k.startswith('heldout'):continue
         n=r['nll'];c=r['counts']
         lines.append(f"|{k}|{n['prose']:.5f}|{n['new']:.5f}|{r['train_sample']:.5f}|{r['replay']:.5f}|{c['retained']}/21|{c['caption']}/32|{c['one']}／{c['two']}|")
+    part1=read(ROOT/'PART1_METRICS.json')
+    lines.extend(['','|Part 1・既知TRAIN一致なし14件|長い履歴|短い履歴・位置0起点|短い履歴・元の絶対位置|',
+                  '|---|---:|---:|---:|'])
+    for key in KEYS:
+        z=part1['models'][key]['group']['no_known_train_match']
+        lines.append(f"|{key}|{z['full']:.5f}|{z['short']:.5f}|{z['shifted']:.5f}|")
+    lines.extend(['','|独立終端用4件|本文NLL|自然な一文／二文|','|---|---:|---:|'])
+    for arm in 'AB':
+        z=metrics[f'heldout-{arm}']
+        lines.append(f"|{arm}|{z['nll']:.5f}|{z['one']}／{z['two']}|")
+    journal=[json.loads(line) for line in (ROOT/'CALL_JOURNAL.jsonl').read_text().splitlines()]
+    assert journal[::2]==[dict(x,event='begin') for x in journal[1::2]]
+    calls=Counter(x['kind'] for x in journal[1::2])
+    part2_forward=sum(raw(ROOT/f'C-{k}.json.gz')['forwards'] for k in POINTS if k>300)
+    part2_forward+=sum(raw(ROOT/f'part2-heldout-{arm}.json.gz')['forwards'] for arm in 'AB')
+    write('CALLS.json',dict(optimizer=calls,part1_forward=sum(x['forwards'] for x in part1['models'].values()),
+        part2_greedy_teacher_forward=part2_forward,part2_monitor_forward=4*34,
+        part2_update_forward=calls.total()))
     (ROOT/'TABLES.md').write_text('\n'.join(lines)+'\n')
 
 if __name__=='__main__':
