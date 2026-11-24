@@ -82,39 +82,6 @@ export function hash(n) {
   const x = Math.imul(n ^ (n >>> 16), 0x45d9f3b);
   return ((x ^ (x >>> 16)) >>> 0) / 4294967296;
 }
-export class TypeFlicker {
-  constructor(description, text) {
-    this.glyphs=Array.from(text.replace(/\s+/gu,''));
-    this.layer=document.createElement('span');
-    this.layer.className='type-flicker';
-    this.layer.setAttribute('aria-hidden','true');
-    this.fragments=Array.from({length:6},()=>{
-      const fragment=document.createElement('span');
-      this.layer.append(fragment);
-      return fragment;
-    });
-    description.classList.add('flicker-copy');
-    description.append(this.layer);
-  }
-
-  render(progress) {
-    const frame=Math.floor(progress*10);
-    this.layer.hidden=progress<=0 || progress>=.87;
-    if(this.layer.hidden || frame===this.frame) return;
-    this.frame=frame;
-    this.fragments.forEach((fragment,index)=>{
-      const seed=frame*293+index*131;
-      const offset=Math.floor(hash(seed+5)*this.glyphs.length);
-      const length=1+Math.floor(hash(seed+17)*4);
-      fragment.hidden=hash(seed+23)>.70;
-      fragment.textContent=Array.from({length},(_,i)=>this.glyphs[(offset+i)%this.glyphs.length]).join('');
-      fragment.style.left=(6+hash(seed+39)*79)+'%';
-      fragment.style.top=(index<3 ? 2+hash(seed+53)*15 : 76+hash(seed+53)*14)+'%';
-      fragment.dataset.ink=String(Math.floor(hash(seed+61)*5));
-    });
-  }
-}
-
 export class Scramble {
   constructor(node) {
     const text = node.textContent;

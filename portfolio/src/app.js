@@ -1,5 +1,5 @@
 import { profile, photos, articles, projects } from './content.js';
-import { box, bottomRight, clamp, corner, cursor, drawFrame, ease, mixBox, mixPoint, phase, place, point, right, hash, Scramble, TypeFlicker, visible } from './motion.js';
+import { box, bottomRight, clamp, corner, cursor, drawFrame, ease, mixBox, mixPoint, phase, place, point, right, hash, Scramble, visible } from './motion.js';
 
 const byId = (id) => document.getElementById(id);
 const el = (tag, attrs = {}, ...children) => {
@@ -55,13 +55,9 @@ const about = byId('about');
 const projectPanel = byId('project-panel');
 const contact = byId('contact');
 const agent = byId('agent');
-const assistants=Array.from({length:2},()=>{
-  const helper=agent.cloneNode(true);
-  helper.removeAttribute('id');
-  agent.after(helper);
-  return helper;
-});
-const galleryCursors=[agent,...assistants];
+const sweeper=agent.cloneNode(true);
+sweeper.removeAttribute('id');
+agent.after(sweeper);
 aboutContent(about.querySelector('.about-content'));
 profileLinks(contact.querySelector('.profile-links'));
 
@@ -70,29 +66,10 @@ const projectNodes = projects.map(item=>{
   projectPanel.append(node);
   return node;
 });
-function frameEdges(className) {
-  return el('span',{class:'frame '+className,'aria-hidden':'true'},
-    ...Array.from({length:4},()=>el('i')));
-}
-
 function framePoint(region,x,y) {
   const angle=region.rotation*Math.PI/180;
   return point(region.x+x*Math.cos(angle)-y*Math.sin(angle),
     region.y+x*Math.sin(angle)+y*Math.cos(angle));
-}
-
-function traceFrame(border,region,amount) {
-  const {w,h}=region;
-  const top=ease(amount,0,.53);
-  const depth=ease(amount,.53,1);
-  const [upper,left,rightEdge,lower]=border.children;
-  upper.style.width=(w*top)+'px';
-  left.style.height=rightEdge.style.height=(h*depth)+'px';
-  lower.style.width=w+'px';
-  lower.style.top=Math.max(0,h*depth-1)+'px';
-  visible(lower,depth>0 ? 1 : 0);
-  visible(border,amount>0 ? 1 : 0);
-  return depth ? framePoint(region,w,h*depth) : framePoint(region,w*top,0);
 }
 
 function createGallery(id,items,article=false) {
@@ -103,20 +80,18 @@ function createGallery(id,items,article=false) {
   const variation=(index,channel)=>hash(seed+index*397+channel*883);
   const close=el('button',{class:'text-button gallery-close',type:'button',hidden:''},'Back to grid');
   const detail=el('div',{class:'gallery-detail',hidden:''});
-  const detailBorder=frameEdges('gallery-border');
   const photoName=el('span',{class:'gallery-filename'});
   const articleTitle=article ? articleLink(items[0]) : null;
   const caption=articleTitle ?? photoName;
-  detail.append(detailBorder,caption);
+  detail.append(caption);
   const tiles=items.map((item,index)=>{
-    const border=frameEdges('gallery-border');
     const visual=artwork(item,'gallery-image');
     const button=el('button',{
       class:'gallery-tile',type:'button','aria-label':item.title,'aria-pressed':'false',title:item.title,
-    },border,visual);
+    },visual);
     button.addEventListener('click',()=>select(selected===index ? -1 : index));
     gallery.append(button);
-    return {item,button,border,visual};
+    return {item,button};
   });
   gallery.append(close,detail);
 
@@ -146,7 +121,7 @@ function createGallery(id,items,article=false) {
       gallery.removeAttribute('aria-busy');
       updateDetail();
     } else {
-      movement={from:regions,to,index:index>=0 ? index : previous};
+      movement={from:regions,to,index:index>=0 ? index : previous,exchange:index>=0 && previous>=0 ? previous : -1};
       gallery.setAttribute('aria-busy','true');
     }
     requestRender();
@@ -233,20 +208,24 @@ function createGallery(id,items,article=false) {
     const region=regions[selected];
     const bounds=box(region.x,region.y+region.h+8,region.w,42);
     place(detail,bounds);
-    traceFrame(detailBorder,bounds,1);
   }
 
   function animateSelection() {
-    const {from,to,index}=movement;
+    const {from,to,index,exchange}=movement;
     const now=performance.now();
     movement.start ??= now;
     const t=clamp((now-movement.start)/790);
     const sweep=1-(1-phase(t,.08,.93))**3;
     regions=from.map((region,i)=>{
       const delay=(i%3)*.046;
-      const p=i===index ? ease(t,0,.92) : 1-(1-phase(t,.09+delay,.91+delay))**3;
+      const incoming=i===index;
+      const outgoing=i===exchange;
+      const p=incoming ? ease(t,exchange>=0 ? .07 : 0,.96) :
+        outgoing ? ease(t,0,.85) : 1-(1-phase(t,.09+delay,.91+delay))**3;
       const result=mixBox(region,to[i],p);
-      if(i!==index) result.y+=Math.sin(p*Math.PI)*(i%2 ? 15 : -11);
+      const verticalArc=exchange>=0 && (incoming || outgoing) ? (incoming ? 26 : -26) :
+        incoming ? 0 : i%2 ? 15 : -11;
+      result.y+=Math.sin(p*Math.PI)*verticalArc;
       return result;
     });
     const selectedRegion=regions[index];
@@ -257,7 +236,7 @@ function createGallery(id,items,article=false) {
       if(t>.08 && t<.8 && movingAside>=0) {
         const side=regions[movingAside];
         const headsRight=to[movingAside].x>from[movingAside].x;
-        cursor(assistants[0],framePoint(side,headsRight ? 0 : side.w,side.h*(.43+sweep*.18)));
+        cursor(sweeper,framePoint(side,headsRight ? 0 : side.w,side.h*(.43+sweep*.18)));
       }
     }
     if(t<1) {
@@ -303,24 +282,27 @@ function createGallery(id,items,article=false) {
     else if(ready) updateDetail();
 
     headingText.render(ease(amount,0,.25));
-    const lanes=galleryCursors.length;
-    const batches=Math.ceil(tiles.length/lanes);
-    tiles.forEach(({button,border,visual},i)=>{
+    tiles.forEach(({button},i)=>{
       const region=regions[i];
-      const lane=i%lanes;
-      const delay=lane*.16;
-      const step=phase(amount*batches-Math.floor(i/lanes),delay,1);
-      const trace=phase(step,.14,.77);
-      const reveal=ease(step,.79,1);
-      place(button,region);
-      const tip=traceFrame(border,region,trace);
-      visual.style.clipPath='inset(0 0 '+(1-reveal)*100+'% 0)';
-      button.style.visibility=step>.14 ? 'visible' : 'hidden';
-      if(!ready && step>0 && step<.79 && !reduced.matches) {
-        const previous=i>=lanes ? bottomRight(regions[i-lanes]) : point(region.x-14,region.y-10);
-        const edge=step<.14 ? mixPoint(previous,corner(region),ease(step,0,.14)) : tip;
-        cursor(galleryCursors[lane],edge);
+      const delay=variation(i,5)*.34;
+      const travel=phase(amount,delay,delay+.48);
+      button.style.visibility=travel>0 ? 'visible' : 'hidden';
+      if(reduced.matches || travel===1) {
+        place(button,region);
+        return;
       }
+      const edge=Math.floor(variation(i,6)*4);
+      const from=box(region.x,region.y,region.w,region.h,region.rotation+(variation(i,7)-.5)*96);
+      if(edge===0) from.x=-region.w-90;
+      else if(edge===1) from.x=metrics.W+90;
+      else if(edge===2) from.y=-region.h-90;
+      else from.y=metrics.H+90;
+
+      const skid=1-(1-travel)**3;
+      const card=mixBox(from,region,skid);
+      // A brief yaw as the sheet loses momentum.
+      card.rotation+=Math.sin(travel*Math.PI*2)*travel*(1-travel)*27;
+      place(button,card);
     });
     if(!ready) detail.hidden=true;
   }
@@ -390,18 +372,25 @@ const erase={
 function descriptionTyping(panel) {
   const description=panel.querySelector('[data-after-title] p, p[data-after-title]');
   const glyphs=Array.from(description.querySelectorAll('.backspace-glyph'));
-  const flicker=new TypeFlicker(description,description.querySelector('.visually-hidden').textContent);
+  description.classList.add('flicker-copy');
   let previousFrame;
   return (progress,closing)=>{
-    flicker.render(closing ? 1 : progress);
     const frame=Math.floor(progress*16);
-    if(frame===previousFrame) return;
-    previousFrame=frame;
+    const colorize=!closing && !reduced.matches && progress>0 && progress<1;
+    const key=frame*2+Number(colorize);
+    if(key===previousFrame) return;
+    previousFrame=key;
+    const edge=Math.ceil(glyphs.length/4)*progress;
     glyphs.forEach((glyph,index)=>{
       const group=Math.floor(index/4);
-      const edge=Math.floor(glyphs.length/4)*progress;
-      const printed=group<edge-1 || group<edge+1 && hash(group*223+frame*101)>.47;
-      glyph.classList.toggle('description-hidden',progress<1 && !printed);
+      const flashing=group>=edge-2 && group<edge+2;
+      const printed=progress===1 || group<edge-1 || flashing && hash(group*223+frame*101)>.31;
+      glyph.classList.toggle('description-hidden',!printed);
+      if(colorize && printed && flashing) {
+        glyph.dataset.ink=String((group+frame)%5);
+      } else if(glyph.hasAttribute('data-ink')) {
+        glyph.removeAttribute('data-ink');
+      }
     });
   };
 }
@@ -631,7 +620,8 @@ function render(s,m) {
   let introDetails=0,aboutDetails=0,projectDetails=0,contactDetails=0;
   let introErase=0,aboutErase=0,projectErase=0;
   typingCursor=null;
-  for(const actor of galleryCursors) visible(actor,0);
+  visible(agent,0);
+  visible(sweeper,0);
   visible(scrollHint,1-ease(s,.025,.20));
 
   if (s < timing.introEnd) {
