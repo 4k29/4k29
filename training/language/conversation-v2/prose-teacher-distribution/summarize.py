@@ -34,8 +34,12 @@ def diagnostics(r):
     gap=[] if i is None else [
         math.log(b['p_ref'])-math.log(a['p_ref'])
         for a,b in zip(r['steps'][i:i+32],r['teacher'][i:i+32]) if a['p_ref'] and b['p_ref']]
-    return dict(first_departure=i,repeat4=r['repeat']['start'] if r['repeat'] else None,
-                gap=avg(gap),stop=r['stop'])
+    repeat=r['repeat']
+    start=repeat['start'] if repeat else None
+    return dict(first_departure=i,repeat4=start,repeat_tokens=repeat['tokens'] if repeat else None,
+                before_repeat=r['steps'][start-1] if start else None,
+                gap=avg(gap),stop=r['stop'],generated=len(r['generated']),
+                lf=r['generated'].count(16),space=r['generated'].count(38))
 
 def blind():
     order=[(key,i) for key in KEYS for i in range(len(raw(ROOT/f'part1-{key}.json.gz')['cases']))]
@@ -111,6 +115,8 @@ def objective():
                 nll[p].extend(losses(r))
                 if case['gap'] is not None:gap[p].append(case['gap'])
                 if p=='caption':
+                    case['initial_caption']=bool(b['initial_caption'])
+                    counts['new_caption']+=bool(q.get('caption') and not b['initial_caption'])
                     counts['caption']+=bool(q.get('caption'))
                     counts['retained']+=bool(q.get('caption') and b['initial_caption'])
                 if p in ('prose','new'):
@@ -135,6 +141,24 @@ def objective():
         detail[f'heldout-{a}']=cases
         metrics[f'heldout-{a}']=dict(nll=avg([x for r in held['cases'] for x in losses(r)]),
                                     one=sum(bool(x['decision']['one']) for x in cases),two=sum(bool(x['decision']['two']) for x in cases))
+    terminal_a=detail['A-600']
+    terminal_b=detail['B-600']
+    for panel in ('prose','new'):
+        paired=[(a,b) for a,b in zip(terminal_a,terminal_b,strict=True) if a['panel']==panel]
+        for key,rows in [('A-600',[a for a,b in paired]),('B-600',[b for a,b in paired])]:
+            repeat=[r['repeat4'] for r in rows if r['repeat4'] is not None]
+            metrics[key].setdefault('diagnostics',{})[panel]=dict(
+                repeated=len(repeat),repeat_start_median=median(repeat) if repeat else None,
+                eos=sum(r['stop']=='EOS' for r in rows),lf=sum(r['lf'] for r in rows),
+                space=sum(r['space'] for r in rows))
+        metrics['B-600']['diagnostics'][panel]['nll_improved_vs_A']=sum(b['nll']<a['nll'] for a,b in paired)
+    for key,archive in [('A-600',OLD),('B-600',ROOT)]:
+        led=read(archive/'LEDGER.json')
+        metrics[key]['optimizer']=dict(steps=len(led),clip_count=sum(r['clipped'] for r in led),
+            mean_grad_norm=avg([r['norm'] for r in led]),update_path=math.fsum(r['delta'] for r in led),
+            terminal_distance=led[-1]['distance'])
+        metrics[key]['regressed_initial_caption_ids']=[
+            r['id'] for r in detail[key] if r.get('initial_caption') and not r['decision'].get('caption')]
     write('PART2_METRICS.json',metrics)
     write('PART2_CASES.json',detail)
     lines=['|条件・更新|固定DEV NLL|追加DEV NLL|共通TRAIN NLL|STAIR監視 NLL|caption保持|全caption|自然な一文／二文|',

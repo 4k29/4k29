@@ -1,4 +1,7 @@
 """Verify the source locks, changed supervision and committed full states."""
+from collections import Counter
+import json
+
 from summarize import raw,KEYS
 from study import ROOT,BASE,OLD,prior,read,sha,audit,recover,torch
 
@@ -28,10 +31,15 @@ def main():
     assert sum(r['replay'] for r in led)==46013 and sum(r['prose'] for r in led)==46012
     for step,r in enumerate(led,301):
         assert r['step_adam']==r['step']==step and r['lr']==plan['lr'] and not r['nonfinite']
+    assert shared['uniqueUpdates']==300 and changed['uniqueUpdates']==archive['uniqueUpdates']==600
     assert changed['history']==shared['history']+led
     assert archive['history']==shared['history']+read(OLD/'LEDGER.json')
     assert torch.equal(changed['torchRng'],archive['torchRng'])
     assert read(ROOT/'RESUME.json')['row']==led[0]
+    calls=[json.loads(line) for line in (ROOT/'CALL_JOURNAL.jsonl').read_text().splitlines()]
+    assert calls[::2]==[dict(x,event='begin') for x in calls[1::2]]
+    assert Counter(x['kind'] for x in calls[1::2])=={'retained':300,'witness':1}
+    assert [x['step'] for x in calls[1::2] if x['kind']=='retained']==list(range(301,601))
     assert {int(x['step']) for x in changed['optimizer']['state'].values()}=={600}
     paths=[ROOT/f'part1-{k}.json.gz' for k in KEYS]+[ROOT/f'C-{k}.json.gz' for k in plan['eval']]
     paths+=[ROOT/f'part2-heldout-{k}.json.gz' for k in 'AB']
@@ -39,6 +47,7 @@ def main():
         for r in raw(p)['cases']:
             assert not r['forced'] and r['generated']==[s['top5'][0][0] for s in r['steps']]
             assert b''.join(pieces[t] for t in r['generated']).hex()==r['raw_hex']
+            assert len(r['generated'])<=r['budget']
     print('PASS: source hashes, exact input equivalence, unique supervision, archived and cold-restored states, raw greedy')
 
 if __name__=='__main__':
