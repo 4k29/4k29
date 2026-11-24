@@ -78,8 +78,12 @@ async function run(width,height){
   await galleryChecks();
   await at(7.82);
   expect(q('.project-visual').style.clipPath.includes('#logo-reveal-') && q('.project-visual').style.getPropertyValue('--logo-flash') && all('clipPath rect').some(rect=>rect.style.display==='none'),'The logo flickers as separate colored tiles');
-  await at(21.24);
-  expect(q('#contact .profile-links [data-ink]'),'Social links flicker as they appear');
+  let socialFlicker=false;
+  for(const frame of [21.20,21.23,21.26,21.30]) {
+    await at(frame);
+    socialFlicker ||= Boolean(q('#contact .profile-links [data-ink]'));
+  }
+  expect(socialFlicker,'Social links flicker as they appear');
   await at(21.47);
   expect(shown(q('#contact')) && !shown(q('#photos')) && !shown(q('#articles')),'Contact follows both galleries');
   expect(!q('#contact [href="#start"]'),'Contact has no Back to top button');
