@@ -1,0 +1,64 @@
+"""Preserve original paragraph order, keeping third-party material out of prose candidates.
+This is extraction/triage, never automatic admission or a claim of verified authorship.
+"""
+from html.parser import HTMLParser
+import pathlib,json,gzip,re,hashlib
+D=pathlib.Path(__file__).resolve().parent
+class Paragraphs(HTMLParser):
+ forbidden={'blockquote','figure','figcaption','script','style','table','iframe','aside','pre','ul','ol'}
+ void={'area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'}
+ def __init__(self):super().__init__(convert_charrefs=True);self.stack=[];self.current=None;self.rows=[];self.ordinal=0;self.block_index=0
+ def handle_starttag(self,tag,attrs):
+  
+  if tag in self.forbidden or tag in {'p','h1','h2','h3','h4','h5','h6'}:self.block_index+=1
+  attrs=dict(attrs);classes=(attrs.get('class')or'').lower();bad=tag in self.forbidden or any(c in classes for c in ['caption','twitter-tweet','instagram-media','credit','embed'])
+  inherited=any(x[1]for x in self.stack)
+  if tag=='p':
+   if self.current is not None:self.finish()
+   self.current=dict(ordinal=self.ordinal,source_block_index=self.block_index,text_parts=[],blocked=inherited or bad);self.ordinal+=1
+  if self.current is not None and bad:self.current['blocked']=True
+  if tag not in self.void:self.stack.append((tag,bad))
+ def handle_endtag(self,tag):
+  if tag=='p'and self.current is not None:self.finish()
+  for i in range(len(self.stack)-1,-1,-1):
+   if self.stack[i][0]==tag:self.stack=self.stack[:i];break
+ def handle_data(self,s):
+  if self.current is not None:self.current['text_parts'].append(s)
+ def finish(self):
+  r=self.current;self.current=None;text=''.join(r.pop('text_parts')).strip();reasons=[]
+  if r.pop('blocked'):reasons.append('structural_quote_caption_embed')
+  if not text:reasons.append('empty')
+  if re.search(r'写真|撮影|画像|スクリーンショット|転載|使用許可|許可を得|校正[:：]|原文掲載|訳[注註]|https?://|@',text):reasons.append('caption_credit_link_or_permission')
+  if re.search(r'「[^」]{40,}」|“[^”]{40,}”|『[^』]{80,}』',text):reasons.append('long_inline_quote')
+  if re.search(r'語った|述べる|こう述べ|述べた|ツイート|引用|声明|と協調|と強調|と指摘',text):reasons.append('attributed_speech_or_orphan_quote_intro')
+  if re.match(r'^(?:[A-Z]{1,6}|グローバル[・－]ボイス)\s*[:：]',text):reasons.append('interview_turn_not_prose')
+  if not re.search(r'[ぁ-ゖァ-ヺ]',text):reasons.append('not_japanese_prose')
+  if len(text)<60:reasons.append('short_or_heading')
+  if not text.endswith(('。','！','？')):reasons.append('unconfirmed_paragraph_end')
+  if re.search(r'上記|下記|以下の|上の写真|下の写真|この写真|次のように',text):reasons.append('external_context_dependency')
+  self.rows.append(dict(**r,text=text,exclusion_reasons=reasons,original_paragraph_boundary=True,EOS_approved=False))
+ def close(self):
+  super().close()
+  if self.current is not None:
+   self.current['blocked']=True;self.finish()
+def extract(raw):
+ p=Paragraphs();p.feed(raw);p.close();return p.rows
+
+def main():
+ rows=[];stats={};posts=[]
+ for page in sorted((D/'private').glob('pilot-[0-9]*.json')):
+  if '.receipt.'in page.name:continue
+  posts.extend(json.loads(page.read_text()))
+ for post in posts:
+  raw=post['content']['rendered'];whole=[]
+  if re.search(r'転載|再掲載|協力を得て|with permission|originally published (?:by|on)|翻訳転載',raw,re.I):whole.append('possible_partner_or_republication_exception')
+  for r in extract(raw):
+   r.update(article_id=post['id'],source_url=post['link'],source_content_sha256=hashlib.sha256(raw.encode()).hexdigest(),paragraph_sha256=hashlib.sha256(r['text'].encode()).hexdigest(),whole_article_holds=whole,candidate_only=True);rows.append(r)
+   for reason in r['exclusion_reasons']:stats[reason]=stats.get(reason,0)+1
+ target=D/'private/prose-paragraphs.jsonl.gz'
+ with gzip.open(target,'wt')as f:
+  for r in rows:f.write(json.dumps(r,ensure_ascii=False)+'\n')
+ eligible=[r for r in rows if not r['exclusion_reasons']and not r['whole_article_holds']]
+ summary=dict(posts=len(posts),original_paragraphs=len(rows),mechanically_eligible_paragraphs=len(eligible),mechanically_eligible_characters=sum(len(r['text'])for r in eligible),exclusions=stats,admitted_tokens=0,optimizer_updates=0,rule='Unmodified original p text only; no concatenation across exclusions, no invented EOS, no semantic/factual/authorship guarantee')
+ (D/'EXTRACTION_AUDIT.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2)+'\n');print(summary)
+if __name__=='__main__':main()
