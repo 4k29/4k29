@@ -111,9 +111,9 @@ async function galleryChecks(){
   await at(10.60);
   expect(articles.every(tile=>Number(tile.style.opacity)>0 && tile.querySelector('.gallery-titlebar')),
     'All titled windows open together');
-  expect(articles.some(tile=>tile.style.clipPath.startsWith('polygon(')),'Article windows flicker early as they open');
+  expect(articles.some(tile=>!tile.style.clipPath && Number(tile.style.opacity)>0 && Number(tile.style.opacity)<1),'Article windows fade early as they open');
   await at(14.04);
-  expect(articles.some(tile=>tile.style.clipPath.startsWith('polygon(')),'Article windows flicker as they close');
+  expect(articles.some(tile=>!tile.style.clipPath && Number(tile.style.opacity)>0 && Number(tile.style.opacity)<1),'Article windows fade as they close');
   await at(13.02);
   const firstBounds=articles[5].getBoundingClientRect();
   await cursorDuring(()=>articles[5].click());

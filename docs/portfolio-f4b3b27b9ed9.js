@@ -396,47 +396,29 @@ function framePoint(region,x,y) {
     region.y+x*Math.sin(angle)+y*Math.cos(angle));
 }
 
-function pushAside(region, obstacle, {W,H}) {
-  const gap=-Math.min(region.w,region.h)*.30;
-  const left=obstacle.x-gap-region.w;
-  const right=obstacle.x+obstacle.w+gap;
-  const top=obstacle.y-gap-region.h;
-  const bottom=obstacle.y+obstacle.h+gap;
-  if(region.x<=left || region.x>=right || region.y<=top || region.y>=bottom) return region;
-  const bound=(value,max)=>Math.max(5,Math.min(max,value));
-  const options=[
-    [left,region.y],[right,region.y],[region.x,top],[region.x,bottom],
-  ].map(([x,y])=>[bound(x,W-5-region.w),bound(y,H-5-region.h)]);
-  const score=([x,y])=>{
-    const overlapX=Math.max(0,Math.min(x+region.w,obstacle.x+obstacle.w)-Math.max(x,obstacle.x));
-    const overlapY=Math.max(0,Math.min(y+region.h,obstacle.y+obstacle.h)-Math.max(y,obstacle.y));
-    const overlap = overlapX*overlapY/(region.w*region.h);
-    return Math.max(0,overlap-.18)*320+Math.hypot(x-region.x,y-region.y);
-  };
-  const [x,y]=options.reduce((best,candidate)=>score(candidate)<score(best) ? candidate : best);
-  return box(x,y,region.w,region.h,region.rotation);
-}
-
-// A single mask reveals horizontal bands of the existing window in both directions.
-function windowFlicker(progress,index,tick,closing) {
-  const edge=band=>{
-    const seed=index*337+band*23+tick*59;
-    const blend=ease(progress*18-tick,0,1);
-    const jitter=hash(seed)*(1-blend)+hash(seed+59)*blend-.5;
-    return 100*clamp(progress+jitter*.46*Math.sin(Math.PI*progress));
-  };
-  const bands=Array.from({length:6},(_,band)=>{
-    const x=(closing ? 100-edge(band) : edge(band)).toFixed(2)+'%';
-    return x+' '+(band*100/6)+'%, '+x+' '+((band+1)*100/6)+'%';
-  });
-  const fixed=closing ? 100 : 0;
-  return 'polygon('+fixed+'% 0, '+bands.join(', ')+', '+fixed+'% 100%)';
+// Sweep each axis up to the first contact, even for a large pointer delta.
+function sweep(rect, others, dx, dy, viewport) {
+  const moved={...rect};
+  const hits=[];
+  for(const [axis,cross,size,span,delta,limit] of [
+    ['x','y','w','h',dx,viewport.W], ['y','x','h','w',dy,viewport.H]
+  ]) {
+    let low=5, high=limit-moved[size]-5;
+    for(const other of others) {
+      if(moved[cross]+moved[span]<=other[cross] || other[cross]+other[span]<=moved[cross]) continue;
+      if(other[axis]>=moved[axis]+moved[size]-.01) high=Math.min(high,other[axis]-moved[size]);
+      if(other[axis]+other[size]<=moved[axis]+.01) low=Math.max(low,other[axis]+other[size]);
+    }
+    const wanted=moved[axis]+delta;
+    moved[axis]=Math.min(high,Math.max(low,wanted));
+    hits.push(Math.abs(wanted-moved[axis])>.001);
+  }
+  return {rect:moved,hits};
 }
 
 function createGallery(id,items,article=false) {
   const gallery=byId(id);
   const heading=gallery.querySelector('h2');
-  const headingText=new Scramble(heading);
   const seed=Math.floor(Math.random()*32768);
   const variation=(index,channel)=>hash(seed+index*397+channel*883);
   const close=el('button',{class:'text-button gallery-close',type:'button',hidden:''},'Back to grid');
@@ -462,9 +444,7 @@ function createGallery(id,items,article=false) {
     });
     button.addEventListener('pointerdown',event=>beginDrag(event,index));
     gallery.append(button);
-    const glyphs=Array.from(item.title, char=>el('span',{},char));
-    titlebar.replaceChildren(...glyphs);
-    return {item,button,glyphs};
+    return {item,button};
   });
   gallery.append(close,detail);
   articleTitle?.addEventListener('pointerdown',event=>beginDrag(event,selected));
@@ -501,35 +481,21 @@ function createGallery(id,items,article=false) {
       drag.lastY=event.clientY;
       drag.lastTime=event.timeStamp;
     }
-    const origin=drag.from[drag.index];
-    const x=Math.max(5,Math.min(metrics.W-origin.w-5,origin.x+dx));
-    const y=Math.max(5,Math.min(metrics.H-origin.h-5,origin.y+dy));
-    const card=box(x,y,origin.w,origin.h);
-    const originRegions=drag.destinations ?? regions;
-    drag.destinations=originRegions.map((region,i)=>i===drag.index ? card : pushAside(region,card,metrics));
-    regions=regions.map((region,i)=>i===drag.index ? card : region);
+    const origin=drag.from[drag.index], current=regions[drag.index];
+    const next=sweep(current,regions.filter((_,i)=>i!==drag.index),origin.x+dx-current.x,origin.y+dy-current.y,metrics);
+    regions=regions.map((r,i)=>i===drag.index ? next.rect : r);
     requestRender();
   });
   function endDrag(event) {
     if(drag?.id!==event.pointerId) return;
-    const {index,moved,vx,vy,lastTime,destinations}=drag;
+    const {index,moved,vx,vy,lastTime}=drag;
     drag=undefined;
     tiles[index].button.classList.remove('is-dragging');
     if(!moved) return;
     ignoreClick=index;
-    const from=regions;
-    const landed=from[index];
-    const coast=event.type==='pointerup' && event.timeStamp-lastTime<115 ? 200 : 0;
-    const offset=value=>Math.max(-280,Math.min(280,value*coast));
-    const target=box(Math.max(5,Math.min(metrics.W-landed.w-5,landed.x+offset(vx))),
-      Math.max(5,Math.min(metrics.H-landed.h-5,landed.y+offset(vy))),landed.w,landed.h);
-    if(reduced.matches) {
-      if(selected<0) resting=regions;
-      return;
-    }
-    const to=(destinations ?? from).map((region,i)=>i===index ? target : pushAside(region,target,metrics));
-    if(selected<0) resting=to;
-    movement={from,to,index,throwing:true};
+    if(selected<0) resting=regions;
+    if(reduced.matches || event.type!=='pointerup' || event.timeStamp-lastTime>120) return;
+    movement={index,throwing:true,last:performance.now(),vx:Math.max(-2.6,Math.min(2.6,vx)),vy:Math.max(-2.6,Math.min(2.6,vy))};
     gallery.setAttribute('aria-busy','true');
     requestRender();
   }
@@ -553,7 +519,12 @@ function createGallery(id,items,article=false) {
         (towardBottom ? metrics.H-58-source.y : bottom-54)/source.h));
       const w=source.w*scale, h=source.h*scale;
       const focus=box(towardRight ? source.x : right-w,towardBottom ? source.y : bottom-h,w,h);
-      resting.forEach((region,i)=>{to[i]=i===index ? focus : pushAside(region,focus,metrics);});
+      const base=resting[index];
+      resting.forEach((r,i)=>{
+        const dx=r.x+r.w/2<base.x+base.w/2 ? Math.min(0,focus.x-base.x) : Math.max(0,focus.x+focus.w-base.x-base.w);
+        const dy=r.y+r.h/2<base.y+base.h/2 ? Math.min(0,focus.y-base.y) : Math.max(0,focus.y+focus.h-base.y-base.h);
+        to[i]=i===index ? focus : box(r.x+dx,r.y+dy,r.w,r.h);
+      });
     }
     close.hidden=index<0;
     gallery.classList.toggle('is-focused',index>=0);
@@ -612,12 +583,12 @@ function createGallery(id,items,article=false) {
       const row=Math.floor(i/columns);
       const rowCount=Math.min(columns,tiles.length-row*columns);
       const rowLeft=deskLeft+(columns-rowCount)*cellW*((row%2) ? .18 : .43);
-      const size=.93+variation(i,0)*.24;
-      const tileWidth=Math.min(cellW*size,cellH*(size+.10)*ratio);
+      const size=.77+variation(i,0)*.08;
+      const tileWidth=Math.min(cellW*size,cellH*size*ratio);
       const tileHeight=tileWidth/ratio;
       const tilt=0;
-      const x=rowLeft+(i%columns+.5)*cellW-tileWidth/2+(variation(i,2)-.5)*cellW*.30;
-      const y=deskTop+(row+.5)*cellH-tileHeight/2+(variation(i,3)-.5)*cellH*.39;
+      const x=rowLeft+(i%columns+.5)*cellW-tileWidth/2+(variation(i,2)-.5)*cellW*.09;
+      const y=deskTop+(row+.5)*cellH-tileHeight/2+(variation(i,3)-.5)*cellH*.09;
       const left=Math.min(Math.max(x,8),W-8-tileWidth);
       const top=Math.min(Math.max(y,deskTop-10),H-24-tileHeight);
       return box(left,top,tileWidth,tileHeight,tilt);
@@ -649,13 +620,30 @@ function createGallery(id,items,article=false) {
   function animateSelection() {
     const {from,to,index,towardRight,towardBottom,opening,throwing}=movement;
     const now=performance.now();
+    if(throwing) {
+      const dt=Math.min(40,now-movement.last);
+      movement.last=now;
+      const next=sweep(regions[index],regions.filter((_,i)=>i!==index),movement.vx*dt,movement.vy*dt,metrics);
+      regions=regions.map((r,i)=>i===index ? next.rect : r);
+      const friction=Math.exp(-dt/225);
+      movement.vx*=friction*(next.hits[0] ? -.58 : 1);
+      movement.vy*=friction*(next.hits[1] ? -.58 : 1);
+      if(Math.hypot(movement.vx,movement.vy)>.016) requestRender();
+      else {
+        movement=undefined;
+        if(selected<0) resting=regions;
+        gallery.removeAttribute('aria-busy');
+        const depart=afterClose; afterClose=undefined; depart?.();
+      }
+      return;
+    }
     movement.start ??= now;
-    const t=clamp((now-movement.start)/(throwing ? 860 : 980));
-    const growth=throwing ? (1-Math.exp(-4.5*t))/(1-Math.exp(-4.5)) : ease(t,0,.84);
+    const t=clamp((now-movement.start)/740);
+    const growth=ease(t,0,1);
     const card=mixBox(from[index],to[index],growth);
     regions=from.map((region,i)=>{
       if(i===index) return card;
-      const travel=opening ? ease(t,.14,1) : throwing ? ease(t,.10,1) : ease(t,.04,1);
+      const travel=growth;
       return mixBox(region,to[i],travel);
     });
     if(opening && t<.98) {
@@ -703,37 +691,16 @@ function createGallery(id,items,article=false) {
     if(movement) {
       animateSelection();
       if(ready && movement?.throwing) updateDetail();
-    } else if(drag?.destinations) {
-      let settling=false;
-      regions=regions.map((region,i)=>{
-        const target=drag.destinations[i];
-        if(Math.hypot(target.x-region.x,target.y-region.y)<.5 || reduced.matches) return target;
-        settling=true;
-        return mixBox(region,target,.24);
-      });
-      if(settling) requestRender();
-      if(ready) updateDetail();
     } else if(ready) updateDetail();
 
-    headingText.render(ease(amount,0,.25));
+    heading.style.opacity=String(ease(amount,0,.25));
     const opened=reduced.matches ? 1 : closing ? ease(amount,0,1) : 1-(1-amount)**1.65;
-    tiles.forEach(({button,glyphs},i)=>{
+    tiles.forEach(({button},i)=>{
       const region=regions[i];
       const reveal=reduced.matches ? 1 : opened**(1+(i%4)*.055);
-      const active=reveal>0 && reveal<1;
-      const tick=Math.floor(reveal*18);
-      button.style.opacity=String(reveal===0 ? 0 : 1);
-      button.style.clipPath=active ? windowFlicker(reveal,i,tick,closing) : '';
-      if(button.dataset.flicker!==String(active ? tick : -1)) {
-        button.dataset.flicker=String(active ? tick : -1);
-        glyphs.forEach((glyph,j)=>{
-          const ink=active && glyph.textContent.trim() && hash(j*31+i*23+tick*7)>.72;
-          if(ink) glyph.dataset.ink=String((i+j+tick)%5);
-          else delete glyph.dataset.ink;
-        });
-      }
-      const w=region.w*(.94+.06*opened), h=region.h*(.94+.06*opened);
-      const drift=closing && !reduced.matches ? (1-reveal)*24 : 0;
+      button.style.opacity=String(reveal);
+      const w=region.w, h=region.h;
+      const drift=reduced.matches ? 0 : (1-opened)*(closing ? -12 : 12);
       place(button,box(region.x+(region.w-w)/2+drift,region.y+(region.h-h)/2+drift*.42,w,h));
     });
     if(!ready) detail.hidden=true;
