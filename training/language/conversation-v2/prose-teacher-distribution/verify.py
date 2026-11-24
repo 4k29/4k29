@@ -27,7 +27,7 @@ def main():
     assert len(led)==300 and sum(r['denominator'] for r in led)==92025
     assert sum(r['replay'] for r in led)==46013 and sum(r['prose'] for r in led)==46012
     for step,r in enumerate(led,301):
-        assert r['adam_step']==r['step']==step and r['lr']==plan['lr'] and not r['nonfinite']
+        assert r['step_adam']==r['step']==step and r['lr']==plan['lr'] and not r['nonfinite']
     assert changed['history']==shared['history']+led
     assert archive['history']==shared['history']+read(OLD/'LEDGER.json')
     assert torch.equal(changed['torchRng'],archive['torchRng'])
