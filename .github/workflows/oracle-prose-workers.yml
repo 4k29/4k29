@@ -1,0 +1,53 @@
+name: Fixed prose evaluation CPU
+on:
+  push:
+    branches: [research/oracle-memorization]
+    paths: [training/language/conversation-v2/oracle-memorization/EVAL_BATCH.json]
+permissions:
+  contents: read
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      states: ${{ steps.states.outputs.states }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: /training/language/conversation-v2/oracle-memorization/EVAL_BATCH.json
+      - id: states
+        run: echo "states=$(cat training/language/conversation-v2/oracle-memorization/EVAL_BATCH.json)" >> "$GITHUB_OUTPUT"
+  generate:
+    needs: matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        state: ${{ fromJSON(needs.matrix.outputs.states) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/model.py
+            /training/language/conversation-v2/core.py
+            /training/language/conversation-v2/data/tokenizer.json
+            /training/language/conversation-v2/foundation-data/research/zero_update_preflight.py
+            /training/language/conversation-v2/gv-prose-pilot/
+            /training/language/conversation-v2/gv-collapse-diagnostic/ADDITIONAL.jsonl.gz
+            /training/language/conversation-v2/oracle-memorization/*.py
+            /training/language/conversation-v2/oracle-memorization/*.json
+            /training/language/conversation-v2/oracle-memorization/*.sha256
+            /training/language/conversation-v2/oracle-memorization/artifacts/${{ matrix.state }}/
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          python -m pip install numpy
+          python -m pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+      - working-directory: training/language/conversation-v2/oracle-memorization
+        run: python evaluate.py "${{ matrix.state }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.state }}
+          path: training/language/conversation-v2/oracle-memorization/${{ matrix.state }}.json.gz

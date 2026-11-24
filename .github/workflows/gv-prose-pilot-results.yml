@@ -1,0 +1,40 @@
+name: GV prose pilot completed-state audit
+on:
+  push:
+    branches: [research/gv-prose-pilot]
+    paths: [training/language/conversation-v2/gv-prose-pilot/RESULTS_CI_GO]
+permissions:
+  contents: read
+jobs:
+  consistency-only:
+    if: github.repository == '4k29/4k29' && !github.event.repository.private
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/conversation-v2/gv-prose-pilot/*.json
+            /training/language/conversation-v2/gv-prose-pilot/*.jsonl
+            /training/language/conversation-v2/gv-prose-pilot/*.py
+            /training/language/conversation-v2/gv-prose-pilot/*.sha256
+            /training/language/conversation-v2/gv-prose-pilot/*.gz
+            /training/language/conversation-v2/gv-prose-pilot/evaluation/*.json
+            /training/language/conversation-v2/gv-prose-pilot/artifacts/*/checkpoint.json
+            /training/language/conversation-v2/staged-prose-study/ADDITIONAL_PROSE.jsonl.gz
+            /training/language/conversation-v2/staged-prose-study/GV_INTRO_READING.json
+            /training/language/conversation-v2/novel-continuous-study/REVIEWED_PROSE.jsonl.gz
+            /training/language/conversation-v2/novel-continuous-study/NEW_PROSE_DEV.json
+            /training/language/conversation-v2/foundation-absorption-study/PROSE_DEV.json
+            /training/language/conversation-v2/foundation-absorption-study/corpus.jsonl.gz
+            /training/language/conversation-v2/foundation-absorption-study/SCHEDULE.json
+            /training/language/conversation-v2/mixed-retention-study/evaluation/terminal-MIX.json
+            /training/language/conversation-v2/data/tokenizer.json
+      - name: Check actual ledgers, fixed inputs, six cold proofs and raw bytes
+        run: |
+          python --version
+          python -m unittest discover -s training/language/conversation-v2/gv-prose-pilot -p 'test_*.py' -v
+          python training/language/conversation-v2/gv-prose-pilot/analyze.py > /dev/null
+          python training/language/conversation-v2/gv-prose-pilot/score.py > /dev/null
+          git diff --exit-code -- training/language/conversation-v2/gv-prose-pilot/NUMERIC_SUMMARY.json training/language/conversation-v2/gv-prose-pilot/SEMANTIC_REVIEW.json
