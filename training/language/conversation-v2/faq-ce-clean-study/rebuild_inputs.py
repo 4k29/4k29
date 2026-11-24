@@ -1,0 +1,8 @@
+"""Revalidate exact adopted QA from pinned raw snapshot and own BPE, no model calls."""
+import pathlib,json,urllib.request,hashlib,sys,os,argparse
+P=pathlib.Path(__file__).resolve().parent;V=pathlib.Path(os.environ.get('V2_ROOT',str(P.parent)));sys.path.insert(0,str(V));from new_tokenizer import Encoder
+ap=argparse.ArgumentParser();ap.add_argument('--raw',type=pathlib.Path);args=ap.parse_args();meta=json.loads((P/'ACQUISITION.json').read_text());raw=args.raw.read_bytes()if args.raw else urllib.request.urlopen(meta['url'],timeout=60).read();assert hashlib.sha256(raw).hexdigest()==meta['sha256'];rows=[json.loads(x)for x in raw.splitlines()];enc=Encoder(json.loads((V/'data/tokenizer.json').read_text()));d=json.loads((P/'DATA.json').read_text());proof=[]
+for part,rs in d['parts'].items():
+ for r in rs:
+  x=rows[r['index']];assert x['Question']==r['question']and x['Answer']==r['response']and x['copyright']==r['source']and x['url']==r['url'];t=[1,3]+enc(x['Question'])+[2,4]+enc(x['Answer'])+[2];assert t==r['tokens'];assert len(t)<=256;proof.append(dict(id=r['id'],partition=part,sha256=hashlib.sha256(json.dumps(t,separators=(',',':')).encode()).hexdigest()))
+assert sum(d['batch_order'],[])==list(range(385));assert d['updates_per_arm']==97;out=dict(passed=True,adopted_cases=len(proof),raw_SHA=meta['sha256'],input_tokens_rebuilt_exact=True,byte_texts_unchanged=True,model_forwards=0,optimizer_calls=0,source_page_live_revalidation='Separate SOURCE_FETCH/PAIR_ADJACENCY receipts; live page changes may prevent reproducing historical page SHA',proof=proof);(P/'REBUILD_RECEIPT.json').write_text(json.dumps(out,indent=2)+'\n');print('Exact pinned raw QA, all404 input token arrays and batch order verified; optimizer0, forward0')

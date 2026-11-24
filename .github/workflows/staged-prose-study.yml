@@ -1,0 +1,31 @@
+name: Staged prose data and matched-schedule checks
+on:
+  push:
+    branches: [research/staged-prose-study]
+    paths: [training/language/conversation-v2/staged-prose-study/CI_GO]
+permissions:
+  contents: read
+jobs:
+  data-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/conversation-v2/staged-prose-study/
+            /training/language/conversation-v2/novel-continuous-study/REVIEWED_PROSE.jsonl.gz
+            /training/language/conversation-v2/novel-continuous-study/NEW_PROSE_DEV.json
+            /training/language/conversation-v2/foundation-absorption-study/corpus.jsonl.gz
+            /training/language/conversation-v2/foundation-absorption-study/SCHEDULE.json
+            /training/language/conversation-v2/data/tokenizer.json
+            /training/language/conversation-v2/new_tokenizer.py
+            /training/dialogue/tokenizer.py
+            /training/language/round10/word_bpe.py
+      - name: Offline byte, teacher, masks, family and immutable-plan checks
+        run: |
+          python --version
+          python training/language/conversation-v2/staged-prose-study/prepare.py
+          python -m unittest discover -s training/language/conversation-v2/staged-prose-study -p 'test_*.py' -v
+          git diff --exit-code -- training/language/conversation-v2/staged-prose-study/SCHEDULE.json training/language/conversation-v2/staged-prose-study/TEACHER_AUDIT.json

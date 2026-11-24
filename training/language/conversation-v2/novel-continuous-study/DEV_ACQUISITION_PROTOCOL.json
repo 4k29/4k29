@@ -1,0 +1,49 @@
+{
+  "frozen_before_new_corpus_acquisition": true,
+  "seed": "novel-continuous-dev-v1",
+  "selection": "Fetch title metadata only first; reserve entire exact page IDs and root-book families before training prose acquisition. Select development prose before TRAIN fetch.",
+  "sources": [
+    "ja.wikibooks.org",
+    "ja.wikivoyage.org"
+  ],
+  "DEV_priority_titles": {
+    "daily": [
+      "料理",
+      "料理本",
+      "日本料理",
+      "荷造り",
+      "買い物"
+    ],
+    "reason": [
+      "旅行保険",
+      "健康",
+      "気候",
+      "安全"
+    ],
+    "procedure": [
+      "料理/ご飯",
+      "キャンプ",
+      "ハイキング",
+      "鉄道旅行"
+    ],
+    "general": [
+      "日本の食文化",
+      "日本の料理",
+      "温泉",
+      "旅の基本"
+    ]
+  },
+  "fallback": "Among reserved families with complete paragraphs>=3sentences, deterministic SHA(seed|source|pageid|section index) order, max4paragraphs per family, max8perproject, max16cases. No title/family may enter TRAIN. If titles absent select matching genre key via metadata first and freeze IDs before text fetch.",
+  "prefix": "Exact original token boundary after first complete sentence; require12..112prefix tokens and>=24continuation tokens; no retokenized character-prefix discrepancy. maxNew128, total<=256.",
+  "rubric": [
+    "Generate new 2–3 connected sentences; provided sentence excluded",
+    "Maintain topic and causal/referential coherence",
+    "No harmful repetition or irrelevant generic continuation",
+    "Natural EOS separately recorded",
+    "Allow valid continuations different from reference; not token-exact grading"
+  ],
+  "old_DEV": "All prior exposed diagnostics preserved, not TEST",
+  "no_model_output_before_DEV_freeze": true,
+  "optimizer_calls": 0,
+  "model_forwards": 0
+}
