@@ -1,0 +1,558 @@
+{
+  "subagents_used": false,
+  "formal_model_adoption": false,
+  "independent_native_human_evaluation": false,
+  "original_text_accounting": {
+    "original_independent_paragraph_BPE_tokens": 1111717,
+    "original_characters": 1284517,
+    "unique_source_paragraphs": 5357,
+    "joined_training_body_tokens": 1114553,
+    "join_boundary_token_difference": 2836,
+    "actual_training_targets": 1111459,
+    "frozen_plan_term_independent_body_tokens_actually_counted_joined_body": true,
+    "training_data_and_budget_unchanged": true,
+    "reason": "Do not count normalized paragraph-join separators as additional independent original text; retain frozen plan for traceability, report this corrected count"
+  },
+  "models": {
+    "initial": {
+      "prose_tf_nll": 6.572216263677671,
+      "prose_tf_targets": 42125,
+      "prose_EOS": 24,
+      "prose_mechanical_repetition": 0,
+      "old_content_not_automatically_scored": true,
+      "native24_EOS": 24,
+      "provided23_EOS": 23,
+      "grounded36_EOS": 36,
+      "context12_EOS": 12,
+      "human32": {
+        "human32": {
+          "count": 32,
+          "tf_nll": 6.375842216877622,
+          "EOS": 32,
+          "necessary_string_candidates": 0,
+          "not_semantic_pass": true
+        }
+      },
+      "RP_gold_history_body_nll": 5.049142811062216,
+      "RP_gold_end_mean_EOS_probability": 0.6734436809537239,
+      "manual_full_prose_reading": {
+        "reviewer": "main assistant only, unblinded, not formal native-human evaluation",
+        "all24_full_generations_read": true,
+        "coherent_relevant_minimal_continuation_indices": [
+          21,
+          23
+        ],
+        "coherent_full_continuations": 2,
+        "local_grammar_borderline_indices": [
+          5
+        ],
+        "paragraph_development_successes": 0,
+        "notes": "21/23 only complete the current predicate naturally; no substantive paragraph development. 5 has unclear unmotivated state change. Most other outputs break morphology/topic or end prematurely. Correct source text is not the only permitted continuation.",
+        "criterion_fixed_before_any_foundation_terminal_generation_read": true
+      },
+      "manual_response_reading": {
+        "reviewer": "main assistant only, not independent native-human evaluation",
+        "legacy_baseline_reuse": {
+          "path": "grounded-objective/evaluation/initial3470.json",
+          "sha256": "401abe7fc99e13f94f920805e6d892a47e9d66c002fb5eca2abfe4e3a43854f1",
+          "why": "same exact3470 model/BPE/core/eval_core and identical old prefixes/greedy budgets; no retraining or score overwrite"
+        },
+        "native24_content": 0,
+        "provided23_content": 0,
+        "grounded36_content": 0,
+        "self_history_old2_content": 0,
+        "self_history_new2_content": 0,
+        "reason": "Reused identical initial3470 generations under exact old inputs/budgets; generic acknowledgement has no required content. Added context episodes likewise contain no correct itinerary/choice answers."
+      }
+    },
+    "foundation": {
+      "prose_tf_nll": 4.920307599800631,
+      "prose_tf_targets": 42125,
+      "prose_EOS": 0,
+      "prose_mechanical_repetition": 24,
+      "old_content_not_automatically_scored": true,
+      "native24_EOS": 0,
+      "provided23_EOS": 0,
+      "grounded36_EOS": 0,
+      "context12_EOS": 0,
+      "human32": {
+        "human32": {
+          "count": 32,
+          "tf_nll": 5.211725717388703,
+          "EOS": 0,
+          "necessary_string_candidates": 0,
+          "not_semantic_pass": true
+        }
+      },
+      "RP_gold_history_body_nll": 5.579433227997999,
+      "RP_gold_end_mean_EOS_probability": 0.01573141746217667,
+      "manual_full_prose_reading": {
+        "reviewer": "main assistant only; not independent native-human",
+        "all24_full_generations_read": true,
+        "coherent_full_continuation_indices": [],
+        "coherent_full_continuations": 0,
+        "harmful_repetition_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "true_EOS": 0,
+        "meaningful_local_suffix_repairs": [
+          5,
+          7,
+          23
+        ],
+        "primary_condition_pass": false,
+        "reason": "All full outputs continue to repeated dates, malformed proper nouns or whitespace. Some local morphology improves but full meaning and ending fail. NLL improvement is not language ability."
+      },
+      "manual_response_reading": {
+        "reviewer": "main assistant only; no independent native-human evaluator",
+        "prose_full_text_read": true,
+        "prose_coherent_full": 0,
+        "prose_harmful_repetition": 24,
+        "native24_content": 0,
+        "provided23_content": 0,
+        "grounded36_content": 0,
+        "counterfactual_both_sides_correct_pairs": 0,
+        "self_history_old2_content": 0,
+        "self_history_new2_content": 0,
+        "rule": "No EOS within fixed budget fails complete-utterance gate; EOS outputs read for required meaning. Acknowledgement, unrelated questions, invented dates and whitespace loops are failures. A changed expression is not context understanding.",
+        "reasons": {
+          "native24": "Generic acknowledgements/unrelated lunch questions; pure condition has no terminated replies.",
+          "provided23": "Acknowledgements or ungrounded numbers and repetitions, no requested information.",
+          "grounded36": "No correct comparison, fee or equipment information, including terminated outputs.",
+          "self_history": "Old episodes stop early without EOS; new mixed episodes may complete three acknowledgements, no required itinerary/food content."
+        }
+      }
+    },
+    "foundation-mixed": {
+      "prose_tf_nll": 5.136906571657085,
+      "prose_tf_targets": 42125,
+      "prose_EOS": 0,
+      "prose_mechanical_repetition": 24,
+      "old_content_not_automatically_scored": true,
+      "native24_EOS": 24,
+      "provided23_EOS": 15,
+      "grounded36_EOS": 17,
+      "context12_EOS": 9,
+      "human32": {
+        "human32": {
+          "count": 32,
+          "tf_nll": 5.3962971505487936,
+          "EOS": 19,
+          "necessary_string_candidates": 0,
+          "not_semantic_pass": true
+        }
+      },
+      "response-probe": {
+        "DEV32": {
+          "count": 32,
+          "tf_nll": 6.20499655129253,
+          "EOS": 6,
+          "necessary_string_candidates": 0,
+          "not_semantic_pass": true
+        },
+        "TRAIN16": {
+          "count": 16,
+          "tf_nll": 5.488694431625794,
+          "EOS": 7,
+          "necessary_string_candidates": 0,
+          "not_semantic_pass": true
+        }
+      },
+      "RP_gold_history_body_nll": 4.983050203560596,
+      "RP_gold_end_mean_EOS_probability": 0.5715762157862052,
+      "manual_full_prose_reading": {
+        "reviewer": "main assistant only, not formal native-human evaluation",
+        "all24_full_generations_read": true,
+        "coherent_full_continuations": 0,
+        "harmful_repetition_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "EOS_count": 0,
+        "primary_advance_condition_pass": false,
+        "reason": "All outputs turn to repeated dates/numbers, pseudo-words or whitespace; preserved gold-history EOS in human frames is not free-generation success."
+      },
+      "manual_response_reading": {
+        "reviewer": "main assistant only; no independent native-human evaluator",
+        "prose_full_text_read": true,
+        "prose_coherent_full": 0,
+        "prose_harmful_repetition": 24,
+        "native24_content": 0,
+        "provided23_content": 0,
+        "grounded36_content": 0,
+        "counterfactual_both_sides_correct_pairs": 0,
+        "self_history_old2_content": 0,
+        "self_history_new2_content": 0,
+        "rule": "No EOS within fixed budget fails complete-utterance gate; EOS outputs read for required meaning. Acknowledgement, unrelated questions, invented dates and whitespace loops are failures. A changed expression is not context understanding.",
+        "reasons": {
+          "native24": "Generic acknowledgements/unrelated lunch questions; pure condition has no terminated replies.",
+          "provided23": "Acknowledgements or ungrounded numbers and repetitions, no requested information.",
+          "grounded36": "No correct comparison, fee or equipment information, including terminated outputs.",
+          "self_history": "Old episodes stop early without EOS; new mixed episodes may complete three acknowledgements, no required itinerary/food content."
+        }
+      }
+    },
+    "foundation-lr": {
+      "prose_tf_nll": 4.771306637727188,
+      "prose_tf_targets": 42125,
+      "prose_EOS": 0,
+      "prose_mechanical_repetition": 24,
+      "old_content_not_automatically_scored": true,
+      "native24_EOS": 24,
+      "provided23_EOS": 18,
+      "grounded36_EOS": 9,
+      "context12_EOS": 4,
+      "human32": {
+        "human32": {
+          "count": 32,
+          "tf_nll": 5.208318175972668,
+          "EOS": 10,
+          "necessary_string_candidates": 0,
+          "not_semantic_pass": true
+        }
+      },
+      "RP_gold_history_body_nll": 4.900647725286876,
+      "RP_gold_end_mean_EOS_probability": 0.5279406152925287,
+      "manual_full_prose_reading": {
+        "reviewer": "main assistant only, not formal native-human evaluation",
+        "all24_full_generations_read": true,
+        "coherent_full_continuations": 0,
+        "harmful_repetition_indices": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "EOS_count": 0,
+        "primary_advance_condition_pass": false,
+        "reason": "All full outputs collapse into repeated dates/pseudo-words/whitespace. Local suffix improvements at5/23 do not make the complete continuation coherent."
+      },
+      "manual_response_reading": {
+        "reviewer": "main assistant only; no independent native-human evaluator",
+        "prose_full_text_read": true,
+        "prose_coherent_full": 0,
+        "prose_harmful_repetition": 24,
+        "native24_content": 0,
+        "provided23_content": 0,
+        "grounded36_content": 0,
+        "counterfactual_both_sides_correct_pairs": 0,
+        "self_history_old2_content": 0,
+        "self_history_new2_content": 0,
+        "rule": "No EOS within fixed budget fails complete-utterance gate; EOS outputs read for required meaning. Acknowledgement, unrelated questions, invented dates and whitespace loops are failures. A changed expression is not context understanding.",
+        "reasons": {
+          "native24": "Generic acknowledgements/unrelated lunch questions; pure condition has no terminated replies.",
+          "provided23": "Acknowledgements or ungrounded numbers and repetitions, no requested information.",
+          "grounded36": "No correct comparison, fee or equipment information, including terminated outputs.",
+          "self_history": "Old episodes stop early without EOS; new mixed episodes may complete three acknowledgements, no required itinerary/food content."
+        },
+        "human32_strict_content": 0,
+        "human32_reason": "All EOS outputs read: generic acknowledgements, repeated Chinese/date fragments, no annotated required answer; remaining outputs fail complete-answer EOS gate."
+      }
+    },
+    "qa-only": {
+      "prose_tf_nll": 5.5289990958827895,
+      "prose_tf_targets": 42125,
+      "prose_EOS": 15,
+      "prose_mechanical_repetition": 9,
+      "old_content_not_automatically_scored": true,
+      "native24_EOS": 18,
+      "provided23_EOS": 3,
+      "grounded36_EOS": 0,
+      "context12_EOS": 4,
+      "human32": {
+        "human32": {
+          "count": 32,
+          "tf_nll": 4.3637988465305435,
+          "EOS": 5,
+          "necessary_string_candidates": 0,
+          "not_semantic_pass": true
+        }
+      },
+      "response-probe": {
+        "DEV32": {
+          "count": 32,
+          "tf_nll": 4.873484312048281,
+          "EOS": 2,
+          "necessary_string_candidates": 0,
+          "not_semantic_pass": true
+        },
+        "TRAIN16": {
+          "count": 16,
+          "tf_nll": 3.9566681496450835,
+          "EOS": 3,
+          "necessary_string_candidates": 0,
+          "not_semantic_pass": true
+        }
+      },
+      "RP_gold_history_body_nll": 5.34773762416969,
+      "RP_gold_end_mean_EOS_probability": 0.4485226291114459,
+      "manual_full_prose_reading": {
+        "reviewer": "main assistant only, unblinded, not formal native-human evaluation",
+        "all24_full_generations_read": true,
+        "coherent_full_continuations": 1,
+        "coherent_relevant_minimal_continuation_indices": [
+          23
+        ],
+        "harmful_repetition_indices": [
+          1,
+          4,
+          6,
+          8,
+          11,
+          15,
+          16,
+          19,
+          21
+        ],
+        "EOS_count": 15,
+        "primary_advance_condition_pass": false,
+        "notes": "QA-only23 naturally completes 発展しています; no paragraph development. Empty immediate EOS and pseudo-word fragments fail. Rehearsal4 yields 赤褐色まれます and fails morphology. Long date/whitespace loops fail the full-output gate."
+      },
+      "manual_response_reading": {
+        "reviewer": "main assistant only; no independent native-human evaluator",
+        "prose_full_text_read": true,
+        "prose_coherent_full": 1,
+        "prose_harmful_repetition": 9,
+        "native24_content": 0,
+        "provided23_content": 0,
+        "grounded36_content": 0,
+        "human32_strict_content": 0,
+        "counterfactual_both_sides_correct_pairs": 0,
+        "self_history_old2_content": 0,
+        "self_history_new2_content": 0,
+        "rule": "No EOS within the fixed budget fails complete-utterance gate. All terminated old-panel outputs read. Pseudo-word spans, unrelated lunch questions, numeric loops and no information are failures.",
+        "response_probe_semantic_success_TRAIN16": 0,
+        "response_probe_semantic_success_DEV32": 0,
+        "probe_review": "All available EOS outputs read; remaining no-EOS cases fail the strict complete-answer condition; exact candidate count separately saved. No broad human conversation competence or capacity conclusion."
+      }
+    },
+    "qa-rehearsal": {
+      "prose_tf_nll": 5.174508513770401,
+      "prose_tf_targets": 42125,
+      "prose_EOS": 1,
+      "prose_mechanical_repetition": 23,
+      "old_content_not_automatically_scored": true,
+      "native24_EOS": 15,
+      "provided23_EOS": 0,
+      "grounded36_EOS": 0,
+      "context12_EOS": 0,
+      "human32": {
+        "human32": {
+          "count": 32,
+          "tf_nll": 4.486738787550871,
+          "EOS": 0,
+          "necessary_string_candidates": 0,
+          "not_semantic_pass": true
+        }
+      },
+      "response-probe": {
+        "DEV32": {
+          "count": 32,
+          "tf_nll": 4.9268003454530875,
+          "EOS": 0,
+          "necessary_string_candidates": 0,
+          "not_semantic_pass": true
+        },
+        "TRAIN16": {
+          "count": 16,
+          "tf_nll": 4.102078794318939,
+          "EOS": 0,
+          "necessary_string_candidates": 0,
+          "not_semantic_pass": true
+        }
+      },
+      "RP_gold_history_body_nll": 5.225582553854036,
+      "RP_gold_end_mean_EOS_probability": 0.6237849584773143,
+      "manual_full_prose_reading": {
+        "reviewer": "main assistant only, unblinded, not formal native-human evaluation",
+        "all24_full_generations_read": true,
+        "coherent_full_continuations": 0,
+        "coherent_relevant_minimal_continuation_indices": [],
+        "harmful_repetition_indices": [
+          0,
+          1,
+          2,
+          3,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "EOS_count": 1,
+        "primary_advance_condition_pass": false,
+        "notes": "QA-only23 naturally completes 発展しています; no paragraph development. Empty immediate EOS and pseudo-word fragments fail. Rehearsal4 yields 赤褐色まれます and fails morphology. Long date/whitespace loops fail the full-output gate."
+      },
+      "manual_response_reading": {
+        "reviewer": "main assistant only; no independent native-human evaluator",
+        "prose_full_text_read": true,
+        "prose_coherent_full": 0,
+        "prose_harmful_repetition": 23,
+        "native24_content": 0,
+        "provided23_content": 0,
+        "grounded36_content": 0,
+        "human32_strict_content": 0,
+        "counterfactual_both_sides_correct_pairs": 0,
+        "self_history_old2_content": 0,
+        "self_history_new2_content": 0,
+        "rule": "No EOS within the fixed budget fails complete-utterance gate. All terminated old-panel outputs read. Pseudo-word spans, unrelated lunch questions, numeric loops and no information are failures.",
+        "probe_review": "Completed fixed48 probe has EOS0 and necessary-string candidates0 in both panels; all fail strict complete-answer condition. No independent native-human rating.",
+        "response_probe_semantic_success_TRAIN16": 0,
+        "response_probe_semantic_success_DEV32": 0
+      }
+    }
+  },
+  "training": {
+    "run": {
+      "actual_optimizer_updates": 1578,
+      "retained_updates": 1576,
+      "replay_updates": 2,
+      "counts": {
+        "retained": 1576,
+        "resume-validation": 2,
+        "recovery-replay": 0
+      },
+      "actual_targets": 1111459,
+      "independent_body_tokens": 1114553,
+      "one_pass": true,
+      "elapsed_seconds": 1628.7125454649977,
+      "maximum_rss_KiB": 1096712,
+      "gradient_norm_min": 1.8384641880605437,
+      "gradient_norm_median": 2.510932759910808,
+      "gradient_norm_max": 5.501993767730642,
+      "clipped_updates": 1576,
+      "weighted_train_nll": 5.2345709679320676
+    },
+    "mixed-run": {
+      "actual_optimizer_updates": 1578,
+      "retained_updates": 1576,
+      "replay_updates": 2,
+      "counts": {
+        "retained": 1576,
+        "resume-validation": 2,
+        "recovery-replay": 0
+      },
+      "actual_targets": 1111459,
+      "independent_body_tokens": 1041968,
+      "one_pass": true,
+      "elapsed_seconds": 1304.7812194359976,
+      "maximum_rss_KiB": 1105720,
+      "gradient_norm_min": 1.7180377689548059,
+      "gradient_norm_median": 2.3443603340696435,
+      "gradient_norm_max": 4.186324676026148,
+      "clipped_updates": 1576,
+      "weighted_train_nll": 4.9082194961095
+    },
+    "lr-run": {
+      "actual_optimizer_updates": 1578,
+      "retained_updates": 1576,
+      "replay_updates": 2,
+      "counts": {
+        "retained": 1576,
+        "resume-validation": 2,
+        "recovery-replay": 0
+      },
+      "actual_targets": 1111459,
+      "independent_body_tokens": 1041968,
+      "one_pass": true,
+      "elapsed_seconds": 1130.5000454059991,
+      "maximum_rss_KiB": 1104556,
+      "gradient_norm_min": 1.728121574761092,
+      "gradient_norm_median": 2.2129668701985254,
+      "gradient_norm_max": 4.794299736765968,
+      "clipped_updates": 1576,
+      "weighted_train_nll": 4.748741499301947
+    },
+    "response-run": {
+      "actual_optimizer_updates": 516,
+      "retained_updates": 512,
+      "replayed_updates": 4,
+      "updates_each": 256,
+      "initial_state_identical_and_isolated": true
+    }
+  },
+  "actual_optimizer_calls": 5250,
+  "retained_optimizer_updates": 5240,
+  "replayed_optimizer_updates": 10,
+  "retained_supervised_targets": 3347817,
+  "foundation_comparisons_do_not_triple_independent_corpus_volume": true
+}

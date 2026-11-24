@@ -1,0 +1,11 @@
+"""Reuse historical R39 judgments only after exact current raw-core identity."""
+import pathlib,json,hashlib
+R=pathlib.Path(__file__).resolve().parents[1];P=R.parent/'round39';E=R/'execution';read=lambda p:json.loads(p.read_text());sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest();manifest=P/'execution/artifact-manifest.json';bound={x['path']:x for x in read(manifest)['files']};spec=[('original17','old-validation.json','new-validation.json','new-manual.json','old-manual.json'),('daily12','daily-old-python.json','daily-new-python.json','daily-new-reading.json','daily-old-reading.json'),('native8','content-native-dev/old-python.json','content-native-dev/new-python.json','content-native-dev/new-reading.json','content-native-dev/old-reading.json'),('mrmp5','fixed-source-mrmp-dev/old-python.json','fixed-source-mrmp-dev/new-python.json','fixed-source-mrmp-dev/new-reading.json','fixed-source-mrmp-dev/old-reading.json')];out=[];core=['id','prefix','text','tokens','eos','validTokens','validUtf8','inputTokens']
+for group,newpath,oldpath,manual,dest in spec:
+ a,b=read(E/newpath),read(P/'execution'/oldpath);m=read(P/'execution'/manual)
+ for p in [P/'execution'/oldpath,P/'execution'/manual]:assert sha(p)==bound[str(p.relative_to(P))]['sha256']
+ assert m['generationSha256']==sha(P/'execution'/oldpath)
+ for x,y in zip(a['rows'],b['rows'],strict=True):assert all(x[k]==y[k]for k in core),x['id']
+ m.update(previousGenerationSha256=m['generationSha256'],generationSha256=sha(E/newpath),priorReadingSha256=sha(P/'execution'/manual),note='Historical R39 judgment reused only after exact regenerated prefix/text/token/EOS/UTF8 core identity; not claimed as fresh blind current reading')
+ (E/dest).write_text(json.dumps(m,ensure_ascii=False,indent=2)+'\n');out.append(dict(group=group,currentGenerationSha256=sha(E/newpath),historicalGenerationSha256=sha(P/'execution'/oldpath),historicalReadingSha256=sha(P/'execution'/manual),newBoundReadingSha256=sha(E/dest),allRawCoresExactlyMatch=True))
+(E/'old-reading-provenance.json').write_text(json.dumps(dict(oldFinalManifestSha256=sha(manifest),groups=out,noNewSemanticGradesAssigned=True),indent=2)+'\n');print('All42 old selected outputs match historical raw cores; judgments rebound with provenance')

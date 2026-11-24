@@ -1,0 +1,246 @@
+{
+  "schemaVersion": 1,
+  "reviewer": "Model Researcher /root/v2_models",
+  "createdUtc": "2026-10-26T06:25:43.173193+00:00",
+  "independence": {
+    "rootReportOrStrategyDraftRead": false,
+    "blind64And24SelfplayTurnsCompletedBeforeKeyMetricsOpened": true,
+    "blindRatingsUnchangedAfterUnblinding": true,
+    "newModelInference": 0,
+    "newOptimizerUpdates": 0,
+    "onlyNewFile": "model-final-review.json",
+    "actualInputsReadForFinalAnalysis": [
+      "PLAN.json",
+      "final-training-audit.json",
+      "resource-comparison.json",
+      "evaluation/summary.json",
+      "evaluation/mechanical-summary.json",
+      "evaluation/blind-reading-model.json",
+      "evaluation/blind-selfplay-reading.json",
+      "evaluation/blind-key.json",
+      "evaluation/blind-selfplay-key.json",
+      "core.py learning_rate/next_batch only"
+    ]
+  },
+  "primaryConclusion": "The new own-model pipeline learns role/end structure and very generic grammatical Japanese at both widths, but this is an early severely undertrained pilot, not evidence of natural context-appropriate daily dialogue. Larger width lowers body prediction loss at the same small data exposure, while neither model generates content-specific replies and selfplay stalls. Neither model should be adopted; do not infer a broad capacity ceiling or a failed overall data strategy from0.1476epoch.",
+  "models": {
+    "small": {
+      "parameters": 4375872,
+      "retainedUniqueUpdates": 512,
+      "actualOptimizerUpdates": 514,
+      "retainedTargets": 415321,
+      "bodyTargets": 361960,
+      "eosTargets": 26667,
+      "roleTargets": 26694,
+      "distinctWindows": 2048,
+      "windowEpochEquivalent": 0.14757169620982852,
+      "processedTargetsPerParameter": 0.09491159704854256,
+      "trainingSeconds": 197.2214846611023,
+      "allDevBodyNll": 6.007198378976143,
+      "allDevBodyTop1": 0.053821800090456805,
+      "allDevEosNll": 0.6153799579266569,
+      "allDevRoleNll": 0.0960720237796358,
+      "responseBodyNllPerByte": 1.1095996067189333,
+      "responseBodyTop1": 0.05476190476190476
+    },
+    "medium": {
+      "parameters": 11225280,
+      "retainedUniqueUpdates": 512,
+      "actualOptimizerUpdates": 514,
+      "retainedTargets": 415321,
+      "bodyTargets": 361960,
+      "eosTargets": 26667,
+      "roleTargets": 26694,
+      "distinctWindows": 2048,
+      "windowEpochEquivalent": 0.14757169620982852,
+      "processedTargetsPerParameter": 0.036998720744605036,
+      "trainingSeconds": 366.4415419101715,
+      "allDevBodyNll": 5.756975148455798,
+      "allDevBodyTop1": 0.07010402532790593,
+      "allDevEosNll": 0.5760170642895769,
+      "allDevRoleNll": 0.0503714941278843,
+      "responseBodyNllPerByte": 1.0595075023278855,
+      "responseBodyTop1": 0.07380952380952381
+    }
+  },
+  "blindedModelAssessment": {
+    "small": {
+      "n": 32,
+      "naturalWhole": {
+        "true": 32,
+        "false": 0,
+        "uncertain": 0
+      },
+      "meaningfulWhole": {
+        "true": 32,
+        "false": 0,
+        "uncertain": 0
+      },
+      "appropriateWhole": {
+        "true": 22,
+        "false": 7,
+        "uncertain": 3
+      },
+      "specificContentAppropriate": {
+        "true": 0,
+        "false": 32,
+        "uncertain": 0
+      },
+      "genericOnly": {
+        "true": 32,
+        "false": 0,
+        "uncertain": 0
+      },
+      "harmfulRepetition": {
+        "true": 0,
+        "false": 32,
+        "uncertain": 0
+      },
+      "contextConsistency": {
+        "true": 27,
+        "false": 2,
+        "uncertain": 3
+      },
+      "naturalTermination": {
+        "true": 32,
+        "false": 0,
+        "uncertain": 0
+      },
+      "compositeWhole": {
+        "true": 22,
+        "false": 7,
+        "uncertain": 3
+      }
+    },
+    "medium": {
+      "n": 32,
+      "naturalWhole": {
+        "true": 30,
+        "false": 2,
+        "uncertain": 0
+      },
+      "meaningfulWhole": {
+        "true": 30,
+        "false": 2,
+        "uncertain": 0
+      },
+      "appropriateWhole": {
+        "true": 23,
+        "false": 7,
+        "uncertain": 2
+      },
+      "specificContentAppropriate": {
+        "true": 0,
+        "false": 32,
+        "uncertain": 0
+      },
+      "genericOnly": {
+        "true": 30,
+        "false": 2,
+        "uncertain": 0
+      },
+      "harmfulRepetition": {
+        "true": 2,
+        "false": 30,
+        "uncertain": 0
+      },
+      "contextConsistency": {
+        "true": 27,
+        "false": 3,
+        "uncertain": 2
+      },
+      "naturalTermination": {
+        "true": 30,
+        "false": 2,
+        "uncertain": 0
+      },
+      "compositeWhole": {
+        "true": 23,
+        "false": 7,
+        "uncertain": 2
+      }
+    }
+  },
+  "selfplay": {
+    "episodes": 8,
+    "generatedTurns": 24,
+    "meaningfulEpisodes": 0,
+    "all3TurnsNaturalEosEpisodes": 8,
+    "crossTurnUnproductiveAcknowledgmentRepetitionEpisodes": 8,
+    "sourceAndPriorGeneratedHistoryActuallyVisible": true,
+    "droppedWholeTurns": 0,
+    "contextWindowForgettingCauseClaimed": false,
+    "limitation": "Forced3turn humanA/B stress, not interactive human evaluation, and not proof of infinite loops. Full source histories remain visible. Single acknowledgment naturalness is not context comprehension."
+  },
+  "interpretation": {
+    "roleEndVersusLanguage": "Role top1~97.6/98.4percent and EOS top1~97.3/97.2percent are learned far more strongly than body top1~5.38/7.01percent. Overall target loss/accuracy combine these easy structural targets, so report body separately. Correct termination does not imply a meaningful answer.",
+    "sizeComparison": "Medium bodyNLL5.757 versus6.007 small and byteNLL1.0595 versus1.1096 show a prediction advantage under this fixed512-update regime. Specific-content generation remains0/32 in each. This is not a demonstrated conversation-ability improvement and not enough to pick a production model size.",
+    "whyNotCapacityRejection": "Both models see415321targets of which361960body tokens,2048distinct windows~14.76percent of one epoch. Targets-per-parameter only~0.0949/small and~0.0370/medium. A wider randomly initialized model is not expected to exhibit its eventual ability from an equal tiny token budget; prior FFN findings and64-pair memorization do not settle broad capacity.",
+    "singleSeedAndDropout": "The same window IDs, target dose, sampler and hyperparameters are controlled. Width-dependent parameter/dropout shapes do not produce identical Torch random histories; one seed is descriptive. Within-model disk restart is exact.",
+    "contextClaims": "Nearly all outputs are generic acknowledgments independent of content; this fails content-bearing questions. It does not identify a particular attention layer as broken or prove zero conditional context information in teacher-forced logits.",
+    "tokenizerAndNumerics": "Fresh TRAIN-only own BPE and speaker-held split are substantial validity improvements. No present evidence isolates tokenizer or numerical error as the cause of universal acknowledgments. Parent reports6prefix<=4token parity argmax0/max~3.8e-6; that is limited implementation evidence, not full192-token global parity.",
+    "legacyComparison": "R46 byteNLL~0.7539 on the shared gold bytes is lower descriptively, but R46 saw these documents as original TRAIN and uses different tokenizer/plain-format/longer training history. New held is unseen for fresh models, not for R46. No fair unseen-capability ranking or raw token-NLL comparison against R46 follows.",
+    "goalStatus": "Natural grammatical short utterances and end markers alone are insufficient. Content-specific answers, context adaptation and meaningful multi-turn behavior remain unmet. No threshold relaxation, answer repair, repetition suppression or memorized answer mechanism is warranted."
+  },
+  "priorityOrder": [
+    {
+      "rank": 1,
+      "topic": "Sufficient measured learning coverage and broader human-language foundation",
+      "reason": "85percent of this admitted training-window epoch has not yet been consumed. A very early learning-curve milestone is more informative than another loss coefficient or architecture change. Main program must include diverse modern human prose plus authentic conversations, not a single source of short chat."
+    },
+    {
+      "rank": 2,
+      "topic": "Licensed source diversity and quality before large-scale corpus repetition",
+      "reason": "Current new TRAIN has~2.823m tokens in the resource plan. Repeating it79.5times to reach illustrative20N for11.2m is not79.5times new knowledge. Acquire/audit independent modern Japanese prose and conversational genres with rights, dedup/family splits, complete turns and positive end markers. Do not admit uncertain scraped/subtitle/synthetic sources merely to increase count."
+    },
+    {
+      "rank": 3,
+      "topic": "GPU-backed foundation and controlled capacity family",
+      "reason": "12m/28m/60m are valid candidates after data and compute budgeting. Current CPU pilot demonstrates operational feasibility but does not train them sufficiently. Profile real GPU memory and tokens/s before purchase or substantial training; no available GPU was demonstrated."
+    },
+    {
+      "rank": 4,
+      "topic": "Structure/tokenizer/context/objective changes only on diagnosed needs",
+      "reason": "Keep truthful roles/end protocol. Context256 already retains all histories in the present selfplay, so a context increase would not explain these failures. New RoPE/RMSNorm/SwiGLU or8k/16k tokenizer are candidates, not immediate remedies to underexposure; separate future ablations and byte-equivalent evaluation."
+    }
+  ],
+  "nextExecutableMilestone": {
+    "status": "Proposal only; current pilot cap remains closed",
+    "choice": "Separately preregister a CPU continuation to complete the first admitted TRAIN-window epoch, as a bounded coverage/learning-curve diagnostic; in parallel prepare licensed-modern-prose plus GPU foundation as the main capability program.",
+    "whyWorthDoing": "The current severe underexposure leaves an obvious, measurable uncertainty; first-epoch completion exposes remaining genuine examples rather than repeatedly fitting64examples. Same tokenizer/data/sampler trajectory and fixed-width pair allow a clearer learning-curve observation before scaling or new objectives.",
+    "notGoal": "One epoch is not a sufficiency rule, and even a full epoch gives onlyabout2.823m targets (~0.645/small,~0.251/medium per parameter). Do not call its completion a language result or keep extending merely untilNLL improves.",
+    "forecast": {
+      "method": "Linear extrapolation of actual first0.14757epoch receipt times; save/evaluation and sample-length variation add overhead",
+      "additionalTrainSecondsBothArms": 3255.924611493246,
+      "additionalTrainMinutesBothArms": 54.2654101915541,
+      "estimatedNewBudgetIncludingEvalMinutes": [
+        60,
+        90
+      ],
+      "current30MinuteBudgetSufficient": false,
+      "caution": "No continuation executed. This is not permission to extend current PLAN, buy GPU or launch larger jobs."
+    },
+    "lrBlocker": "core.learning_rate is explicitly bounded by original uniqueUpdates512 and cosine-decays to minLR3e-5. Simply changing total to a full-epoch target atstep513 would restart the cosine near highLR and invalidate same-settings continuation. A new stage must explicitly retain terminalLR3e-5 without warmup/Adam/RNG restart, or predeclare a distinct from-scratch longer-schedule experiment. Do not conceal a LR jump as only extra data exposure.",
+    "countingAndExposure": "Preserve actual sampler state and stop before repeating windows if claiming exact first-epoch coverage. Current count13878 is not divisible bybatch4; explicitly plan the last partialbatch or describe two repeated windows. Keep both widths exposure-exact and count restart/profile actualoptimizer calls separately within new budget.",
+    "evaluation": "Freeze a terminal coverage milestone and limited interval diagnostics before training; no best-checkpoint choice by exposed language outputs. Report body/end/role losses and full raw content-bearing reply/composite/selfplay evidence. ThisDEV is exposed after this run; preserve sealedTEST and prepare an independently held family evaluation before any promotion.",
+    "success": "New unseen-to-model diagnostic development replies contain appropriate topic-specific information, natural whole output and genuine end markers, not just a reduction in EOS/role/body loss or more identical acknowledgments.",
+    "stopAndRedirect": "If body prediction improves but fixed greedy remains universal acknowledgment, do not grow onlysteps or optimize inference to hide it. Quantify short/generic training mass, context conditional prediction and response-training allocation, then test one justified distribution/objective intervention on a sufficiently trained foundation."
+  },
+  "mainCapabilityProgram": {
+    "notAnAlternativeToDataAudit": "Licensing and modern-prose collection should proceed now, but mass training waits for admissible corpus/tokenizer/splits/resources. A CPU first-epoch diagnostic and data preparation are complementary, not a guarantee the existing conversational-only recipe can reach the goal.",
+    "foundation": "Train natural Japanese composition from diverse human prose and whole human dialogue with clear document/turn boundaries and positive ends. Then conversational reply adaptation with retained language exposure, then multi-turn contextual reference training.",
+    "computeScale": "Use actual V3997 counts fromresource-comparison for current plan; own new vocabulary later requiresrecount andfresh tokenizer isolation.16–24GiBGPU is a practical trial target for small/medium models, conditional on measured peaks rather than a purchase authorization.",
+    "researchPromotion": "Require content-bearing unknown-family Japanese dialogue improvements and stable retained language, in addition to legacy gates. No public model/site changes or merge from this pilot."
+  },
+  "evidenceSha256": {
+    "PLAN.json": "c457f7510965e7dbe72475eb4b93c2441b6d9a541bdf7ed26db4c79714f6aaa8",
+    "final-training-audit.json": "abcd7c4d7f8f33562a9f1b774c5237d9ada5fcb835564ccff6f2c4a150821edb",
+    "resource-comparison.json": "f6b398e04399bb89a73c0e001c56d078b6a1e19cb16cff4ff46093da8eb30939",
+    "evaluation/summary.json": "71ba8a79a85e5a6356c51ee7e89a93d8b3ccfd959a0829ffff88e6bf4a6de18a",
+    "evaluation/mechanical-summary.json": "9ae09b71a597858e2eb6f5ec8ef23f0a2ccd60ed8d59d9369a17dab49606a911",
+    "evaluation/blind-reading-model.json": "de7b849c5ab9ef4eada620737f0e376c640c326ea07d56100ab82629e3bb9a00",
+    "evaluation/blind-selfplay-reading.json": "caad92a70306300adfdadd5a97b1eed223bd2e9743fb4975be594ce65565da72",
+    "evaluation/blind-key.json": "f37f77dd928a13ac3c5aaccdebc0af16a8122e0a997cbbaf5780a13203371b19",
+    "evaluation/blind-selfplay-key.json": "dbd0f52c7396d6c8d3f74e074afa09251ad80956451c0c1b5ea447064d726cf9"
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "reviewer": "Independent Evaluation Analyst /root/assay_eval",
+  "status": "Completed descriptive learnability diagnosis; no adoption recommendation",
+  "additionalOptimizerUpdatesForThisReview": 0,
+  "independence": {
+    "rootResultsOrDiagnosisDraftRead": false,
+    "heldasideBlindReadingCompletedBeforeEndpointMetricsAccess": true,
+    "heldasideWholeOutputsActuallyRead": 96,
+    "fitGenerationAssessment": "Independent other reviewer summary used; this reviewer did not independently read all96 fit whole outputs",
+    "humanIndependentEvaluationPerformed": false
+  },
+  "actualUpdateAccounting": {
+    "AOptimizerCalls": 200,
+    "BOptimizerCalls": 200,
+    "totalOptimizerCalls": 400,
+    "AUniqueLineageUpdates": 198,
+    "BUniqueLineageUpdates": 198,
+    "replayOptimizerCalls": 4,
+    "explanation": "200 actual calls per arm include2 replay-validation calls; terminal lineage has198 updates per arm, not200. No further calls proposed or performed in this task."
+  },
+  "primaryConclusion": {
+    "narrowSequenceAssociationLearnable": true,
+    "semanticRelationshipLearningEstablished": false,
+    "assayHeldasideImprovementEstablished": false,
+    "capacityInsufficiencyEstablished": false,
+    "naturalJapaneseWholeGenerationImproved": false,
+    "japaneseExplanation": "現在の構成でも64組の条件付き配列を非常に強く学習できる。ただし原典対応も置換対応も暗記し、未更新組の本文予測と自由生成は悪化した。これは限定された対応の記憶可能性の証拠であり、意味理解・未知会話への一般化の証明ではない。"
+  },
+  "fitEvidence": {
+    "AOwnCorrespondenceMacroNllBefore": 3.187860108408636,
+    "AOwnCorrespondenceMacroNllAfter": 0.01690403311366257,
+    "BOwnCorrespondenceMacroNllBefore": 3.410836079871716,
+    "BOwnCorrespondenceMacroNllAfter": 0.019632471201643766,
+    "AOwnCorrespondenceTop1Rate": 1.0,
+    "BOwnCorrespondenceTop1Rate": 1.0,
+    "greedyGoldPrefixExactEachArmOnOwnMapping": {
+      "A": 16,
+      "B": 16,
+      "denominator": 16
+    },
+    "caution": "Top1 under gold histories plus full greedy canonical prefix reproduction corroborates memory, but not semantic understanding. Both directions fit, and cross-context NLL also falls, so lexical response memorization contributes."
+  },
+  "heldasideEvidence": {
+    "previouslySupervisedByR46": true,
+    "isUnseenTest": false,
+    "casesTF": 32,
+    "casesGreedyEachConditionEachEndpoint": 16,
+    "correctContextMacroNll": {
+      "baseline": 3.0989285191471816,
+      "A": 4.129098071216639,
+      "B": 4.222126020592221
+    },
+    "correctContextNllWorseThanBaselineCases": {
+      "A": 32,
+      "B": 32
+    },
+    "contextGainAminusB": {
+      "group": "heldaside",
+      "contextGainAminusB": 0.02931099820513637,
+      "clusterBootstrap95": [
+        -0.04757109973716826,
+        0.10835857234533151
+      ],
+      "exchangePairs": 16,
+      "positiveCases": 18,
+      "ownFitImprovedA": 0,
+      "ownFitImprovedB": 0
+    },
+    "appropriateWholeCorrect": {
+      "baseline": {
+        "true": 2,
+        "false": 12,
+        "uncertain": 2
+      },
+      "A": {
+        "true": 0,
+        "false": 16,
+        "uncertain": 0
+      },
+      "B": {
+        "true": 0,
+        "false": 16,
+        "uncertain": 0
+      }
+    },
+    "specificContentAppropriateCorrect": {
+      "baseline": 0,
+      "A": 0,
+      "B": 0,
+      "denominator": 16
+    },
+    "interpretation": "No evidence of beneficial transfer within this previously supervised TRAIN pool. A versus B point differences cannot override the marked deterioration from the shared baseline. Context-gain interval includes zero."
+  },
+  "freeGenerationMechanism": {
+    "AOwnFitGoldPrefixThenAdditionalTokens": 14,
+    "BOwnFitGoldPrefixThenAdditionalTokens": 13,
+    "denominator": 16,
+    "AOwnFitImmediateEos": 2,
+    "BOwnFitImmediateEos": 3,
+    "AOwnGoldEndEosProbability": 0.021301739849645118,
+    "BOwnGoldEndEosProbability": 0.03966024946793889,
+    "baselineGoldEndEosProbability": {
+      "correct": 0.23483850575303222,
+      "mismatched": 0.22901807446896782
+    },
+    "objectiveFact": "assay_runtime.response_ce reproduces existing no-EOS, per-example mean response CE in eval mode. End-of-reply EOS receives no positive supervision in this diagnostic recipe.",
+    "interpretation": "A and B can replay the full memorized original target, then continue into repeated or broken text. Gold-prefix success cannot be counted as whole-generation success. Suppressed end EOS is a concrete proximal hypothesis, not proof that all repetition or semantic failures arise from EOS.",
+    "heldasideCaution": "Heldaside body NLL rises independently of EOS scoring; an EOS repair cannot be presumed to restore language retention or appropriate content."
+  },
+  "validityLimits": [
+    "Finite schedule context-dose imbalance:198 updates are24 full epochs plus48 cases.24 contexts have25vs24 exposures between arms; trajectory marginal matching is not exact. This limits uncontaminated one-factor causal claims, but does not erase the descriptive demonstration that both64 mappings can be fitted.",
+    "B contains plausible/ambiguous replies; it is a fixed non-original mapping, not uniformly false semantic labels. Primary all-row results and both-reviewers-clear supplementary rows are distinct.",
+    "Original64 pool is previously trained, anchor-selected RealPersona only. Heldaside excludes this assay updates and has speaker/family controls, but is not unseen generalization.",
+    "Only one fixed seed, existing Adam history, fixed small dose and greedy192 decoding were evaluated. No capacity/data/optimizer causal separation follows.",
+    "Blind assistant reading remains subjective; original candidates had been read before generation evaluation and could be remembered. Endpoint keys were not opened until heldaside annotations were complete.",
+    "Teacher/sequential errors and engineering stability checks support execution correctness; no new JavaScript inference equivalence is asserted."
+  ],
+  "priority": {
+    "nextSmallOneFactorDiagnostic": "Presence versus absence of an explicitly supervised end-of-reply EOS position, with body response CE and its normalization preserved exactly, from the same original R46 aligned full state.",
+    "rationale": "Both arms reproduce own targets16/16 but mostly overrun them, and gold-end EOS probabilities collapse. This provides a focused, testable stopping-boundary hypothesis before interpreting repeated suffixes as inability to learn the target.",
+    "fixedRequirements": [
+      "Predeclare EOS term definition/coefficient, steps, data, Adam/RNG, body token exposure and generation criteria before any output; use equal complete-epoch context schedules.",
+      "No inferred early stopping, output truncation at gold length, punctuation repair, repetition penalty, R48 mass concentration or promotion of existing diagnostic weights.",
+      "Judge actual raw whole generation and heldaside body retention separately; stopping alone is not semantic generalization."
+    ],
+    "expectedDiscrimination": "If matched EOS supervision fixes target overrun while heldaside body NLL and content stay poor, stopping is one local mechanism and data/objective retention remains the larger problem. If it fails, self-history dynamics and optimization require further separation.",
+    "broaderResearchPriority": "Data distribution/learning allocation and retention of existing Japanese capabilities, ahead of blindly expanding capacity. The tiny repeated-only recipe can memorize both mappings but damages unupdated text, so the desirable objective and distribution matter.",
+    "capacityPosition": "Do not rule out insufficient capacity for broad generalization; successful64-pair memorization addresses only local capacity. Broader capacity-only comparisons remain justified after isolating boundary and retention issues.",
+    "notExecuted": true
+  },
+  "evidenceSha256": {
+    "results/analysis.json": "f5618c680de25358ef6b8d1efa1f497363327a2f452b2f798d61b99d03fa4028",
+    "results/reading-summary.json": "cd5d5310884105e74a821c8e68f02949f7fd1a2658e77c302bf20ad00136cad3",
+    "results/generation-mechanics.json": "85b707c977b890d3d1114a41526b2fd76e94f7ed2dfad256b117fd20097d7c77",
+    "results/heldaside-blind-reading.json": "49a24470f7582f64bf2a994e0545bc8c2a3245a6f8434e43c7f7091d77124d58",
+    "engineering-final-review.json": "bf81ec4818ecb559439ac13ddf4f09e8cefc0e117018f2c0f12312473e773220",
+    "assay_runtime.py": "1ca134c2a8551635c63b41ff99edfe1eb6c5d98a2bb526295bd74e8e5246e464"
+  }
+}

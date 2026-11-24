@@ -1,0 +1,236 @@
+{
+  "reviewer": "Independent Model Researcher /root/v2_models",
+  "createdUtc": "2026-10-26T05:35:20.426073+00:00",
+  "scope": "Read-only independent design/resource analysis; reports only, no model instantiation, no new code, optimizer or training",
+  "goal": "Natural appropriate content-bearing everyday Japanese dialogue, clean termination and multi-turn context; finite memorization or NLL alone insufficient",
+  "evidenceSha256": {
+    "training/language/model.py": "fa4f8a42143c7231e50e6828141e072af5510b2a278e95696faa67f5815c716f",
+    "training/language/round46/multiview/train.index.json": "dc249f5ee32ea77eec62d7f5cffc4fee04d6e0d99f7e02550756e99fffd3dbe1",
+    "training/language/round46/multiview/tokenizer.json": "453e93eafe8bf745e47c5241f9c7e9ed9e0b7dd3dc2bb912c21255b654bf5613",
+    "training/language/diagnostics/learnability-20261026/DIAGNOSIS.json": "3fb8b0f06b10e7ac1e9045e811ef2b81171e09736654b13fbb9bae81fe1761ae",
+    "training/language/diagnostics/learnability-20261026/model-research-final.json": "37493a321f8a23cfe261fe80e6d330b1f1bc630dc1b99cbdaf61dc32ab820edb"
+  },
+  "currentEvidence": {
+    "parameters": 4655808,
+    "context": 256,
+    "phase1Reached": false,
+    "round47Rejected": true,
+    "round48FullMassNoGo": true,
+    "scientificReference": "R46 selected9500",
+    "formalAdoptionAnchor": "R25",
+    "learnability64": "A and B both fit all64 own pairs; this rules out failure to memorize64 but not broad capacity shortage",
+    "transfer32": "Both arms worsen every held-aside original TRAIN gold NLL; not unseen TEST",
+    "generation": "A trained gold-prefix16/16 then14 overshoot; no improvement in complete appropriate generation; EOS defect newly induced by response-body-only assay does not explain all original R46 failures"
+  },
+  "canonicalTrainInventory": {
+    "method": "Sum length/characters/utf8Bytes of train.index documents with variant==0; not sum overlapping windows or three views",
+    "allCanonicalTokens": 11078787,
+    "humanCanonicalTokens": 7505019,
+    "nonDialogueCanonicalTokens": 3573768,
+    "humanDocuments": 13550,
+    "humanCharacters": 9556044,
+    "humanCharsPerToken": 1.2732871162617976,
+    "humanBytesPerToken": 3.712791666483456,
+    "caution": "Canonical tokens are a representation-specific information-volume proxy, not unique semantic facts. Other variants and repeated epochs are not new independent information."
+  },
+  "parameterFormula": "P=V*d+S*d+L*(12*d*d+13*d)+2*d for existing Decoder with FFN4d; architectural replacements require recount",
+  "candidates": [
+    {
+      "id": "scale12m",
+      "countedArchitecture": "Existing own Decoder: learned absolute positions, pre-LayerNorm, GELU FFN4d, tied input/output embeddings",
+      "config": {
+        "vocabulary": 5455,
+        "dim": 320,
+        "layers": 8,
+        "heads": 5,
+        "hidden": 1280,
+        "context": 512
+      },
+      "parameters": 11773760,
+      "fp32AdamStateWithGradMiB": 179.6533203125,
+      "fp32ModelAdamCheckpointMiB": 134.739990234375,
+      "planningTokenBands": [
+        {
+          "tokensPerParameter": 20,
+          "processedTokens": 235475200,
+          "denseTrainingFLOPs": 16634570944512000,
+          "densePFLOPs": 16.634570944512,
+          "hoursAtEffective5TFLOPs": 0.9241428302506667,
+          "hoursAtEffective20TFLOPs": 0.23103570756266667,
+          "daysAtEffective20GFLOPsCPU": 9.62648781511111,
+          "epochsEquivalentOnCurrentCanonicalAllTrain": 21.254601248313556
+        },
+        {
+          "tokensPerParameter": 50,
+          "processedTokens": 588688000,
+          "denseTrainingFLOPs": 41586427361280000,
+          "densePFLOPs": 41.58642736128,
+          "hoursAtEffective5TFLOPs": 2.310357075626667,
+          "hoursAtEffective20TFLOPs": 0.5775892689066667,
+          "daysAtEffective20GFLOPsCPU": 24.06621953777778,
+          "epochsEquivalentOnCurrentCanonicalAllTrain": 53.13650312078389
+        }
+      ],
+      "suggestedGPUForThroughputTrial": "8 GiB minimum trial;16 GiB comfortable"
+    },
+    {
+      "id": "scale28m",
+      "countedArchitecture": "Existing own Decoder: learned absolute positions, pre-LayerNorm, GELU FFN4d, tied input/output embeddings",
+      "config": {
+        "vocabulary": 5455,
+        "dim": 512,
+        "layers": 8,
+        "heads": 8,
+        "hidden": 2048,
+        "context": 512
+      },
+      "parameters": 28275200,
+      "fp32AdamStateWithGradMiB": 431.4453125,
+      "fp32ModelAdamCheckpointMiB": 323.583984375,
+      "planningTokenBands": [
+        {
+          "tokensPerParameter": 20,
+          "processedTokens": 565504000,
+          "denseTrainingFLOPs": 95938432204800000,
+          "densePFLOPs": 95.9384322048,
+          "hoursAtEffective5TFLOPs": 5.329912900266666,
+          "hoursAtEffective20TFLOPs": 1.3324782250666665,
+          "daysAtEffective20GFLOPsCPU": 55.519926044444446,
+          "epochsEquivalentOnCurrentCanonicalAllTrain": 51.04385525238458
+        },
+        {
+          "tokensPerParameter": 50,
+          "processedTokens": 1413760000,
+          "denseTrainingFLOPs": 239846080512000000,
+          "densePFLOPs": 239.846080512,
+          "hoursAtEffective5TFLOPs": 13.324782250666667,
+          "hoursAtEffective20TFLOPs": 3.3311955626666667,
+          "daysAtEffective20GFLOPsCPU": 138.79981511111112,
+          "epochsEquivalentOnCurrentCanonicalAllTrain": 127.60963813096144
+        }
+      ],
+      "suggestedGPUForThroughputTrial": "12 GiB trial;16 GiB comfortable"
+    },
+    {
+      "id": "scale61m",
+      "countedArchitecture": "Existing own Decoder: learned absolute positions, pre-LayerNorm, GELU FFN4d, tied input/output embeddings",
+      "config": {
+        "vocabulary": 5455,
+        "dim": 768,
+        "layers": 8,
+        "heads": 12,
+        "hidden": 3072,
+        "context": 512
+      },
+      "parameters": 61287168,
+      "fp32AdamStateWithGradMiB": 935.16796875,
+      "fp32ModelAdamCheckpointMiB": 701.3759765625,
+      "planningTokenBands": [
+        {
+          "tokensPerParameter": 20,
+          "processedTokens": 1225743360,
+          "denseTrainingFLOPs": 450734035375226880,
+          "densePFLOPs": 450.7340353752269,
+          "hoursAtEffective5TFLOPs": 25.04077974306816,
+          "hoursAtEffective20TFLOPs": 6.26019493576704,
+          "daysAtEffective20GFLOPsCPU": 260.84145565696,
+          "epochsEquivalentOnCurrentCanonicalAllTrain": 110.63876938874265
+        },
+        {
+          "tokensPerParameter": 50,
+          "processedTokens": 3064358400,
+          "denseTrainingFLOPs": 1126835088438067200,
+          "densePFLOPs": 1126.8350884380673,
+          "hoursAtEffective5TFLOPs": 62.6019493576704,
+          "hoursAtEffective20TFLOPs": 15.6504873394176,
+          "daysAtEffective20GFLOPsCPU": 652.1036391424,
+          "epochsEquivalentOnCurrentCanonicalAllTrain": 276.5969234718566
+        }
+      ],
+      "suggestedGPUForThroughputTrial": "16 GiB trial;24 GiB for larger batch or context1024"
+    }
+  ],
+  "resourceAssumptions": {
+    "observed": "No nvidia-smi/GPU;3 vCPUs,9.7GiB RAM; parent reports142MiB free disk before safe cache cleanup",
+    "FLOPModel": "6*N*processedTokens dense training approximation; excludes quadratic attention, activation recomputation, padding, output/dataloader/save/evaluation overhead; not a measured runtime",
+    "tokenBandMeaning": "20N and50N are illustrative planning bands, NOT an optimum, minimum sufficiency or language-success guarantee",
+    "GPUHoursMeaning": "5/20 TFLOP/s are effective throughput scenarios, not GPU peak rates or claims about an available GPU. End-to-end measured tokens/s required before authorization; small models may be launch or input bound. Allow2–4x or more overhead until measured.",
+    "optimizerMemory": "FP32 param4+grad4+Adam first/second8=16 bytes/param excluding activations/runtime; model+Adam file roughly12 bytes/param if no duplicate beststate; autocast with FP32 model changes activation dtype, not this static16N state.",
+    "VRAMMeaning": "Trial device tiers are estimates for batch4–8,context512,efficient attention,optional activation checkpointing. No CUDA profiling was done; reduce microbatch and use accumulation, require peak-memory measurement/headroom. context1024 adds attention and activation cost, not only parameter count.",
+    "disk": "12m fullstate~135MiB,28m~324MiB,61m~701MiB before archives/Git duplication;142MiB free cannot safely hold even the smallest run with restart/archive. Need>=1GiB spare for tiny/current-model pilot,>=4–8GiB for scale-state experiments, more for corpus/versioned caches."
+  },
+  "architectureStrategy": {
+    "stage0": "Make explicit truthful conversation boundaries and deterministic causal training operational before claiming larger model improvement. Existing reserved user3/assistant4/turn5/EOS2 allow a no-external-tokenizer pilot. EOT/turn and conversation-EOS meanings must be frozen and supervised, not inferred from occasional standalone newline pieces.",
+    "roleCaution": "Human participantA/B are not a genuine helpful assistant. Do not relabel their every utterance as ideal assistant behavior without task-quality review.",
+    "controlledScale": "All new candidates share architecture family/context512/own tokenizer/data serialization/objective/token dose/evaluation; random initialization and fresh Adam avoid inheritance/new-coordinate-age confounds. Existing R46 remains a separate reference. A changed new-series package cannot identify capacity alone against R46.",
+    "laterAlternatives": "RoPE,RMSNorm,SwiGLU,depth/context1024 are viable own implementations, not imported weights, but separate ablations rather than a simultaneous recipe interpreted as capacity-only."
+  },
+  "tokenizerStrategy": {
+    "initialControl": "Keep existing own5455 BPE for a first bounded protocol/gradient/runtime pilot and controlled scale counts. No external vocabulary.",
+    "candidate": "Own8k/16k BPE learned only from admitted TRAIN, preserve bytes/Unicode boundaries and reserved role/end IDs, report held-development roundtrip/fallback/length efficiency and bits-per-byte.",
+    "confounds": "Changing V changes embedding capacity and token budget/sequence length; NLL per token across vocabularies is not comparable. Freeze a new tokenizer before training a new scale family and count actual parameters.",
+    "contextMeaning": "Observed human efficiency1.273characters/token means context256~326chars,512~652chars on average; not a guaranteed turn capacity. Measure complete-history coverage and antecedent retention."
+  },
+  "stagedLearning": [
+    {
+      "stage": "A Japanese language foundation",
+      "training": "Diverse human modern prose plus authentic whole conversations, causal CE and truthful end markers; whole response/body and endings receive positive training, no synthetic answers",
+      "advance": "Stable full raw continuations across held document/family topics, meaningful complete sentences, low harmful loops, no memorized-probe-only success"
+    },
+    {
+      "stage": "B Daily response adaptation",
+      "training": "Source-authenticated reply supervision with complete prior turns and balanced content-rich/short replies; retain foundation distribution through fixed replay/mixing, not64-pair-only concentration",
+      "advance": "Blind whole-response relevance/content and naturalness improve on family-held unseen diagnostic development, termination and retained prose performance do not regress"
+    },
+    {
+      "stage": "C Multi-turn",
+      "training": "Complete2–8turn histories, role/turn identity, reference and topic continuation/switch; expand context only when history-coverage diagnosis warrants it",
+      "advance": "Context minimal-pair appropriate content differentiation plus closed-loop multi-turn consistency; not merely changed wording"
+    },
+    {
+      "stage": "D Knowledge/reasoning later",
+      "training": "Only after reliable daily Japanese; add provenance-aware knowledge and separately evaluated reasoning data",
+      "advance": "Independent held knowledge/generalization evidence; not this task"
+    }
+  ],
+  "firstExecutableWork": {
+    "recommended": "Fresh new-series protocol/data/gradient/restart smoke, bounded CPU training only if measured runtime and disk permit; a meaningful larger-model training claim requires new licensed diverse text and actual accelerator access. Parent may instead choose a current-scale protocol pilot to validate the next series pipeline.",
+    "pilotScale": "Start current-scale or about12m,context128–256,microbatch1–2; profile a zero-update/very-few-update workload first, fit walltime/update/token budget before full pilot. Fixed held development and raw greedy generation before/after.",
+    "notSuccess": "Passing pipeline tests or learning a small training batch is an engineering readiness result, not natural language capability.",
+    "scaleComparisonAfter": "Same serialization/data/tokenizer and complete-epoch exposure, current-scale vs12m from scratch with equal processed-token budget,predeclared optimizer/LR,terminal not retrospective selected. Additional seed(s) needed before capacity claim.",
+    "stop": "No large CPU pretraining or cloud GPU purchase/provisioning merely because a theoretical FLOP estimate is small. Report hardware/data gap; no public replacement or merge."
+  },
+  "priorityJudgment": {
+    "main": "Data distribution and training signal/retention are more directly implicated by current evidence than an inability to memorize at4.66m. This is a priority judgment, not proof of adequate broad-language capacity.",
+    "whyScaleRemainsCandidate": "4.66m capacity may limit compositional representations and generalization even while memorizing64; prior FFN expansion was not a decisive general capacity test. Controlled12m→28m→61m family is rational once data/compute validation makes it informative.",
+    "noMechanicalLossRoundLoop": "Do not treat finishing retention/EOS comparisons as the goal. Continue only experiments that test a language-ability bottleneck and can change the roadmap."
+  },
+  "confirmedParentPilot": {
+    "status": "Parent design received after independent analysis; not executed by this reviewer",
+    "newFamily": "Fresh ownTokenizer fitted solely on newly speaker-split TRAIN; own glyph +512word merges; V must be measured after fitting",
+    "models": [
+      {
+        "layers": 8,
+        "dim": 192,
+        "heads": 4,
+        "hidden": 768,
+        "context": 256
+      },
+      {
+        "layers": 8,
+        "dim": 320,
+        "heads": 4,
+        "hidden": 1280,
+        "context": 256
+      }
+    ],
+    "oneArmFactor": "Width and mathematically derived FFN/embedding dimensions only within the new family; heads/layers/context/tokenizer/data/protocol/objective/seed/optimizer policy fixed",
+    "tokenProtocol": "role3/4=humanA/B,EOS2=utterance end,document BOS at independent sample start; turn5 unused; all genuine causal body+role+EOS targets trained",
+    "initialization": "Own random initialization +fresh Adam, not inherited R46 state; same seed does not imply equal arrays for differently shaped models",
+    "proposedBudget": "512unique+2resume replay perarm=1028actual total maximum; totalCPU training wall ceiling30minutes,2threads; Go only if profile including save/evaluation overhead fits",
+    "scope": "New protocol/tokenizer/split/optimizer/model package versus R46 is multi-factor descriptive; width effect is only between the two new models",
+    "importantCorrectionsToInitialOptions": "OldBPE reuse is unsuitable for true newly-held speaker evaluation because the old tokenizer saw the original TRAIN speakers. Fresh TRAIN-only tokenizer is chosen by parent. Parent EOS protocol uses2 as every-turn end rather than the optional separate-turn5 proposal; this must be consistent in training/inference/evaluation."
+  },
+  "comparisonExposureCaution": "The new speaker-held source documents were original TRAIN of R46. They are unseen to fresh new-family models/tokenizer but seen to R46 weights/tokenizer. R46-versus-new comparison on these inputs is not equal unseen-generalization evidence.",
+  "attentionBoundaryCaution": "A BOS token does not reset attention by itself. Use one document per sample/window or explicit cross-document causal mask; validate no context leaks across packed documents. Separate body NLL from easy role/end token NLL."
+}

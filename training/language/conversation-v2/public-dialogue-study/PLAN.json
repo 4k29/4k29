@@ -1,0 +1,68 @@
+{
+  "frozen_before_optimizer": true,
+  "experiment": "ASDC scoped one-pass condition clarification pilot, not broad A/B",
+  "broad_main_learning": "No-Go: only2058 TRAIN body tokens, no reasoned comparison/procedural coverage; global speaker independence unverified",
+  "pilot": "Go after real-model preflight, per user Phase7 authorization",
+  "initial": "PR108 MIX-579",
+  "initial_sha256": "fc24624bcd3a298e3d0b32ecf8b419af32354c6196c764544249d05abcd980f7",
+  "model": "own11.23M/BPE3997/context256",
+  "arms": {
+    "A": "all nonpadding shifted teachers",
+    "B": "same inputs; response body+trueEOS only"
+  },
+  "LR": 1e-05,
+  "clip": 1.0,
+  "AdamW": "inherited moments/step6940, beta.9/.999 epsilon1e-8 decay.05",
+  "loss_normalization": "global mean over active teachers per batch",
+  "train_cases": 66,
+  "DEV_cases": 15,
+  "input_teachers_per_arm": 4880,
+  "response_body_tokens": 2058,
+  "response_active_teachers": 2124,
+  "updates_per_arm": 17,
+  "checkpoint_updates": [
+    9,
+    17
+  ],
+  "evaluate_updates": [
+    0,
+    9,
+    17
+  ],
+  "legacy_evaluation": "initial PR108 saved evidence reused; terminal129 fixed cases and4 self episodes; same LF1 projection",
+  "generation": "full vocabulary greedy64 newDEV tokens, original per-case legacy ceilings; no token suppression/repair",
+  "anticipated_optimizer_calls": {
+    "retained": 34,
+    "discarded_original": 4,
+    "resume_replay": 2,
+    "total": 40
+  },
+  "one_pass": true,
+  "no_new_epoch": true,
+  "checkpoint": "all model/Adam/RNG/sampler/cursor/trace, atomic save, fragments32MiB, SHA and remote-only cold restore",
+  "safety_stop": [
+    "nonfinite state",
+    "ledger/cursor mismatch",
+    "preflight resume mismatch",
+    "initial A/B logits differ",
+    "free disk below2GiB",
+    "failed save or cold hash"
+  ],
+  "no_automatic_replay": true,
+  "sha256": {
+    "training/language/conversation-v2/public-dialogue-study/DATA.json": "4e872a097583d3487429ff88dd8175017ced6692e09015551dc5bc9be8825267",
+    "training/language/conversation-v2/public-dialogue-study/DEV_PROTOCOL.json": "4fcf899d3534535bf7910c3f6038bd2084dfbfa13a68550d84ca26c5c1a41e09",
+    "training/language/conversation-v2/public-dialogue-study/INPUT_AUDIT.json": "6ce96ec2b3d4a243821411ff2f1fd3654e19574d633c58b2e1e250d19a7b6ecd",
+    "training/language/conversation-v2/public-dialogue-study/SPLIT_AUDIT.json": "8cf66c9fe7ad6e607139ecda08f8b50f14f92fe4ec65ffc6585b38fb56842204",
+    "training/language/conversation-v2/public-dialogue-study/SOURCE_RIGHTS.json": "edc628a9c738934cf794d1ab09180cad640441cc44952a59982e62aba494d933",
+    "training/language/conversation-v2/public-dialogue-study/engine.py": "80f475942f499f715a29e0610f50f65837e2bc2b576b7fd3f2aec1d2d1ef1f56",
+    "training/language/conversation-v2/public-dialogue-study/verify_inputs.py": "c929411851a7e8520f234e5383fe949fbb4d4649e24be9340022e645bb1d2b91",
+    "training/language/conversation-v2/data/tokenizer.json": "6d079e4ba0a954ae32ad34a35ddd15384eb48b8eceaf3f3529a66e4266b1da06",
+    "training/language/conversation-v2/core.py": "52a74ecb7250a6671a432d3aa38ad9ed0ffbe1a3be5601fde3b721f1e735b83d",
+    "training/language/conversation-v2/foundation-stage/runtime.py": "c0b4a25142666a4e6a6efe652598dc4952880eb8aee498008c4cd3b1bbce1368",
+    "training/language/conversation-v2/foundation-stage/prose_decode.py": "fc567c30957a87c812f035600b7513b75f6c562c2f78eb2271b4e7e7f7a8fb0c",
+    "training/language/conversation-v2/modern-corpus/next_runtime.py": "3f6646100da045b1bce7edb69f50ddb746291191809a8fe9ff7e9ccb59e6fe8d",
+    "training/language/conversation-v2/paragraph-foundation/evaluation/B-579.json": "7ef436c4e65a0f503debb30f1326a39cca7fa47c9ae2951d271bd278483f4cf9",
+    "training/language/conversation-v2/paragraph-foundation/panels/B-579.json": "39e8ad7ab7e642d1c206607e5aebd563863ea885e8045c9acf448238bb276a78"
+  }
+}

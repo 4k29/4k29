@@ -1,0 +1,54 @@
+{
+  "status": "PASS",
+  "scope": "All original source SHA, data/feature/glyph/BPE separation, window/EOS coverage; no model imported",
+  "optimizerUpdates": 0,
+  "sealedTestRead": false,
+  "rawOriginalTrainDocumentsShaVerified": 8975,
+  "rawOriginalUtterances": 269877,
+  "trainTargetPositionsExactlyOnce": 2816905,
+  "trainFirstBosPositionsExcluded": 5986,
+  "trueTurnEosTargetsExactlyOnce": 180006,
+  "padTargetsScored": 0,
+  "actualTrainerPackAllWindowsVerified": 13878,
+  "maskedPadPositions": 735863,
+  "noDocumentBoundaryCrossing": true,
+  "persistentSpeakerSplitDisjoint": true,
+  "normalizedWholeDocumentFamiliesDisjoint": true,
+  "tokenizerGlyphInventoryTrainOnly": true,
+  "wordBpeFitDocumentsTrainOnly": 580,
+  "wordBpeFitCharacters": 399930,
+  "trainingGoldIsolationStaticReview": {
+    "train.py": {
+      "sha256": "47d6af637b4aa0047aa675fb3ae182c5a064f1691c05dd1ec6049d1e399cbb8f",
+      "noBenchmarkGoldOrTextLiteralReferences": true
+    },
+    "core.py": {
+      "sha256": "52a74ecb7250a6671a432d3aa38ad9ed0ffbe1a3be5601fde3b721f1e735b83d",
+      "noBenchmarkGoldOrTextLiteralReferences": true
+    }
+  },
+  "staticReviewLimit": "Literal-reference checks accompany manual source review; they are not a general proof of noninterference.",
+  "manualTrainingIsolationReview": "train.run opens only train token memmap/windows for model updates; validate reads manifest and tokenizer only. core.pack reads only supplied windows; neither reads benchmark gold or DEV target arrays for updates. Decoder source imports no data files.",
+  "allPreparedArtifactsSha256": {
+    "data/benchmark-dev.json": "de5aa25071eb340c1f68797cf3220690832e461cdc2458af2279b0f53e8e41bc",
+    "data/build-receipt.json": "db2287e65068688246a193f02b1e8fa858a01e53bc9377a49f6713c744fafa21",
+    "data/data.json": "93580cdc994d09816306e529a4ec76a90a6b6771e346358b4a9dd12c72b126c1",
+    "data/dev.docs.jsonl": "624e96eb73c8271657b4dddfb26bc8e61df317e4cc402db6ab4e5e61fa91042c",
+    "data/dev.tokens.bin": "4d82c9d1c9c13aec60e1ee974858c3a7c151b3c8c128ebe73c92107a58b221e6",
+    "data/legacy-tokenizer-coverage.json": "f3b28aa1b82b1e78899f58e907882d7bad7cf629b54bc25e7bba20a44bff84a3",
+    "data/prepared-data-audit.json": "1fa1fd81a468259fa36252162e2b98994aee666c030583453fd08a091060c178",
+    "data/split.json": "c1465449a48789cfff61cef28b51600cfb477f6ea58f386821249a846b3cc065",
+    "data/tokenizer.json": "6d079e4ba0a954ae32ad34a35ddd15384eb48b8eceaf3f3529a66e4266b1da06",
+    "data/train.docs.jsonl": "ccfb679216040eb1618bc8341597f41dc7befd8d6ddd2a231080e1023dcf001a",
+    "data/train.tokens.bin": "18d55d9b24a01e55fe9aaeb7f89da16191d0b5a962f79faa6b29b204d12bc7ff",
+    "data/unknown-character-audit.json": "f4de1a213b602e072deae6ffbd2976f56e16dd7f8ef41794f1c5731b7744c544"
+  },
+  "dataSha256": "93580cdc994d09816306e529a4ec76a90a6b6771e346358b4a9dd12c72b126c1",
+  "exactBenchmarkHistoryGoldTrainOverlapCases": 0,
+  "exactBenchmarkGoldOnlyTrainOverlapCases": 2,
+  "limits": [
+    "No claim of latent semantic-family independence",
+    "Old R46 trained these original TRAIN documents; holdout is fresh only for this new scratch-series weights/tokenizer",
+    "Natural short phrases can legitimately recur; exact gold-only overlap is not full-example memorization"
+  ]
+}

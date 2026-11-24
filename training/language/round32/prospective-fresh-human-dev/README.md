@@ -1,0 +1,29 @@
+# Prospective fresh human DEV, never an R32 learning factor
+
+Source: https://github.com/nu-dialogue/multi-relational-multi-party-chat-corpus pinned e6e39cb896df88781c7a2e0451226a527c5f1e2e. Human Japanese first-meeting/family-included chat, authored by Taro Tsuda, Sanae Yamashita, Koji Inoue, Tatsuya Kawahara, Ryuichiro Higashinaka (2025), SemDial, pp193–202. CC BY-SA4.0; preserve source license and attribution with excerpts. Privacy-use cautions in upstream README are followed: no identity/impersonation/personality use; profiles excluded.
+
+policy.json was frozen before acquiring dialogue files or generating model outputs on eligible contexts. The upstream documentation example B10008 had already been displayed and was explicitly excluded; no claim of blindness is made for that example. Only original human DEV context candidates are tokenized; reserved TEST text is not displayed, encoded or evaluated. Prospective TRAIN-fold data are not admitted or used. No current R32 data/model/LR/objective/selector or strict original gate changes. The proposed supplementary diagnostic compares R25 and final R32 under the same greedy192 conditions. Results become exposed DEV, not a new TEST. Three-party setting and limited independent speaker-combination families must be disclosed. No generated answer or reference response is supplied to the model.
+
+Actual fixed-policy preparation admitted only5 DEV source documents, one speaker-combination family,3 public pseudonymous speaker IDs. The policy said to retain the actual available count, so no salt/criterion resampling was used to force8. These are five contexts, not five independent casts or broad generalization evidence.53 prospective TRAIN-fold documents are NOT admitted or used;10 reserved TEST documents are metadata-only and unencoded;892 cross-speaker-fold dialogues are excluded.
+
+`profilesExtracted:false` in prospective-speaker-folds.json means the upstream interlocutors/profile data file was not extracted. Upstream README documentation itself contains sample profile fields and is retained only as source/license/use-policy provenance; none of those examples, attributes, evaluations or personas are used in language inputs/targets. Only original DEV utterance text is tokenized. Speaker labels are used only for conservative splitting, not identifying people or estimating their traits. The corpus's README cautions against identification and impersonation are respected.
+
+Frozen probes are in probes.json, not yet model-evaluated when created. Preparation code and SHA, source Git blob SHA1 and SHA256 of all raw dialogues, license, pinned source commit and speaker folds are recorded in source-manifest.json. Raw source files are cached outside the repository. Absolute cache paths/timestamps are operational provenance; unchanged original text SHA, fixed selection policy and prefix/token identities are the comparison anchors. Existing frozen probes deliberately refuse regeneration; use a separate fresh reproduction tree before generated files/cache exist. Retrieve the pinned Git tree and tarball as below, then execute prepare.py; never overwrite this run's frozen probes.
+
+```bash
+gh api 'repos/nu-dialogue/multi-relational-multi-party-chat-corpus/git/trees/e6e39cb896df88781c7a2e0451226a527c5f1e2e?recursive=1' --jq '{truncated,files:[.tree[]|select(.type=="blob")|{path,sha,size}]}' > /workspace/mrmp-source-tree.json
+gh api repos/nu-dialogue/multi-relational-multi-party-chat-corpus/tarball/e6e39cb896df88781c7a2e0451226a527c5f1e2e > /workspace/mrmp-pinned-source.tar.gz
+python training/language/round32/prospective-fresh-human-dev/prepare.py
+```
+
+The separate after_final.py waiter runs no training and changes no weights/Git/selector. It waits for actual10000 and the main pipeline's completion, then saves old/new5 raw generations, JavaScript comparisons and raw-checkpoint/export comparisons under ../execution/fresh-human-dev. Both generation and raw-parity entrypoints were checked to refuse premature execution without creating model outputs. Numerical disagreement, if any, is preserved rather than repaired. FULL_GENERATIONS.md retains all10 outputs; semantic scores stay pending actual complete reading. Original17/daily12/native8 gates and frozen R32 learning inputs are unchanged.
+
+Exact source links for the5 frozen DEV contexts (CC BY-SA4.0; attribution above; unchanged source excerpts):
+
+| Context | Source dialogue |
+|---|---|
+| fresh-mrmp-00 | [A05901](https://github.com/nu-dialogue/multi-relational-multi-party-chat-corpus/blob/e6e39cb896df88781c7a2e0451226a527c5f1e2e/multi_relational_multi_party_chat_corpus/dialogues/A_first_time/A05901.json) |
+| fresh-mrmp-01 | [A05902](https://github.com/nu-dialogue/multi-relational-multi-party-chat-corpus/blob/e6e39cb896df88781c7a2e0451226a527c5f1e2e/multi_relational_multi_party_chat_corpus/dialogues/A_first_time/A05902.json) |
+| fresh-mrmp-02 | [A05903](https://github.com/nu-dialogue/multi-relational-multi-party-chat-corpus/blob/e6e39cb896df88781c7a2e0451226a527c5f1e2e/multi_relational_multi_party_chat_corpus/dialogues/A_first_time/A05903.json) |
+| fresh-mrmp-03 | [A05905](https://github.com/nu-dialogue/multi-relational-multi-party-chat-corpus/blob/e6e39cb896df88781c7a2e0451226a527c5f1e2e/multi_relational_multi_party_chat_corpus/dialogues/A_first_time/A05905.json) |
+| fresh-mrmp-04 | [A05904](https://github.com/nu-dialogue/multi-relational-multi-party-chat-corpus/blob/e6e39cb896df88781c7a2e0451226a527c5f1e2e/multi_relational_multi_party_chat_corpus/dialogues/A_first_time/A05904.json) |

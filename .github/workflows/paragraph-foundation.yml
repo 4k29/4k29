@@ -1,0 +1,27 @@
+name: Paragraph foundation contracts
+on:
+  pull_request:
+    paths:
+      - 'training/language/conversation-v2/paragraph-foundation/**'
+      - '.github/workflows/paragraph-foundation.yml'
+  push:
+    branches: ['research/paragraph-foundation']
+    paths:
+      - 'training/language/conversation-v2/paragraph-foundation/**'
+      - '.github/workflows/paragraph-foundation.yml'
+permissions:
+  contents: read
+jobs:
+  paragraph-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/conversation-v2/paragraph-foundation/*.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s training/language/conversation-v2/paragraph-foundation -p 'test_*.py'

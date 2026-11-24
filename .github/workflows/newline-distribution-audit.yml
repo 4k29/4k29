@@ -1,0 +1,83 @@
+name: Newline distribution read-only audit
+on:
+  push:
+    branches: ['research/newline-distribution-audit']
+    paths:
+      - '.github/workflows/newline-distribution-audit.yml'
+      - 'training/language/conversation-v2/paragraph-foundation/newline-distribution/**'
+permissions:
+  contents: write
+env:
+  AUDIT: training/language/conversation-v2/paragraph-foundation/newline-distribution
+jobs:
+  frozen-data-statistics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/newline-distribution-audit
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/conversation-v2/paragraph-foundation/newline-distribution/
+            /training/language/conversation-v2/paragraph-foundation/PLAN.json
+            /training/language/conversation-v2/paragraph-foundation/corpus.jsonl.gz
+            /training/language/conversation-v2/paragraph-foundation/schedule.json.gz
+            /training/language/conversation-v2/diverse-foundation/corpus.jsonl.gz
+            /training/language/conversation-v2/data/tokenizer.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Only the four new distribution contracts
+        run: python -m unittest discover -s "$AUDIT" -p 'test_distribution_stats.py'
+      - name: Frozen source versus actual teacher positions
+        run: python "$AUDIT/distribution_stats.py"
+      - name: Persist scoped read-only evidence
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config pack.threads 2
+          git add --sparse "$AUDIT/outputs"
+          git commit -m "Record frozen source and teacher distribution statistics [skip ci]"
+          git push origin HEAD:research/newline-distribution-audit
+  missing-next-token-distributions:
+    needs: frozen-data-statistics
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: research/newline-distribution-audit
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/conversation-v2/paragraph-foundation/newline-distribution/
+            /training/language/conversation-v2/paragraph-foundation/newline-followup/EIGHT_CASE_AUDIT.json
+            /training/language/conversation-v2/paragraph-foundation/newline-followup/top-candidates/LOGITS.json.gz
+            /training/language/conversation-v2/paragraph-foundation/PLAN.json
+            /training/language/conversation-v2/paragraph-foundation/ACTUAL_UPDATES_A.jsonl
+            /training/language/conversation-v2/paragraph-foundation/ACTUAL_UPDATES_B.jsonl
+            /training/language/conversation-v2/paragraph-foundation/artifacts/A-579/checkpoint.json
+            /training/language/conversation-v2/paragraph-foundation/artifacts/B-579/checkpoint.json
+            /training/language/conversation-v2/modern-corpus/next-foundation/artifacts/B-6361/checkpoint.json
+            /training/language/conversation-v2/data/tokenizer.json
+            /training/language/conversation-v2/core.py
+            /training/language/model.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Only the two new probability-summary contracts
+        run: python -m unittest discover -s "$AUDIT" -p 'test_distribution_predictions.py'
+      - name: Numerical libraries only, no pretrained assets
+        run: |
+          pip install numpy==2.1.3
+          pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+      - name: Reuse B vectors,16 missing comparisons plus one runtime control
+        run: python "$AUDIT/distribution_predictions.py"
+      - name: Persist scoped read-only evidence
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config pack.threads 2
+          git add --sparse "$AUDIT/outputs"
+          git commit -m "Record matched next-token comparison without optimizer updates [skip ci]"
+          git push origin HEAD:research/newline-distribution-audit

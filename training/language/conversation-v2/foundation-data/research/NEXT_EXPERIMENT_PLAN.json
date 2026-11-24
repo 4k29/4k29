@@ -1,0 +1,192 @@
+{
+  "status": "DESIGN_COMPLETE_CANDIDATE_SCHEDULE_AUDITED_NO_GO_FOR_LEARNING",
+  "purpose": "Test whether adding licensed, quality-audited modern Japanese prose improves full Japanese continuation and contentful replies; NLL alone is not success",
+  "trainingAuthorized": false,
+  "optimizerUpdatesPerformed": 0,
+  "formalAdoption": false,
+  "initialState": {
+    "model": "conversation-v2 medium terminal3470",
+    "checkpointSha256": "5ad249d2c8d5910090c9baba94f94483e9c037139d15b9c4360fd3e975409544",
+    "inherit": [
+      "all model tensors",
+      "Adam moments and step3470",
+      "Torch RNG",
+      "private sampler RNG",
+      "old epoch order/cursor/history provenance"
+    ],
+    "neverResetWarmupOrOptimizer": true
+  },
+  "architecture": {
+    "layers": 8,
+    "dim": 320,
+    "heads": 4,
+    "hidden": 1280,
+    "vocabulary": 3997,
+    "context": 256,
+    "parameters": 11225280
+  },
+  "singleChangedCondition": "Replace two of four RP windows with native prose windows of exactly the same genuine target lengths; same shared RP half-batch, native document endings preserved; source structure/body-EOS-role dose differences are measured parts of data condition",
+  "controlBatch": "4 RP TRAIN windows",
+  "treatmentBatch": "2 exactly shared RP windows + 2 new prose TRAIN windows",
+  "fixedNumericalConditions": {
+    "batch": 4,
+    "genuineTargetsPerWindow": "1..256 real targets; paired control/treatment slots exact length match",
+    "genuineTargetsPerUpdate": "204..1024, each paired step exact match; padded tensor shape4x256",
+    "learningRate": 3e-05,
+    "optimizer": "inherited AdamW",
+    "precision": "FP32",
+    "clipGlobalNorm": 1,
+    "clipNormReduction": "existing FP64 global norm, common FP32 coefficient, epsilon1e-6",
+    "loss": "ordinary all genuine-target causal CE; no new masks or concentration/auxiliary coefficients",
+    "padding": "Existing core.pack target-100 and causal_ce ignore_index-100 unchanged;361293 ignored targets/arm; no fake EOS or source positions masked"
+  },
+  "candidateDoseNotYetFrozen": {
+    "supersedesRejectedFullOnlyProposal": "NEXT_EXPERIMENT_PLAN_V0_FULL_ONLY_REJECTED.json",
+    "scheduleStructurallyFeasibleAndAudited": true,
+    "retainedUpdatesPerArm": 2048,
+    "allTargetTokensPerArm": 1735859,
+    "controlBodyTargets": 1514256,
+    "treatmentBodyTargets": 1634363,
+    "controlEosTargets": 110323,
+    "treatmentEosTargets": 51443,
+    "controlRoleTargets": 111280,
+    "treatmentRoleTargets": 50053,
+    "newNativeDistinctWindows": 4096,
+    "newNativeDistinctDocuments": 2965,
+    "newNativeTargets": 951792,
+    "newNativeBodyTargets": 951015,
+    "trueNativeDocumentEosTargets": 777,
+    "paddingPositionsIgnoredPerArm": 361293,
+    "bodyTargetsExactlyMatched": false,
+    "reason": "All genuine-target totals and per-step slot lengths are matched. Body/EOS/role dose changes with real data; no new objective masks, role fabrication or fake EOS.",
+    "finalRetainedAdamStepIfExecuted": 5518,
+    "candidateTwoUpdateReplayAuditPerArm": 2,
+    "maximumActualUpdatesBothIfNoCrash": 4100,
+    "optimizerUpdatesPerformed": 0,
+    "noViewsOrRepetitionsCountedAsIndependentRawData": true
+  },
+  "framing": {
+    "rp": "original BOS, human A/B roles, original utterance bodies and EOS",
+    "prose": "BOS, original derived article body with declared paragraph join, EOS only at true article end",
+    "noFakeHumanRoles": true,
+    "noCrossDocumentAttention": true,
+    "noFakeWindowEos": true,
+    "aiUserAssistantInstructionLearningClaim": false
+  },
+  "samplerToFreeze": {
+    "policy": "SHA256(foundation-matched-length-v1|scope|ID); native first4096 with RP target-length availability; sharedRP first4096 unused windows",
+    "sharedRpWindows": 4096,
+    "controlReplacementRpWindows": 4096,
+    "nativeWindowsWithoutReplacement": 4096,
+    "allControlWindowsWithoutReplacement": 8192,
+    "initialPrivateRng": "Inherited snapshot kept as provenance; this new stage reads the precomputed schedule and saves its cursor rather than pretending to continue the completed old epoch",
+    "torchRng": "Same inherited state and equal padded4x256 shapes consume identical dropout-mask draws",
+    "stageScheduleSha256": "683f8703c28e89a33ecfeb020e996319a73ba4d275017d91a0d9f92e797608c3",
+    "nativeWindowBinarySha256": "6fad454f18ad2415be6f7c575e950be3a692aa09dbdc73edd2bf7b1fab01c119",
+    "nativeWindowIndexSha256": "029b5d0c05a4879a94a2f6017a663e7793221a6c1eb6bd7100c8b8168f8458b3",
+    "sourceDocumentsSha256": "d3eb08b340555c6d418f5a32f35227d496d7470e05927d930e7d01f630e0af4f",
+    "normalizationDedupSplitSha256": "d072b8760ab436193f5d97addb14636705f55816c5ab396217b60e4bfeae8713",
+    "trainingResourceAndEvaluationFreezePending": true
+  },
+  "missingFrozenInputs": {
+    "sourceAdmissionAndLicenseManifestSha256": null,
+    "newTrainDataSha256": null,
+    "actualIndependentSourceCharsAndOwnBpeTokens": "Candidate retained counts bound in candidateInventoryNotAdmission; source admission and semantic independence not established",
+    "devBenchmarkAndRubricSha256": {
+      "planPath": "evaluation/PLAN.json",
+      "planSha256": "0ec9335b58ab4b096b266a994eddeaab1a17d2b5e5f344f5eebde96e1ce8de09",
+      "rubricSha256": "20fc04c9c41e5baa864aee7ae2374b554ba53d85d34ac6638f4bee9ba92c3e39",
+      "meaning": "Existing fixed diagnostic artifacts, not formal native-human or sealedTEST completion"
+    },
+    "generationConditionsSha256": "Contained in the fixed evaluation PLAN; no model generation performed by this research audit",
+    "trainingRunnerCodeSha256": null,
+    "durableResourceBudgetAndStorageReceipt": null
+  },
+  "checkpointSelection": "terminal at fixed dose only; not best NLL, no generation-selected or post-hoc condition adjustment",
+  "evaluation": {
+    "providedContextVsExternalKnowledge": "separate fixed labels and scores",
+    "primary": "full Japanese grammar, whole-text meaning, response relevance/content, context consistency, repetition/drift and appropriate EOS",
+    "nllPerTokenAndByte": "diagnostic only, EOS/role/body separated",
+    "sealedTest": "do not open; visible reserve manifests are not an independently sealed TEST",
+    "oldStrictGates": "17/13/9, Pareto, repetition constraints, R25 formal anchor, R46 scientific reference unchanged",
+    "humanEvaluation": "independent native Japanese raters still required; assistant-generated input probes never called human originals"
+  },
+  "preflightBeforeAnyTraining": [
+    "source licenses/provenance and candidate admission resolved",
+    "exact/normalized/near duplicates and document/article/speaker/family split audits pass",
+    "final source-admitted version preserves partial windows, real777nativeEOS in current candidate schedule, exact paired active lengths/all-target budget; regenerate if corpus admission changes",
+    "byte roundtrip, unknown glyph/fallback and context-length audits completed",
+    "data IDs, sampling schedule, code, evaluator and resource plan SHA fixed before output or gradient checks",
+    "zero-update full-state restore/finite gradient/clipping/unchanged model Adam RNG audit",
+    "durable atomic full model/Adam/RNG/order checkpoint capacity with actual-update journal",
+    "new-updated-state process resume equality must be separately verified only if optimizer updates are later authorized"
+  ],
+  "goDecision": "NO_GO_FOR_LEARNING: rights/human-authorship/genre admission, full evaluator and resource freeze, prospective learner implementation/new-update resume still unresolved; numerical0-update audit and structurally viable schedule do not lift them",
+  "paidGpuUsed": false,
+  "publicModelChanged": false,
+  "mergePerformed": false,
+  "sealedTestRead": false,
+  "actualScheduleArtifacts": {
+    "ephemeralBuildDirectory": "/dev/shm/foundation-data-build/research/matched-schedule-final",
+    "receiptPath": "research/MATCHED_SCHEDULE_RECEIPT.json",
+    "receiptSha256": "9c249312f9d76a974e4454f6b11c4dd32a3bf8894237702a10854c4b45da9007",
+    "independentAuditPath": "research/matched-schedule-audit.json",
+    "independentAuditSha256": "6533c2a5151d878919404df09680daf65db7026b3d928a7219471548e5535b2d",
+    "scheduleFile": "schedule.jsonl.gz",
+    "nativeTokenFile": "native-selected-windows.u32",
+    "nativeIndexFile": "native-window-index.json",
+    "permanentArchiveNotAssumedUntilRootGitVerification": true,
+    "batchAdapterCodeSha256": "524b24dfa617c17fe72ec46e85133fe8b961d167295c6cedd066d9fe42d2b1cb",
+    "builderCodeSha256": "0984f9c77b4c8f1b5425f56dc191124cd3a7e38044bab2d376c8c24c5f955601",
+    "auditorCodeSha256": "d576fcd5a600546bd97ff93f534e46cc0bc5b076af555b35b99b614157e9875a"
+  },
+  "sourceSelectionCaveats": {
+    "allNewSources": "candidate-not-admitted",
+    "selectedSourceWindows": {
+      "jawikibooks": 3424,
+      "jaquad": 507,
+      "jawikivoyage": 165
+    },
+    "nativeTrueEosBySource": {
+      "jawikibooks": 702,
+      "jaquad": 27,
+      "jawikivoyage": 48
+    },
+    "selectionBias": "WindowSHA weighting follows corpus mass and RP length availability; source/genre not balanced. One C++ component occupies839/4096windows, laws are also concentrated. This is not approved daily-language mixture.",
+    "sourceAdmissionChangesRequireNewScheduleFreeze": true,
+    "noModelOutputUsedToChooseSchedule": true,
+    "nativeDistinctComponents": 1139,
+    "largestSingleComponent": {
+      "component": "jawikibooks|C++",
+      "windows": 839,
+      "fraction": 0.204833984375
+    }
+  },
+  "trainerImplementationPlan": {
+    "status": "NOT_IMPLEMENTED_OR_EXECUTED_AS_LEARNING_RUNNER",
+    "inputAdapter": "research/schedule_batches.py reads fixed source/token schedule and calls unchanged core.pack",
+    "loss": "unchanged ordinary causal_ce over genuine target positions; all body/EOS/role preserved",
+    "step": "Inherited AdamW/3e-5/clip1 unchanged; prospective new runner requires codeSHA and explicit authorization",
+    "checkpoint": "Full model/Adam/Torch and private sampler RNG/stage-schedule cursor/actual-update journal every fixed durable interval and terminal; record discarded replay counts",
+    "resume": "New-updated-state disk/process equality test only after optimizer updates are separately authorized; zero-update audit cannot prove it",
+    "selection": "Fixed2048-update terminal, no DEV-loss or generation-based checkpoint selection"
+  },
+  "candidateInventoryNotAdmission": {
+    "retainedNormalizedCharacters": 23128010,
+    "retainedParagraphOwnBpeTokens": 20262193,
+    "nonemptyNativeTrainDocuments": 16884,
+    "emptyAfterDedupTrainDocumentsExcluded": 82,
+    "nativeJoinedBodyTokens": 20520663,
+    "nativeJoinedGenuineTargets": 20537547,
+    "addedLfJoinTokensNotIndependentInformation": 258470,
+    "candidateArticleSplitSha256": "d072b8760ab436193f5d97addb14636705f55816c5ab396217b60e4bfeae8713",
+    "humanOnlyOrRightsVerified": false
+  },
+  "completedZeroUpdatePreflight": {
+    "planSha256": "881c9b065f6e6c8d0a7affc1d4718da8b272b60d8b0a9c3ee9c0989ced44134e",
+    "resultSha256": "36276b30e9a9d3462b6ece5a147a384fb8ed36ac9318fa3843c339342fae19e7",
+    "actualOptimizerUpdates": 0,
+    "fullStateUnchanged": true,
+    "newUpdatedStateResumeNotTested": true
+  }
+}
