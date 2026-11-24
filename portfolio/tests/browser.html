@@ -94,17 +94,18 @@ async function run(width,height){
   expect(Math.abs(w().scrollY/unit()-2.03)<.01 && doc.activeElement===q('#stage'),'Keyboard skip jumps past the opening');
   result.textContent+='PASS '+width+' × '+height+' ('+doc.documentElement.clientWidth+' CSS px)\n';
 }
+async function until(check,detail) {
+  for(let i=0;i<100;i++){
+    if(check()) return;
+    await new Promise(resolve=>setTimeout(resolve,40));
+  }
+  throw Error(detail);
+}
 async function cursorDuring(action) {
   action();
-  let cursorState='';
-  for(let i=0;i<12;i++){
-    await new Promise(resolve=>setTimeout(resolve,80));
-    cursorState=q('#agent').getAttribute('style');
-    if(shown(q('#agent'))) return true;
-  }
-  throw Error('Gallery cursor stayed hidden ('+cursorState+'; y='+w().scrollY/unit()+')');
+  await until(()=>shown(q('#agent')),'Gallery cursor stayed hidden during selection or return');
 }
-const settled=()=>new Promise(resolve=>setTimeout(resolve,1880));
+const settled=()=>until(()=>!q('.gallery[aria-busy="true"]'),'Gallery movement never settled');
 async function galleryChecks(){
   const stageWidth=q('#stage').clientWidth;
   const x=tile=>new DOMMatrix(tile.style.transform).m41;

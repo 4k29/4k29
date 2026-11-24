@@ -428,7 +428,7 @@ function createGallery(id,items,article=false) {
     const from=regions;
     selected=index;
     const to=positions(metrics,index);
-    movement={from,to,index:index>=0 ? index : previous,closing:index<0,start:performance.now()};
+    movement={from,to,index:index>=0 ? index : previous,closing:index<0};
     close.hidden=index<0;
     gallery.classList.toggle('is-focused',index>=0);
     tiles.forEach(({button},i)=>{
@@ -447,6 +447,7 @@ function createGallery(id,items,article=false) {
       movement=undefined;
       updateDetail(index,1,1);
     }
+    if(movement) gallery.setAttribute('aria-busy','true');
     requestRender();
   }
   close.addEventListener('click',()=>select(-1));
@@ -528,6 +529,7 @@ function createGallery(id,items,article=false) {
 
   function layout(m) {
     movement=undefined;
+    gallery.removeAttribute('aria-busy');
     regions=positions(m,selected);
   }
 
@@ -543,8 +545,10 @@ function createGallery(id,items,article=false) {
   }
 
   function animateSelection() {
-    const {from,to,index,closing,start}=movement;
-    const t=clamp((performance.now()-start)/1800);
+    const {from,to,index,closing}=movement;
+    const now=performance.now();
+    movement.start ??= now;
+    const t=clamp((now-movement.start)/1800);
     // Reuse the same three poses in both directions. The upper-left corner is
     // stationary while the cursor drags the opposite corner.
     const origin=closing ? to[index] : from[index];
@@ -573,7 +577,7 @@ function createGallery(id,items,article=false) {
       cursor(agent,mixPoint(cornerHandle,point(selectedRegion.x,cornerHandle.y+8),phase(p,.68,.73)));
     } else if(p<.90 && writing) {
       cursor(agent,writing);
-    } else if(p<1) {
+    } else {
       const captionBounds=caption.getBoundingClientRect();
       cursor(agent,point(captionBounds.left+Math.min(captionBounds.width*text,selectedRegion.w-10),
         captionBounds.top+captionBounds.height/2),1,1,false,captionBounds.height);
@@ -583,6 +587,7 @@ function createGallery(id,items,article=false) {
     } else {
       regions=to;
       movement=undefined;
+      gallery.removeAttribute('aria-busy');
       tiles[index].button.classList.toggle('is-selected',!closing);
       updateDetail(selected,1,1);
       visible(agent,0);
