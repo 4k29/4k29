@@ -77,11 +77,12 @@ async function run(width,height){
   expect(!q('#articles').classList.contains('gallery-ready') && q('#articles .gallery-image img') && !q('#articles .gallery-border'),'Article cards enter fully assembled');
   await galleryChecks();
   await at(7.82);
-  expect(q('.project-visual').style.clipPath.startsWith('polygon(') && /#[0-9a-f]{8}/.test(q('.project-visual').style.getPropertyValue('--logo-flash')),'Tecirc logo reveals in flickering strips');
+  expect(q('.project-visual').style.clipPath.startsWith('polygon(') && /#[0-9a-f]{8}/.test(q('.project-visual').style.getPropertyValue('--logo-flash')) && /% 20%/.test(q('.project-visual').style.clipPath),'Tecirc logo reveals in scattered colored tiles');
   await at(21.24);
   expect(q('#contact .profile-links [data-ink]'),'Social links flicker as they appear');
   await at(21.47);
   expect(shown(q('#contact')) && !shown(q('#photos')) && !shown(q('#articles')),'Contact follows both galleries');
+  expect(!q('#contact [href="#start"]'),'Contact has no Back to top button');
   const systemDark=w().matchMedia('(prefers-color-scheme: dark)').matches;
   const background=w().getComputedStyle(doc.documentElement).backgroundColor;
   expect(background===(systemDark?'rgb(11, 11, 11)':'rgb(255, 255, 255)'),'Theme follows system setting');

@@ -671,7 +671,6 @@ const names={
   projects:projectNodes.map(titleTyping),
 };
 const projectLinks=reveals.projects.map(node=>descriptionTyping(node.querySelector('a'),1));
-const backToTop=descriptionTyping(contact.querySelector('[data-jump]'),1);
 const revealSocials=descriptionTyping(reveals.contact,2);
 const millisecondsPerTimelineUnit=1500;
 const introPause=1.15, aboutPause=1.25, projectPause=1.15, contactPause=1.80;
@@ -844,7 +843,12 @@ function showPanel(node,opacity,region) {
   if (region && opacity > .001) place(node,region);
   visible(node,opacity,opacity > .94);
 }
-// Reveal strips of the actual logo while a few unsettled strips briefly drop out.
+// Keep the reveal deterministic when scrolling back through the same frame.
+const logoColumns=8, logoRows=5;
+const logoTiles=Array.from({length:logoColumns*logoRows},(_,i)=>i)
+  .sort((a,b)=>hash(181+a*173)-hash(181+b*173));
+const logoPalette=['#26e7a0','#b58cff','#ffe44d','#ff86ce','#69cbff'];
+
 function paintLogo(visual,progress) {
   if(progress>=1 || reduced.matches) {
     visual.style.clipPath='none';
@@ -852,20 +856,27 @@ function paintLogo(visual,progress) {
     return;
   }
   const frame=Math.floor(progress*24);
-  const palette=['#26e7a0','#b58cff','#ffe44d','#ff86ce','#69cbff'];
-  const colors=[];
-  const strips=Array.from({length:12},(_,i)=>{
-    const left=i*100/12, right=(i+1)*100/12;
-    const distance=progress*12-i;
-    const height=distance>1.2 || (distance>-.35 && hash(i*191+frame*67)>.34) ? 100 : 0;
-    const color=height && distance<3 && progress>0
-      ? palette[(i*2+frame)%palette.length]+'b8'
-      : 'transparent';
-    colors.push(`${color} ${left}% ${right}%`);
-    return `${left}% 0, ${left}% ${height}%, ${right}% ${height}%, ${right}% 0`;
+  const paths=['0 0'];
+  const flashes=[];
+  logoTiles.forEach((tile,rank)=>{
+    const distance=progress*logoTiles.length-rank;
+    const settled=distance>5;
+    if(!settled && (progress===0 || distance< -3 || hash(tile*191+frame*67)<.36)) return;
+    const column=tile%logoColumns, row=Math.floor(tile/logoColumns);
+    const left=100*column/logoColumns, right=100*(column+1)/logoColumns;
+    const top=100*row/logoRows, bottom=100*(row+1)/logoRows;
+    // Return along the same path so separated tiles are not joined by a filled triangle.
+    const start=`${left}% ${top}%`;
+    paths.push(start,`${right}% ${top}%`,`${right}% ${bottom}%`,`${left}% ${bottom}%`,start,'0 0');
+    if(!settled) {
+      const color=logoPalette[(tile+frame)%logoPalette.length]+'b8';
+      const x=100*column/(logoColumns-1), y=100*row/(logoRows-1);
+      flashes.push(`linear-gradient(${color}, ${color}) ${x}% ${y}% / ${100/logoColumns}% ${100/logoRows}% no-repeat`);
+    }
   });
-  visual.style.clipPath='polygon(0 0, '+strips.join(', ')+')';
-  visual.style.setProperty('--logo-flash','linear-gradient(90deg, '+colors.join(', ')+')');
+  visual.style.clipPath=paths.length>1 ? `polygon(${paths.join(', ')})` : 'inset(50%)';
+  if(flashes.length) visual.style.setProperty('--logo-flash',flashes.join(', '));
+  else visual.style.removeProperty('--logo-flash');
 }
 function render(s,m) {
   let frameBox = m.dormant;
@@ -961,7 +972,6 @@ function render(s,m) {
   visible(reveals.about,aboutDetails>0 ? 1 : 0);
   visible(aboutTags,tagProgress>0 ? 1 : 0);
   revealSocials(contactDetails,false);
-  backToTop(contactDetails,false);
   visible(reveals.contact,Number(contactDetails>0),contactAlpha>.94 && contactDetails===1);
   reveals.projects.forEach((node,i)=>{
     const opacity=i===projectIndex ? projectDetails : 0;
