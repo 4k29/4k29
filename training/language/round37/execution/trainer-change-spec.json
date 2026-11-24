@@ -1,0 +1,47 @@
+{
+  "controlTrainSha256": "1a295f46d162009e7f290af122cadfa7453d83167eb1583984c3aa54b20b497a",
+  "newTrainSha256": "7d72e9d8868b8b7240bc311b29ed0d7a9266a7429a5b619be8b5caa3ee483a29",
+  "patches": [
+    {
+      "old": "from utterance_end_objective import eligible_mask, end_eos_loss",
+      "new": "from utterance_end_objective import eligible_mask, end_eos_loss\nfrom end_main_ce import main_ce_without_end_newline",
+      "count": 1
+    },
+    {
+      "old": "and policy['humanUtteranceEndEos']['coefficient']==0.3",
+      "new": "and policy['humanUtteranceEndEos']['coefficient']==0.3 and policy['originalNewlineCeAtEligibleEnds']['excluded'] is True",
+      "count": 1
+    },
+    {
+      "old": "settings['humanUtteranceEndEos']=policy['humanUtteranceEndEos']",
+      "new": "settings['humanUtteranceEndEos']=policy['humanUtteranceEndEos']\n    settings['originalNewlineCeAtEligibleEnds']=policy['originalNewlineCeAtEligibleEnds']",
+      "count": 1
+    },
+    {
+      "old": "same raw targets + 0.3 EOS auxiliary only at original unmasked standalone-newline human TRAIN true utterance ends",
+      "new": "same raw targets + 0.3 EOS auxiliary only at original unmasked standalone-newline human TRAIN true utterance ends; exclude only competing original newline main CE with original valid-target denominator retained",
+      "count": 1
+    },
+    {
+      "old": "ce=F.cross_entropy(logits.reshape(-1,config['vocabulary']),y.reshape(-1))",
+      "new": "ce,original_ce,removed_ce=main_ce_without_end_newline(logits,y,end_mask)",
+      "count": 1
+    },
+    {
+      "old": "count,aux.detach()",
+      "new": "count,aux.detach(),original_ce.detach(),removed_ce.detach()",
+      "count": 1
+    },
+    {
+      "old": "loss,ce_loss,ul_loss,negative_count,end_eos_loss_value=train_objective",
+      "new": "loss,ce_loss,ul_loss,negative_count,end_eos_loss_value,original_ce_loss,removed_ce_loss=train_objective",
+      "count": 1
+    },
+    {
+      "old": "crossEntropyLoss=float(ce_loss),",
+      "new": "crossEntropyLoss=float(ce_loss),originalCrossEntropyLoss=float(original_ce_loss),removedEligibleNewlineCe=float(removed_ce_loss),",
+      "count": 2
+    }
+  ],
+  "oneChangedLearningFactor": "Exclude competing original newline main CE at existing eligible human EOS positions only"
+}
