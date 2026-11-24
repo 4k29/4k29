@@ -1,0 +1,10 @@
+"""Transparent planning estimates; no GPU job submitted or paid service used."""
+import json,pathlib
+H=pathlib.Path(__file__).resolve().parent
+N=11225280
+speed={k:json.loads((H/k/'receipt.json').read_text())['actual_targets']/json.loads((H/k/'receipt.json').read_text())['elapsed_seconds']for k in ['run','mixed-run','lr-run']}
+rows=[]
+for tokens in [10_000_000,30_000_000,100_000_000,1_000_000_000]:
+ rows.append(dict(target_tokens=tokens,approx_training_flops_6NT=6*N*tokens,CPU_hours_using_observed_range=[tokens/max(speed.values())/3600,tokens/min(speed.values())/3600],GPU_hours_at_sustained_0_5_to_5_TFLOP=[6*N*tokens/(5e12)/3600,6*N*tokens/(.5e12)/3600],GPU_speed_not_measured=True))
+report=dict(own_parameter_count=N,context=256,vocabulary=3997,measured_CPU_targets_per_second=speed,observed_max_RSS_KiB={k:json.loads((H/k/'receipt.json').read_text())['maximum_rss_KiB']for k in speed},observed_thread_quota=2,GPU_available=0,paid_resources_used=False,estimates=rows,cautions=['6NT excludes attention/quadratic terms, input I/O, eval and checkpoint overhead; throughput depends on hardware/batch/dtype.','CPU conditions had different concurrent evaluation load; times are not a controlled speed comparison.','GPU0.5–5TFLOP is hypothetical sustained throughput, not advertised peak or measured performance.','Disk budgets below assume bounded saved checkpoints rather than every update.'],storage_plan=dict(free_disk_required_GiB=10,comfortable_experiment_disk_GiB=20,token_uint32_100M_GB=.4,token_uint32_1B_GB=4,complete_11M_state_MB_approx=136,atomic_old_plus_new_plus_archive_MB_approx=408,raw_text_index_provenance_and_Git_extra=True),capacity_options=[dict(parameters_M=11.23,optimizer_parameter_bytes_approx=16*N,recommended_GPU_VRAM_GiB='8–16, benchmark first'),dict(parameters_M=30,optimizer_parameter_bytes_approx=16*30_000_000,recommended_GPU_VRAM_GiB='12–24 depending batch/context'),dict(parameters_M=50,optimizer_parameter_bytes_approx=16*50_000_000,recommended_GPU_VRAM_GiB='16–24 depending batch/context')])
+(H/'RESOURCE_ESTIMATES.json').write_text(json.dumps(report,indent=2)+'\n')
