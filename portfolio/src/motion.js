@@ -78,12 +78,12 @@ export function cursor(node, position, opacity = 1, form = 0, resize = false, li
 }
 
 const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789+=/<>#%';
-function hash(n) {
+export function hash(n) {
   const x = Math.imul(n ^ (n >>> 16), 0x45d9f3b);
   return ((x ^ (x >>> 16)) >>> 0) / 4294967296;
 }
-class TypeFlicker {
-  constructor(heading, text) {
+export class TypeFlicker {
+  constructor(description, text) {
     this.glyphs=Array.from(text.replace(/\s+/gu,''));
     this.layer=document.createElement('span');
     this.layer.className='type-flicker';
@@ -93,7 +93,8 @@ class TypeFlicker {
       this.layer.append(fragment);
       return fragment;
     });
-    heading.after(this.layer);
+    description.classList.add('flicker-copy');
+    description.append(this.layer);
   }
 
   render(progress) {
@@ -126,7 +127,6 @@ export class Scramble {
     this.display.setAttribute('aria-hidden','true');
     node.append(this.display);
     this.node = node;
-    this.flicker=node.hasAttribute('data-type-flicker') ? new TypeFlicker(node,text) : null;
     this.chars = Array.from(text).map((char,index) => {
       if (/\s/u.test(char)) {
         this.display.append(char);
@@ -151,7 +151,6 @@ export class Scramble {
     this.step = step;
     const p = step / 126;
     const active = p < 1;
-    this.flicker?.render(p);
     const insertion=Math.floor(p*this.chars.length);
     const caret=this.chars.find((char,index)=>index>=insertion && char.slot)?.index;
     this.node.classList.toggle('is-scrambling',active);

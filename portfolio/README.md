@@ -1,6 +1,6 @@
 # Shika Portfolio
 
-自己紹介、Tecircの紹介、記事、写真、プロフィールリンクの順に進む静的サイトです。ホイール、トラックパッド、スワイプ、矢印キーで前後の場面へ移動できます。写真と記事はそれぞれのグリッドから選択できます。枠を選ぶと中央へ移動して拡大し、周りの枠が画面の端に移動します。余白をクリック・タップするか、Escapeキーを押すとグリッドへ戻ります。
+自己紹介、Tecircの紹介、記事、写真、プロフィールリンクの順に進む静的サイトです。ホイール、トラックパッド、スワイプ、矢印キーで前後の場面へ移動できます。写真と記事はそれぞれの一覧から選択できます。カードの位置と角度にはばらつきがあり、一枚を選ぶと残りは両端へ滑ります。端のカードを選ぶと中央のカードと直接入れ替わります。余白をクリック・タップするか、Escapeキーを押すと一覧へ戻ります。
 
 ## ローカル起動
 
@@ -27,4 +27,4 @@ python3 -m http.server 4173 --directory docs
 
 文字スクランブルの参考は [DesignBookmark Motion Studies](https://designbookmark.com/motion#db-scramble-text) です。
 
-冒頭の文字断片の点滅は Recent の [Type Flicker Animation](https://recent.design/i/tbkt6wk-type-flicker-animation) を参考にしています。
+本文に現れる文字断片の点滅は Recent の [Type Flicker Animation](https://recent.design/i/tbkt6wk-type-flicker-animation) を参考にしています。

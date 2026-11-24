@@ -7,11 +7,25 @@ export const photos = [
     "height": 1033
   },
   {
+    "image": "./assets/img_3407.webp",
+    "title": "img_3407.jpg",
+    "alt": "橋の手前で赤と白の花火が扇状に広がる",
+    "width": 1500,
+    "height": 924
+  },
+  {
     "image": "./assets/ferris-wheel.webp",
     "title": "img_9936.jpg",
     "alt": "夕暮れの空に浮かぶ観覧車のゴンドラ",
     "width": 1033,
     "height": 1550
+  },
+  {
+    "image": "./assets/img_3577.webp",
+    "title": "img_3577.jpg",
+    "alt": "黒い夜空に広がる青と金色の花火",
+    "width": 1000,
+    "height": 1500
   },
   {
     "image": "./assets/fireworks.webp",
@@ -21,11 +35,25 @@ export const photos = [
     "height": 1163
   },
   {
+    "image": "./assets/img_3578.webp",
+    "title": "img_3578.jpg",
+    "alt": "赤と青の大きな花火を下から見上げる",
+    "width": 1000,
+    "height": 1500
+  },
+  {
     "image": "./assets/afterglow.webp",
     "title": "img_0210.jpg",
     "alt": "海沿いの空に伸びる淡いピンクの雲",
     "width": 1033,
     "height": 1550
+  },
+  {
+    "image": "./assets/img_3598.webp",
+    "title": "img_3598.jpg",
+    "alt": "赤紫と金色の花火が重なって開く",
+    "width": 1000,
+    "height": 1500
   },
   {
     "image": "./assets/golden-fireworks.webp",
@@ -35,11 +63,46 @@ export const photos = [
     "height": 1240
   },
   {
+    "image": "./assets/img_3603.webp",
+    "title": "img_3603.jpg",
+    "alt": "赤い花火の下から緑の光が伸びる",
+    "width": 1000,
+    "height": 1500
+  },
+  {
     "image": "./assets/fireworks-reflection.webp",
     "title": "img_3417.jpg",
     "alt": "夜空に開く緑と赤の花火と橋の照明",
     "width": 1162,
     "height": 1550
+  },
+  {
+    "image": "./assets/img_3607.webp",
+    "title": "img_3607.jpg",
+    "alt": "金色の花火の下で赤い光が立ち上がる",
+    "width": 1000,
+    "height": 1500
+  },
+  {
+    "image": "./assets/img_3609.webp",
+    "title": "img_3609.jpg",
+    "alt": "緑の花火と金色の光のカーテン",
+    "width": 1000,
+    "height": 1500
+  },
+  {
+    "image": "./assets/img_3618.webp",
+    "title": "img_3618.jpg",
+    "alt": "赤い光の上に緑と白の花火が開く",
+    "width": 1000,
+    "height": 1500
+  },
+  {
+    "image": "./assets/img_4366.webp",
+    "title": "img_4366.jpg",
+    "alt": "夕暮れの光が残る街並みと高層ビル",
+    "width": 1500,
+    "height": 1000
   }
 ];
 

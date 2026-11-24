@@ -26,7 +26,7 @@ const shown=(n)=>n.style.visibility==='visible' && size(n,'opacity')>.01;
 const expect=(value,detail)=>{if(!value)throw Error(detail)};
 const style=(n)=>n.getAttribute('style');
 const scram=()=>Array.from(q('#intro h1 [aria-hidden=true]').childNodes).map(n=>n.nodeType===3?n.textContent:n.querySelector('.scramble-glyph').textContent).join('');
-const state=()=>[q('.type-flicker').outerHTML,style(q('#frame')),style(q('#agent')),q('#agent path').getAttribute('d'),...all('.gallery').map(style),scram()].join('|');
+const state=()=>[q('.type-flicker').hidden ? '' : q('.type-flicker').outerHTML,style(q('#frame')),style(q('#agent')),q('#agent path').getAttribute('d'),...all('.gallery').map(style),scram()].join('|');
 async function run(width,height){
   frame.width=width;frame.height=height;
   frame.scrollIntoView({block:'start'});
@@ -49,12 +49,12 @@ async function run(width,height){
   await at(1.24);
   expect(size(q('#agent path:nth-child(2)'),'opacity')>.95 && size(q('#agent path:nth-child(3)'),'opacity')===0,'Caret stem remains when I-beam caps disappear');
   const mixed=scram(), stopped=state();
-  expect(!q('.type-flicker').hidden && all('.type-flicker span:not([hidden])').some(n=>n.dataset.ink),'Opening has deterministic color fragments during typing');
+  expect(!q('#intro h1 .type-flicker') && q('#intro .type-flicker').hidden && q('#intro .scramble-pending'),'The title uses gray scrambling without colored fragments');
   expect(mixed!=="I'm うまいしか" && q('#intro .scramble-caret'),'Text scrambles with caret');
   await new Promise(r=>setTimeout(r,225));
   expect(state()===stopped,'No autonomous changes while scroll is still');
   await at(1.7);
-  expect(scram()==="I'm うまいしか" && !shown(q('#agent')) && q('.type-flicker').hidden,'Title completes and cursor disappears ('+scram()+', '+q('#agent').style.opacity+')');
+  expect(scram()==="I'm うまいしか" && !shown(q('#agent')) && !q('#intro .type-flicker').hidden,'Title completes and cursor disappears ('+scram()+', '+q('#agent').style.opacity+')');
   await at(1.24);
   expect(state()===stopped,'Reverse travel restores the same frame and scramble glyphs');
   await at(2.70);
@@ -72,7 +72,7 @@ async function run(width,height){
   expect(q('#project-panel .is-scrambling') && !shown(q('#project-panel [data-after-title]')),'Project title precedes description and link');
   await at(8.40);
   const description=q('#project-panel p');
-  expect(description.querySelector('.description-caret') && description.querySelector('.description-hidden'),'Description types from its first character');
+  expect(!description.querySelector('.type-flicker').hidden && description.querySelector('.description-hidden'),'Body copy reveals in flickering fragments');
   await at(8.67);
   expect(shown(q('#project-panel [data-after-title]')) && !q('#project-panel [data-after-title]').inert,'Project link becomes interactive after title');
   expect(Math.abs(edges[0].getBoundingClientRect().top-topEdge)<1,'Projects shares the opening top edge');
@@ -115,12 +115,23 @@ async function galleryChecks(){
   const articles=all('#articles .gallery-tile');
   expect(q('#photos').inert && !q('#articles').inert && articles.length===8,'Tecirc articles appear before Photography');
   const articleWidth=width(articles[5]);
+  await at(10.47);
+  const firstBorder=articles[0].querySelector('.gallery-border');
+  expect(size(firstBorder.children[0],'width')>0 && size(firstBorder.children[1],'height')===0 &&
+    articles[0].querySelector('.gallery-image').style.clipPath.includes('100%'),'The top edge appears before the sides and image');
+  await at(13.02);
   await cursorDuring(()=>articles[5].click());
   await settled();
   const link=q('#articles .gallery-detail a');
   expect(articles[5].getAttribute('aria-pressed')==='true' && width(articles[5])>articleWidth &&
     oppositeEdges(articles[0],articles[1]) && link.href.endsWith('/Nothing-Headphone-1/') && link.target==='_blank',
     'Articles enlarge in the center, move to both edges, and open the Tecirc page');
+  articles[0].click();
+  expect(articles[0].getAttribute('aria-pressed')==='true' && q('#articles').classList.contains('is-focused'),
+    'Switching cards does not reopen the overview');
+  await settled();
+  expect(q('#articles .gallery-detail a').href.endsWith('/touch-MacBookPro/') &&
+    !q('#articles .gallery-detail').querySelector('.type-flicker'),'Article caption swaps without replaying text effects');
   const empty=d().elementFromPoint(stageWidth/2,q('#stage').clientHeight-16);
   expect(empty===q('#articles'),'Article canvas receives clicks in the empty area');
   await cursorDuring(()=>empty.click());
@@ -128,7 +139,7 @@ async function galleryChecks(){
   expect(q('#articles .gallery-detail').hidden,'Back to grid restores articles');
   await at(17.45);
   const photos=all('#photos .gallery-tile');
-  expect(!q('#photos').inert && q('#articles').inert && photos.length===6,'Photography follows articles and includes six images');
+  expect(!q('#photos').inert && q('#articles').inert && photos.length>=12,'Photography follows articles and includes the recovered photos');
   const portrait=photos.find(tile=>{const img=tile.querySelector('img');return img.naturalHeight>img.naturalWidth;});
   expect(portrait,'Portrait photos are present');
   const before=width(portrait);
@@ -137,7 +148,8 @@ async function galleryChecks(){
   expect(portrait.getAttribute('aria-pressed')==='true' && width(portrait)>before &&
     width(portrait)<parseFloat(portrait.style.height) && Math.abs(x(portrait)+width(portrait)/2-stageWidth/2)<1,
     'Selected portrait expands in the center and keeps its aspect ratio');
-  expect(oppositeEdges(...photos.filter(tile=>tile!==portrait).slice(0,2)),'Other photos move to opposite edges');
+  const edges=photos.filter(tile=>tile!==portrait);
+  expect(edges.some(l=>edges.some(r=>oppositeEdges(l,r))),'Other photos move to opposite edges');
   const filename=q('#photos .gallery-filename');
   expect(/^img_\d{4}\.jpg$/.test(filename.textContent),'Selected photo keeps its filename');
   portrait.dispatchEvent(new (frame.contentWindow.KeyboardEvent)('keydown',{key:'Escape',bubbles:true}));

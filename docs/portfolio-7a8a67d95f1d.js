@@ -9,11 +9,25 @@ const photos = [
     "height": 1033
   },
   {
+    "image": "./assets/img_3407.webp",
+    "title": "img_3407.jpg",
+    "alt": "橋の手前で赤と白の花火が扇状に広がる",
+    "width": 1500,
+    "height": 924
+  },
+  {
     "image": "./assets/ferris-wheel.webp",
     "title": "img_9936.jpg",
     "alt": "夕暮れの空に浮かぶ観覧車のゴンドラ",
     "width": 1033,
     "height": 1550
+  },
+  {
+    "image": "./assets/img_3577.webp",
+    "title": "img_3577.jpg",
+    "alt": "黒い夜空に広がる青と金色の花火",
+    "width": 1000,
+    "height": 1500
   },
   {
     "image": "./assets/fireworks.webp",
@@ -23,11 +37,25 @@ const photos = [
     "height": 1163
   },
   {
+    "image": "./assets/img_3578.webp",
+    "title": "img_3578.jpg",
+    "alt": "赤と青の大きな花火を下から見上げる",
+    "width": 1000,
+    "height": 1500
+  },
+  {
     "image": "./assets/afterglow.webp",
     "title": "img_0210.jpg",
     "alt": "海沿いの空に伸びる淡いピンクの雲",
     "width": 1033,
     "height": 1550
+  },
+  {
+    "image": "./assets/img_3598.webp",
+    "title": "img_3598.jpg",
+    "alt": "赤紫と金色の花火が重なって開く",
+    "width": 1000,
+    "height": 1500
   },
   {
     "image": "./assets/golden-fireworks.webp",
@@ -37,11 +65,46 @@ const photos = [
     "height": 1240
   },
   {
+    "image": "./assets/img_3603.webp",
+    "title": "img_3603.jpg",
+    "alt": "赤い花火の下から緑の光が伸びる",
+    "width": 1000,
+    "height": 1500
+  },
+  {
     "image": "./assets/fireworks-reflection.webp",
     "title": "img_3417.jpg",
     "alt": "夜空に開く緑と赤の花火と橋の照明",
     "width": 1162,
     "height": 1550
+  },
+  {
+    "image": "./assets/img_3607.webp",
+    "title": "img_3607.jpg",
+    "alt": "金色の花火の下で赤い光が立ち上がる",
+    "width": 1000,
+    "height": 1500
+  },
+  {
+    "image": "./assets/img_3609.webp",
+    "title": "img_3609.jpg",
+    "alt": "緑の花火と金色の光のカーテン",
+    "width": 1000,
+    "height": 1500
+  },
+  {
+    "image": "./assets/img_3618.webp",
+    "title": "img_3618.jpg",
+    "alt": "赤い光の上に緑と白の花火が開く",
+    "width": 1000,
+    "height": 1500
+  },
+  {
+    "image": "./assets/img_4366.webp",
+    "title": "img_4366.jpg",
+    "alt": "夕暮れの光が残る街並みと高層ビル",
+    "width": 1500,
+    "height": 1000
   }
 ];
 
@@ -212,7 +275,7 @@ function hash(n) {
   return ((x ^ (x >>> 16)) >>> 0) / 4294967296;
 }
 class TypeFlicker {
-  constructor(heading, text) {
+  constructor(description, text) {
     this.glyphs=Array.from(text.replace(/\s+/gu,''));
     this.layer=document.createElement('span');
     this.layer.className='type-flicker';
@@ -222,7 +285,8 @@ class TypeFlicker {
       this.layer.append(fragment);
       return fragment;
     });
-    heading.after(this.layer);
+    description.classList.add('flicker-copy');
+    description.append(this.layer);
   }
 
   render(progress) {
@@ -255,7 +319,6 @@ class Scramble {
     this.display.setAttribute('aria-hidden','true');
     node.append(this.display);
     this.node = node;
-    this.flicker=node.hasAttribute('data-type-flicker') ? new TypeFlicker(node,text) : null;
     this.chars = Array.from(text).map((char,index) => {
       if (/\s/u.test(char)) {
         this.display.append(char);
@@ -280,7 +343,6 @@ class Scramble {
     this.step = step;
     const p = step / 126;
     const active = p < 1;
-    this.flicker?.render(p);
     const insertion=Math.floor(p*this.chars.length);
     const caret=this.chars.find((char,index)=>index>=insertion && char.slot)?.index;
     this.node.classList.toggle('is-scrambling',active);
@@ -352,6 +414,13 @@ const about = byId('about');
 const projectPanel = byId('project-panel');
 const contact = byId('contact');
 const agent = byId('agent');
+const assistants=Array.from({length:2},()=>{
+  const helper=agent.cloneNode(true);
+  helper.removeAttribute('id');
+  agent.after(helper);
+  return helper;
+});
+const galleryCursors=[agent,...assistants];
 aboutContent(about.querySelector('.about-content'));
 profileLinks(contact.querySelector('.profile-links'));
 
@@ -373,26 +442,24 @@ function framePoint(region,x,y) {
 
 function traceFrame(border,region,amount) {
   const {w,h}=region;
-  const distance=amount*2*(w+h);
-  const top=Math.min(w,distance);
-  const rightHeight=Math.min(h,Math.max(0,distance-w));
-  const bottom=Math.min(w,Math.max(0,distance-w-h));
-  const leftHeight=Math.min(h,Math.max(0,distance-2*w-h));
+  const top=ease(amount,0,.53);
+  const depth=ease(amount,.53,1);
   const [upper,left,rightEdge,lower]=border.children;
-  upper.style.width=top+'px';
-  rightEdge.style.height=rightHeight+'px';
-  lower.style.width=bottom+'px';
-  left.style.height=leftHeight+'px';
+  upper.style.width=(w*top)+'px';
+  left.style.height=rightEdge.style.height=(h*depth)+'px';
+  lower.style.width=w+'px';
+  lower.style.top=Math.max(0,h*depth-1)+'px';
+  visible(lower,depth>0 ? 1 : 0);
   visible(border,amount>0 ? 1 : 0);
-  if(distance<=w) return framePoint(region,top,0);
-  if(distance<=w+h) return framePoint(region,w,rightHeight);
-  if(distance<=2*w+h) return framePoint(region,w-bottom,h);
-  return framePoint(region,0,h-leftHeight);
+  return depth ? framePoint(region,w,h*depth) : framePoint(region,w*top,0);
 }
 
 function createGallery(id,items,article=false) {
   const gallery=byId(id);
   const heading=gallery.querySelector('h2');
+  const headingText=new Scramble(heading);
+  const seed=Math.floor(Math.random()*32768);
+  const variation=(index,channel)=>hash(seed+index*397+channel*883);
   const close=el('button',{class:'text-button gallery-close',type:'button',hidden:''},'Back to grid');
   const detail=el('div',{class:'gallery-detail',hidden:''});
   const detailBorder=frameEdges('gallery-border');
@@ -412,28 +479,17 @@ function createGallery(id,items,article=false) {
   });
   gallery.append(close,detail);
 
-  let selected=-1, regions, movement, nextAction;
+  let selected=-1, regions, movement, afterClose;
   function select(index) {
     if(index===selected || gallery.inert) return;
-    if(movement) {
-      nextAction=()=>select(index);
-      return;
-    }
-    if(index>=0 && selected>=0) {
-      nextAction=()=>select(index);
-      select(-1);
-      return;
-    }
     const previous=selected;
-    const from=regions;
     selected=index;
     const to=positions(metrics,index);
-    movement={from,to,index:index>=0 ? index : previous,closing:index<0};
     close.hidden=index<0;
     gallery.classList.toggle('is-focused',index>=0);
     tiles.forEach(({button},i)=>{
-      button.classList.toggle('is-selected',i===movement.index);
-      button.setAttribute('aria-pressed',String(i===selected));
+      button.classList.toggle('is-selected',i===index || index<0 && i===previous);
+      button.setAttribute('aria-pressed',String(i===index));
     });
     if(index>=0) {
       const item=items[index];
@@ -442,12 +498,16 @@ function createGallery(id,items,article=false) {
     } else {
       tiles[previous].button.focus({preventScroll:true});
     }
+    detail.hidden=true;
     if(reduced.matches) {
       regions=to;
       movement=undefined;
-      updateDetail(index,1,1);
+      gallery.removeAttribute('aria-busy');
+      updateDetail();
+    } else {
+      movement={from:regions,to,index:index>=0 ? index : previous};
+      gallery.setAttribute('aria-busy','true');
     }
-    if(movement) gallery.setAttribute('aria-busy','true');
     requestRender();
   }
   close.addEventListener('click',()=>select(-1));
@@ -463,67 +523,54 @@ function createGallery(id,items,article=false) {
 
   function positions(m,selection) {
     const {W,H,mobile}=m;
-    const gutter=mobile ? 16 : Math.max(24,W*.051);
+    const gutter=mobile ? 22 : Math.max(36,W*.08);
     const top=Math.max(42,Math.min(89,H*.12));
-    const gap=mobile ? 9 : 14;
-    const columns=mobile ? 2 : article ? 4 : Math.min(3,tiles.length);
+    const columns=Math.min(tiles.length,mobile ? (tiles.length>10 ? 3 : 2) : (article || tiles.length>10 ? 4 : 3));
     const rows=Math.ceil(tiles.length/columns);
-    const galleryWidth=Math.min(W-2*gutter,article ? 1160 : 1240);
-    const gridLeft=(W-galleryWidth)/2;
-    const gridTop=top+43;
-    const gridHeight=Math.max(10,H-gridTop-72);
-    const width=Math.min((galleryWidth-gap*(columns-1))/columns,
-      ((gridHeight-gap*(rows-1))/rows)*1.5);
-    const height=width/1.5;
-    const gridY=gridTop+(gridHeight-rows*height-(rows-1)*gap)*.34;
-    const sideCount=Math.max(1,Math.ceil((tiles.length-1)/2));
-    const edge=mobile ? 10 : 18;
-    const stepGap=mobile ? 11 : 18;
-    const thumbWidth=Math.min(110,Math.max(38,W*.092),Math.max(12,(gridHeight/sideCount-stepGap)*1.5));
-    const thumbHeight=thumbWidth/1.5;
-    const sideStep=Math.min(thumbHeight+stepGap,(gridHeight-thumbHeight)/sideCount);
-    const offsets=mobile ? [[-5,-7,-4],[3,5,4],[3,2,-3],[-4,10,3]] :
-      [[9,-13,-5],[-9,14,4],[-6,-11,-3],[4,8,3],[8,12,4],[-5,-8,-4]];
+    const deskWidth=Math.min(W-gutter*2,1160);
+    const deskLeft=(W-deskWidth)/2;
+    const deskTop=top+54;
+    const deskHeight=Math.max(120,H-deskTop-66);
+    const cellW=deskWidth/columns;
+    const cellH=deskHeight/rows;
+    const edge=mobile ? 6 : 13;
+    const thumbWidth=Math.min(mobile ? 47 : 100,W*.105);
+    const focusTop=deskTop-5;
+    const focusHeight=Math.max(50,H-focusTop-80);
 
-    heading.style.left=gridLeft+'px';
+    heading.style.left=deskLeft+'px';
     heading.style.top=top+'px';
-    close.style.right=gridLeft+'px';
+    close.style.right=deskLeft+'px';
     close.style.top=(top-10)+'px';
-    let railIndex=0;
+    const sideCounts=[0,0];
     return tiles.map(({item},i)=>{
+      const ratio=article ? item.ratio || 16/9 : item.width/item.height;
       const row=Math.floor(i/columns);
       const rowCount=Math.min(columns,tiles.length-row*columns);
-      const left=(W-rowCount*width-(rowCount-1)*gap)/2;
-      const [dx,dy,tilt]=offsets[i%offsets.length];
-      const ratio=article ? item.ratio || 16/9 : item.width/item.height;
-      const tileHeight=Math.min(height,width/ratio);
-      const tileWidth=tileHeight*ratio;
-      let region=box(left+(i%columns)*(width+gap)+(width-tileWidth)/2+dx,
-        gridY+row*(height+gap)+(height-tileHeight)/2+dy,tileWidth,tileHeight,tilt);
+      const rowLeft=deskLeft+(columns-rowCount)*cellW*((row%2) ? .18 : .43);
+      const size=.93+variation(i,0)*.24;
+      const tileWidth=Math.min(cellW*size,cellH*(size+.10)*ratio);
+      const tileHeight=tileWidth/ratio;
+      const tilt=(variation(i,1)-.5)*(mobile ? 19 : 25);
+      const x=rowLeft+(i%columns+.5)*cellW-tileWidth/2+(variation(i,2)-.5)*cellW*.30;
+      const y=deskTop+(row+.5)*cellH-tileHeight/2+(variation(i,3)-.5)*cellH*.39;
       if(selection===i) {
-        const margin=Math.max(gutter,edge+thumbWidth+14);
-        const focusTop=gridTop;
-        const focusBottom=H-70;
-        const availableWidth=W-2*margin;
-        const availableHeight=focusBottom-focusTop-54;
-        const expanded=Math.min(availableWidth,Math.max(10,availableHeight)*ratio,1120);
-        const expandedHeight=expanded/ratio;
-        const centerTop=focusTop+Math.max(0,(availableHeight-expandedHeight)/2);
-        region=box((W-expanded)/2,centerTop,expanded,expandedHeight);
-      } else if(selection>=0) {
-        const onRight=railIndex%2===1;
-        const thumbH=Math.min(thumbHeight,thumbWidth/ratio);
-        const thumbW=thumbH*ratio;
-        const x=onRight ? W-edge-thumbW : edge;
-        const sideIndex=Math.floor(railIndex/2);
-        const count=Math.ceil((tiles.length-(onRight ? 2 : 1))/2);
-        const runHeight=(count-1)*sideStep+thumbHeight;
-        const offset=(gridHeight-runHeight)*(onRight ? .7 : .16);
-        const y=gridTop+offset+sideIndex*sideStep;
-        region=box(x,y,thumbW,thumbH,onRight ? 4 : -5);
-        railIndex++;
+        const margin=Math.max(gutter,edge+thumbWidth+12);
+        const width=Math.min(W-2*margin,focusHeight*ratio,1120);
+        const height=width/ratio;
+        return box((W-width)/2,focusTop+(focusHeight-height)/2,width,height);
       }
-      return region;
+      if(selection>=0) {
+        const side=i%2;
+        const order=sideCounts[side]++;
+        const railCount=Math.ceil(tiles.length/2);
+        const thumbH=Math.min(thumbWidth/ratio,thumbWidth*1.05);
+        const thumbW=thumbH*ratio;
+        const railY=deskTop+deskHeight*(side ? .31 : .16)+order*Math.min(deskHeight*.57/railCount,thumbH*.73+8);
+        const slop=variation(i,4)*(mobile ? 5 : 11);
+        return box(side ? W-thumbW-edge-slop : edge+slop,railY,thumbW,thumbH,tilt*.69);
+      }
+      return box(clamp(x/Math.max(1,W-tileWidth-8))*Math.max(1,W-tileWidth-8),y,tileWidth,tileHeight,tilt);
     });
   }
 
@@ -533,54 +580,38 @@ function createGallery(id,items,article=false) {
     regions=positions(m,selected);
   }
 
-  function updateDetail(index,outline,text) {
-    detail.hidden=index<0 || outline<=0;
+  function updateDetail() {
+    detail.hidden=selected<0;
     if (detail.hidden) return;
-    const region=regions[index];
+    const region=regions[selected];
     const bounds=box(region.x,region.y+region.h+8,region.w,42);
     place(detail,bounds);
-    caption.style.clipPath='inset(0 '+(1-text)*100+'% 0 0)';
-    caption.inert=text<1;
-    return traceFrame(detailBorder,bounds,outline);
+    traceFrame(detailBorder,bounds,1);
   }
 
   function animateSelection() {
-    const {from,to,index,closing}=movement;
+    const {from,to,index}=movement;
     const now=performance.now();
     movement.start ??= now;
-    const t=clamp((now-movement.start)/1800);
-    // Reuse the same three poses in both directions. The upper-left corner is
-    // stationary while the cursor drags the opposite corner.
-    const origin=closing ? to[index] : from[index];
-    const target=closing ? from[index] : to[index];
-    const dock=box(target.x,target.y,origin.w,origin.h);
-    const p=closing ? 1-t : t;
-    const slide=ease(p,.11,.39);
-    const scale=ease(p,.45,.68);
-    regions=from.map((region,i)=>mixBox(region,to[i],closing ? 1-slide : slide));
-    const selectedRegion=p<.39 ? mixBox(origin,dock,slide) : mixBox(dock,target,scale);
-    regions[index]=selectedRegion;
-    const outline=ease(p,.73,.90);
-    const text=phase(p,.90,1);
-    const writing=updateDetail(index,outline,text);
-    const cornerHandle=framePoint(selectedRegion,selectedRegion.w,selectedRegion.h);
-    const grabbed=framePoint(selectedRegion,0,0);
-    if(p<.11) {
-      cursor(agent,mixPoint(point(grabbed.x-20,grabbed.y-15),grabbed,ease(p,0,.11)));
-    } else if(p<.39) {
-      cursor(agent,grabbed);
-    } else if(p<.45) {
-      cursor(agent,mixPoint(grabbed,cornerHandle,phase(p,.39,.45)));
-    } else if(p<=.68) {
-      cursor(agent,cornerHandle,1,0,true);
-    } else if(p<.73) {
-      cursor(agent,mixPoint(cornerHandle,point(selectedRegion.x,cornerHandle.y+8),phase(p,.68,.73)));
-    } else if(p<.90 && writing) {
-      cursor(agent,writing);
-    } else {
-      const captionBounds=caption.getBoundingClientRect();
-      cursor(agent,point(captionBounds.left+Math.min(captionBounds.width*text,selectedRegion.w-10),
-        captionBounds.top+captionBounds.height/2),1,1,false,captionBounds.height);
+    const t=clamp((now-movement.start)/790);
+    const sweep=1-(1-phase(t,.08,.93))**3;
+    regions=from.map((region,i)=>{
+      const delay=(i%3)*.046;
+      const p=i===index ? ease(t,0,.92) : 1-(1-phase(t,.09+delay,.91+delay))**3;
+      const result=mixBox(region,to[i],p);
+      if(i!==index) result.y+=Math.sin(p*Math.PI)*(i%2 ? 15 : -11);
+      return result;
+    });
+    const selectedRegion=regions[index];
+    if(t<.94) {
+      const handle=framePoint(selectedRegion,selectedRegion.w,selectedRegion.h);
+      cursor(agent,handle,1,0,true);
+      const movingAside=regions.findIndex((_,i)=>i!==index && Math.abs(from[i].x-to[i].x)>14);
+      if(t>.08 && t<.8 && movingAside>=0) {
+        const side=regions[movingAside];
+        const headsRight=to[movingAside].x>from[movingAside].x;
+        cursor(assistants[0],framePoint(side,headsRight ? 0 : side.w,side.h*(.43+sweep*.18)));
+      }
     }
     if(t<1) {
       requestRender();
@@ -588,27 +619,19 @@ function createGallery(id,items,article=false) {
       regions=to;
       movement=undefined;
       gallery.removeAttribute('aria-busy');
-      tiles[index].button.classList.toggle('is-selected',!closing);
-      updateDetail(selected,1,1);
-      visible(agent,0);
-      const after=nextAction;
-      nextAction=undefined;
-      after?.();
+      if(selected<0) tiles[index].button.classList.remove('is-selected');
+      updateDetail();
+      const depart=afterClose;
+      afterClose=undefined;
+      depart?.();
     }
   }
 
   function closeBefore(depart) {
     if(!movement && selected<0) return false;
-    if(reduced.matches) {
-      select(-1);
-      return false;
-    }
-    if(selected>=0) {
-      select(-1);
-      nextAction=()=>{if(!closeBefore(depart)) depart();};
-    } else {
-      nextAction=depart;
-    }
+    if(selected>=0) select(-1);
+    if(reduced.matches) return false;
+    afterClose=depart;
     return true;
   }
 
@@ -618,7 +641,7 @@ function createGallery(id,items,article=false) {
     if(amount<=0) {
       if(selected>=0 || movement) {
         selected=-1;
-        nextAction=undefined;
+        afterClose=undefined;
         close.hidden=detail.hidden=true;
         gallery.classList.remove('is-focused');
         tiles.forEach(({button})=>{
@@ -630,24 +653,26 @@ function createGallery(id,items,article=false) {
       return;
     }
     if(movement) animateSelection();
-    else if(ready) updateDetail(selected,1,1);
+    else if(ready) updateDetail();
 
-    // A single cursor visits each frame. Artwork is clipped in only once the
-    // outline is complete, so decreasing this progress erases in reverse order.
+    headingText.render(ease(amount,0,.25));
+    const lanes=galleryCursors.length;
+    const batches=Math.ceil(tiles.length/lanes);
     tiles.forEach(({button,border,visual},i)=>{
       const region=regions[i];
-      const step=clamp(amount*tiles.length-i);
-      const trace=phase(step,.16,.86);
-      const reveal=phase(step,.86,1);
+      const lane=i%lanes;
+      const delay=lane*.16;
+      const step=phase(amount*batches-Math.floor(i/lanes),delay,1);
+      const trace=phase(step,.14,.77);
+      const reveal=ease(step,.79,1);
       place(button,region);
       const tip=traceFrame(border,region,trace);
-      visual.style.clipPath='inset(0 '+(1-reveal)*100+'% 0 0)';
-      button.style.visibility=step>.16 ? 'visible' : 'hidden';
-      if(!ready && step>0 && step<1 && !reduced.matches) {
-        const previous=i ? corner(regions[i-1]) : point(region.x-16,region.y-12);
-        const edge=step<.16 ? mixPoint(previous,corner(region),ease(step,0,.16)) :
-          step>.86 ? framePoint(region,region.w*reveal,0) : tip;
-        cursor(agent,edge);
+      visual.style.clipPath='inset(0 0 '+(1-reveal)*100+'% 0)';
+      button.style.visibility=step>.14 ? 'visible' : 'hidden';
+      if(!ready && step>0 && step<.79 && !reduced.matches) {
+        const previous=i>=lanes ? bottomRight(regions[i-lanes]) : point(region.x-14,region.y-10);
+        const edge=step<.14 ? mixPoint(previous,corner(region),ease(step,0,.14)) : tip;
+        cursor(galleryCursors[lane],edge);
       }
     });
     if(!ready) detail.hidden=true;
@@ -718,15 +743,19 @@ const erase={
 function descriptionTyping(panel) {
   const description=panel.querySelector('[data-after-title] p, p[data-after-title]');
   const glyphs=Array.from(description.querySelectorAll('.backspace-glyph'));
-  let count=glyphs.length;
+  const flicker=new TypeFlicker(description,description.querySelector('.visually-hidden').textContent);
+  let previousFrame;
   return (progress,closing)=>{
-    const next=Math.floor(clamp(progress)*glyphs.length);
-    glyphs[count-1]?.classList.remove('description-caret');
-    for(let index=Math.min(count,next);index<Math.max(count,next);index++) {
-      glyphs[index].classList.toggle('description-hidden',index>=next);
-    }
-    if(next>0 && next<glyphs.length && !closing) glyphs[next-1].classList.add('description-caret');
-    count=next;
+    flicker.render(closing ? 1 : progress);
+    const frame=Math.floor(progress*16);
+    if(frame===previousFrame) return;
+    previousFrame=frame;
+    glyphs.forEach((glyph,index)=>{
+      const group=Math.floor(index/4);
+      const edge=Math.floor(glyphs.length/4)*progress;
+      const printed=group<edge-1 || group<edge+1 && hash(group*223+frame*101)>.47;
+      glyph.classList.toggle('description-hidden',progress<1 && !printed);
+    });
   };
 }
 const describe={
@@ -955,7 +984,7 @@ function render(s,m) {
   let introDetails=0,aboutDetails=0,projectDetails=0,contactDetails=0;
   let introErase=0,aboutErase=0,projectErase=0;
   typingCursor=null;
-  visible(agent,0);
+  for(const actor of galleryCursors) visible(actor,0);
   visible(scrollHint,1-ease(s,.025,.20));
 
   if (s < timing.introEnd) {
