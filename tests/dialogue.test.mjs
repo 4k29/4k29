@@ -35,7 +35,7 @@ test('device capabilities stay Unknown without structured browser identifiers',(
 });
 test('all local assets exist and all profile facts have provenance',()=>{
  for(const f of data.facts){assert.ok(f.source);assert.ok(f.ja.value);assert.ok(f.en.value);}
- const html=fs.readFileSync(new URL('../docs/index.html',import.meta.url),'utf8');
+ const html=fs.readFileSync(new URL('../docs/assistant.html',import.meta.url),'utf8');
  for(const match of html.matchAll(/(?:src|href)="(\.\/[^\"]+)"/g))assert.ok(fs.existsSync(new URL('../docs/'+match[1].slice(2),import.meta.url)));
 });
 

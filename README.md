@@ -5,3 +5,5 @@
   <img src="./profile-light.svg" width="900" alt="4k29 — student and vibe coder building Tecirc. Most code was written with ChatGPT; ideas and direction are mine. The session ends at a fictional usage limit."/>
 </picture>
 </a>
+
+[Shika Portfolio — source and local setup](./portfolio/)

@@ -1,0 +1,181 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Shika portfolio browser checks</title>
+<style>body{margin:16px;font:14px system-ui}header{display:flex;gap:6px;flex-wrap:wrap}button{padding:7px}iframe{display:block;border:1px solid #888;margin-top:12px;max-width:100%}pre{white-space:pre-wrap}</style>
+<header>
+<button id="run">Run browser checks</button><button id="gallery-run">Check galleries</button>
+<button id="desk">Desktop</button><button id="light">Light preference</button><button id="dark">Dark preference</button><button id="phone">390 px</button><button id="touch-drag">Simulate touch drag</button><button id="touch-release">Simulate touch release</button>
+<button data-position="0">Blank</button><button data-position=".34">Top line</button><button data-position=".68">Expanding frame</button><button data-position="1.20">Typing</button><button data-position="1.17">I-beam</button><button data-position="1.24">Caret bar</button><button data-position="5.16">About</button><button data-position="8.67">Project</button><button data-position="4.40">About typing</button><button data-position="7.91">Project typing</button><button data-position="8.67">Project complete</button><button data-position="10.74">Gallery drawing</button><button data-position="12.88">Tecirc grid</button><button data-position="16.97">Photography grid</button><button data-position="20.70">Contact</button>
+</header>
+<pre id="result"></pre><iframe title="Portfolio viewport" width="1250" height="726" src="index.html"></iframe>
+<script>
+const frame=document.querySelector('iframe'), result=document.querySelector('pre');
+const ready=()=>new Promise(resolve=>frame.onload=resolve);
+const w=()=>frame.contentWindow,d=()=>frame.contentDocument;
+const q=(s)=>d().querySelector(s), all=(s)=>Array.from(d().querySelectorAll(s));
+const paint=()=>new Promise(resolve=>{
+  let done=false;
+  function finish(){if(!done){done=true;resolve();}}
+  w().requestAnimationFrame(()=>w().requestAnimationFrame(finish));
+  setTimeout(finish,1700);
+});
+const unit=()=>Math.max(frame.width<=650?440:620,Math.round(q('#stage').clientHeight*(frame.width<=650?1.20:1.23)));
+async function at(y){w().scrollTo({top:Math.round(y*unit()),behavior:"instant"});w().dispatchEvent(new (w().Event)("scroll"));await paint();}
+const size=(n,key)=>parseFloat(n.style[key]);
+const shown=(n)=>n.style.visibility==='visible' && size(n,'opacity')>.01;
+const expect=(value,detail)=>{if(!value)throw Error(detail)};
+const style=(n)=>n.getAttribute('style');
+const scram=()=>Array.from(q('#intro h1 [aria-hidden=true]').childNodes).map(n=>n.nodeType===3?n.textContent:n.querySelector('.scramble-glyph').textContent).join('');
+const state=()=>[q('.type-flicker').outerHTML,style(q('#frame')),style(q('#agent')),q('#agent path').getAttribute('d'),...all('.gallery').map(style),scram()].join('|');
+async function run(width,height){
+  frame.width=width;frame.height=height;
+  frame.scrollIntoView({block:'start'});
+  const loaded=ready();frame.src='index.html?qa='+width+'-'+Date.now();await loaded;await paint();
+  const doc=d();
+  expect(doc.documentElement.clientWidth<=width && doc.documentElement.clientWidth>=width-17,'Viewport width');
+  const stage=q('#stage');
+  expect(!q('#experience').hidden && !q('#contents'),'Application initialized');
+  expect(shown(q('#scroll-hint')) && ![q('#frame'),q('#agent'),q('#intro')].some(shown),'Only scroll hint at opening');
+  expect(!q('#stage nav[aria-label="セクション"]') && !doc.body.textContent.includes('Wishlist'),'Removed top tabs and Wishlist');
+  await at(.34);
+  expect(/^M0 0 L/.test(q('#agent path').getAttribute('d')) && q('#agent').getBoundingClientRect().width<=18 && parseFloat(w().getComputedStyle(q('#agent path')).strokeWidth)>1.5,'Smaller and thicker cursor');
+  const edges=q('#frame').children;
+  expect(size(edges[0],'width')>10 && !shown(edges[1]) && !shown(edges[3]),'Open horizontal edge only');
+  await at(.68);
+  expect(size(edges[1],'height')>1 && size(edges[1],'height')<size(q('#frame'),'height') && Math.abs(size(edges[1],'height')-1-size(edges[3],'top'))<1,'Both sides and lower edge extend together');
+  const topEdge=edges[0].getBoundingClientRect().top;
+  await at(1.17);
+  expect(shown(q('#agent')) && size(q('#agent path:nth-child(2)'),'opacity')>.1 && size(q('#agent path:nth-child(3)'),'opacity')>0,'Cursor changes to I-beam');
+  await at(1.24);
+  expect(size(q('#agent path:nth-child(2)'),'opacity')>.95 && size(q('#agent path:nth-child(3)'),'opacity')===0,'Caret stem remains when I-beam caps disappear');
+  const mixed=scram(), stopped=state();
+  expect(!q('.type-flicker').hidden && all('.type-flicker span:not([hidden])').some(n=>n.dataset.ink),'Opening has deterministic color fragments during typing');
+  expect(mixed!=="I'm うまいしか" && q('#intro .scramble-caret'),'Text scrambles with caret');
+  await new Promise(r=>setTimeout(r,225));
+  expect(state()===stopped,'No autonomous changes while scroll is still');
+  await at(1.7);
+  expect(scram()==="I'm うまいしか" && !shown(q('#agent')) && q('.type-flicker').hidden,'Title completes and cursor disappears ('+scram()+', '+q('#agent').style.opacity+')');
+  await at(1.24);
+  expect(state()===stopped,'Reverse travel restores the same frame and scramble glyphs');
+  await at(2.70);
+  expect(scram()==="I'm うまいしか" && shown(q('#intro p')),'Intro stays visible during its hold');
+  await at(3.37);
+  expect(shown(q('#intro')) && q('#intro').style.opacity==='1' && q('#intro .backspace-caret') && q('#intro p .backspace-hidden'),'Intro deletes from the end without fading');
+  await at(4.40);
+  expect(q('#about .is-scrambling') && !shown(q('#about [data-after-title]')),'About title precedes bio and tags');
+  await at(5.16);
+  expect(Math.abs(edges[0].getBoundingClientRect().top-topEdge)<1,'About shares the opening top edge');
+  expect(shown(q('#about')) && !q('#about').inert && shown(q('#about [data-after-title]')),'About details appear after title');
+  await at(6.66);
+  expect(q('#about').style.opacity==='1' && q('#about .backspace-caret'),'About erases text before the frame moves');
+  await at(7.91);
+  expect(q('#project-panel .is-scrambling') && !shown(q('#project-panel [data-after-title]')),'Project title precedes description and link');
+  await at(8.40);
+  const description=q('#project-panel p');
+  expect(description.querySelector('.description-caret') && description.querySelector('.description-hidden'),'Description types from its first character');
+  await at(8.67);
+  expect(shown(q('#project-panel [data-after-title]')) && !q('#project-panel [data-after-title]').inert,'Project link becomes interactive after title');
+  expect(Math.abs(edges[0].getBoundingClientRect().top-topEdge)<1,'Projects shares the opening top edge');
+  const logo=q('.project-image'),logoBounds=logo.getBoundingClientRect(),logoImg=logo.querySelector('img');
+  expect(Math.abs(logoBounds.width/ logoBounds.height-16/9)<.02 && logoImg.naturalWidth>0 && Math.abs(logoImg.getBoundingClientRect().width-logoBounds.width)<1,'Project uses the complete logo artwork');
+  await at(10.01);
+  expect(q('#project-panel').style.opacity==='1' && q('#project-panel .backspace-caret'),'Projects text erases before the frame retracts');
+  await at(10.74);
+  expect(!q('#articles').classList.contains('gallery-ready') && shown(q('#articles .gallery-border')) && shown(q('#agent')),'Article frames draw before gallery interaction');
+  await galleryChecks();
+  await at(20.70);
+  expect(shown(q('#contact')) && !shown(q('#photos')) && !shown(q('#articles')),'Contact follows both galleries');
+  const systemDark=w().matchMedia('(prefers-color-scheme: dark)').matches;
+  const background=w().getComputedStyle(doc.documentElement).backgroundColor;
+  expect(background===(systemDark?'rgb(11, 11, 11)':'rgb(255, 255, 255)'),'Theme follows system setting');
+  await at(0);
+  q('.skip').click();
+  await paint();
+  expect(Math.abs(w().scrollY/unit()-2.03)<.01 && doc.activeElement===q('#stage'),'Keyboard skip jumps past the opening');
+  result.textContent+='PASS '+width+' × '+height+' ('+doc.documentElement.clientWidth+' CSS px)\n';
+}
+async function cursorDuring(action) {
+  action();
+  let cursorState='';
+  for(let i=0;i<12;i++){
+    await new Promise(resolve=>setTimeout(resolve,80));
+    cursorState=q('#agent').getAttribute('style');
+    if(shown(q('#agent'))) return true;
+  }
+  throw Error('Gallery cursor stayed hidden ('+cursorState+'; y='+w().scrollY/unit()+')');
+}
+const settled=()=>new Promise(resolve=>setTimeout(resolve,1880));
+async function galleryChecks(){
+  const stageWidth=q('#stage').clientWidth;
+  const x=tile=>new DOMMatrix(tile.style.transform).m41;
+  const width=tile=>parseFloat(tile.style.width);
+  const oppositeEdges=(left,right)=>x(left)<25 && stageWidth-x(right)-width(right)<25;
+  await at(12.88);
+  const articles=all('#articles .gallery-tile');
+  expect(q('#photos').inert && !q('#articles').inert && articles.length===8,'Tecirc articles appear before Photography');
+  const articleWidth=width(articles[5]);
+  await cursorDuring(()=>articles[5].click());
+  await settled();
+  const link=q('#articles .gallery-detail a');
+  expect(articles[5].getAttribute('aria-pressed')==='true' && width(articles[5])>articleWidth &&
+    oppositeEdges(articles[0],articles[1]) && link.href.endsWith('/Nothing-Headphone-1/') && link.target==='_blank',
+    'Articles enlarge in the center, move to both edges, and open the Tecirc page');
+  const empty=d().elementFromPoint(stageWidth/2,q('#stage').clientHeight-16);
+  expect(empty===q('#articles'),'Article canvas receives clicks in the empty area');
+  await cursorDuring(()=>empty.click());
+  await settled();
+  expect(q('#articles .gallery-detail').hidden,'Back to grid restores articles');
+  await at(16.97);
+  const photos=all('#photos .gallery-tile');
+  expect(!q('#photos').inert && q('#articles').inert && photos.length===6,'Photography follows articles and includes six images');
+  const portrait=photos.find(tile=>{const img=tile.querySelector('img');return img.naturalHeight>img.naturalWidth;});
+  expect(portrait,'Portrait photos are present');
+  const before=width(portrait);
+  portrait.click();
+  await settled();
+  expect(portrait.getAttribute('aria-pressed')==='true' && width(portrait)>before &&
+    width(portrait)<parseFloat(portrait.style.height) && Math.abs(x(portrait)+width(portrait)/2-stageWidth/2)<1,
+    'Selected portrait expands in the center and keeps its aspect ratio');
+  expect(oppositeEdges(...photos.filter(tile=>tile!==portrait).slice(0,2)),'Other photos move to opposite edges');
+  const filename=q('#photos .gallery-filename');
+  expect(/^img_\d{4}\.jpg$/.test(filename.textContent),'Selected photo keeps its filename');
+  portrait.dispatchEvent(new (frame.contentWindow.KeyboardEvent)('keydown',{key:'Escape',bubbles:true}));
+  await settled();
+  expect(portrait.getAttribute('aria-pressed')==='false' && q('#photos .gallery-close').hidden,'Escape returns to the photo grid');
+}
+
+document.querySelector('#run').onclick=async()=>{
+ result.textContent='';
+ for(const [width,height] of [[1250,726],[390,844]]){
+   try{await run(width,height)}catch(error){result.textContent+='FAIL '+width+' × '+height+' '+error.message+'\n';}
+ }
+};
+document.querySelector('#gallery-run').onclick=async()=>{
+  result.textContent='';
+  for(const [width,height] of [[1250,726],[1024,768],[768,1024],[390,844]]) {
+    frame.width=width;frame.height=height;
+    const loaded=ready();frame.src='index.html?gallery='+width;await loaded;await paint();
+    try {
+      await at(8.67);
+      const logo=q('.project-image img'), rect=logo.getBoundingClientRect();
+      expect(logo.naturalWidth>0 && rect.width>0 && rect.height>0 && shown(q('#project-panel')),'Tecirc logo loads and has visible size');
+      await galleryChecks();
+      result.textContent+='PASS '+width+' × '+height+'\n';
+    } catch(error) {result.textContent+='FAIL '+width+' × '+height+' '+error.message+'\n';}
+  }
+};
+document.querySelector('#light').onclick=()=>{frame.style.colorScheme='light'};
+document.querySelector('#dark').onclick=()=>{frame.style.colorScheme='dark'};
+document.querySelector('#desk').onclick=()=>{frame.width=1250;frame.height=726};
+document.querySelector('#phone').onclick=()=>{frame.width=390;frame.height=844};
+function touchEvent(type,touches) {
+  w().dispatchEvent(new (w().TouchEvent)(type,{touches}));
+}
+document.querySelector('#touch-drag').onclick=()=>{
+  const finger=new (w().Touch)({identifier:1,target:d().body,clientX:45,clientY:400});
+  touchEvent('touchstart',[finger]);
+  w().scrollBy({top:140,behavior:'instant'});
+};
+document.querySelector('#touch-release').onclick=()=>touchEvent('touchend',[]);
+document.querySelectorAll('[data-position]').forEach(b=>b.onclick=()=>at(Number(b.dataset.position)));
+</script>

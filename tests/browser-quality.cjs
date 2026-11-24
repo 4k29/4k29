@@ -7,7 +7,7 @@ const base=process.env.SITE_URL||'http://localhost:8001/';
   const context=await browser.newContext({reducedMotion:'reduce',viewport:mobile?{width:390,height:844}:{width:1440,height:900}});
   const page=await context.newPage(),errors=[],remote=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(!r.url().startsWith(base))remote.push(r.url());});
-  await page.goto(base);await page.waitForFunction(()=>!document.querySelector('#prompt-form button').disabled);
+  await page.goto(new URL('assistant.html',base));await page.waitForFunction(()=>!document.querySelector('#prompt-form button').disabled);
   let count=0;
   async function ask(question){
    await page.locator('#prompt-input').fill(question);await page.locator('#prompt-input').press('Enter');count++;
