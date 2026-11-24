@@ -211,7 +211,13 @@ function createGallery(id,items,article=false) {
         const slop=variation(i,4)*(mobile ? 5 : 11);
         return box(side ? W-thumbW-edge-slop : edge+slop,railY,thumbW,thumbH,tilt*.69);
       }
-      return box(clamp(x/Math.max(1,W-tileWidth-8))*Math.max(1,W-tileWidth-8),y,tileWidth,tileHeight,tilt);
+      const paper=box(0,0,tileWidth,tileHeight,tilt);
+      const corners=[point(0,0),framePoint(paper,tileWidth,0),
+        framePoint(paper,0,tileHeight),framePoint(paper,tileWidth,tileHeight)];
+      const xs=corners.map(p=>p.x), ys=corners.map(p=>p.y);
+      const left=Math.min(Math.max(x,8-Math.min(...xs)),W-8-Math.max(...xs));
+      const top=Math.min(Math.max(y,deskTop-10-Math.min(...ys)),H-24-Math.max(...ys));
+      return box(left,top,tileWidth,tileHeight,tilt);
     });
   }
 

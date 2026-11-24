@@ -140,6 +140,11 @@ async function galleryChecks(){
   await at(17.45);
   const photos=all('#photos .gallery-tile');
   expect(!q('#photos').inert && q('#articles').inert && photos.length>=12,'Photography follows articles and includes the recovered photos');
+  const heading=q('#photos h2').getBoundingClientRect();
+  expect(photos.every(tile=>{
+    const rect=tile.getBoundingClientRect();
+    return rect.top>heading.bottom && rect.bottom<q('#stage').clientHeight;
+  }),'Scattered photos leave room for the heading and fit vertically');
   const portrait=photos.find(tile=>{const img=tile.querySelector('img');return img.naturalHeight>img.naturalWidth;});
   expect(portrait,'Portrait photos are present');
   const before=width(portrait);
