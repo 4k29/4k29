@@ -1,0 +1,1 @@
+Numerical admission minima passed, but paragraph-only extraction omitted proverb headings needed to interpret referential prose. Not used for training. Retain exact original headings and close at references before final preparation. No model updates or generation selection.
