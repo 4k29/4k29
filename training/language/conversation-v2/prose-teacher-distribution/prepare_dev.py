@@ -31,6 +31,10 @@ WIKI={
  '麺棒':(4,5,6,7,'麺棒の形状を明示し、それを用いる台の説明へ接続する。'),
  '茶碗':(1,2,3,4,'飯茶碗を明示する文が残り、呼称の区別という逆接が成立する。'),
 }
+PART2={'盆栽':(0,0,1,3,'盆栽の定義から育て方と呼称へ続く。'),
+ '定規':(0,0,1,3,'道具の定義から用途と素材へ続く。'),
+ '湯たんぽ':(0,0,1,3,'道具の定義から素材と用途へ続く。'),
+ '落款':(0,0,1,4,'落款の定義から款記と落款印の説明へ続く。')}
 LEGACY={
  '早川のビランジュ':(0,2,3,5,'樹幹の特徴を残し、同じ樹木の調査と若い幹の説明へ続く。'),
  '箱根火山の形成史':(0,1,2,3,'浅い基盤岩の観測事実が残り、陥没説との矛盾へ続く。'),
@@ -60,9 +64,9 @@ def main():
     raw=[]
     for page in read(ROOT/'SOURCE_SNAPSHOTS.json'):
         title=page['title']
-        if title not in WIKI:continue
+        if title not in WIKI and title not in PART2:continue
         rev=page['revisions'][0]['revid']
-        raw.append((title,page['extract'],WIKI[title],dict(origin='Wikimedia extracts and revisions',revision=rev,
+        raw.append((title,page['extract'],(WIKI|PART2)[title],dict(origin='Wikimedia extracts and revisions',revision=rev,
                   url=f'https://ja.wikipedia.org/w/index.php?oldid={rev}',
                   attribution=f'https://ja.wikipedia.org/w/index.php?title={title}&action=history',
                   license='CC BY-SA 4.0',rights_url='https://ja.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=rightsinfo&format=json')))
@@ -109,7 +113,8 @@ def main():
                     item['exposure'].append([name,match,r.get('id')])
     for r in rows:
         r['group']='known_train_match' if r['exposure'] else 'old_dev' if r['provenance']['origin']=='Archived exploratory DEV' else 'no_known_train_match'
-    save(ROOT/'DEV.json',dict(cases=rows,excluded=excluded,archive_sha=archive_sha,
+    save(ROOT/'DEV_PART2.json',dict(cases=[r for r in rows if r['id'] in PART2],excluded=[r for r in excluded if r[0] in PART2],archive_sha=archive_sha))
+    save(ROOT/'DEV.json',dict(cases=[r for r in rows if r['id'] not in PART2],excluded=[r for r in excluded if r[0] not in PART2],archive_sha=archive_sha,
           limit='No exhaustive source-history or semantic paraphrase check. Archived title and exact 12-token matching in the listed TRAIN corpora. Human review single evaluator.'))
     print([(x['id'],x['group'],len(x['full']),len(x['gold'])) for x in rows],excluded)
 
