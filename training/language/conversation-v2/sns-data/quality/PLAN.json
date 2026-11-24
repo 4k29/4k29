@@ -1,0 +1,43 @@
+{
+  "createdAtUtc": "2026-10-27T03:54:29.519466+00:00",
+  "scope": "Assistant qualitative audit of explicitly permitted human conversation source candidates; no unlicensed live SNS posts; not formal human evaluation",
+  "selection": {
+    "salt": "sns-quality-v1",
+    "eligible": "TRAIN candidate threads after deterministic source-local family/speaker deduplication; if no TRAIN due unresolved split, source candidates explicitly labelled unassigned, never DEV/TEST",
+    "minimumUtterances": 2,
+    "maximumFullThreadCharacters": 12000,
+    "ranking": "SHA256(sns-quality-v1|source|threadID)",
+    "maximumPerSource": 40,
+    "maximumTotal": 80,
+    "maximumPerFamily": 1,
+    "shortfallPolicy": "Report actual eligible counts. No content-based redraw, truncation, filtering to flattering samples, or reply replacement. Threads exceeding cap excluded by length only; source bias reported.",
+    "familyDefinition": "Original linked/duplicated conversation or source-assigned conversation family, not whole transitive cross-split speaker component; component must still be source TRAIN or unassigned, never DEV/TEST. Multiple distinct threads may share speakers within TRAIN; report this dependence."
+  },
+  "fields": [
+    "modernNaturalJapanese",
+    "replySemanticConnection",
+    "contentfulReplyCount",
+    "acknowledgmentOnlyReplyCount",
+    "replyCount",
+    "multiSpeakerEvidence",
+    "turnOrderAndReplyEvidence",
+    "topic",
+    "register",
+    "repetitionOrTemplateConcern",
+    "sourceTaskPersonaOrReality",
+    "PIIOrThirdPartyConcern",
+    "humanAuthorshipEvidenceAndUncertainty",
+    "admissionRecommendationAndReason"
+  ],
+  "nonClaims": [
+    "Style does not prove human authorship or consent",
+    "Syntactic reply parent does not prove semantic connection",
+    "Assistant ratings are not independent native human evaluation",
+    "Task-grounded/persona dialogue is not observed spontaneous SNS conversation",
+    "Sample fractions are descriptive of sample only",
+    "No generated repair or synthetic gold answers"
+  ],
+  "actualOptimizerUpdates": 0,
+  "modelInferenceAuthorized": false,
+  "newSealedTestCreated": false
+}

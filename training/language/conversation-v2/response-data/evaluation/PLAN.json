@@ -1,0 +1,23 @@
+{
+  "purpose": "Content-required new diagnostic DEV; no model inference or training",
+  "selection_frozen_before_new_source_reading": true,
+  "preferred_source": "official JMultiWOZ DEV only; no original TEST objects",
+  "selection": "one full source dialogue per case, candidates SHA256(response-dev-v1|source dialogue ID|assistant turn ID), retain full prefix <=192 ownBPE tokens, output budget64; deterministic selection within nonoverlapping categories. Original human target text unmodified. Do not crop prefix or convert TEST",
+  "target_cases": 24,
+  "capability_categories": [
+    "question-answer",
+    "explanation/reason",
+    "comparison",
+    "conditional-request",
+    "history-reference",
+    "contentful-next-turn"
+  ],
+  "human_vs_researcher": "Original human source questions/responses separate from explicitly researcher-authored diagnostic prompts; no AI generated gold",
+  "content_requirement": "At least one exact source-supported content slot beyond acknowledgment, all requested constraints met; full output semantic/naturalness required independently",
+  "hold_policy": "PII/sensitive self-disclosure/third-party quotations/source data errors or unavailable grounding => whole family hold before final pack; no quality-driven resampling after model results",
+  "split": "Original DEV preserved; source author/family overlap with proposedTRAIN audited and held ifneeded. No independent human or sealedTEST claims",
+  "evaluation_authorized": false,
+  "optimizer_updates": 0,
+  "formal_native_japanese_evaluation": false,
+  "new_provider_independence_achieved": false
+}
