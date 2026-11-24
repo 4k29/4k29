@@ -1,0 +1,27 @@
+{
+  "comparison_updates": 1997,
+  "comparison_targets": 2000891,
+  "midpoint_updates": 3994,
+  "midpoint_targets": 4000227,
+  "full_pass_updates": 6361,
+  "full_pass_targets": 6372025,
+  "arms": {
+    "A": "own model3470 weights + new AdamW",
+    "B": "own fresh seed41029 + new AdamW"
+  },
+  "initial_history": "A and B have different prior learning history; equal additional targets is not equal total historical learning",
+  "constant_settings": [
+    "own11.23M structure/BPE3997/context256",
+    "AdamW .9/.999 eps1e-8 weight_decay.05",
+    "peakLR2e-4,128-step warmup,cosine to3e-5 over the single full schedule",
+    "clipping1,all causal CE,EOS unweighted",
+    "identical data/batches and common dropout RNG restored after fresh initialization"
+  ],
+  "series_selection": "At common1997 updates compare natural multi-sentence/contextual continuation, not NLL. A overrides fresh B preference only if at least2 more developed/contextual prose successes across old24+oldNew9+newMAFF12, with no content-response or harmful-repetition regression. Otherwise B remains primary to test learning from own random initialization. Caption-only success is not paragraph/dialogue success.",
+  "continuation": "Selected arm resumes exact model/Adam/RNG/sampler and original LR schedule to3994 then6361. No LR reset. First4 and exact2-to4 replay must pass for both before larger launch.",
+  "generation_stop": "Pause before expanding if meaningful prose decreases by>=2 or harmful repetition increases by>=5 on old24 relative to previous same-arm checkpoint. Numerical nonfinite, data/codeSHA mismatch, ambiguous ledger or insufficient storage always stop. No automatic additional epoch or SFT if paragraph generation remains unmet.",
+  "adoption": "No formal adoption or public replacement. Exposed DEV is not independent TEST/native evaluation.",
+  "checkpoint_policy": "Atomic rolling full state every128 updates and stage end; pin comparison/midpoint/terminal states. Early4-update validation keeps state digests/receipt, rolling file later replaced as documented; no claim of retaining every rolling generation.",
+  "model_capability_success": "Full unmodified generation and content/paragraph meaning, never NLL/EOS alone. Old strict gates unchanged; limited caption fluency cannot pass them.",
+  "optimizer_updates_at_registration": 0
+}
