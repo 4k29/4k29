@@ -95,6 +95,15 @@ def known_labels():
 
 def objective():
     labels,known=known_labels()
+    train_grams=set()
+    for source in (OLD/'TRAIN.json',BASE/'broad-prose-replay/TRAIN.json'):
+        for row in read(source):
+            tokens=row['prefix']+row['gold'][:row.get('eligible_targets',len(row['gold']))]
+            train_grams.update(tuple(tokens[i:i+12]) for i in range(len(tokens)-11))
+
+    def match12(row):
+        tokens=row['generated']
+        return [i for i in range(len(tokens)-11) if tuple(tokens[i:i+12]) in train_grams]
     notes=read(ROOT/'PART2_REVIEW.json')
     base=labels['A-300']
     metrics={}; detail={}
@@ -110,7 +119,7 @@ def objective():
                 if p!='train':
                     assert q is not None,(key,i)
                 q=q or {}
-                case=dict(id=r['id'],panel=p,nll=avg(losses(r)),decision=q,**diagnostics(r))
+                case=dict(id=r['id'],panel=p,nll=avg(losses(r)),decision=q,match12=match12(r),**diagnostics(r))
                 cases.append(case)
                 nll[p].extend(losses(r))
                 if case['gap'] is not None:gap[p].append(case['gap'])
@@ -127,6 +136,7 @@ def objective():
                         counts['harmful']+=bool(m['harmful_repetition'])
                         counts['harm_judged']+=1
                     counts['repeat4']+=case['repeat4'] is not None
+                    counts['match12']+=bool(case['match12'])
                     counts['eos']+=case['stop']=='EOS'
             sample=read(path.with_name(path.name.removesuffix('.json.gz')+'-sample.json'))
             metrics[key]=dict(nll={p:avg(v) for p,v in nll.items()},gap={p:avg(v) for p,v in gap.items()},
@@ -137,7 +147,7 @@ def objective():
         cases=[]
         for i,r in enumerate(held['cases']):
             q=notes[f'heldout-{a}'][str(i)]
-            cases.append(dict(id=r['id'],nll=avg(losses(r)),decision=q,**diagnostics(r)))
+            cases.append(dict(id=r['id'],nll=avg(losses(r)),decision=q,match12=match12(r),**diagnostics(r)))
         detail[f'heldout-{a}']=cases
         metrics[f'heldout-{a}']=dict(nll=avg([x for r in held['cases'] for x in losses(r)]),
                                     one=sum(bool(x['decision']['one']) for x in cases),two=sum(bool(x['decision']['two']) for x in cases))
