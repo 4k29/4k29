@@ -731,7 +731,7 @@ const millisecondsPerTimelineUnit=1500;
 const introPause=1.15, aboutPause=1.25, projectPause=1.15, contactPause=1.80;
 const timing = {
   introEnd:2.04+introPause,aboutLength:2.13+aboutPause,projectLength:2.22+projectPause,
-  articleLength:4.93,photoLength:4.06,
+  articleLength:5.32,photoLength:4.44,
 };
 // A hold consumes scroll distance while its visual progress remains fixed.
 const holdAt=(progress,at,length)=>progress-Math.min(length,Math.max(0,progress-at));
@@ -748,13 +748,13 @@ const sceneStops = [
     const start=timing.projectStart+i*timing.projectLength+2.09;
     return [start,start+projectPause];
   }),
-  [timing.articleStart+2.94,timing.articleStart+3.15],
-  [timing.photoStart+2.10,timing.photoStart+2.33],
+  [timing.articleStart+3.08,timing.articleStart+3.54],
+  [timing.photoStart+2.19,timing.photoStart+2.71],
   [timing.contactStart+1.73,timing.end],
 ];
 const jumps = {
-  start:0,about:timing.introEnd+1.96,projects:sceneStops[3][0],photography:timing.photoStart+2.10,
-  tecirc:timing.articleStart+2.94,contact:timing.contactStart+1.73,
+  start:0,about:timing.introEnd+1.96,projects:sceneStops[3][0],photography:timing.photoStart+2.19,
+  tecirc:timing.articleStart+3.08,contact:timing.contactStart+1.73,
 };
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 let metrics, raf=0;
@@ -1037,10 +1037,10 @@ function render(s,m) {
     projectIndex=projects.length-1;
     names.projects[projectIndex]?.render(1);
     projectDetails=1;
-    articleBuild=phase(elapsed,.32,2.69)*(1-phase(elapsed,3.20,timing.articleLength));
+    articleBuild=phase(elapsed,.32,2.56)*(1-phase(elapsed,3.59,timing.articleLength));
   } else if(s < timing.contactStart) {
     const elapsed=s-timing.photoStart;
-    photoBuild=phase(elapsed,0,1.85)*(1-phase(elapsed,2.37,timing.photoLength));
+    photoBuild=phase(elapsed,0,1.70)*(1-phase(elapsed,2.75,timing.photoLength));
   } else {
     const t=holdAt(s-timing.contactStart,1.73,contactPause);
     frameBox=m.contact;

@@ -5,7 +5,7 @@
 <header>
 <button id="run">Run browser checks</button><button id="gallery-run">Check galleries</button>
 <button id="desk">Desktop</button><button id="light">Light preference</button><button id="dark">Dark preference</button><button id="phone">390 px</button><button id="touch-drag">Simulate touch drag</button><button id="touch-release">Simulate touch release</button>
-<button data-position="0">Blank</button><button data-position=".34">Top line</button><button data-position=".68">Expanding frame</button><button data-position="1.20">Typing</button><button data-position="1.17">I-beam</button><button data-position="1.24">Caret bar</button><button data-position="5.16">About</button><button data-position="8.67">Project</button><button data-position="4.40">About typing</button><button data-position="7.91">Project typing</button><button data-position="8.67">Project complete</button><button data-position="10.74">Gallery drawing</button><button data-position="12.88">Tecirc grid</button><button data-position="16.97">Photography grid</button><button data-position="20.70">Contact</button>
+<button data-position="0">Blank</button><button data-position=".34">Top line</button><button data-position=".68">Expanding frame</button><button data-position="1.20">Typing</button><button data-position="1.17">I-beam</button><button data-position="1.24">Caret bar</button><button data-position="5.16">About</button><button data-position="8.67">Project</button><button data-position="4.40">About typing</button><button data-position="7.91">Project typing</button><button data-position="8.67">Project complete</button><button data-position="10.74">Gallery drawing</button><button data-position="13.02">Tecirc grid</button><button data-position="17.45">Photography grid</button><button data-position="21.47">Contact</button>
 </header>
 <pre id="result"></pre><iframe title="Portfolio viewport" width="1250" height="726" src="index.html"></iframe>
 <script>
@@ -83,7 +83,7 @@ async function run(width,height){
   await at(10.74);
   expect(!q('#articles').classList.contains('gallery-ready') && shown(q('#articles .gallery-border')) && shown(q('#agent')),'Article frames draw before gallery interaction');
   await galleryChecks();
-  await at(20.70);
+  await at(21.47);
   expect(shown(q('#contact')) && !shown(q('#photos')) && !shown(q('#articles')),'Contact follows both galleries');
   const systemDark=w().matchMedia('(prefers-color-scheme: dark)').matches;
   const background=w().getComputedStyle(doc.documentElement).backgroundColor;
@@ -110,7 +110,7 @@ async function galleryChecks(){
   const x=tile=>new DOMMatrix(tile.style.transform).m41;
   const width=tile=>parseFloat(tile.style.width);
   const oppositeEdges=(left,right)=>x(left)<25 && stageWidth-x(right)-width(right)<25;
-  await at(12.88);
+  await at(13.02);
   const articles=all('#articles .gallery-tile');
   expect(q('#photos').inert && !q('#articles').inert && articles.length===8,'Tecirc articles appear before Photography');
   const articleWidth=width(articles[5]);
@@ -125,7 +125,7 @@ async function galleryChecks(){
   await cursorDuring(()=>empty.click());
   await settled();
   expect(q('#articles .gallery-detail').hidden,'Back to grid restores articles');
-  await at(16.97);
+  await at(17.45);
   const photos=all('#photos .gallery-tile');
   expect(!q('#photos').inert && q('#articles').inert && photos.length===6,'Photography follows articles and includes six images');
   const portrait=photos.find(tile=>{const img=tile.querySelector('img');return img.naturalHeight>img.naturalWidth;});
