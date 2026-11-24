@@ -340,7 +340,7 @@ const el = (tag, attrs = {}, ...children) => {
 };
 const link = (text,url) => el('a',{class:'inline-link',href:url,target:'_blank',rel:'noopener noreferrer'},text);
 function image(source,alt,pictureClass) {
-  const img = el('img',{src:source,alt,decoding:'async',class:pictureClass});
+  const img = el('img',{src:source,alt,decoding:'async',class:pictureClass,draggable:'false'});
   img.addEventListener('error',()=>{
     img.hidden = true;
     if (img.parentElement && !img.parentElement.querySelector('.media-fallback')) {
@@ -377,7 +377,6 @@ function articleLink(item) {
 const experience = byId('experience');
 const stage = byId('stage');
 const scrollHint = byId('scroll-hint');
-const frame = byId('frame');
 const intro = byId('intro');
 const about = byId('about');
 const projectPanel = byId('project-panel');
@@ -419,7 +418,7 @@ function pushAside(region, obstacle, {W,H}) {
 }
 
 // A single mask reveals horizontal bands of the existing window in both directions.
-function windowFlicker(progress,index,tick) {
+function windowFlicker(progress,index,tick,closing) {
   const edge=band=>{
     const seed=index*337+band*23+tick*59;
     const blend=ease(progress*18-tick,0,1);
@@ -427,10 +426,11 @@ function windowFlicker(progress,index,tick) {
     return 100*clamp(progress+jitter*.46*Math.sin(Math.PI*progress));
   };
   const bands=Array.from({length:6},(_,band)=>{
-    const x=edge(band).toFixed(2)+'%';
+    const x=(closing ? 100-edge(band) : edge(band)).toFixed(2)+'%';
     return x+' '+(band*100/6)+'%, '+x+' '+((band+1)*100/6)+'%';
   });
-  return 'polygon(0 0, '+bands.join(', ')+', 0 100%)';
+  const fixed=closing ? 100 : 0;
+  return 'polygon('+fixed+'% 0, '+bands.join(', ')+', '+fixed+'% 100%)';
 }
 
 function createGallery(id,items,article=false) {
@@ -443,7 +443,10 @@ function createGallery(id,items,article=false) {
   const detail=el('div',{class:'gallery-detail',hidden:''});
   const photoName=el('span',{class:'gallery-filename'});
   const articleTitle=article ? articleLink(items[0]) : null;
-  if(articleTitle) articleTitle.classList.add('visually-labeled-link');
+  if(articleTitle) {
+    articleTitle.classList.add('visually-labeled-link');
+    articleTitle.draggable=false;
+  }
   detail.append(articleTitle ?? photoName);
   if(article) detail.classList.add('article-image-link');
   const tiles=items.map((item,index)=>{
@@ -464,19 +467,32 @@ function createGallery(id,items,article=false) {
     return {item,button,glyphs};
   });
   gallery.append(close,detail);
+  articleTitle?.addEventListener('pointerdown',event=>beginDrag(event,selected));
+  articleTitle?.addEventListener('click',event=>{
+    if(ignoreClick===selected) {
+      event.preventDefault();
+      ignoreClick=-1;
+    }
+  });
 
   let selected=-1, regions, resting, movement, afterClose, drag, ignoreClick=-1;
   function beginDrag(event,index) {
-    if(!event.isPrimary || event.button!==0 || !event.target.closest('.gallery-titlebar') || gallery.inert || movement) return;
+    if(!event.isPrimary || event.button!==0 || index<0 || gallery.inert || (movement && !movement.throwing)) return;
+    if(movement) {
+      movement=undefined;
+      if(selected<0) resting=regions;
+      gallery.removeAttribute('aria-busy');
+    }
     ignoreClick=-1;
     drag={index,id:event.pointerId,x:event.clientX,y:event.clientY,from:regions,lastX:event.clientX,lastY:event.clientY,lastTime:event.timeStamp,vx:0,vy:0};
-    tiles[index].button.setPointerCapture(event.pointerId);
+    event.currentTarget.setPointerCapture(event.pointerId);
   }
   gallery.addEventListener('pointermove',event=>{
     if(drag?.id!==event.pointerId) return;
     const dx=event.clientX-drag.x, dy=event.clientY-drag.y;
     if(!drag.moved && Math.hypot(dx,dy)<6) return;
     drag.moved=true;
+    tiles[drag.index].button.classList.add('is-dragging');
     const dt=event.timeStamp-drag.lastTime;
     if(dt>0) {
       drag.vx=drag.vx*.44+(event.clientX-drag.lastX)/dt*.56;
@@ -498,6 +514,7 @@ function createGallery(id,items,article=false) {
     if(drag?.id!==event.pointerId) return;
     const {index,moved,vx,vy,lastTime,destinations}=drag;
     drag=undefined;
+    tiles[index].button.classList.remove('is-dragging');
     if(!moved) return;
     ignoreClick=index;
     const from=regions;
@@ -518,6 +535,7 @@ function createGallery(id,items,article=false) {
   }
   gallery.addEventListener('pointerup',endDrag);
   gallery.addEventListener('pointercancel',endDrag);
+  gallery.addEventListener('lostpointercapture',endDrag);
   function select(index) {
     if(index===selected || gallery.inert) return;
     const previous=selected;
@@ -665,7 +683,7 @@ function createGallery(id,items,article=false) {
     return true;
   }
 
-  function render(amount,ready) {
+  function render(amount,ready,closing) {
     visible(gallery,amount>0 ? 1 : 0,ready);
     gallery.classList.toggle('gallery-ready',ready);
     if(amount<=0) {
@@ -675,15 +693,17 @@ function createGallery(id,items,article=false) {
         close.hidden=detail.hidden=true;
         gallery.classList.remove('is-focused');
         tiles.forEach(({button})=>{
-          button.classList.remove('is-selected');
+          button.classList.remove('is-selected','is-dragging');
           button.setAttribute('aria-pressed','false');
         });
         layout(metrics);
       }
       return;
     }
-    if(movement) animateSelection();
-    else if(drag?.destinations) {
+    if(movement) {
+      animateSelection();
+      if(ready && movement?.throwing) updateDetail();
+    } else if(drag?.destinations) {
       let settling=false;
       regions=regions.map((region,i)=>{
         const target=drag.destinations[i];
@@ -696,14 +716,14 @@ function createGallery(id,items,article=false) {
     } else if(ready) updateDetail();
 
     headingText.render(ease(amount,0,.25));
-    const opened=reduced.matches ? 1 : ease(amount,0,1);
+    const opened=reduced.matches ? 1 : closing ? ease(amount,0,1) : 1-(1-amount)**1.65;
     tiles.forEach(({button,glyphs},i)=>{
       const region=regions[i];
       const reveal=reduced.matches ? 1 : opened**(1+(i%4)*.055);
       const active=reveal>0 && reveal<1;
       const tick=Math.floor(reveal*18);
       button.style.opacity=String(reveal===0 ? 0 : 1);
-      button.style.clipPath=active ? windowFlicker(reveal,i,tick) : '';
+      button.style.clipPath=active ? windowFlicker(reveal,i,tick,closing) : '';
       if(button.dataset.flicker!==String(active ? tick : -1)) {
         button.dataset.flicker=String(active ? tick : -1);
         glyphs.forEach((glyph,j)=>{
@@ -713,7 +733,8 @@ function createGallery(id,items,article=false) {
         });
       }
       const w=region.w*(.94+.06*opened), h=region.h*(.94+.06*opened);
-      place(button,box(region.x+(region.w-w)/2,region.y+(region.h-h)/2,w,h));
+      const drift=closing && !reduced.matches ? (1-reveal)*24 : 0;
+      place(button,box(region.x+(region.w-w)/2+drift,region.y+(region.h-h)/2+drift*.42,w,h));
     });
     if(!ready) detail.hidden=true;
   }
@@ -790,8 +811,7 @@ const erase={
   projects:projectNodes.map(backspace),
 };
 
-function descriptionTyping(panel) {
-  const description=panel.querySelector('[data-after-title] p, p[data-after-title]');
+function descriptionTyping(description) {
   const glyphs=Array.from(description.querySelectorAll('.backspace-glyph'));
   description.classList.add('flicker-copy');
   let previousFrame;
@@ -815,9 +835,12 @@ function descriptionTyping(panel) {
     });
   };
 }
+const describePanel=panel=>descriptionTyping(panel.querySelector('[data-after-title] p, p[data-after-title]'));
 const describe={
-  intro:descriptionTyping(intro),about:descriptionTyping(about),projects:projectNodes.map(descriptionTyping),
+  intro:describePanel(intro),about:describePanel(about),projects:projectNodes.map(describePanel),
 };
+const aboutTags=reveals.about.querySelector('.tags');
+const revealTags=descriptionTyping(aboutTags);
 const millisecondsPerTimelineUnit=1500;
 const introPause=1.15, aboutPause=1.25, projectPause=1.15, contactPause=1.80;
 const timing = {
@@ -839,13 +862,13 @@ const sceneStops = [
     const start=timing.projectStart+i*timing.projectLength+2.09;
     return [start,start+projectPause];
   }),
-  [timing.articleStart+3.08,timing.articleStart+3.54],
-  [timing.photoStart+2.19,timing.photoStart+2.71],
+  [timing.articleStart+1.40,timing.articleStart+3.54],
+  [timing.photoStart+1.12,timing.photoStart+2.71],
   [timing.contactStart+1.73,timing.end],
 ];
 const jumps = {
-  start:0,about:timing.introEnd+1.96,projects:sceneStops[3][0],photography:timing.photoStart+2.19,
-  tecirc:timing.articleStart+3.08,contact:timing.contactStart+1.73,
+  start:0,about:timing.introEnd+1.96,projects:sceneStops[3][0],photography:timing.photoStart+1.12,
+  tecirc:timing.articleStart+1.40,contact:timing.contactStart+1.73,
 };
 const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 let metrics, raf=0;
@@ -921,7 +944,7 @@ window.addEventListener('wheel',event=>{
   }
 },{passive:false});
 stage.addEventListener('touchstart',event=>{
-  swipe=event.touches.length===1 && !event.target.closest('.gallery-titlebar') ? event.touches[0] : null;
+  swipe=event.touches.length===1 && !event.target.closest('.gallery-ready .gallery-tile,.gallery-ready .article-image-link') ? event.touches[0] : null;
 },{passive:true});
 stage.addEventListener('touchmove',event=>{
   if (!swipe || event.touches.length!==1) return;
@@ -1020,24 +1043,10 @@ function paintTypingCursor() {
 function lowerCorner(region) {
   return point(region.x+region.w-1,region.y+region.h-1);
 }
-function approachFrame(region,travel,opacity) {
-  const corner=lowerCorner(region);
-  cursor(agent,mixPoint(point(corner.x+17,corner.y+14),corner,travel),opacity);
-}
-function retractFrame(region,progress) {
-  const depth=1-ease(progress,0,.72);
-  const top=1-ease(progress,.72,1);
-  const origin=corner(region);
-  const end=point(region.x+region.w-1,region.y);
-  const tip=progress < .72 ? mixPoint(end,lowerCorner(region),depth) : mixPoint(origin,end,top);
-  cursor(agent,tip,1-ease(progress,.96,1));
-  return {depth,top,opacity:top > 0 ? 1 : 0};
-}
-
 function render(s,m) {
-  let frameBox = m.dormant, frameAlpha = 0, frameTop = 1, frameDepth = 1;
+  let frameBox = m.dormant;
   let aboutAlpha = 0, introAlpha = 0, projectAlpha = 0, projectIndex = -1;
-  let photoBuild=0,articleBuild=0,contactAlpha=0;
+  let photoBuild=0,articleBuild=0,contactAlpha=0,photoClosing=false,articleClosing=false;
   let introDetails=0,aboutDetails=0,projectDetails=0,contactDetails=0;
   let introErase=0,aboutErase=0,projectErase=0;
   typingCursor=null;
@@ -1046,36 +1055,20 @@ function render(s,m) {
 
   if (s < timing.introEnd) {
     const t=holdAt(s,2.03,introPause);
-    frameTop = ease(t,.15,.57);
-    frameDepth = ease(t,.57,.82);
-    frameAlpha = t > .145 ? 1 : 0;
-    const origin = corner(m.dormant);
-    if (t < .15) {
-      cursor(agent,mixPoint(point(origin.x+30,origin.y-23),origin,ease(t,.01,.15)),ease(t,.01,.11));
-    } else if(t < .82) {
-      const tip = t < .57 ? mixPoint(origin,right(m.dormant),frameTop) : mixPoint(right(m.dormant),bottomRight(m.dormant),frameDepth);
-      cursor(agent,tip,1);
-    } else {
-      panelTyping(t,1.13,1.61,bottomRight(m.dormant),names.intro.node,names.intro);
-    }
+    panelTyping(t,1.13,1.61,bottomRight(m.dormant),names.intro.node,names.intro);
     introAlpha = ease(t,.98,1.15);
     introDetails=phase(t,1.61,2.03);
   } else if (s < timing.projectStart) {
     const t=holdAt(s-timing.introEnd,1.96,aboutPause);
     const bend=ease(t,.38,.66);
     frameBox = mixBox(m.dormant,m.about,bend);
-    frameAlpha = 1;
     introErase=phase(t,.06,.34);
     introAlpha=introErase<1 ? 1 : 0;
     aboutAlpha=ease(t,.66,.82);
     names.intro.render(1);
     introDetails=1;
     aboutDetails=phase(t,1.42,1.95);
-    if(t < .68) {
-      if(t>=.34) approachFrame(frameBox,ease(t,.34,.50),ease(t,.34,.43));
-    } else {
-      panelTyping(t,.86,1.42,lowerCorner(frameBox),names.about.node,names.about);
-    }
+    panelTyping(t,.86,1.42,lowerCorner(frameBox),names.about.node,names.about);
     names.about.render(phase(t,.86,1.42));
   } else if (s < timing.articleStart) {
     const elapsed = s-timing.projectStart;
@@ -1084,27 +1077,15 @@ function render(s,m) {
     if (t < .45) {
       const from = projectIndex===0 ? m.about : m.project;
       frameBox=from;
-      frameAlpha=1;
       aboutErase=phase(t,0,.18);
       aboutAlpha=projectIndex===0 && aboutErase<1 ? 1 : 0;
       names.about.render(1);
       aboutDetails=1;
-      if(t<.20) approachFrame(from,ease(t,.10,.20),ease(t,.10,.17));
-      else ({top:frameTop,depth:frameDepth,opacity:frameAlpha}=retractFrame(from,phase(t,.20,.45)));
     } else {
       frameBox=m.project;
-      frameTop=ease(t,.48,.72);
-      frameDepth=ease(t,.72,.91);
-      frameAlpha = t>=.48 ? 1 : 0;
       projectAlpha=t>=.91 ? 1 : 0;
-      if(t < .91) {
-        const tip = t < .48 ? mixPoint(corner(projectIndex===0 ? m.about : m.project),corner(frameBox),ease(t,.45,.48)) : t < .72 ?
-          mixPoint(corner(frameBox),right(frameBox),frameTop) : mixPoint(right(frameBox),bottomRight(frameBox),frameDepth);
-        cursor(agent,tip,1);
-      } else {
-        const title=names.projects[projectIndex];
-        panelTyping(t,1.12,1.60,bottomRight(frameBox),title.node,title);
-      }
+      const title=names.projects[projectIndex];
+      panelTyping(t,1.12,1.60,bottomRight(frameBox),title.node,title);
     }
     if(projectIndex>0 && t < .18) {
       projectAlpha=1;
@@ -1118,38 +1099,25 @@ function render(s,m) {
   } else if(s < timing.photoStart) {
     const elapsed=s-timing.articleStart;
     frameBox=m.project;
-    if (elapsed<.32) {
-      frameAlpha=1;
-      if(elapsed<.15) approachFrame(frameBox,ease(elapsed,.06,.15),ease(elapsed,.06,.12));
-      else ({top:frameTop,depth:frameDepth,opacity:frameAlpha}=retractFrame(frameBox,phase(elapsed,.15,.32)));
-    }
     projectErase=phase(elapsed,0,.15);
     projectAlpha=projectErase<1 ? 1 : 0;
     projectIndex=projects.length-1;
     names.projects[projectIndex]?.render(1);
     projectDetails=1;
-    articleBuild=phase(elapsed,.32,2.56)*(1-phase(elapsed,3.59,timing.articleLength));
+    articleClosing=elapsed>3.59;
+    articleBuild=phase(elapsed,.18,1.38)*(1-phase(elapsed,3.59,4.58));
   } else if(s < timing.contactStart) {
     const elapsed=s-timing.photoStart;
-    photoBuild=phase(elapsed,0,1.70)*(1-phase(elapsed,2.75,timing.photoLength));
+    photoClosing=elapsed>2.75;
+    photoBuild=phase(elapsed,0,1.10)*(1-phase(elapsed,2.75,3.74));
   } else {
     const t=holdAt(s-timing.contactStart,1.73,contactPause);
     frameBox=m.contact;
-    frameTop=ease(t,.20,.51);
-    frameDepth=ease(t,.51,.72);
-    frameAlpha=ease(t,.16,.23);
     contactAlpha=ease(t,.73,.90);
     contactDetails=ease(t,1.62,1.72);
-    if(t < .72) {
-      const tip = t < .20 ? mixPoint(point(m.pad,m.H*.53),corner(frameBox),ease(t,.02,.20)) :
-        t < .51 ? mixPoint(corner(frameBox),right(frameBox),frameTop) : mixPoint(right(frameBox),bottomRight(frameBox),frameDepth);
-      cursor(agent,tip,ease(t,.02,.13));
-    } else {
-      panelTyping(t,.93,1.62,bottomRight(frameBox),names.contact.node,names.contact);
-    }
+    panelTyping(t,.93,1.62,bottomRight(frameBox),names.contact.node,names.contact);
   }
 
-  drawFrame(frame,frameBox,frameTop,frameDepth,frameAlpha);
   showPanel(intro,introAlpha,frameBox);
   showPanel(about,aboutAlpha,frameBox);
   showPanel(projectPanel,projectAlpha,frameBox);
@@ -1161,10 +1129,12 @@ function render(s,m) {
   erase.intro(introErase);
   erase.about(aboutErase);
   describe.intro(introDetails,introErase>0);
-  describe.about(aboutDetails,aboutErase>0);
+  describe.about(phase(aboutDetails,0,.69),aboutErase>0);
+  const tagProgress=phase(aboutDetails,.69,1);
+  revealTags(tagProgress,aboutErase>0);
   visible(reveals.intro,introDetails>0 ? 1 : 0);
   visible(reveals.about,aboutDetails>0 ? 1 : 0);
-  visible(reveals.about.querySelector('.tags'),aboutDetails===1 ? 1 : 0);
+  visible(aboutTags,tagProgress>0 ? 1 : 0);
   visible(reveals.contact,contactDetails,contactAlpha>.94 && contactDetails>.95);
   reveals.projects.forEach((node,i)=>{
     const opacity=i===projectIndex ? projectDetails : 0;
@@ -1174,8 +1144,8 @@ function render(s,m) {
     visible(node,opacity>0 ? 1 : 0);
     visible(node.querySelector('a'),opacity===1 ? 1 : 0,opacity===1 && projectAlpha>.94 && amount===0);
   });
-  photoGallery.render(photoBuild,photoBuild>=1);
-  articleGallery.render(articleBuild,articleBuild>=1);
+  photoGallery.render(photoBuild,photoBuild>=1,photoClosing);
+  articleGallery.render(articleBuild,articleBuild>=1,articleClosing);
   paintTypingCursor();
 }
 

@@ -5,7 +5,7 @@
 <header>
 <button id="run">Run browser checks</button><button id="gallery-run">Check galleries</button>
 <button id="desk">Desktop</button><button id="light">Light preference</button><button id="dark">Dark preference</button><button id="phone">390 px</button><button id="touch-drag">Simulate touch drag</button><button id="touch-release">Simulate touch release</button>
-<button data-position="0">Blank</button><button data-position=".34">Top line</button><button data-position=".68">Expanding frame</button><button data-position="1.20">Typing</button><button data-position="1.17">I-beam</button><button data-position="1.24">Caret bar</button><button data-position="5.16">About</button><button data-position="8.67">Project</button><button data-position="4.40">About typing</button><button data-position="7.91">Project typing</button><button data-position="8.67">Project complete</button><button data-position="10.74">Windows opening</button><button data-position="13.02">Tecirc grid</button><button data-position="17.45">Photography grid</button><button data-position="21.47">Contact</button>
+<button data-position="0">Blank</button><button data-position="1.20">Typing</button><button data-position="1.17">I-beam</button><button data-position="1.24">Caret bar</button><button data-position="5.16">About</button><button data-position="8.67">Project</button><button data-position="4.40">About typing</button><button data-position="7.91">Project typing</button><button data-position="8.67">Project complete</button><button data-position="10.74">Windows opening</button><button data-position="13.02">Tecirc grid</button><button data-position="17.45">Photography grid</button><button data-position="21.47">Contact</button>
 </header>
 <pre id="result"></pre><iframe title="Portfolio viewport" width="1250" height="726" src="index.html"></iframe>
 <script>
@@ -26,7 +26,7 @@ const shown=(n)=>n.style.visibility==='visible' && size(n,'opacity')>.01;
 const expect=(value,detail)=>{if(!value)throw Error(detail)};
 const style=(n)=>n.getAttribute('style');
 const scram=()=>Array.from(q('#intro h1 [aria-hidden=true]').childNodes).map(n=>n.nodeType===3?n.textContent:n.querySelector('.scramble-glyph').textContent).join('');
-const state=()=>[q('#intro p')?.innerHTML,style(q('#frame')),style(q('#agent')),q('#agent path').getAttribute('d'),...all('.gallery').map(style),scram()].join('|');
+const state=()=>[q('#intro p')?.innerHTML,style(q('#agent')),q('#agent path').getAttribute('d'),...all('.gallery').map(style),scram()].join('|');
 async function run(width,height){
   frame.width=width;frame.height=height;
   frame.scrollIntoView({block:'start'});
@@ -35,15 +35,8 @@ async function run(width,height){
   expect(doc.documentElement.clientWidth<=width && doc.documentElement.clientWidth>=width-17,'Viewport width');
   const stage=q('#stage');
   expect(!q('#experience').hidden && !q('#contents'),'Application initialized');
-  expect(shown(q('#scroll-hint')) && ![q('#frame'),q('#agent'),q('#intro')].some(shown),'Only scroll hint at opening');
+  expect(shown(q('#scroll-hint')) && !q('#frame') && ![q('#agent'),q('#intro')].some(shown),'Only scroll hint at opening');
   expect(!q('#stage nav[aria-label="セクション"]') && !doc.body.textContent.includes('Wishlist'),'Removed top tabs and Wishlist');
-  await at(.34);
-  expect(/^M0 0 L/.test(q('#agent path').getAttribute('d')) && q('#agent').getBoundingClientRect().width<=18 && parseFloat(w().getComputedStyle(q('#agent path')).strokeWidth)>1.5,'Smaller and thicker cursor');
-  const edges=q('#frame').children;
-  expect(size(edges[0],'width')>10 && !shown(edges[1]) && !shown(edges[3]),'Open horizontal edge only');
-  await at(.68);
-  expect(size(edges[1],'height')>1 && size(edges[1],'height')<size(q('#frame'),'height') && Math.abs(size(edges[1],'height')-1-size(edges[3],'top'))<1,'Both sides and lower edge extend together');
-  const topEdge=edges[0].getBoundingClientRect().top;
   await at(1.17);
   expect(shown(q('#agent')) && size(q('#agent path:nth-child(2)'),'opacity')>.1 && size(q('#agent path:nth-child(3)'),'opacity')>0,'Cursor changes to I-beam');
   await at(1.24);
@@ -63,8 +56,9 @@ async function run(width,height){
   expect(shown(q('#intro')) && q('#intro').style.opacity==='1' && q('#intro .backspace-caret') && q('#intro p .backspace-hidden'),'Intro deletes from the end without fading');
   await at(4.40);
   expect(q('#about .is-scrambling') && !shown(q('#about [data-after-title]')),'About title precedes bio and tags');
+  await at(5.05);
+  expect(q('#about .tags [data-ink]') && q('#about .tags .description-hidden'),'Interest tags reveal with type flicker');
   await at(5.16);
-  expect(Math.abs(edges[0].getBoundingClientRect().top-topEdge)<1,'About shares the opening top edge');
   expect(shown(q('#about')) && !q('#about').inert && shown(q('#about [data-after-title]')),'About details appear after title');
   await at(6.66);
   expect(q('#about').style.opacity==='1' && q('#about .backspace-caret'),'About erases text before the frame moves');
@@ -75,7 +69,6 @@ async function run(width,height){
   expect(description.querySelector('.backspace-glyph[data-ink]') && description.querySelector('.description-hidden') && !description.querySelector('.description-hidden[data-ink]'),'Body copy reveals in flickering fragments');
   await at(8.67);
   expect(shown(q('#project-panel [data-after-title]')) && !q('#project-panel [data-after-title]').inert,'Project link becomes interactive after title');
-  expect(Math.abs(edges[0].getBoundingClientRect().top-topEdge)<1,'Projects shares the opening top edge');
   const logo=q('.project-image'),logoBounds=logo.getBoundingClientRect(),logoImg=logo.querySelector('img');
   expect(Math.abs(logoBounds.width/ logoBounds.height-16/9)<.02 && logoImg.naturalWidth>0 && Math.abs(logoImg.getBoundingClientRect().width-logoBounds.width)<1,'Project uses the complete logo artwork');
   await at(10.01);
@@ -113,11 +106,12 @@ async function galleryChecks(){
   const articles=all('#articles .gallery-tile');
   const dimensions=nodes=>nodes.map(tile=>[width(tile),parseFloat(tile.style.height)]);
   const sizes=dimensions(articles);
+  expect(w().getComputedStyle(articles[0]).touchAction==='none','Image windows reserve touch gestures for dragging');
   expect(q('#photos').inert && !q('#articles').inert && articles.length===8,'Tecirc articles appear before Photography');
   await at(10.60);
   expect(articles.every(tile=>Number(tile.style.opacity)>0 && tile.querySelector('.gallery-titlebar')),
     'All titled windows open together');
-  expect(articles.some(tile=>tile.style.clipPath.startsWith('polygon(')),'Article windows flicker as they open');
+  expect(articles.some(tile=>tile.style.clipPath.startsWith('polygon(')),'Article windows flicker early as they open');
   await at(14.04);
   expect(articles.some(tile=>tile.style.clipPath.startsWith('polygon(')),'Article windows flicker as they close');
   await at(13.02);
