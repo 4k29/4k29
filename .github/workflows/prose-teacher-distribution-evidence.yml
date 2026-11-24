@@ -1,0 +1,54 @@
+name: Prose teacher distribution evidence
+on:
+  push:
+    branches: [research/prose-teacher-distribution, research/prose-context-length]
+    paths:
+      - training/language/conversation-v2/prose-teacher-distribution/REPORT.md
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/model.py
+            /training/language/conversation-v2/core.py
+            /training/language/conversation-v2/eval_core.py
+            /training/language/conversation-v2/data/tokenizer.json
+            /training/language/conversation-v2/foundation-data/research/zero_update_preflight.py
+            /training/language/conversation-v2/prose-budget-scale/
+            /training/language/conversation-v2/prose-context-length/
+            /training/language/conversation-v2/prose-teacher-distribution/
+            /training/language/conversation-v2/prose-lr-decay/artifacts/C-300/
+            /training/language/conversation-v2/gv-collapse-diagnostic/ADDITIONAL.jsonl.gz
+            /training/language/conversation-v2/gv-prose-pilot/EVALUATION_INPUTS.json
+            /training/language/conversation-v2/gv-prose-pilot/corpus-C.jsonl.gz
+            /training/language/conversation-v2/*/PLAN.sha256
+            /training/language/conversation-v2/prose-lr-decay/*.py
+            /training/language/conversation-v2/prose-lr-decay/*.json*
+            /training/language/conversation-v2/prose-learning-rate/*.py
+            /training/language/conversation-v2/prose-learning-rate/*.json*
+            /training/language/conversation-v2/broad-prose-replay/*.py
+            /training/language/conversation-v2/broad-prose-replay/*.json*
+            /training/language/conversation-v2/replay-study/*.py
+            /training/language/conversation-v2/replay-study/*.json*
+            /training/language/conversation-v2/family-diversity/*.py
+            /training/language/conversation-v2/family-diversity/*.json*
+            /training/language/conversation-v2/oracle-memorization/*.py
+            /training/language/conversation-v2/oracle-memorization/*.json*
+            /training/language/conversation-v2/token-intervention/*.py
+            /training/language/conversation-v2/token-intervention/*.json*
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install numpy==2.2.6
+      - run: python -m pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+      - working-directory: training/language/conversation-v2/prose-teacher-distribution
+        run: |
+          python verify.py
+          python summarize.py part1
+          python summarize.py part2
+          git diff --exit-code
