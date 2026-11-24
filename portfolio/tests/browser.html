@@ -131,6 +131,10 @@ async function galleryChecks(){
   await settled();
   expect(q('#articles .gallery-detail').hidden && JSON.stringify(bounds(articles[5]))===JSON.stringify(original[5]),
     'Closing the preview restores the original window');
+  await at(14.24);
+  expect(q('#article-heading [data-ink]'),'Tecirc heading flickers as it leaves');
+  await at(15.52);
+  expect(q('#photo-heading [data-ink]'),'Photography heading flickers as it enters');
   await at(17.45);
   const photos=all('#photos .gallery-tile');
   expect(!q('#photos').inert && q('#articles').inert && photos.length>=12,'Photography follows articles and includes the recovered photos');
@@ -150,9 +154,12 @@ async function galleryChecks(){
 
   const filename=q('#photos .gallery-filename');
   expect(/^img_\d{4}\.jpg$/.test(filename.textContent),'Selected photo keeps its filename');
-  portrait.dispatchEvent(new (frame.contentWindow.KeyboardEvent)('keydown',{key:'Escape',bubbles:true}));
+  expect(!q('.gallery-close'),'There is no close button');
+  portrait.click();
+  expect(portrait.getAttribute('aria-pressed')==='true','Clicking the enlarged photo leaves it open');
+  q('#photos .gallery-backdrop').click();
   await settled();
-  expect(portrait.getAttribute('aria-pressed')==='false' && q('#photos .gallery-close').hidden,'Escape returns to the photo grid');
+  expect(portrait.getAttribute('aria-pressed')==='false' ,'The backdrop returns to the photo grid');
 }
 
 document.querySelector('#run').onclick=async()=>{

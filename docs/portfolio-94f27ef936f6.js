@@ -393,9 +393,10 @@ const projectNodes = projects.map(item=>{
 function createGallery(id,items,article=false) {
   const gallery=byId(id);
   const heading=gallery.querySelector('h2');
+  backspace(heading);
+  const flickerHeading=descriptionTyping(heading,1);
   const seed=Math.floor(Math.random()*32768);
   const variation=(index,channel)=>hash(seed+index*397+channel*883);
-  const close=el('button',{class:'text-button gallery-close',type:'button',hidden:''},'Close preview');
   const backdrop=el('div',{class:'gallery-backdrop','aria-hidden':'true'});
   const detail=el('div',{class:'gallery-detail',hidden:''});
   const photoName=el('span',{class:'gallery-filename'});
@@ -413,13 +414,12 @@ function createGallery(id,items,article=false) {
       class:'gallery-tile',type:'button','aria-label':item.title,'aria-pressed':'false',title:item.title,
     },titlebar,visual);
     button.addEventListener('click',()=>{
-      if(selected===index && !article) select(-1);
-      else if(selected<0 && !movement) select(index);
+      if(selected<0 && !movement) select(index);
     });
     gallery.append(button);
     return {item,button};
   });
-  gallery.append(backdrop,close,detail);
+  gallery.append(backdrop,detail);
 
   let selected=-1, regions, resting, movement, afterClose;
   function previewBox(index) {
@@ -432,7 +432,6 @@ function createGallery(id,items,article=false) {
     return box((W-width)/2,(H-height)/2+(article ? 12 : 0),width,height);
   }
   function syncSelection(active) {
-    close.hidden=!active;
     gallery.classList.toggle('is-focused',active);
     tiles.forEach(({button},i)=>{
       button.inert=active && i!==selected;
@@ -450,7 +449,7 @@ function createGallery(id,items,article=false) {
       const item=items[index];
       if(articleTitle) articleTitle.href=item.url;
       (articleTitle ?? photoName).textContent=item.title;
-      close.focus({preventScroll:true});
+      tiles[index].button.focus({preventScroll:true});
     } else {
       tiles[previous].button.focus({preventScroll:true});
     }
@@ -460,7 +459,6 @@ function createGallery(id,items,article=false) {
     gallery.setAttribute('aria-busy','true');
     requestRender();
   }
-  close.addEventListener('click',()=>select(-1));
   backdrop.addEventListener('click',()=>select(-1));
   gallery.addEventListener('keydown',event=>{
     if(event.key==='Escape' && selected>=0) {
@@ -483,8 +481,6 @@ function createGallery(id,items,article=false) {
     const cellH=deskHeight/rows;
     heading.style.left=deskLeft+'px';
     heading.style.top=top+'px';
-    close.style.right=deskLeft+'px';
-    close.style.top=(top-10)+'px';
     return tiles.map(({item},i)=>{
       const ratio=article ? item.ratio || 16/9 : item.width/item.height;
       const row=Math.floor(i/columns);
@@ -569,7 +565,9 @@ function createGallery(id,items,article=false) {
     }
     if(movement) animateSelection();
 
-    heading.style.opacity=String(ease(amount,0,.25));
+    const headingProgress=reduced.matches ? 1 : ease(amount,0,.68);
+    flickerHeading(headingProgress,false);
+    heading.style.visibility=headingProgress>0 ? 'visible' : 'hidden';
     const opened=reduced.matches ? 1 : closing ? ease(amount,0,1) : 1-(1-amount)**1.65;
     tiles.forEach(({button},i)=>{
       button.style.opacity=String(opened);
@@ -592,7 +590,7 @@ const names = {
 };
 
 function backspace(container) {
-  const selector='[data-scramble], p, .tags li, a, .down, figcaption';
+  const selector='[data-scramble], h2, p, .tags li, a, .down, figcaption';
   const elements=container.matches(selector) ? [container] : [...container.querySelectorAll(selector)];
   const characters=[];
   const tags=[];
@@ -650,7 +648,7 @@ const erase={
   projects:projectNodes.map(backspace),
 };
 
-function descriptionTyping(description) {
+function descriptionTyping(description,groupSize=4) {
   const glyphs=Array.from(description.querySelectorAll('.backspace-glyph'));
   description.classList.add('flicker-copy');
   let previousFrame;
@@ -660,9 +658,9 @@ function descriptionTyping(description) {
     const key=frame*2+Number(colorize);
     if(key===previousFrame) return;
     previousFrame=key;
-    const edge=Math.ceil(glyphs.length/4)*progress;
+    const edge=Math.ceil(glyphs.length/groupSize)*progress;
     glyphs.forEach((glyph,index)=>{
-      const group=Math.floor(index/4);
+      const group=Math.floor(index/groupSize);
       const flashing=group>=edge-2 && group<edge+2;
       const printed=progress===1 || group<edge-1 || flashing && hash(group*223+frame*101)>.31;
       glyph.classList.toggle('description-hidden',!printed);
