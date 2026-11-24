@@ -1,0 +1,73 @@
+name: Foundation absorption evidence checks
+on:
+  push:
+    branches: [research/foundation-absorption-study]
+    paths: [training/language/conversation-v2/foundation-absorption-study/GO-evidence.json]
+permissions:
+  contents: write
+jobs:
+  evidence:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      STUDY: training/language/conversation-v2/foundation-absorption-study
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/conversation-v2/foundation-absorption-study/
+            !/training/language/conversation-v2/foundation-absorption-study/artifacts/*/part-*.bin
+            !/training/language/conversation-v2/foundation-absorption-study/staging/
+            /training/language/conversation-v2/faq-ce-verified-study/DATA.json
+            /training/language/conversation-v2/faq-ce-verified-study/DEV_PROTOCOL.json
+            /training/language/conversation-v2/faq-ce-verified-study/GROUNDED_DEV.json
+            /training/language/conversation-v2/faq-ce-verified-study/evaluation/initial.json
+            /training/language/conversation-v2/faq-ce-verified-study/evaluation/A-study93.json
+            /training/language/conversation-v2/data/tokenizer.json
+            /training/language/conversation-v2/core.py
+            /training/language/conversation-v2/new_tokenizer.py
+            /training/language/conversation-v2/foundation-stage/runtime.py
+            /training/language/conversation-v2/foundation-stage/prose_decode.py
+            /training/language/conversation-v2/modern-corpus/next_runtime.py
+            /training/language/conversation-v2/PLAN.json
+            /training/language/conversation-v2/eval_core.py
+            /training/language/conversation-v2/diverse-foundation/common.py
+            /training/language/conversation-v2/foundation-data/research/zero_update_preflight.py
+            /training/language/conversation-v2/mixed-retention-study/evaluation/terminal-MIX.json
+            /training/language/conversation-v2/mixed-retention-study/NLL/mixed.json
+            /training/language/conversation-v2/mixed-retention-study/DEV_BODY_NLL.json.gz
+            /training/language/conversation-v2/public-dialogue-study/evaluation/initial.json
+            /training/language/conversation-v2/paragraph-foundation/panels/B-579.json
+            /training/language/round10/word_bpe.py
+            /training/dialogue/tokenizer.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Materialize new analysis only; verify content hashes
+        run: |
+          python - <<'PYCODE'
+          import pathlib,os,json,gzip,base64,hashlib
+          p=pathlib.Path(os.environ['STUDY']);m=json.loads((p/'ANALYSIS_BUNDLE.json').read_text());g=json.loads((p/'GO-evidence.json').read_text());assert m['sha256']==g['analysis_SHA'];raw=gzip.decompress(base64.b64decode(m['payload']));assert hashlib.sha256(raw).hexdigest()==m['sha256'];files=json.loads(raw)
+          for name,text in files.items():
+            q=pathlib.PurePosixPath(name);assert not q.is_absolute() and '..'not in q.parts;assert not(p/name).exists();assert hashlib.sha256(text.encode()).hexdigest()==m['files'][name];(p/name).parent.mkdir(parents=True,exist_ok=True);(p/name).write_text(text)
+          PYCODE
+      - name: Input six and evidence five tests, no model import or updates
+        run: |
+          python -B "$STUDY/verify_inputs.py"
+          python -B "$STUDY/verify_results.py"
+      - name: Save completed resumable state and evidence receipt
+        run: |
+          python - <<'PYCODE'
+          import json,pathlib,os
+          p=pathlib.Path(os.environ['STUDY']);r=dict(passed=True,input_tests=6,result_tests=5,optimizer_calls=0,model_forwards=0,run_id=os.environ['GITHUB_RUN_ID'],input_commit=os.environ['GITHUB_SHA']);(p/'CI_RECEIPT.json').write_text(json.dumps(r,indent=2)+'\n');(p/'RESUME_STATUS.json').write_text(json.dumps(dict(status='complete',training_run='43548860475',analysis_complete=True,retained_updates=1250,actual_optimizer_calls=1259,additional_training_authorized=False,formal_adoption='No-Go',next_action='review Draft PR; no automatic replay or extra epoch'),indent=2)+'\n')
+          PYCODE
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$STUDY"
+          git commit -m "Record foundation absorption analysis and eleven evidence tests [skip ci]"
+          git push origin HEAD:research/foundation-absorption-study

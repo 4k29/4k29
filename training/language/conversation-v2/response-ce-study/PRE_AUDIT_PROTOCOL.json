@@ -1,0 +1,48 @@
+{
+  "name": "response-ce-comparison-v1",
+  "source_base_commit": "10684c367bab44ed6f02133251d95984bfbe1bb3",
+  "seed": "response-ce-audit-20261111-v1",
+  "training_allowed_before_audit": false,
+  "selection": {
+    "TRAIN": 192,
+    "DEV": 24,
+    "one_per_document_family": true,
+    "history": "complete conversation beginning through target, no left truncation",
+    "min_target_ordinal": 1,
+    "max_target_ordinal": 7,
+    "context_including_response_and_EOS_max": 257,
+    "response_body_max": 96,
+    "no_speaker_or_role_reassignment": true,
+    "exclude_prior_review_documents": true
+  },
+  "review_gate": {
+    "all_selected_read": true,
+    "all_training_examples_individually_approved": true,
+    "candidate_proxy_is_not_semantic_label": true,
+    "required_response_types": [
+      "concrete answer",
+      "reason/explanation",
+      "comparison/choice",
+      "contextual follow-up"
+    ],
+    "no_repetition_to_fill_budget": true,
+    "if_insufficient": "No-Go without optimizer updates; retain data and implementation evidence"
+  },
+  "fixed_if_go": {
+    "initial": "PR108 MIX-579 fc24624bcd3a298e3d0b32ecf8b419af32354c6196c764544249d05abcd980f7",
+    "LR": 1e-05,
+    "clip": 1.0,
+    "context": 256,
+    "vocab": 3997,
+    "model": "11.23M",
+    "optimizer": "inherited AdamW, no reset",
+    "normalization": "sum CE over active nonpadding teachers / count active teachers, global within batch, no per-response equalization or coefficient",
+    "A": "all valid next-token positions",
+    "B": "target response body and its true EOS only; target role remains in prefix, no target-role teacher loss",
+    "epoch": 1,
+    "checkpoint_selection": "terminal, fixed midpoint; no result-based selection"
+  },
+  "optimizer_calls_so_far": 0,
+  "sealed_TEST_used": false,
+  "subagents_used": false
+}
