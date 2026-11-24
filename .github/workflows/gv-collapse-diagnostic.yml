@@ -1,0 +1,16 @@
+name: GV collapse evidence
+on:
+  push:
+    branches: [research/gv-collapse-diagnostic]
+    paths: [training/language/conversation-v2/gv-collapse-diagnostic/**]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: /training/language/conversation-v2/gv-collapse-diagnostic/
+      - run: python3 training/language/conversation-v2/gv-collapse-diagnostic/verify.py
