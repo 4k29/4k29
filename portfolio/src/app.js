@@ -62,60 +62,13 @@ const projectNodes = projects.map(item=>{
   projectPanel.append(node);
   return node;
 });
-function framePoint(region,x,y) {
-  const angle=region.rotation*Math.PI/180;
-  return point(region.x+x*Math.cos(angle)-y*Math.sin(angle),
-    region.y+x*Math.sin(angle)+y*Math.cos(angle));
-}
-
-// Advance all windows on one clock. Small swept steps also propagate a hit through a row.
-function slideWindows(regions, velocities, viewport, elapsed, held) {
-  const result=regions.map(r=>({...r}));
-  const steps=Math.max(1,Math.ceil(elapsed/6));
-  const dt=elapsed/steps;
-  for(let step=0;step<steps;step++) {
-    for(let i=0;i<result.length;i++) {
-      const r=result[i], velocity=velocities[i];
-      for(const [axis,cross,size,span,extent] of [
-        ['x','y','w','h',viewport.W],['y','x','h','w',viewport.H]
-      ]) {
-        if(held?.index===i) velocity[axis]=Math.max(-2.8,Math.min(2.8,(held[axis]-r[axis])/28));
-        const v=velocity[axis];
-        if(Math.abs(v)<.006) { velocity[axis]=0; continue; }
-        const direction=Math.sign(v);
-        let distance=Math.abs(v)*dt, hit=-2;
-        const wall=direction>0 ? extent-5-r[size]-r[axis] : r[axis]-5;
-        if(wall<=distance) { distance=Math.max(0,wall); hit=-1; }
-        for(let j=0;j<result.length;j++) {
-          if(i===j) continue;
-          const o=result[j];
-          if(r[cross]+r[span]<=o[cross] || o[cross]+o[span]<=r[cross]) continue;
-          const gap=direction>0 ? o[axis]-r[axis]-r[size] : r[axis]-o[axis]-o[size];
-          if(gap>=-.001 && gap<=distance) {distance=Math.max(0,gap);hit=j;}
-        }
-        r[axis]+=direction*distance;
-        if(hit===-1) velocity[axis]*=-.58;
-        if(hit>=0) {
-          const relative=v-velocities[hit][axis];
-          if(relative*direction>0) {
-            const impulse=.85*relative;
-            velocity[axis]-=impulse;
-            velocities[hit][axis]+=impulse;
-          }
-        }
-        velocity[axis]*=Math.exp(-dt/255);
-      }
-    }
-  }
-  return result;
-}
-
 function createGallery(id,items,article=false) {
   const gallery=byId(id);
   const heading=gallery.querySelector('h2');
   const seed=Math.floor(Math.random()*32768);
   const variation=(index,channel)=>hash(seed+index*397+channel*883);
-  const close=el('button',{class:'text-button gallery-close',type:'button',hidden:''},'Back to grid');
+  const close=el('button',{class:'text-button gallery-close',type:'button',hidden:''},'Close preview');
+  const backdrop=el('div',{class:'gallery-backdrop','aria-hidden':'true'});
   const detail=el('div',{class:'gallery-detail',hidden:''});
   const photoName=el('span',{class:'gallery-filename'});
   const articleTitle=article ? articleLink(items[0]) : null;
@@ -131,128 +84,56 @@ function createGallery(id,items,article=false) {
     const button=el('button',{
       class:'gallery-tile',type:'button','aria-label':item.title,'aria-pressed':'false',title:item.title,
     },titlebar,visual);
-    button.addEventListener('click',event=>{
-      if(event.detail && ignoreClick===index) { ignoreClick=-1; return; }
-      if(article && selected===index) return;
-      select(selected===index ? -1 : index);
+    button.addEventListener('click',()=>{
+      if(selected===index && !article) select(-1);
+      else if(selected<0 && !movement) select(index);
     });
-    button.addEventListener('pointerdown',event=>beginDrag(event,index));
     gallery.append(button);
     return {item,button};
   });
-  gallery.append(close,detail);
-  articleTitle?.addEventListener('pointerdown',event=>beginDrag(event,selected));
-  articleTitle?.addEventListener('click',event=>{
-    if(ignoreClick===selected) {
-      event.preventDefault();
-      ignoreClick=-1;
-    }
-  });
+  gallery.append(backdrop,close,detail);
 
-  let selected=-1, regions, resting, movement, afterClose, drag, ignoreClick=-1;
-  let velocities=tiles.map(()=>({x:0,y:0}));
-  function beginDrag(event,index) {
-    if(!event.isPrimary || event.button!==0 || index<0 || gallery.inert || (movement && !movement.throwing)) return;
-    if(movement) {
-      movement=undefined;
-      if(selected<0) resting=regions;
-      gallery.removeAttribute('aria-busy');
-    }
-    ignoreClick=-1;
-    drag={index,id:event.pointerId,x:event.clientX,y:event.clientY,from:regions,lastX:event.clientX,lastY:event.clientY,lastTime:event.timeStamp,vx:0,vy:0};
-    event.currentTarget.setPointerCapture(event.pointerId);
+  let selected=-1, regions, resting, movement, afterClose;
+  function previewBox(index) {
+    const {W,H,mobile}=metrics;
+    const item=items[index];
+    const ratio=article ? item.ratio || 16/9 : item.width/item.height;
+    const pad=mobile ? 12 : 30;
+    const width=Math.min(W-2*pad,(H-(article ? 94 : 128))*ratio);
+    const height=width/ratio+20;
+    return box((W-width)/2,(H-height)/2+(article ? 12 : 0),width,height);
   }
-  gallery.addEventListener('pointermove',event=>{
-    if(drag?.id!==event.pointerId) return;
-    const dx=event.clientX-drag.x, dy=event.clientY-drag.y;
-    if(!drag.moved && Math.hypot(dx,dy)<6) return;
-    drag.moved=true;
-    tiles[drag.index].button.classList.add('is-dragging');
-    const dt=event.timeStamp-drag.lastTime;
-    if(dt>0) {
-      drag.vx=drag.vx*.44+(event.clientX-drag.lastX)/dt*.56;
-      drag.vy=drag.vy*.44+(event.clientY-drag.lastY)/dt*.56;
-      drag.lastX=event.clientX;
-      drag.lastY=event.clientY;
-      drag.lastTime=event.timeStamp;
-    }
-    const origin=drag.from[drag.index];
-    drag.target={index:drag.index,x:origin.x+dx,y:origin.y+dy};
-    movement ??= {index:drag.index,throwing:true,last:performance.now()-12};
-    requestRender();
-  });
-  function endDrag(event) {
-    if(drag?.id!==event.pointerId) return;
-    const {index,moved,vx,vy,lastTime}=drag;
-    drag=undefined;
-    tiles[index].button.classList.remove('is-dragging');
-    if(!moved) return;
-    ignoreClick=index;
-    if(selected<0) resting=regions;
-    const release=event.type==='pointerup' && event.timeStamp-lastTime<120 && !reduced.matches;
-    velocities[index]={x:release ? Math.max(-2.6,Math.min(2.6,vx)) : 0,
-      y:release ? Math.max(-2.6,Math.min(2.6,vy)) : 0};
-    movement={index,throwing:true,last:performance.now()};
-    gallery.setAttribute('aria-busy','true');
-    requestRender();
+  function syncSelection(active) {
+    close.hidden=!active;
+    gallery.classList.toggle('is-focused',active);
+    tiles.forEach(({button},i)=>{
+      button.inert=active && i!==selected;
+      button.setAttribute('aria-pressed',String(i===selected));
+    });
   }
-  gallery.addEventListener('pointerup',endDrag);
-  gallery.addEventListener('pointercancel',endDrag);
-  gallery.addEventListener('lostpointercapture',endDrag);
   function select(index) {
     if(index===selected || gallery.inert) return;
     const previous=selected;
-    velocities=tiles.map(()=>({x:0,y:0}));
-    selected=index;
     const movingIndex=index>=0 ? index : previous;
-    const source=regions[movingIndex];
-    const to=index<0 ? resting : [];
-    const towardRight=source.x+source.w/2<metrics.W/2;
-    const towardBottom=source.y+source.h/2<metrics.H/2;
-    if(index>=0) {
-      const right=source.x+source.w;
-      const bottom=source.y+source.h;
-      const scale=Math.max(1,Math.min(2.6,metrics.W*.77/source.w,metrics.H*.74/source.h,
-        (towardRight ? metrics.W-10-source.x : right-10)/source.w,
-        (towardBottom ? metrics.H-58-source.y : bottom-54)/source.h));
-      const w=source.w*scale, h=source.h*scale;
-      const focus=box(towardRight ? source.x : right-w,towardBottom ? source.y : bottom-h,w,h);
-      const base=resting[index];
-      resting.forEach((r,i)=>{
-        const dx=r.x+r.w/2<base.x+base.w/2 ? Math.min(0,focus.x-base.x) : Math.max(0,focus.x+focus.w-base.x-base.w);
-        const dy=r.y+r.h/2<base.y+base.h/2 ? Math.min(0,focus.y-base.y) : Math.max(0,focus.y+focus.h-base.y-base.h);
-        to[i]=i===index ? focus : box(r.x+dx,r.y+dy,r.w,r.h);
-      });
-    }
-    close.hidden=index<0;
-    gallery.classList.toggle('is-focused',index>=0);
-    tiles.forEach(({button},i)=>{
-      button.classList.toggle('is-selected',i===index || index<0 && i===previous);
-      button.setAttribute('aria-pressed',String(i===index));
-    });
+    selected=index;
+    syncSelection(index>=0);
+    tiles[movingIndex].button.classList.add('is-selected');
     if(index>=0) {
       const item=items[index];
       if(articleTitle) articleTitle.href=item.url;
       (articleTitle ?? photoName).textContent=item.title;
+      close.focus({preventScroll:true});
     } else {
       tiles[previous].button.focus({preventScroll:true});
     }
     detail.hidden=true;
-    if(reduced.matches) {
-      regions=to;
-      movement=undefined;
-      gallery.removeAttribute('aria-busy');
-      updateDetail();
-    } else {
-      movement={from:regions,to,index:movingIndex,towardRight,towardBottom,opening:index>=0};
-      gallery.setAttribute('aria-busy','true');
-    }
+    movement={from:regions[movingIndex],to:index>=0 ? previewBox(index) : resting[movingIndex],
+      index:movingIndex,opening:index>=0,backdropFrom:Number(backdrop.style.opacity)};
+    gallery.setAttribute('aria-busy','true');
     requestRender();
   }
   close.addEventListener('click',()=>select(-1));
-  gallery.addEventListener('click',event=>{
-    if(selected>=0 && !event.target.closest('.gallery-tile,.gallery-close,.gallery-detail a')) select(-1);
-  });
+  backdrop.addEventListener('click',()=>select(-1));
   gallery.addEventListener('keydown',event=>{
     if(event.key==='Escape' && selected>=0) {
       event.preventDefault();
@@ -281,12 +162,12 @@ function createGallery(id,items,article=false) {
       const row=Math.floor(i/columns);
       const rowCount=Math.min(columns,tiles.length-row*columns);
       const rowLeft=deskLeft+(columns-rowCount)*cellW*((row%2) ? .18 : .43);
-      const size=.77+variation(i,0)*.08;
+      const size=.67+variation(i,0)*.23;
       const tileWidth=Math.min(cellW*size,cellH*size*ratio);
       const tileHeight=tileWidth/ratio;
       const tilt=0;
-      const x=rowLeft+(i%columns+.5)*cellW-tileWidth/2+(variation(i,2)-.5)*cellW*.09;
-      const y=deskTop+(row+.5)*cellH-tileHeight/2+(variation(i,3)-.5)*cellH*.09;
+      const x=rowLeft+(i%columns+.5)*cellW-tileWidth/2+(variation(i,2)-.5)*cellW*.20;
+      const y=deskTop+(row+.5)*cellH-tileHeight/2+(variation(i,3)-.5)*cellH*.20;
       const left=Math.min(Math.max(x,8),W-8-tileWidth);
       const top=Math.min(Math.max(y,deskTop-10),H-24-tileHeight);
       return box(left,top,tileWidth,tileHeight,tilt);
@@ -294,16 +175,17 @@ function createGallery(id,items,article=false) {
   }
 
   function layout(m) {
-    velocities=tiles.map(()=>({x:0,y:0}));
+    resting=positions(m);
+    regions=[...resting];
     movement=undefined;
     gallery.removeAttribute('aria-busy');
-    drag=undefined;
-    resting=positions(m);
-    regions=resting;
     if(selected>=0) {
-      const index=selected;
-      selected=-1;
-      select(index);
+      regions[selected]=previewBox(selected);
+      backdrop.style.opacity='1';
+      updateDetail();
+    } else {
+      tiles.forEach(({button})=>button.classList.remove('is-selected'));
+      backdrop.style.opacity='0';
     }
   }
 
@@ -317,52 +199,29 @@ function createGallery(id,items,article=false) {
   }
 
   function animateSelection() {
-    const {from,to,index,towardRight,towardBottom,opening,throwing}=movement;
     const now=performance.now();
-    if(throwing) {
-      const dt=Math.min(40,now-movement.last);
-      movement.last=now;
-      regions=slideWindows(regions,velocities,metrics,dt,drag?.target);
-      if(selected<0) resting=regions;
-      if(velocities.some(v=>Math.hypot(v.x,v.y)>.012)) requestRender();
-      else {
-        movement=undefined;
-        if(selected<0) resting=regions;
-        gallery.removeAttribute('aria-busy');
-        const depart=afterClose; afterClose=undefined; depart?.();
-      }
-      return;
-    }
     movement.start ??= now;
-    const t=clamp((now-movement.start)/740);
-    const growth=ease(t,0,1);
-    const card=mixBox(from[index],to[index],growth);
-    regions=from.map((region,i)=>{
-      if(i===index) return card;
-      const travel=growth;
-      return mixBox(region,to[i],travel);
-    });
-    if(opening && t<.98) {
-      cursor(agent,framePoint(card,towardRight ? card.w : 0,towardBottom ? card.h : 0),1,0,true);
-    }
+    const {from,to,index,opening,backdropFrom}=movement;
+    const t=reduced.matches ? 1 : clamp((now-movement.start)/(opening ? 440 : 320));
+    const progress=opening ? 1-(1-t)**3 : ease(t,0,1);
+    regions[index]=mixBox(from,to,progress);
+    backdrop.style.opacity=String(backdropFrom+((opening ? 1 : 0)-backdropFrom)*progress);
     if(t<1) {
       requestRender();
-    } else {
-      regions=to;
-      movement=undefined;
-      gallery.removeAttribute('aria-busy');
-      if(selected<0) tiles[index].button.classList.remove('is-selected');
-      updateDetail();
-      const depart=afterClose;
-      afterClose=undefined;
-      depart?.();
+      return;
     }
+    movement=undefined;
+    gallery.removeAttribute('aria-busy');
+    if(!opening) tiles[index].button.classList.remove('is-selected');
+    updateDetail();
+    const depart=afterClose;
+    afterClose=undefined;
+    depart?.();
   }
 
   function closeBefore(depart) {
     if(!movement && selected<0) return false;
     if(selected>=0) select(-1);
-    if(reduced.matches) return false;
     afterClose=depart;
     return true;
   }
@@ -371,33 +230,22 @@ function createGallery(id,items,article=false) {
     visible(gallery,amount>0 ? 1 : 0,ready);
     gallery.classList.toggle('gallery-ready',ready);
     if(amount<=0) {
-      if(selected>=0 || movement || drag) {
+      if(selected>=0 || movement) {
         selected=-1;
         afterClose=undefined;
-        close.hidden=detail.hidden=true;
-        gallery.classList.remove('is-focused');
-        tiles.forEach(({button})=>{
-          button.classList.remove('is-selected','is-dragging');
-          button.setAttribute('aria-pressed','false');
-        });
+        detail.hidden=true;
+        syncSelection(false);
         layout(metrics);
       }
       return;
     }
-    if(movement) {
-      animateSelection();
-      if(ready && movement?.throwing) updateDetail();
-    } else if(ready) updateDetail();
+    if(movement) animateSelection();
 
     heading.style.opacity=String(ease(amount,0,.25));
     const opened=reduced.matches ? 1 : closing ? ease(amount,0,1) : 1-(1-amount)**1.65;
     tiles.forEach(({button},i)=>{
-      const region=regions[i];
-      const reveal=reduced.matches ? 1 : opened**(1+(i%4)*.055);
-      button.style.opacity=String(reveal);
-      const w=region.w, h=region.h;
-      const drift=reduced.matches ? 0 : (1-opened)*(closing ? -12 : 12);
-      place(button,box(region.x+(region.w-w)/2+drift,region.y+(region.h-h)/2+drift*.42,w,h));
+      button.style.opacity=String(opened);
+      place(button,regions[i]);
     });
     if(!ready) detail.hidden=true;
   }
@@ -607,7 +455,7 @@ window.addEventListener('wheel',event=>{
   }
 },{passive:false});
 stage.addEventListener('touchstart',event=>{
-  swipe=event.touches.length===1 && !event.target.closest('.gallery-ready .gallery-tile,.gallery-ready .article-image-link') ? event.touches[0] : null;
+  swipe=event.touches.length===1 ? event.touches[0] : null;
 },{passive:true});
 stage.addEventListener('touchmove',event=>{
   if (!swipe || event.touches.length!==1) return;

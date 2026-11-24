@@ -104,9 +104,8 @@ async function galleryChecks(){
   const width=tile=>parseFloat(tile.style.width);
   await at(13.02);
   const articles=all('#articles .gallery-tile');
-  const dimensions=nodes=>nodes.map(tile=>[width(tile),parseFloat(tile.style.height)]);
-  const sizes=dimensions(articles);
-  expect(w().getComputedStyle(articles[0]).touchAction==='none','Image windows reserve touch gestures for dragging');
+  const bounds=tile=>tile.getBoundingClientRect().toJSON();
+  const original=articles.map(bounds);
   expect(q('#photos').inert && !q('#articles').inert && articles.length===8,'Tecirc articles appear before Photography');
   await at(10.60);
   expect(articles.every(tile=>Number(tile.style.opacity)>0 && tile.querySelector('.gallery-titlebar')),
@@ -115,30 +114,23 @@ async function galleryChecks(){
   await at(14.04);
   expect(articles.some(tile=>!tile.style.clipPath && Number(tile.style.opacity)>0 && Number(tile.style.opacity)<1),'Article windows fade as they close');
   await at(13.02);
-  const firstBounds=articles[5].getBoundingClientRect();
-  await cursorDuring(()=>articles[5].click());
+  articles[5].click();
   await settled();
   const link=q('#articles .gallery-detail a');
   const resized=articles[5].getBoundingClientRect();
-  expect(width(articles[5])>sizes[5][0] &&
-    (Math.abs(firstBounds.left-resized.left)<1 || Math.abs(firstBounds.right-resized.right)<1) &&
-    (Math.abs(firstBounds.top-resized.top)<1 || Math.abs(firstBounds.bottom-resized.bottom)<1),
-    'The selected window grows around a fixed corner');
-  expect(dimensions(articles).every(([w,h],i)=>i===5 || w===sizes[i][0] && h===sizes[i][1]) &&
-    link.href.endsWith('/Nothing-Headphone-1/') && link.target==='_blank' &&
-    w().getComputedStyle(link).fontSize==='0px' &&
-    Math.abs(link.getBoundingClientRect().top-resized.top-20)<1,
-    'Pushed neighbors keep their window dimensions and article links remain available');
-  articles[0].click();
-  expect(articles[0].getAttribute('aria-pressed')==='true' && q('#articles').classList.contains('is-focused'),
-    'Switching windows does not reopen the overview');
-  await settled();
-  expect(q('#articles .gallery-detail a').href.endsWith('/touch-MacBookPro/'),'Article caption follows selection');
+  expect(resized.width>original[5].width && Math.abs(resized.left+resized.width/2-stageWidth/2)<1,
+    'The selected window expands in the center of the screen');
+  expect(articles.every((tile,i)=>i===5 || JSON.stringify(bounds(tile))===JSON.stringify(original[i])),
+    'Other windows keep their exact positions and dimensions');
+  expect(d().elementFromPoint(resized.left+resized.width/2,resized.top+resized.height/2)===link &&
+    link.href.endsWith('/Nothing-Headphone-1/') && link.target==='_blank',
+    'The enlarged article is above the overview and opens in a new tab');
   const empty=d().elementFromPoint(stageWidth/2,5);
-  expect(empty===q('#articles'),'Article canvas receives clicks in the empty area');
+  expect(empty===q('#articles .gallery-backdrop'),'The backdrop can dismiss the preview');
   empty.click();
   await settled();
-  expect(q('#articles .gallery-detail').hidden,'Back to grid restores articles');
+  expect(q('#articles .gallery-detail').hidden && JSON.stringify(bounds(articles[5]))===JSON.stringify(original[5]),
+    'Closing the preview restores the original window');
   await at(17.45);
   const photos=all('#photos .gallery-tile');
   expect(!q('#photos').inert && q('#articles').inert && photos.length>=12,'Photography follows articles and includes the recovered photos');
