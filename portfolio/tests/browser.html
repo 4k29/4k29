@@ -25,7 +25,7 @@ const size=(n,key)=>parseFloat(n.style[key]);
 const shown=(n)=>n.style.visibility==='visible' && size(n,'opacity')>.01;
 const expect=(value,detail)=>{if(!value)throw Error(detail)};
 const style=(n)=>n.getAttribute('style');
-const scram=()=>Array.from(q('#intro h1 [aria-hidden=true]').childNodes).map(n=>n.nodeType===3?n.textContent:n.querySelector('.scramble-glyph').textContent).join('');
+const scram=()=>all('#intro h1 .backspace-glyph:not(.description-hidden):not(.backspace-hidden)').map(n=>n.textContent).join('');
 const state=()=>[q('#intro p')?.innerHTML,...all('.gallery').map(style),scram()].join('|');
 async function run(width,height){
   frame.width=width;frame.height=height;
@@ -42,28 +42,28 @@ async function run(width,height){
   await at(1.24);
 
   const mixed=scram(), stopped=state();
-  expect(!q('#intro h1 [data-ink]') && !q('#intro p [data-ink]') && q('#intro .scramble-pending'),'The title uses gray scrambling without colored fragments');
-  expect(mixed!=="I'm うまいしか" && q('#intro .scramble-caret'),'Text scrambles with caret');
+  expect(q('#intro h1 [data-ink]') && !q('#intro p [data-ink]'),'The title uses colored type flicker');
+  expect(mixed!=="I'mうまいしか",'Title reveals in steps');
   await new Promise(r=>setTimeout(r,225));
   expect(state()===stopped,'No autonomous changes while scroll is still');
   await at(1.7);
-  expect(scram()==="I'm うまいしか" && q('#intro p [data-ink]'),'Title completes and the subheading flickers');
+  expect(scram()==="I'mうまいしか" && q('#intro p [data-ink]'),'Title completes and the subheading flickers');
   await at(1.24);
-  expect(state()===stopped,'Reverse travel restores the same frame and scramble glyphs');
+  expect(state()===stopped,'Reverse travel restores the same frame and flicker glyphs');
   await at(2.70);
-  expect(scram()==="I'm うまいしか" && shown(q('#intro p')),'Intro stays visible during its hold');
+  expect(scram()==="I'mうまいしか" && shown(q('#intro p')),'Intro stays visible during its hold');
   await at(3.37);
-  expect(shown(q('#intro')) && q('#intro').style.opacity==='1' && q('#intro .backspace-caret') && q('#intro p .backspace-hidden'),'Intro deletes from the end without fading');
+  expect(shown(q('#intro')) && q('#intro').style.opacity==='1' && q('#intro h1 .backspace-glyph').classList.contains('backspace-hidden') && !all('#intro p .backspace-glyph').at(-1).classList.contains('backspace-hidden'),'Intro deletes from the start without fading');
   await at(4.40);
-  expect(q('#about .is-scrambling') && !shown(q('#about [data-after-title]')),'About title precedes bio and tags');
+  expect(q('#about h2 [data-ink]') && !shown(q('#about [data-after-title]')),'About title precedes bio and tags');
   await at(5.05);
   expect(q('#about .tags [data-ink]') && q('#about .tags .description-hidden'),'Interest tags reveal with type flicker');
   await at(5.16);
   expect(shown(q('#about')) && !q('#about').inert && shown(q('#about [data-after-title]')),'About details appear after title');
   await at(6.66);
-  expect(q('#about').style.opacity==='1' && q('#about .backspace-caret'),'About erases text before the frame moves');
+  expect(q('#about').style.opacity==='1' && q('#about h2 .backspace-hidden'),'About erases text before the frame moves');
   await at(7.91);
-  expect(q('#project-panel .is-scrambling') && !shown(q('#project-panel [data-after-title]')),'Project title precedes description and link');
+  expect(q('#project-panel h2 [data-ink]') && !shown(q('#project-panel [data-after-title]')),'Project title precedes description and link');
   await at(8.40);
   const description=q('#project-panel p');
   expect(description.querySelector('.backspace-glyph[data-ink]') && description.querySelector('.description-hidden') && !description.querySelector('.description-hidden[data-ink]'),'Body copy reveals in flickering fragments');
@@ -72,7 +72,7 @@ async function run(width,height){
   const logo=q('.project-image'),logoBounds=logo.getBoundingClientRect(),logoImg=logo.querySelector('img');
   expect(Math.abs(logoBounds.width/ logoBounds.height-16/9)<.02 && logoImg.naturalWidth>0 && Math.abs(logoImg.getBoundingClientRect().width-logoBounds.width)<1,'Project uses the complete logo artwork');
   await at(10.01);
-  expect(q('#project-panel').style.opacity==='1' && q('#project-panel .backspace-caret'),'Projects text erases before the frame retracts');
+  expect(q('#project-panel').style.opacity==='1' && q('#project-panel h2 .backspace-hidden'),'Projects text erases before the frame retracts');
   await at(10.74);
   expect(!q('#articles').classList.contains('gallery-ready') && q('#articles .gallery-image img') && !q('#articles .gallery-border'),'Article cards enter fully assembled');
   await galleryChecks();
@@ -132,9 +132,9 @@ async function galleryChecks(){
   expect(q('#articles .gallery-detail').hidden && JSON.stringify(bounds(articles[5]))===JSON.stringify(original[5]),
     'Closing the preview restores the original window');
   await at(14.24);
-  expect(q('#article-heading .scramble-pending') && !q('#article-heading [data-ink]'),'Tecirc heading leaves without colored flicker');
+  expect(q('#article-heading .backspace-hidden') && q('#article-heading [data-erase-ink]'),'Tecirc heading erases with colored flicker');
   await at(15.52);
-  expect(q('#photo-heading .scramble-pending') && !q('#photo-heading [data-ink]'),'Photography heading enters in grayscale');
+  expect(q('#photo-heading [data-ink]'),'Photography heading enters with colored flicker');
   await at(17.45);
   const photos=all('#photos .gallery-tile');
   expect(!q('#photos').inert && q('#articles').inert && photos.length>=12,'Photography follows articles and includes the recovered photos');

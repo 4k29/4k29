@@ -1,5 +1,5 @@
 import { profile, photos, articles, projects } from './content.js';
-import { box, clamp, ease, mixBox, phase, place, hash, Scramble, visible } from './motion.js';
+import { box, clamp, ease, mixBox, phase, place, hash, visible } from './motion.js';
 
 const byId = (id) => document.getElementById(id);
 const el = (tag, attrs = {}, ...children) => {
@@ -64,7 +64,8 @@ const projectNodes = projects.map(item=>{
 function createGallery(id,items,article=false) {
   const gallery=byId(id);
   const heading=gallery.querySelector('h2');
-  const headingScramble=new Scramble(heading);
+  const eraseHeading=backspace(heading);
+  const revealHeading=descriptionTyping(heading,1);
   const seed=Math.floor(Math.random()*32768);
   const variation=(index,channel)=>hash(seed+index*397+channel*883);
   const backdrop=el('div',{class:'gallery-backdrop','aria-hidden':'true'});
@@ -240,7 +241,8 @@ function createGallery(id,items,article=false) {
     if(movement) animateSelection();
 
     const headingProgress=reduced.matches ? 1 : ease(amount,0,.68);
-    headingScramble.render(headingProgress);
+    revealHeading(closing ? 1 : headingProgress,false);
+    eraseHeading(closing ? 1-headingProgress : 0);
     heading.style.visibility=headingProgress>0 ? 'visible' : 'hidden';
     const opened=reduced.matches ? 1 : closing ? ease(amount,0,1) : 1-(1-amount)**1.65;
     tiles.forEach(({button},i)=>{
@@ -256,28 +258,15 @@ const photoGallery=createGallery('photos',photos);
 const articleGallery=createGallery('articles',articles,true);
 const afterTitle=panel=>panel.querySelector('[data-after-title]');
 const reveals={intro:afterTitle(intro),about:afterTitle(about),contact:afterTitle(contact),projects:projectNodes.map(afterTitle)};
-const getScramble = (node) => new Scramble(node.querySelector('[data-scramble]'));
-const names = {
-  intro:getScramble(intro),about:getScramble(about),
-  contact:getScramble(contact),
-  projects:projectNodes.map(getScramble),
-};
-
 function backspace(container) {
-  const selector='[data-scramble], h2, p, .tags li, a, .down, figcaption';
+  const selector='[data-scramble], [data-flicker], h2, p, .tags li, a, .down, figcaption';
   const elements=container.matches(selector) ? [container] : [...container.querySelectorAll(selector)];
   const characters=[];
   const tags=[];
   for(const element of elements) {
-    const glyphs=element.querySelectorAll('.scramble-glyph');
-    if(glyphs.length) {
-      characters.push(...glyphs);
-      continue;
-    }
     const original=element.textContent;
     const accessible=el('span',{class:'visually-hidden'},original);
     const display=el('span',{'aria-hidden':'true'});
-    const first=characters.length;
     for(const char of Array.from(original)) {
       if (/\s/u.test(char)) display.append(char);
       else {
@@ -287,34 +276,28 @@ function backspace(container) {
       }
     }
     element.replaceChildren(accessible,display);
-    if(element.matches('.tags li')) tags.push({element,first});
+    if(element.matches('.tags li')) tags.push({element,end:characters.length});
   }
-  let previous=characters.length;
-  let caret;
-  return (amount,showCaret=true)=>{
-    const remaining=characters.length-Math.ceil(clamp(amount)*characters.length);
-    if(previous!==remaining) {
-      const start=Math.min(previous,remaining), end=Math.max(previous,remaining);
-      for(let i=start;i<end;i++) characters[i].classList.toggle('backspace-hidden',i>=remaining);
-      for(const {element,first} of tags) element.classList.toggle('backspace-empty',remaining<=first);
-      previous=remaining;
+  let previous=0;
+  return amount=>{
+    const erased=Math.floor(clamp(amount)*characters.length);
+    if(previous!==erased) {
+      const start=Math.min(previous,erased), end=Math.max(previous,erased);
+      for(let i=start;i<end;i++) characters[i].classList.toggle('backspace-hidden',i<erased);
+      for(const {element,end} of tags) element.classList.toggle('backspace-empty',end<=erased);
+      previous=erased;
     }
     const tick=Math.floor(amount*18);
     const isFlickering=!reduced.matches && amount>0 && amount<1;
     characters.forEach((glyph,i)=>{
-      const nearEdge=i<remaining && i>=remaining-7;
-      const flicker=isFlickering && nearEdge && !glyph.classList.contains('scramble-glyph') && glyph.textContent.trim();
+      const nearEdge=i>=erased && i<erased+7;
+      const flicker=isFlickering && nearEdge && glyph.textContent.trim();
       glyph.classList.toggle('erase-flicker-off',Boolean(flicker && hash(i*13+tick*71)<.18));
       if(flicker && hash(i*37+tick*19)>.35)
         glyph.dataset.eraseInk=String((i+tick)%5);
       else if(glyph.hasAttribute('data-erase-ink')) delete glyph.dataset.eraseInk;
     });
-    const next=showCaret && amount>0 && remaining>0 ? characters[remaining-1] : null;
-    if(caret!==next) {
-      caret?.classList.remove('backspace-caret');
-      next?.classList.add('backspace-caret');
-      caret=next;
-    }
+
   };
 }
 const erase={
@@ -336,7 +319,7 @@ function descriptionTyping(description,groupSize=4) {
     glyphs.forEach((glyph,index)=>{
       const group=Math.floor(index/groupSize);
       const flashing=group>=edge-2 && group<edge+2;
-      const printed=progress===1 || group<edge-1 || flashing && hash(group*223+frame*101)>.31;
+      const printed=progress===1 || progress>0 && (group<edge-1 || flashing && hash(group*223+frame*101)>.31);
       glyph.classList.toggle('description-hidden',!printed);
       if(colorize && printed && flashing) {
         glyph.dataset.ink=String((group+frame)%5);
@@ -352,7 +335,15 @@ const describe={
 };
 const aboutTags=reveals.about.querySelector('.tags');
 const revealTags=descriptionTyping(aboutTags);
-backspace(reveals.contact);
+backspace(contact);
+const eraseScrollWord=backspace(scrollHint.querySelector('[data-flicker]'));
+const titleTyping=panel=>descriptionTyping(panel.querySelector('[data-scramble]'),1);
+const names={
+  intro:titleTyping(intro),about:titleTyping(about),contact:titleTyping(contact),
+  projects:projectNodes.map(titleTyping),
+};
+const projectLinks=reveals.projects.map(node=>descriptionTyping(node.querySelector('a'),1));
+const backToTop=descriptionTyping(contact.querySelector('[data-jump]'),1);
 const revealSocials=descriptionTyping(reveals.contact,2);
 const millisecondsPerTimelineUnit=1500;
 const introPause=1.15, aboutPause=1.25, projectPause=1.15, contactPause=1.80;
@@ -554,11 +545,14 @@ function render(s,m) {
   let photoBuild=0,articleBuild=0,contactAlpha=0,photoClosing=false,articleClosing=false;
   let introDetails=0,aboutDetails=0,projectDetails=0,contactDetails=0;
   let introErase=0,aboutErase=0,projectErase=0,logoProgress=0;
-  visible(scrollHint,1-ease(s,.025,.20));
+  const hintProgress=phase(s,.025,.20);
+  eraseScrollWord(hintProgress);
+  scrollHint.querySelector('.scroll-arrow').style.opacity=String(1-hintProgress);
+  visible(scrollHint,Number(hintProgress<1));
 
   if (s < timing.introEnd) {
     const t=holdAt(s,2.03,introPause);
-    names.intro.render(phase(t,1.13,1.61));
+    names.intro(phase(t,1.13,1.61));
     introAlpha = ease(t,.98,1.15);
     introDetails=phase(t,1.61,2.03);
   } else if (s < timing.projectStart) {
@@ -568,10 +562,10 @@ function render(s,m) {
     introErase=phase(t,.06,.34);
     introAlpha=introErase<1 ? 1 : 0;
     aboutAlpha=ease(t,.66,.82);
-    names.intro.render(1);
+    names.intro(1);
     introDetails=1;
     aboutDetails=phase(t,1.42,1.95);
-    names.about.render(phase(t,.86,1.42));
+    names.about(phase(t,.86,1.42));
   } else if (s < timing.articleStart) {
     const elapsed = s-timing.projectStart;
     projectIndex = Math.min(projects.length-1,Math.floor(elapsed/timing.projectLength));
@@ -581,7 +575,7 @@ function render(s,m) {
       frameBox=from;
       aboutErase=phase(t,0,.18);
       aboutAlpha=projectIndex===0 && aboutErase<1 ? 1 : 0;
-      names.about.render(1);
+      names.about(1);
       aboutDetails=1;
     } else {
       frameBox=m.project;
@@ -596,7 +590,7 @@ function render(s,m) {
       projectDetails=1;
     }
     const closingPrevious=projectIndex<Math.floor(elapsed/timing.projectLength);
-    names.projects[projectIndex].render(closingPrevious ? 1 : phase(t,1.12,1.60));
+    names.projects[projectIndex](closingPrevious ? 1 : phase(t,1.12,1.60));
     if (!closingPrevious) projectDetails=phase(t,1.60,2.08);
   } else if(s < timing.photoStart) {
     const elapsed=s-timing.articleStart;
@@ -605,7 +599,7 @@ function render(s,m) {
     logoProgress=1-projectErase;
     projectAlpha=projectErase<1 ? 1 : 0;
     projectIndex=projects.length-1;
-    names.projects[projectIndex]?.render(1);
+    names.projects[projectIndex](1);
     projectDetails=1;
     articleClosing=elapsed>3.59;
     articleBuild=phase(elapsed,.18,1.38)*(1-phase(elapsed,3.59,4.58));
@@ -618,7 +612,7 @@ function render(s,m) {
     frameBox=m.contact;
     contactAlpha=ease(t,.73,.90);
     contactDetails=phase(t,1.45,1.72);
-    names.contact.render(phase(t,.93,1.45));
+    names.contact(phase(t,.93,1.45));
   }
 
   showPanel(intro,introAlpha,frameBox);
@@ -638,7 +632,8 @@ function render(s,m) {
   visible(reveals.intro,introDetails>0 ? 1 : 0);
   visible(reveals.about,aboutDetails>0 ? 1 : 0);
   visible(aboutTags,tagProgress>0 ? 1 : 0);
-  revealSocials(reduced.matches ? Number(contactDetails>0) : contactDetails,false);
+  revealSocials(contactDetails,false);
+  backToTop(contactDetails,false);
   visible(reveals.contact,Number(contactDetails>0),contactAlpha>.94 && contactDetails===1);
   reveals.projects.forEach((node,i)=>{
     const opacity=i===projectIndex ? projectDetails : 0;
@@ -646,7 +641,8 @@ function render(s,m) {
     erase.projects[i](amount);
     describe.projects[i](opacity,amount>0);
     visible(node,opacity>0 ? 1 : 0);
-    visible(node.querySelector('a'),opacity===1 ? 1 : 0,opacity===1 && projectAlpha>.94 && amount===0);
+    projectLinks[i](phase(opacity,.65,1),amount>0);
+    visible(node.querySelector('a'),opacity>.65 ? 1 : 0,opacity===1 && projectAlpha>.94 && amount===0);
   });
   photoGallery.render(photoBuild,photoBuild>=1,photoClosing);
   articleGallery.render(articleBuild,articleBuild>=1,articleClosing);
