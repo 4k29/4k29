@@ -128,6 +128,12 @@ async function galleryChecks(){
   const resized=articles[5].getBoundingClientRect();
   expect(resized.width>original[5].width && Math.abs(resized.left+resized.width/2-stageWidth/2)<1,
     'The selected window expands in the center of the screen');
+  expect(resized.left>=panelLeft-1 && resized.right<=stageWidth-panelLeft+1,
+    'Expanded articles stay inside the shared side margins');
+  if(stageWidth>=900 && q('#stage').clientHeight>=620) {
+    expect(original[0].width>(stageWidth-panelLeft*2)/4,
+      'Desktop article cards are larger than a four-column layout');
+  }
   expect(articles.every((tile,i)=>i===5 || JSON.stringify(bounds(tile))===JSON.stringify(original[i])),
     'Other windows keep their exact positions and dimensions');
   expect(d().elementFromPoint(resized.left+resized.width/2,resized.top+resized.height/2)===link &&

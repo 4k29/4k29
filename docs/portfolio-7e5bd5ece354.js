@@ -333,6 +333,10 @@ const projectNodes = projects.map(item=>{
   projectPanel.append(node);
   return node;
 });
+function galleryMargin(layout) {
+  return layout.dormant.x+layout.panelInset;
+}
+
 function createGallery(id,items,article=false) {
   const gallery=byId(id);
   const heading=gallery.querySelector('h2');
@@ -371,10 +375,11 @@ function createGallery(id,items,article=false) {
     const {W,H,mobile}=metrics;
     const item=items[index];
     const ratio=article ? item.ratio || 16/9 : item.width/item.height;
-    const pad=mobile ? 12 : 30;
-    const width=Math.min(W-2*pad,(H-(article ? 94 : 46))*ratio);
+    const margin=article ? galleryMargin(metrics) : mobile ? 12 : 30;
+    const verticalReserve=article && mobile ? 94 : 46;
+    const width=Math.min(W-2*margin,Math.max(1,H-verticalReserve)*ratio);
     const height=width/ratio+20;
-    return box((W-width)/2,(H-height)/2+(article ? 12 : 0),width,height);
+    return box((W-width)/2,(H-height)/2+(article && mobile ? 12 : 0),width,height);
   }
   function syncSelection(active) {
     gallery.classList.toggle('is-focused',active);
@@ -417,9 +422,10 @@ function createGallery(id,items,article=false) {
   function positions(m) {
     const {W,H,mobile}=m;
     const wideArticles=article && W>=900;
-    const deskLeft=m.dormant.x+m.panelInset;
+    const deskLeft=galleryMargin(m);
     const top=Math.max(42,Math.min(89,H*.12));
-    const columns=Math.min(tiles.length,mobile ? (tiles.length>10 ? 3 : 2) : (article || tiles.length>10 ? 4 : 3));
+    const desktopColumns=article && (W<900 || H<620) || tiles.length>10 ? 4 : 3;
+    const columns=Math.min(tiles.length,mobile ? (tiles.length>10 ? 3 : 2) : desktopColumns);
     const rows=Math.ceil(tiles.length/columns);
     const deskWidth=W-2*deskLeft;
     const deskTop=top+(wideArticles ? 44 : article ? 54 : 38);
@@ -890,7 +896,8 @@ const logoTiles=Array.from({length:logoColumns*logoRows},(_,i)=>i)
   .sort((a,b)=>logoRevealOrder(a)-logoRevealOrder(b));
 const logoPalette=['#26e7a0','#b58cff','#ffe44d','#ff86ce','#69cbff'];
 
-// Independent rectangles avoid the antialiased connecting edges in a compound polygon.
+// Give the tiles a small overlap so the clip does not show antialiasing seams.
+const logoTileBleed=.0025;
 const clipNamespace='http://www.w3.org/2000/svg';
 const logoClips=projectNodes.map((_,i)=>{
   const svg=document.createElementNS(clipNamespace,'svg');
@@ -904,10 +911,13 @@ const logoClips=projectNodes.map((_,i)=>{
   clip.setAttribute('clipPathUnits','objectBoundingBox');
   const rects=logoTiles.map(tile=>{
     const rect=document.createElementNS(clipNamespace,'rect');
-    rect.setAttribute('x',String((tile%logoColumns)/logoColumns));
-    rect.setAttribute('y',String(Math.floor(tile/logoColumns)/logoRows));
-    rect.setAttribute('width',String(1/logoColumns));
-    rect.setAttribute('height',String(1/logoRows));
+    const x=(tile%logoColumns)/logoColumns;
+    const y=Math.floor(tile/logoColumns)/logoRows;
+    const left=Math.max(0,x-logoTileBleed), top=Math.max(0,y-logoTileBleed);
+    rect.setAttribute('x',String(left));
+    rect.setAttribute('y',String(top));
+    rect.setAttribute('width',String(Math.min(1,x+1/logoColumns+logoTileBleed)-left));
+    rect.setAttribute('height',String(Math.min(1,y+1/logoRows+logoTileBleed)-top));
     clip.append(rect);
     return rect;
   });
@@ -934,7 +944,8 @@ function paintLogo(visual,progress,{clip,rects}) {
       const color=logoPalette[(tile+frame)%logoPalette.length]+'b8';
       const x=100*(tile%logoColumns)/(logoColumns-1);
       const y=100*Math.floor(tile/logoColumns)/(logoRows-1);
-      flashes.push(`linear-gradient(${color}, ${color}) ${x}% ${y}% / ${100/logoColumns}% ${100/logoRows}% no-repeat`);
+      const bleed=logoTileBleed*100;
+      flashes.push(`linear-gradient(${color}, ${color}) ${x}% ${y}% / ${100/logoColumns+bleed*2}% ${100/logoRows+bleed*2}% no-repeat`);
     }
   });
   visual.style.clipPath='url(#'+clip.id+')';
