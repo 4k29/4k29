@@ -678,7 +678,7 @@ function progress() {
   return Math.max(0,Math.min(timing.end,window.scrollY/metrics.unit));
 }
 function stepScene(direction) {
-  if (sceneAnimation || !metrics) return;
+  if (sceneAnimation || wavePointer!==null || !metrics) return;
   const depart=()=>stepScene(direction);
   if(articleGallery.closeBefore(depart) || photoGallery.closeBefore(depart)) return;
   const position=progress(), tolerance=2/metrics.unit;
@@ -784,17 +784,73 @@ function requestRender() {
 window.addEventListener('scroll',requestRender,{passive:true});
 window.addEventListener('resize',resize,{passive:true});
 
-const scrollWave=el('div',{class:'scroll-wave','aria-hidden':'true'});
-const waveMarks=Array.from({length:25},()=>el('i'));
+const scrollWave=el('div',{
+  class:'scroll-wave',tabindex:'0',role:'slider','aria-label':'スクロール位置',
+  'aria-orientation':'vertical','aria-valuemin':'0','aria-valuemax':'100','aria-valuenow':'0',
+});
+const waveMarks=Array.from({length:25},()=>el('i',{'aria-hidden':'true'}));
 scrollWave.append(...waveMarks);
 document.body.append(scrollWave);
 let waveFrame=0, wavePosition, waveWake, waveTarget=0, waveEnergy=0, waveTime=0;
+
+let wavePointer=null;
+let waveTrack;
+
+function seekWave(fraction) {
+  cancelSceneAnimation();
+  go(clamp(fraction)*timing.end);
+}
+
+function seekWavePointer(event) {
+  const {start,end}=waveTrack;
+  seekWave((event.clientY-start)/Math.max(1,end-start));
+}
+
+scrollWave.addEventListener('pointerdown',event=>{
+  if(!event.isPrimary || event.button!==0 || wavePointer!==null || !metrics) return;
+  event.preventDefault();
+  articleGallery.closeBefore();
+  photoGallery.closeBefore();
+  scrollWave.focus({preventScroll:true});
+  const first=waveMarks[0].getBoundingClientRect();
+  const last=waveMarks.at(-1).getBoundingClientRect();
+  waveTrack={start:first.top+first.height/2,end:last.top+last.height/2};
+  wavePointer=event.pointerId;
+  scrollWave.setPointerCapture(wavePointer);
+  scrollWave.classList.add('is-dragging');
+  seekWavePointer(event);
+});
+scrollWave.addEventListener('pointermove',event=>{
+  if(event.pointerId===wavePointer) seekWavePointer(event);
+});
+function endWaveDrag(event) {
+  if(event.pointerId!==wavePointer) return;
+  if(event.type==='pointerup') seekWavePointer(event);
+  wavePointer=null;
+  scrollWave.classList.remove('is-dragging');
+}
+for(const eventName of ['pointerup','pointercancel','lostpointercapture']) {
+  scrollWave.addEventListener(eventName,endWaveDrag);
+}
+
+scrollWave.addEventListener('keydown',event=>{
+  const current=progress()/timing.end;
+  const targets={Home:0,End:1,ArrowUp:current-.025,ArrowDown:current+.025,
+    ArrowLeft:current-.025,ArrowRight:current+.025,PageUp:current-.12,PageDown:current+.12};
+  if(!Object.hasOwn(targets,event.key) || event.altKey || event.ctrlKey || event.metaKey) return;
+  event.preventDefault();
+  articleGallery.closeBefore();
+  photoGallery.closeBefore();
+  scrollWave.focus({preventScroll:true});
+  seekWave(targets[event.key]);
+});
 
 function drawScrollWave(now) {
   waveFrame=0;
   const dt=Math.min(48,Math.max(1,now-waveTime));
   waveTime=now;
   wavePosition+=(waveTarget-wavePosition)*(1-Math.exp(-dt/75));
+  if(wavePointer!==null) wavePosition=waveTarget;
   waveWake+=(wavePosition-waveWake)*(1-Math.exp(-dt/130));
   waveEnergy*=Math.exp(-dt/280);
   if(reduced.matches) {
@@ -818,6 +874,7 @@ function updateScrollWave(s) {
   if(wavePosition===undefined) wavePosition=waveWake=next;
   if(Math.abs(next-waveTarget)>.00001) waveEnergy=Math.min(1,.38+Math.abs(next-waveTarget)*50);
   waveTarget=next;
+  scrollWave.setAttribute('aria-valuenow',String(Math.round(next*100)));
   if(!waveFrame) waveFrame=requestAnimationFrame(drawScrollWave);
 }
 
