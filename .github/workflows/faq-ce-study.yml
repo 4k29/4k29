@@ -1,0 +1,87 @@
+name: Government FAQ CE comparison
+on:
+  push:
+    branches: [research/faq-response-ce-study]
+    paths: [training/language/conversation-v2/faq-ce-study/GO-v2.json]
+permissions:
+  contents: write
+jobs:
+  pilot:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      OMP_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+      STUDY: training/language/conversation-v2/faq-ce-study
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          filter: blob:none
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /training/language/conversation-v2/faq-ce-study/
+            /training/language/conversation-v2/core.py
+            /training/language/conversation-v2/PLAN.json
+            /training/language/conversation-v2/data/tokenizer.json
+            /training/language/conversation-v2/new_tokenizer.py
+            /training/language/conversation-v2/eval_core.py
+            /training/language/conversation-v2/foundation-stage/runtime.py
+            /training/language/conversation-v2/foundation-stage/prose_decode.py
+            /training/language/conversation-v2/modern-corpus/next_runtime.py
+            /training/language/conversation-v2/diverse-foundation/common.py
+            /training/language/conversation-v2/foundation-data/research/zero_update_preflight.py
+            /training/language/conversation-v2/mixed-retention-study/artifacts/MIX-579/
+            /training/language/conversation-v2/paragraph-foundation/evaluation/B-579.json
+            /training/language/conversation-v2/paragraph-foundation/panels/B-579.json
+            /training/language/model.py
+            /training/language/round10/word_bpe.py
+            /training/dialogue/tokenizer.py
+      - name: Guard and preserve zero-model launch receipt
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = "1"
+          test ! -f "$STUDY/UPDATES.jsonl"
+          python - <<'PY'
+          import pathlib,os,json,subprocess,base64,gzip,tarfile,io,hashlib
+          p=pathlib.Path(os.environ["STUDY"]);go=json.loads((p/"GO-v2.json").read_text());assert subprocess.check_output(["git","rev-parse","HEAD^"],text=True).strip()==go["expected_code_commit"]
+          bundle=json.loads((p/"BUNDLE.json").read_text());blob=base64.b64decode(bundle["base64"]);assert hashlib.sha256(blob).hexdigest()==bundle["sha256"]
+          with tarfile.open(fileobj=io.BytesIO(gzip.decompress(blob))) as tf:
+              for member in tf:
+                  assert member.isfile() and pathlib.Path(member.name).name==member.name
+                  content=tf.extractfile(member).read();assert hashlib.sha256(content).hexdigest()==bundle["files"][member.name];(p/member.name).write_bytes(content)
+          # Only newly introduced audit scripts are renamed; frozen engine/DATA/PLAN stay unchanged.
+          for old,new in [('select.py','select_faqs.py'),('profile.py','profile_faqs.py')]:
+              if (p/old).exists():
+                  assert hashlib.sha256((p/old).read_bytes()).hexdigest()==bundle['files'][old];(p/old).rename(p/new)
+          (p/"IMPORT_FIX.json").write_text(json.dumps(dict(initial_run=43331996201,failed_before_model=True,actual_optimizer_calls=0,model_forwards=0,reason='select.py shadows stdlib select; profile.py proactively renamed too',frozen_model_and_data_changed=False),indent=2)+'\n')
+          (p/"test_import_safety.py").write_text("import pathlib,select,profile,cProfile,subprocess\np=pathlib.Path(__file__).resolve().parent\nfor m in [select,profile,cProfile,subprocess]:\n assert pathlib.Path(m.__file__).resolve().parent!=p,m.__name__\nprint('Standard-library import isolation passed; optimizer0,forward0')\n")
+          (p/"RUN_LAUNCH-v2.json").write_text(json.dumps(dict(run_id=os.environ["GITHUB_RUN_ID"],input_commit=os.environ["GITHUB_SHA"],optimizer_calls_before_launch=0),indent=2)+"\n")
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$STUDY"
+          git commit -m "Record isolated real-model CE pilot launch [skip ci]"
+          git push origin HEAD:research/faq-response-ce-study
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install numerical libraries only
+        run: |
+          python -m pip install --no-cache-dir torch==2.14.1+cpu --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install --no-cache-dir numpy==2.3.5
+      - name: Verify original turn and prior rights-reviewed input mapping
+        run: python -B "$STUDY/verify_inputs.py"
+      - name: Check standard-library import isolation without a model
+        run: python -B "$STUDY/test_import_safety.py"
+      - name: Run fixed99-update FAQ A/B, fullstate coldrestore and fixed greedy
+        run: python -B "$STUDY/engine.py"
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: response-pilot-failure-state
+          retention-days: 1
+          path: |
+            training/language/conversation-v2/faq-ce-study/
+            scratch-faq-ce/*.pt

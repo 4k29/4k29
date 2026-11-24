@@ -1,0 +1,68 @@
+name: Response CE audit integrity
+on:
+  push:
+    branches: [research/response-ce-comparison]
+    paths: [training/language/conversation-v2/response-ce-study/AUDIT_READY.json]
+permissions:
+  contents: write
+jobs:
+  audit-only:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      STUDY: training/language/conversation-v2/response-ce-study
+      PYTHONDONTWRITEBYTECODE: "1"
+      OMP_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: training/language/conversation-v2/response-ce-study
+      - name: Save audit-only launch receipt
+        run: |
+          test "$GITHUB_RUN_ATTEMPT" = "1"
+          python - <<'PY'
+          import json,os,pathlib
+          p=pathlib.Path(os.environ["STUDY"])
+          assert json.loads((p/"STATE.json").read_text())["optimizer_calls"]==0
+          (p/"CI_LAUNCH.json").write_text(json.dumps(dict(run_id=os.environ["GITHUB_RUN_ID"],input_commit=os.environ["GITHUB_SHA"],optimizer_calls_allowed=0,model_forwards_allowed=0),indent=2)+"\n")
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$STUDY/CI_LAUNCH.json"
+          git commit -m "Record response-data audit-only CI launch [skip ci]"
+          git push origin HEAD:research/response-ce-comparison
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install numerical library only, no model weights
+        run: python -m pip install --disable-pip-version-check --no-cache-dir torch==2.14.1+cpu --index-url https://download.pytorch.org/whl/cpu
+      - name: Verify all frozen artifact SHAs and decode allowed candidate spans
+        run: |
+          python - <<'PY'
+          import pathlib,json,os,hashlib,subprocess
+          p=pathlib.Path(os.environ["STUDY"])
+          manifest=json.loads((p/"MANIFEST.json").read_text())
+          for n,r in manifest["files"].items():
+              b=(p/n).read_bytes()
+              assert len(b)==r["bytes"] and hashlib.sha256(b).hexdigest()==r["sha256"],n
+          tracked=subprocess.check_output(["git","ls-files",str(p)],text=True).splitlines()
+          assert not any(pathlib.Path(n).name.startswith("LOCAL_") and pathlib.Path(n).name!="LOCAL_TEST_RECEIPT.json" for n in tracked)
+          assert not any(pathlib.Path(n).name in ["SELECTION.json","CANDIDATE_SPANS.json","REVIEW.json","SELECTION_METADATA.json","SUPPLEMENT_REVIEW.json"] for n in tracked)
+          PY
+          python -B "$STUDY/unpack_results.py"
+      - name: Test teacher masks and synthetic logits only
+        run: python -B -m unittest discover -s "$STUDY" -p test_masks.py -v
+      - name: Persist successful audit receipt
+        run: |
+          python - <<'PY'
+          import pathlib,json,os,hashlib,platform,torch,shutil
+          p=pathlib.Path(os.environ["STUDY"])
+          (p/"CI_RESULT.json").write_text(json.dumps(dict(passed=True,run_id=os.environ["GITHUB_RUN_ID"],input_commit=os.environ["GITHUB_SHA"],tests=12,python=platform.python_version(),torch=torch.__version__,optimizer_calls=0,model_forwards=0,new_checkpoints=0,synthetic_logits_only=True,training_executed=False,manifest_sha256=hashlib.sha256((p/"MANIFEST.json").read_bytes()).hexdigest(),free_disk_bytes=shutil.disk_usage(".").free),indent=2)+"\n")
+          PY
+          git add "$STUDY/CI_RESULT.json"
+          git commit -m "Verify response-data audit and12 CE mask tests, no model training [skip ci]"
+          git push origin HEAD:research/response-ce-comparison

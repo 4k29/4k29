@@ -1,0 +1,24 @@
+"""Isolated LF1 study, existing own numerical stack. No changes to prior study."""
+import sys,pathlib,json,gzip,time,copy,hashlib,os,shutil
+P=pathlib.Path(__file__).resolve().parent;V=P.parent;ROOT=V.parents[2];SCRATCH=ROOT/'scratch'
+sys.path.insert(0,str(V/'modern-corpus'))
+from next_runtime import torch,restore_isolated,trajectory,digest,save,record,causal_ce,clip_grad_accurate,pack,extra_rng,restore_extra_rng,read,write
+
+def sha(p):return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
+def capacity():
+ assert shutil.disk_usage(SCRATCH).free>500*1024**2,'Checkpoint atomic reserve insufficient'
+ used=int(pathlib.Path('/sys/fs/cgroup/memory.current').read_text());lim=int(pathlib.Path('/sys/fs/cgroup/memory.max').read_text());assert lim-used>1024**3
+
+def data():return json.load(gzip.open(P/'corpus-LF1.json.gz','rt')),json.load(gzip.open(P/'schedule-LF1.json.gz','rt'))
+def rows(c,b):return [dict(tokens=c[r['record']]['tokens'][r['start']:r['start']+r['length']]) for r in b]
+def integrity(o):return digest({k:v for k,v in o.items() if k!='integrity'})
+def payload(m,o,r,cursor,trace):
+ x=dict(trajectory=trajectory(m,o,r,[],cursor,[],12820+cursor),extra_rng=extra_rng(),sampler=dict(cursor=cursor,schedule_sha256=sha(P/'schedule-LF1.json.gz')),active_cursor=cursor,trace=trace,plan_sha256=sha(P/'PLAN.json'));x['integrity']=integrity(x);return x
+
+def step(m,opt,r,c,b,i,phase,trace):
+ capacity();x,y=pack(rows(c,b));m.train();opt.zero_grad(set_to_none=True)
+ for g in opt.param_groups:g['lr']=1e-5
+ loss=causal_ce(m(x),y);loss.backward();norm=float(clip_grad_accurate(m.parameters(),1.))
+ assert torch.isfinite(loss) and all(p.grad is not None and torch.isfinite(p.grad).all() for p in m.parameters()) and __import__('math').isfinite(norm)
+ z=dict(step=i+1,targets=int(y.ne(-100).sum()),loss=float(loss.detach()),gradient_norm=norm,clipped=norm>1,LF_targets=int(y.eq(16).sum()),EOS_targets=int(y.eq(2).sum()),batch_rows=len(b),batch_width=x.shape[1],lr=1e-5)
+ record(P/'UPDATES.jsonl',dict(event='intent',phase=phase,trace=z));opt.step();record(P/'UPDATES.jsonl',dict(event='completed',phase=phase,trace=z));opt.zero_grad(set_to_none=True);trace.append(z);return z
