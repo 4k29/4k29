@@ -55,9 +55,6 @@ const about = byId('about');
 const projectPanel = byId('project-panel');
 const contact = byId('contact');
 const agent = byId('agent');
-const sweeper=agent.cloneNode(true);
-sweeper.removeAttribute('id');
-agent.after(sweeper);
 aboutContent(about.querySelector('.about-content'));
 profileLinks(contact.querySelector('.profile-links'));
 
@@ -70,6 +67,26 @@ function framePoint(region,x,y) {
   const angle=region.rotation*Math.PI/180;
   return point(region.x+x*Math.cos(angle)-y*Math.sin(angle),
     region.y+x*Math.sin(angle)+y*Math.cos(angle));
+}
+
+function pushAside(region, obstacle, {W,H}) {
+  const gap=6;
+  const left=obstacle.x-gap-region.w;
+  const right=obstacle.x+obstacle.w+gap;
+  const top=obstacle.y-gap-region.h;
+  const bottom=obstacle.y+obstacle.h+gap;
+  if(region.x<=left || region.x>=right || region.y<=top || region.y>=bottom) return region;
+  const bound=(value,max)=>Math.max(5,Math.min(max,value));
+  const options=[
+    [left,region.y],[right,region.y],[region.x,top],[region.x,bottom],
+  ].map(([x,y])=>[bound(x,W-5-region.w),bound(y,H-5-region.h)]);
+  const score=([x,y])=>{
+    const overlapX=Math.max(0,Math.min(x+region.w,obstacle.x+obstacle.w)-Math.max(x,obstacle.x));
+    const overlapY=Math.max(0,Math.min(y+region.h,obstacle.y+obstacle.h)-Math.max(y,obstacle.y));
+    return overlapX*overlapY*4+Math.hypot(x-region.x,y-region.y);
+  };
+  const [x,y]=options.reduce((best,candidate)=>score(candidate)<score(best) ? candidate : best);
+  return box(x,y,region.w,region.h,region.rotation);
 }
 
 function createGallery(id,items,article=false) {
@@ -86,21 +103,90 @@ function createGallery(id,items,article=false) {
   detail.append(caption);
   const tiles=items.map((item,index)=>{
     const visual=artwork(item,'gallery-image');
+    const titlebar=el('span',{class:'gallery-titlebar','aria-hidden':'true'},item.title);
     const button=el('button',{
       class:'gallery-tile',type:'button','aria-label':item.title,'aria-pressed':'false',title:item.title,
-    },visual);
-    button.addEventListener('click',()=>select(selected===index ? -1 : index));
+    },titlebar,visual);
+    button.addEventListener('click',event=>{
+      if(event.detail && ignoreClick===index) { ignoreClick=-1; return; }
+      select(selected===index ? -1 : index);
+    });
+    button.addEventListener('pointerdown',event=>beginDrag(event,index));
     gallery.append(button);
     return {item,button};
   });
   gallery.append(close,detail);
 
-  let selected=-1, regions, movement, afterClose;
+  let selected=-1, regions, resting, movement, afterClose, drag, ignoreClick=-1;
+  function beginDrag(event,index) {
+    if(!event.isPrimary || event.button!==0 || !event.target.closest('.gallery-titlebar') || gallery.inert || movement) return;
+    ignoreClick=-1;
+    drag={index,id:event.pointerId,x:event.clientX,y:event.clientY,from:regions,lastX:event.clientX,lastY:event.clientY,lastTime:event.timeStamp,vx:0,vy:0};
+    tiles[index].button.setPointerCapture(event.pointerId);
+  }
+  gallery.addEventListener('pointermove',event=>{
+    if(drag?.id!==event.pointerId) return;
+    const dx=event.clientX-drag.x, dy=event.clientY-drag.y;
+    if(!drag.moved && Math.hypot(dx,dy)<6) return;
+    drag.moved=true;
+    const dt=event.timeStamp-drag.lastTime;
+    if(dt>0) {
+      drag.vx=(event.clientX-drag.lastX)/dt;
+      drag.vy=(event.clientY-drag.lastY)/dt;
+      drag.lastX=event.clientX;
+      drag.lastY=event.clientY;
+      drag.lastTime=event.timeStamp;
+    }
+    const origin=drag.from[drag.index];
+    const x=Math.max(5,Math.min(metrics.W-origin.w-5,origin.x+dx));
+    const y=Math.max(5,Math.min(metrics.H-origin.h-5,origin.y+dy));
+    const card=box(x,y,origin.w,origin.h);
+    regions=regions.map((region,i)=>i===drag.index ? card : pushAside(region,card,metrics));
+    requestRender();
+  });
+  function endDrag(event) {
+    if(drag?.id!==event.pointerId) return;
+    const {index,moved,vx,vy,lastTime}=drag;
+    drag=undefined;
+    if(!moved) return;
+    ignoreClick=index;
+    const from=regions;
+    const landed=from[index];
+    const coast=event.type==='pointerup' && event.timeStamp-lastTime<85 ? 95 : 0;
+    const offset=value=>Math.max(-100,Math.min(100,value*coast));
+    const target=box(Math.max(5,Math.min(metrics.W-landed.w-5,landed.x+offset(vx))),
+      Math.max(5,Math.min(metrics.H-landed.h-5,landed.y+offset(vy))),landed.w,landed.h);
+    if(!coast || reduced.matches) {
+      if(selected<0) resting=regions;
+      return;
+    }
+    const to=from.map((region,i)=>i===index ? target : pushAside(region,target,metrics));
+    if(selected<0) resting=to;
+    movement={from,to,index,throwing:true};
+    gallery.setAttribute('aria-busy','true');
+    requestRender();
+  }
+  gallery.addEventListener('pointerup',endDrag);
+  gallery.addEventListener('pointercancel',endDrag);
   function select(index) {
     if(index===selected || gallery.inert) return;
     const previous=selected;
     selected=index;
-    const to=positions(metrics,index);
+    const movingIndex=index>=0 ? index : previous;
+    const source=regions[movingIndex];
+    const to=index<0 ? resting : [];
+    const towardRight=source.x+source.w/2<metrics.W/2;
+    const towardBottom=source.y+source.h/2<metrics.H/2;
+    if(index>=0) {
+      const right=source.x+source.w;
+      const bottom=source.y+source.h;
+      const scale=Math.max(1,Math.min(2.6,metrics.W*.77/source.w,metrics.H*.74/source.h,
+        (towardRight ? metrics.W-10-source.x : right-10)/source.w,
+        (towardBottom ? metrics.H-58-source.y : bottom-54)/source.h));
+      const w=source.w*scale, h=source.h*scale;
+      const focus=box(towardRight ? source.x : right-w,towardBottom ? source.y : bottom-h,w,h);
+      resting.forEach((region,i)=>{to[i]=i===index ? focus : pushAside(region,focus,metrics);});
+    }
     close.hidden=index<0;
     gallery.classList.toggle('is-focused',index>=0);
     tiles.forEach(({button},i)=>{
@@ -121,7 +207,7 @@ function createGallery(id,items,article=false) {
       gallery.removeAttribute('aria-busy');
       updateDetail();
     } else {
-      movement={from:regions,to,index:index>=0 ? index : previous,exchange:index>=0 && previous>=0 ? previous : -1};
+      movement={from:regions,to,index:movingIndex,towardRight,towardBottom,opening:index>=0};
       gallery.setAttribute('aria-busy','true');
     }
     requestRender();
@@ -137,7 +223,7 @@ function createGallery(id,items,article=false) {
     }
   });
 
-  function positions(m,selection) {
+  function positions(m) {
     const {W,H,mobile}=m;
     const gutter=mobile ? 22 : Math.max(36,W*.08);
     const top=Math.max(42,Math.min(89,H*.12));
@@ -149,16 +235,10 @@ function createGallery(id,items,article=false) {
     const deskHeight=Math.max(120,H-deskTop-66);
     const cellW=deskWidth/columns;
     const cellH=deskHeight/rows;
-    const edge=mobile ? 6 : 13;
-    const thumbWidth=Math.min(mobile ? 47 : 100,W*.105);
-    const focusTop=deskTop-5;
-    const focusHeight=Math.max(50,H-focusTop-80);
-
     heading.style.left=deskLeft+'px';
     heading.style.top=top+'px';
     close.style.right=deskLeft+'px';
     close.style.top=(top-10)+'px';
-    const sideCounts=[0,0];
     return tiles.map(({item},i)=>{
       const ratio=article ? item.ratio || 16/9 : item.width/item.height;
       const row=Math.floor(i/columns);
@@ -167,31 +247,11 @@ function createGallery(id,items,article=false) {
       const size=.93+variation(i,0)*.24;
       const tileWidth=Math.min(cellW*size,cellH*(size+.10)*ratio);
       const tileHeight=tileWidth/ratio;
-      const tilt=(variation(i,1)-.5)*(mobile ? 19 : 25);
+      const tilt=0;
       const x=rowLeft+(i%columns+.5)*cellW-tileWidth/2+(variation(i,2)-.5)*cellW*.30;
       const y=deskTop+(row+.5)*cellH-tileHeight/2+(variation(i,3)-.5)*cellH*.39;
-      if(selection===i) {
-        const margin=Math.max(gutter,edge+thumbWidth+12);
-        const width=Math.min(W-2*margin,focusHeight*ratio,1120);
-        const height=width/ratio;
-        return box((W-width)/2,focusTop+(focusHeight-height)/2,width,height);
-      }
-      if(selection>=0) {
-        const side=i%2;
-        const order=sideCounts[side]++;
-        const railCount=Math.ceil(tiles.length/2);
-        const thumbH=Math.min(thumbWidth/ratio,thumbWidth*1.05);
-        const thumbW=thumbH*ratio;
-        const railY=deskTop+deskHeight*(side ? .31 : .16)+order*Math.min(deskHeight*.57/railCount,thumbH*.73+8);
-        const slop=variation(i,4)*(mobile ? 5 : 11);
-        return box(side ? W-thumbW-edge-slop : edge+slop,railY,thumbW,thumbH,tilt*.69);
-      }
-      const paper=box(0,0,tileWidth,tileHeight,tilt);
-      const corners=[point(0,0),framePoint(paper,tileWidth,0),
-        framePoint(paper,0,tileHeight),framePoint(paper,tileWidth,tileHeight)];
-      const xs=corners.map(p=>p.x), ys=corners.map(p=>p.y);
-      const left=Math.min(Math.max(x,8-Math.min(...xs)),W-8-Math.max(...xs));
-      const top=Math.min(Math.max(y,deskTop-10-Math.min(...ys)),H-24-Math.max(...ys));
+      const left=Math.min(Math.max(x,8),W-8-tileWidth);
+      const top=Math.min(Math.max(y,deskTop-10),H-24-tileHeight);
       return box(left,top,tileWidth,tileHeight,tilt);
     });
   }
@@ -199,7 +259,13 @@ function createGallery(id,items,article=false) {
   function layout(m) {
     movement=undefined;
     gallery.removeAttribute('aria-busy');
-    regions=positions(m,selected);
+    resting=positions(m);
+    regions=resting;
+    if(selected>=0) {
+      const index=selected;
+      selected=-1;
+      select(index);
+    }
   }
 
   function updateDetail() {
@@ -211,33 +277,20 @@ function createGallery(id,items,article=false) {
   }
 
   function animateSelection() {
-    const {from,to,index,exchange}=movement;
+    const {from,to,index,towardRight,towardBottom,opening,throwing}=movement;
     const now=performance.now();
     movement.start ??= now;
-    const t=clamp((now-movement.start)/790);
-    const sweep=1-(1-phase(t,.08,.93))**3;
+    const t=clamp((now-movement.start)/(throwing ? 390 : 640));
+    const growth=throwing ? 1-(1-t)**3 : ease(t,0,1);
+    const card=mixBox(from[index],to[index],growth);
     regions=from.map((region,i)=>{
-      const delay=(i%3)*.046;
-      const incoming=i===index;
-      const outgoing=i===exchange;
-      const p=incoming ? ease(t,exchange>=0 ? .07 : 0,.96) :
-        outgoing ? ease(t,0,.85) : 1-(1-phase(t,.09+delay,.91+delay))**3;
-      const result=mixBox(region,to[i],p);
-      const verticalArc=exchange>=0 && (incoming || outgoing) ? (incoming ? 26 : -26) :
-        incoming ? 0 : i%2 ? 15 : -11;
-      result.y+=Math.sin(p*Math.PI)*verticalArc;
-      return result;
+      if(i===index) return card;
+      const destination=(opening || throwing) && region.w===to[i].w && region.h===to[i].h
+        ? pushAside(region,card,metrics) : mixBox(region,to[i],growth);
+      return mixBox(destination,to[i],ease(t,.70,1));
     });
-    const selectedRegion=regions[index];
-    if(t<.94) {
-      const handle=framePoint(selectedRegion,selectedRegion.w,selectedRegion.h);
-      cursor(agent,handle,1,0,true);
-      const movingAside=regions.findIndex((_,i)=>i!==index && Math.abs(from[i].x-to[i].x)>14);
-      if(t>.08 && t<.8 && movingAside>=0) {
-        const side=regions[movingAside];
-        const headsRight=to[movingAside].x>from[movingAside].x;
-        cursor(sweeper,framePoint(side,headsRight ? 0 : side.w,side.h*(.43+sweep*.18)));
-      }
+    if(opening && t<.98) {
+      cursor(agent,framePoint(card,towardRight ? card.w : 0,towardBottom ? card.h : 0),1,0,true);
     }
     if(t<1) {
       requestRender();
@@ -282,27 +335,12 @@ function createGallery(id,items,article=false) {
     else if(ready) updateDetail();
 
     headingText.render(ease(amount,0,.25));
+    const opened=reduced.matches ? 1 : ease(amount,0,.24);
     tiles.forEach(({button},i)=>{
       const region=regions[i];
-      const delay=variation(i,5)*.34;
-      const travel=phase(amount,delay,delay+.48);
-      button.style.visibility=travel>0 ? 'visible' : 'hidden';
-      if(reduced.matches || travel===1) {
-        place(button,region);
-        return;
-      }
-      const edge=Math.floor(variation(i,6)*4);
-      const from=box(region.x,region.y,region.w,region.h,region.rotation+(variation(i,7)-.5)*96);
-      if(edge===0) from.x=-region.w-90;
-      else if(edge===1) from.x=metrics.W+90;
-      else if(edge===2) from.y=-region.h-90;
-      else from.y=metrics.H+90;
-
-      const skid=1-(1-travel)**3;
-      const card=mixBox(from,region,skid);
-      // A brief yaw as the sheet loses momentum.
-      card.rotation+=Math.sin(travel*Math.PI*2)*travel*(1-travel)*27;
-      place(button,card);
+      button.style.opacity=String(opened);
+      const w=region.w*(.94+.06*opened), h=region.h*(.94+.06*opened);
+      place(button,box(region.x+(region.w-w)/2,region.y+(region.h-h)/2,w,h));
     });
     if(!ready) detail.hidden=true;
   }
@@ -500,7 +538,7 @@ window.addEventListener('wheel',event=>{
   }
 },{passive:false});
 stage.addEventListener('touchstart',event=>{
-  swipe=event.touches.length===1 ? event.touches[0] : null;
+  swipe=event.touches.length===1 && !event.target.closest('.gallery-titlebar') ? event.touches[0] : null;
 },{passive:true});
 stage.addEventListener('touchmove',event=>{
   if (!swipe || event.touches.length!==1) return;
@@ -621,7 +659,6 @@ function render(s,m) {
   let introErase=0,aboutErase=0,projectErase=0;
   typingCursor=null;
   visible(agent,0);
-  visible(sweeper,0);
   visible(scrollHint,1-ease(s,.025,.20));
 
   if (s < timing.introEnd) {

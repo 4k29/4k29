@@ -5,7 +5,7 @@
 <header>
 <button id="run">Run browser checks</button><button id="gallery-run">Check galleries</button>
 <button id="desk">Desktop</button><button id="light">Light preference</button><button id="dark">Dark preference</button><button id="phone">390 px</button><button id="touch-drag">Simulate touch drag</button><button id="touch-release">Simulate touch release</button>
-<button data-position="0">Blank</button><button data-position=".34">Top line</button><button data-position=".68">Expanding frame</button><button data-position="1.20">Typing</button><button data-position="1.17">I-beam</button><button data-position="1.24">Caret bar</button><button data-position="5.16">About</button><button data-position="8.67">Project</button><button data-position="4.40">About typing</button><button data-position="7.91">Project typing</button><button data-position="8.67">Project complete</button><button data-position="10.74">Gallery toss</button><button data-position="13.02">Tecirc grid</button><button data-position="17.45">Photography grid</button><button data-position="21.47">Contact</button>
+<button data-position="0">Blank</button><button data-position=".34">Top line</button><button data-position=".68">Expanding frame</button><button data-position="1.20">Typing</button><button data-position="1.17">I-beam</button><button data-position="1.24">Caret bar</button><button data-position="5.16">About</button><button data-position="8.67">Project</button><button data-position="4.40">About typing</button><button data-position="7.91">Project typing</button><button data-position="8.67">Project complete</button><button data-position="10.74">Windows opening</button><button data-position="13.02">Tecirc grid</button><button data-position="17.45">Photography grid</button><button data-position="21.47">Contact</button>
 </header>
 <pre id="result"></pre><iframe title="Portfolio viewport" width="1250" height="726" src="index.html"></iframe>
 <script>
@@ -108,33 +108,36 @@ async function cursorDuring(action) {
 const settled=()=>until(()=>!q('.gallery[aria-busy="true"]'),'Gallery movement never settled');
 async function galleryChecks(){
   const stageWidth=q('#stage').clientWidth;
-  const x=tile=>new DOMMatrix(tile.style.transform).m41;
   const width=tile=>parseFloat(tile.style.width);
-  const oppositeEdges=(left,right)=>x(left)<25 && stageWidth-x(right)-width(right)<25;
   await at(13.02);
   const articles=all('#articles .gallery-tile');
+  const dimensions=nodes=>nodes.map(tile=>[width(tile),parseFloat(tile.style.height)]);
+  const sizes=dimensions(articles);
   expect(q('#photos').inert && !q('#articles').inert && articles.length===8,'Tecirc articles appear before Photography');
-  const articleWidth=width(articles[5]);
-  const resting=articles.map(style);
-  await at(10.80);
-  expect(articles.some((tile,i)=>tile.style.visibility==='visible' && style(tile)!==resting[i]) &&
-    articles.every(tile=>!tile.querySelector('.gallery-image').style.clipPath),'Complete cards are in flight');
+  await at(10.60);
+  expect(articles.every(tile=>Number(tile.style.opacity)>0 && tile.querySelector('.gallery-titlebar')),
+    'All titled windows open together');
   await at(13.02);
+  const firstBounds=articles[5].getBoundingClientRect();
   await cursorDuring(()=>articles[5].click());
   await settled();
   const link=q('#articles .gallery-detail a');
-  expect(articles[5].getAttribute('aria-pressed')==='true' && width(articles[5])>articleWidth &&
-    oppositeEdges(articles[0],articles[1]) && link.href.endsWith('/Nothing-Headphone-1/') && link.target==='_blank',
-    'Articles enlarge in the center, move to both edges, and open the Tecirc page');
+  const resized=articles[5].getBoundingClientRect();
+  expect(width(articles[5])>sizes[5][0] &&
+    (Math.abs(firstBounds.left-resized.left)<1 || Math.abs(firstBounds.right-resized.right)<1) &&
+    (Math.abs(firstBounds.top-resized.top)<1 || Math.abs(firstBounds.bottom-resized.bottom)<1),
+    'The selected window grows around a fixed corner');
+  expect(dimensions(articles).every(([w,h],i)=>i===5 || w===sizes[i][0] && h===sizes[i][1]) &&
+    link.href.endsWith('/Nothing-Headphone-1/') && link.target==='_blank',
+    'Pushed neighbors keep their window dimensions and article links remain available');
   articles[0].click();
   expect(articles[0].getAttribute('aria-pressed')==='true' && q('#articles').classList.contains('is-focused'),
-    'Switching cards does not reopen the overview');
+    'Switching windows does not reopen the overview');
   await settled();
-  expect(q('#articles .gallery-detail a').href.endsWith('/touch-MacBookPro/') &&
-    !q('#articles .gallery-detail').querySelector('[data-ink]'),'Article caption swaps without replaying text effects');
+  expect(q('#articles .gallery-detail a').href.endsWith('/touch-MacBookPro/'),'Article caption follows selection');
   const empty=d().elementFromPoint(stageWidth/2,q('#stage').clientHeight-16);
   expect(empty===q('#articles'),'Article canvas receives clicks in the empty area');
-  await cursorDuring(()=>empty.click());
+  empty.click();
   await settled();
   expect(q('#articles .gallery-detail').hidden,'Back to grid restores articles');
   await at(17.45);
@@ -151,10 +154,9 @@ async function galleryChecks(){
   portrait.click();
   await settled();
   expect(portrait.getAttribute('aria-pressed')==='true' && width(portrait)>before &&
-    width(portrait)<parseFloat(portrait.style.height) && Math.abs(x(portrait)+width(portrait)/2-stageWidth/2)<1,
-    'Selected portrait expands in the center and keeps its aspect ratio');
-  const edges=photos.filter(tile=>tile!==portrait);
-  expect(edges.some(l=>edges.some(r=>oppositeEdges(l,r))),'Other photos move to opposite edges');
+    width(portrait)<parseFloat(portrait.style.height),
+    'Selected portrait expands and keeps its aspect ratio');
+
   const filename=q('#photos .gallery-filename');
   expect(/^img_\d{4}\.jpg$/.test(filename.textContent),'Selected photo keeps its filename');
   portrait.dispatchEvent(new (frame.contentWindow.KeyboardEvent)('keydown',{key:'Escape',bubbles:true}));
