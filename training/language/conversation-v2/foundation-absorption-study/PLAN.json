@@ -1,0 +1,135 @@
+{
+  "frozen_before_optimizer": true,
+  "initial_SOURCE": "fc24624bcd3a298e3d0b32ecf8b419af32354c6196c764544249d05abcd980f7",
+  "model": "own11.23M/BPE3997/context256 unchanged",
+  "A": "MIX579 without extra LM",
+  "B": {
+    "extra_LM_updates": 1064,
+    "active_targets": 991448,
+    "nonLF_body_targets": 971434,
+    "one_pass": true,
+    "optimizer": "MIX579 inherited AdamW moment and step6940",
+    "LR": 3e-05,
+    "clip": 1.0,
+    "checkpoint": [
+      4,
+      532,
+      1064
+    ],
+    "midpoint_evaluation": "NLL only; endpoint primary regardless results"
+  },
+  "SFT": {
+    "arms": [
+      "A",
+      "B"
+    ],
+    "optimizer": "both fresh AdamW, no inherited moment, empty state, step0",
+    "seed": 20261114,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "epsilon": 1e-08,
+    "weight_decay": 0.05,
+    "LR": 1e-05,
+    "clip": 1.0,
+    "updates_each": 93,
+    "one_pass": true,
+    "loss": "response body+trueEOS active global batch mean",
+    "active_teachers_each": 35138,
+    "input_nonPAD_each": 49856,
+    "checkpoint": [
+      47,
+      93
+    ],
+    "midpoint": "NLL only",
+    "unlike_PR115": "fresh Adam; old SFT results not control"
+  },
+  "evaluation": {
+    "states": [
+      "A-base",
+      "B-base",
+      "SFT-A-93",
+      "SFT-B-93"
+    ],
+    "new_prose": 12,
+    "FAQ": 19,
+    "grounded": 4,
+    "legacy": 129,
+    "ASDC": 15,
+    "self_history": 4,
+    "train_probes": 4,
+    "greedy": "all vocabulary, unchanged limits, no penalties or suppression",
+    "independent_native_human_evaluation": false,
+    "exposure": "All development diagnostics; JMADEV3families, no sealed TEST; earlier output-based selection bias acknowledged"
+  },
+  "train_generation_rows": [
+    138,
+    132,
+    311,
+    241
+  ],
+  "preflight": {
+    "discarded_original_each_stage": 2,
+    "resume_replay_each_stage": 1,
+    "stages": [
+      "LM",
+      "SFT-A",
+      "SFT-B"
+    ],
+    "expected_actual_calls": 1259,
+    "expected_retained": 1250,
+    "expected_discarded": 6,
+    "expected_replay": 3
+  },
+  "stops": [
+    "nonfinite",
+    "SHA mismatch",
+    "checkpoint/ledger ambiguous",
+    "resume mismatch",
+    "SFT optimizer/RNG mismatch",
+    "diskfree<2GiB"
+  ],
+  "no_auto_replay": true,
+  "no_additional_epoch": true,
+  "sha256": {
+    "training/language/conversation-v2/foundation-absorption-study/corpus.jsonl.gz": "2f5edf308d5d95dfd573f32a8fda2ced42e92149990a5c96593fca1dac0121b2",
+    "training/language/conversation-v2/foundation-absorption-study/SCHEDULE.json": "5de559686399395b904b169d5316ea7cf63370e7b01546c6f0383aea84c9ceaa",
+    "training/language/conversation-v2/foundation-absorption-study/PROSE_DEV.json": "ba01c820102ecaaea1b361b21189263337db8caf05cf8a97125f716215105130",
+    "training/language/conversation-v2/foundation-absorption-study/SOURCE_AUDIT.json": "0f265c1e823d1fc69fed264312d48fda39d42a750ee9c7b902959e1ebd03a7b4",
+    "training/language/conversation-v2/foundation-absorption-study/POSITION_AUDIT.json": "d2f9bd2d87f4b1d1fb59ee2e6671b056582e8bcd0cb17cd9398acee4a7112119",
+    "training/language/conversation-v2/foundation-absorption-study/POSITION_MAP.json.gz": "a7391c53f8392967c13bdf549cc13475591ed58cbad1843d08ad9b03f5d60355",
+    "training/language/conversation-v2/foundation-absorption-study/QUALITY_REVIEW.json": "d18c95a299c88f402c2a933c2da353df857a78a653344ee0482c23d76ba63254",
+    "training/language/conversation-v2/foundation-absorption-study/QUALITY_SAMPLE.json": "0ac428d38458eb4272179de02230ac653067995eecb1b6b4bb3aa21ba91ec607",
+    "training/language/conversation-v2/foundation-absorption-study/engine.py": "76c226e6597b1dec781d015e6f3c98d2e16002d77ea5de8ddff055577ed77ed0",
+    "training/language/conversation-v2/foundation-absorption-study/verify_inputs.py": "2c15263b4376f35d513f961c82344d88e6def75b1c727433bdd91f8fa1602180",
+    "training/language/conversation-v2/faq-ce-verified-study/DATA.json": "1137a6c30cf520bf1c69ae32ff5b3a0d339823ebca267455a1608acec85853a2",
+    "training/language/conversation-v2/faq-ce-verified-study/DEV_PROTOCOL.json": "de2374a79af4b95818fe7f0724bbf8166006a81604ea7b2705fdfad629be2fcb",
+    "training/language/conversation-v2/faq-ce-verified-study/GROUNDED_DEV.json": "f1ca968fab0c621fc8bf06a0296f4b83343a3c67e0f4a98749fcc9f8edcb438b",
+    "training/language/conversation-v2/faq-ce-verified-study/evaluation/initial.json": "7703d8663e9da246cd2f700327d9265c497f63f94649b32771edb66fb5a18b45",
+    "training/language/conversation-v2/faq-ce-verified-study/evaluation/A-study93.json": "59b68ca2f00baeb7bb191a6375d2c85fc62de9fe3bb9679a29cd7f035ae588cc",
+    "training/language/conversation-v2/data/tokenizer.json": "6d079e4ba0a954ae32ad34a35ddd15384eb48b8eceaf3f3529a66e4266b1da06",
+    "training/language/conversation-v2/core.py": "52a74ecb7250a6671a432d3aa38ad9ed0ffbe1a3be5601fde3b721f1e735b83d",
+    "training/language/conversation-v2/new_tokenizer.py": "c5f131b6a8830809cb129125c029ab83a1290732ec53012b473d22e1dc3f2bbd",
+    "training/language/conversation-v2/foundation-stage/runtime.py": "c0b4a25142666a4e6a6efe652598dc4952880eb8aee498008c4cd3b1bbce1368",
+    "training/language/conversation-v2/foundation-stage/prose_decode.py": "fc567c30957a87c812f035600b7513b75f6c562c2f78eb2271b4e7e7f7a8fb0c",
+    "training/language/conversation-v2/modern-corpus/next_runtime.py": "3f6646100da045b1bce7edb69f50ddb746291191809a8fe9ff7e9ccb59e6fe8d",
+    "training/language/conversation-v2/foundation-absorption-study/RIGHTS.md": "ac4562d5eb498d96922e688a67312e289c7401bb11c3edd042602d64ceca6e57",
+    "training/language/conversation-v2/PLAN.json": "c457f7510965e7dbe72475eb4b93c2441b6d9a541bdf7ed26db4c79714f6aaa8",
+    "training/language/conversation-v2/eval_core.py": "a50c778a7debacfc755265a07e25beae9ec141f36671b1ae9e59de2770339839",
+    "training/language/conversation-v2/diverse-foundation/common.py": "4270992aa25acdd1b299d571539e311dea4d6230255e18708ff484e691309bbb",
+    "training/language/conversation-v2/foundation-data/research/zero_update_preflight.py": "7477935a2c58be4816c137602048e0c262c60fac423fb7820499e4115e178e22",
+    "training/language/conversation-v2/mixed-retention-study/evaluation/terminal-MIX.json": "1b0c0c74eb4f551086f6f380bb2e1b555dc0c2c5ba8c1b9cea909d52ee1fc3ae",
+    "training/language/conversation-v2/mixed-retention-study/NLL/mixed.json": "058d07ada187028236cb54aaa641a3b12832876d46916e7bb12c6bc32d47198d",
+    "training/language/conversation-v2/mixed-retention-study/DEV_BODY_NLL.json.gz": "ba031ba84594279ffd0fdeee9f19d874d5a9579772a2f6cc567fb546fd40ce69",
+    "training/language/conversation-v2/public-dialogue-study/evaluation/initial.json": "46b7d466c0474025cc8106d895098366899e3b3c56ea8ef63a02c350cc0526b2",
+    "training/language/conversation-v2/paragraph-foundation/panels/B-579.json": "39e8ad7ab7e642d1c206607e5aebd563863ea885e8045c9acf448238bb276a78",
+    "training/language/conversation-v2/foundation-absorption-study/finalize_quality.py": "ed21f710843eb5bd44b0ee6dc0796d366d1b9145144f41ce0709361360129d3b",
+    "training/language/conversation-v2/foundation-absorption-study/package.py": "1ea0fefc4f9e77c3889ba05c04d05a6d755a8dc94f6b268fb99483a011aecdd1",
+    "training/language/conversation-v2/foundation-absorption-study/freeze.py": "56507cae64e37f52f24acedecbe5ae18ddfc088a17d896284ec6c6deb5196a08",
+    "training/language/conversation-v2/foundation-absorption-study/build_data.py": "3a79ee9af68f4095db5237132470437880ca73ac604da3e01453054505d42418",
+    "training/language/conversation-v2/foundation-absorption-study/audit_data.py": "e1c85adb18a0b111cb0fb80a453d88ba938ece2961a5d5e19319186d106e6d7f",
+    "training/language/conversation-v2/foundation-absorption-study/PREPARATION_EVENTS.json": "f3c74c1f8b33f9bb5f52cbbda8fb9d6f88202afe1be5bffec68775a7c4324860"
+  },
+  "pre_update_plan_completion": "v1 preserved; completed logging and reusable-input SHA registration before first optimizer; data/loss/targets/budgets unchanged"
+}
