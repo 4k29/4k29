@@ -68,24 +68,46 @@ function framePoint(region,x,y) {
     region.y+x*Math.sin(angle)+y*Math.cos(angle));
 }
 
-// Sweep each axis up to the first contact, even for a large pointer delta.
-function sweep(rect, others, dx, dy, viewport) {
-  const moved={...rect};
-  const hits=[];
-  for(const [axis,cross,size,span,delta,limit] of [
-    ['x','y','w','h',dx,viewport.W], ['y','x','h','w',dy,viewport.H]
-  ]) {
-    let low=5, high=limit-moved[size]-5;
-    for(const other of others) {
-      if(moved[cross]+moved[span]<=other[cross] || other[cross]+other[span]<=moved[cross]) continue;
-      if(other[axis]>=moved[axis]+moved[size]-.01) high=Math.min(high,other[axis]-moved[size]);
-      if(other[axis]+other[size]<=moved[axis]+.01) low=Math.max(low,other[axis]+other[size]);
+// Advance all windows on one clock. Small swept steps also propagate a hit through a row.
+function slideWindows(regions, velocities, viewport, elapsed, held) {
+  const result=regions.map(r=>({...r}));
+  const steps=Math.max(1,Math.ceil(elapsed/6));
+  const dt=elapsed/steps;
+  for(let step=0;step<steps;step++) {
+    for(let i=0;i<result.length;i++) {
+      const r=result[i], velocity=velocities[i];
+      for(const [axis,cross,size,span,extent] of [
+        ['x','y','w','h',viewport.W],['y','x','h','w',viewport.H]
+      ]) {
+        if(held?.index===i) velocity[axis]=Math.max(-2.8,Math.min(2.8,(held[axis]-r[axis])/28));
+        const v=velocity[axis];
+        if(Math.abs(v)<.006) { velocity[axis]=0; continue; }
+        const direction=Math.sign(v);
+        let distance=Math.abs(v)*dt, hit=-2;
+        const wall=direction>0 ? extent-5-r[size]-r[axis] : r[axis]-5;
+        if(wall<=distance) { distance=Math.max(0,wall); hit=-1; }
+        for(let j=0;j<result.length;j++) {
+          if(i===j) continue;
+          const o=result[j];
+          if(r[cross]+r[span]<=o[cross] || o[cross]+o[span]<=r[cross]) continue;
+          const gap=direction>0 ? o[axis]-r[axis]-r[size] : r[axis]-o[axis]-o[size];
+          if(gap>=-.001 && gap<=distance) {distance=Math.max(0,gap);hit=j;}
+        }
+        r[axis]+=direction*distance;
+        if(hit===-1) velocity[axis]*=-.58;
+        if(hit>=0) {
+          const relative=v-velocities[hit][axis];
+          if(relative*direction>0) {
+            const impulse=.85*relative;
+            velocity[axis]-=impulse;
+            velocities[hit][axis]+=impulse;
+          }
+        }
+        velocity[axis]*=Math.exp(-dt/255);
+      }
     }
-    const wanted=moved[axis]+delta;
-    moved[axis]=Math.min(high,Math.max(low,wanted));
-    hits.push(Math.abs(wanted-moved[axis])>.001);
   }
-  return {rect:moved,hits};
+  return result;
 }
 
 function createGallery(id,items,article=false) {
@@ -128,6 +150,7 @@ function createGallery(id,items,article=false) {
   });
 
   let selected=-1, regions, resting, movement, afterClose, drag, ignoreClick=-1;
+  let velocities=tiles.map(()=>({x:0,y:0}));
   function beginDrag(event,index) {
     if(!event.isPrimary || event.button!==0 || index<0 || gallery.inert || (movement && !movement.throwing)) return;
     if(movement) {
@@ -153,9 +176,9 @@ function createGallery(id,items,article=false) {
       drag.lastY=event.clientY;
       drag.lastTime=event.timeStamp;
     }
-    const origin=drag.from[drag.index], current=regions[drag.index];
-    const next=sweep(current,regions.filter((_,i)=>i!==drag.index),origin.x+dx-current.x,origin.y+dy-current.y,metrics);
-    regions=regions.map((r,i)=>i===drag.index ? next.rect : r);
+    const origin=drag.from[drag.index];
+    drag.target={index:drag.index,x:origin.x+dx,y:origin.y+dy};
+    movement ??= {index:drag.index,throwing:true,last:performance.now()-12};
     requestRender();
   });
   function endDrag(event) {
@@ -166,8 +189,10 @@ function createGallery(id,items,article=false) {
     if(!moved) return;
     ignoreClick=index;
     if(selected<0) resting=regions;
-    if(reduced.matches || event.type!=='pointerup' || event.timeStamp-lastTime>120) return;
-    movement={index,throwing:true,last:performance.now(),vx:Math.max(-2.6,Math.min(2.6,vx)),vy:Math.max(-2.6,Math.min(2.6,vy))};
+    const release=event.type==='pointerup' && event.timeStamp-lastTime<120 && !reduced.matches;
+    velocities[index]={x:release ? Math.max(-2.6,Math.min(2.6,vx)) : 0,
+      y:release ? Math.max(-2.6,Math.min(2.6,vy)) : 0};
+    movement={index,throwing:true,last:performance.now()};
     gallery.setAttribute('aria-busy','true');
     requestRender();
   }
@@ -177,6 +202,7 @@ function createGallery(id,items,article=false) {
   function select(index) {
     if(index===selected || gallery.inert) return;
     const previous=selected;
+    velocities=tiles.map(()=>({x:0,y:0}));
     selected=index;
     const movingIndex=index>=0 ? index : previous;
     const source=regions[movingIndex];
@@ -268,6 +294,7 @@ function createGallery(id,items,article=false) {
   }
 
   function layout(m) {
+    velocities=tiles.map(()=>({x:0,y:0}));
     movement=undefined;
     gallery.removeAttribute('aria-busy');
     drag=undefined;
@@ -295,12 +322,9 @@ function createGallery(id,items,article=false) {
     if(throwing) {
       const dt=Math.min(40,now-movement.last);
       movement.last=now;
-      const next=sweep(regions[index],regions.filter((_,i)=>i!==index),movement.vx*dt,movement.vy*dt,metrics);
-      regions=regions.map((r,i)=>i===index ? next.rect : r);
-      const friction=Math.exp(-dt/225);
-      movement.vx*=friction*(next.hits[0] ? -.58 : 1);
-      movement.vy*=friction*(next.hits[1] ? -.58 : 1);
-      if(Math.hypot(movement.vx,movement.vy)>.016) requestRender();
+      regions=slideWindows(regions,velocities,metrics,dt,drag?.target);
+      if(selected<0) resting=regions;
+      if(velocities.some(v=>Math.hypot(v.x,v.y)>.012)) requestRender();
       else {
         movement=undefined;
         if(selected<0) resting=regions;
