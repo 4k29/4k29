@@ -1,0 +1,11 @@
+# Process-resume receipt-path repair
+
+The originally preregistered trainer successfully passed its internal 514→516 disk-reload/replay test, but independent review then found a separate entrypoint defect: `--resume` attempted to create the already-existing `run-zero-update-preflight.json` and refused to overwrite it. This was an audit-output pathname collision, not a model/Adam/RNG mismatch. Preserve the original code and original plan unchanged.
+
+The medium run was stopped with SIGTERM at a complete update: retained580, Adam580,70 actual continuation updates (68retained+2replay), cursor2320. The full stopped checkpoint SHA is `1e08342b8fbcb75bc80a1c0e265664f718f813c50c65c58387e8575908cf4c60`. The stop receipt and original log are under `medium/stop580/`. Running the original `--resume` reproduced the expected ValueError with zero optimizer updates; the ledger stayed140lines and the checkpoint stayed unchanged. That error is archived, not erased.
+
+`resume_train.py` validates the frozen original source/plan, its own SHA through `RESUME_AMENDMENT.json`, the exact stopped full checkpoint and ledger SHA. It replaces exactly one pathname assignment in memory and proves that normalizing that assignment back makes the entire Python AST identical. It executes the original model/optimizer/training code and original source/data guards with an append-only resume-audit pathname. No model math, learning rate, optimizer, RNG, sampler, target weighting, epoch order, evaluation condition or update budget changes.
+
+Original training plan SHA: `f458f073d06632b42e641a6d4fd3475bb6c15b86e54d35e84a0611f582a488a1` (commit `c801a1f`). Repair amendment SHA: `302f1ef95b2994647a75133eb62f7093c49424e5b3ba85387bc49a8b8f031089` (commit `b52b58d`), independently reviewed before process-resume. The fresh small arm uses the original entrypoint; its initial run has no pathname collision.
+
+The resumed run restored580 and continued581 onward; it did not restart512, repeat retained updates, reset Adam or schedule, or perform extra replay updates. Final elapsedSeconds in the original receipt describes the resumed process segment only. Total medium training wall time is the sum of the stopped580 receipt and final resumed receipt (excluding separate validation/review intervals).
