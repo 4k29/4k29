@@ -7,7 +7,7 @@ const base=process.env.SITE_URL||'http://localhost:8001/';
   const context=await browser.newContext({reducedMotion:'reduce',isMobile:mobile,hasTouch:mobile,viewport:mobile?{width:390,height:844}:{width:1440,height:900}});
   const page=await context.newPage(),errors=[],remote=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(!r.url().startsWith(base))remote.push(r.url());});
-  await page.goto(new URL('assistant.html',base));await page.waitForFunction(()=>!document.querySelector('#prompt-form button').disabled);
+  await page.goto(new URL('assistant.html',base).href);await page.waitForFunction(()=>!document.querySelector('#prompt-form button').disabled);
   const input=page.locator('#prompt-input');assert.equal(await input.evaluate(el=>el.tagName),'TEXTAREA');
   assert.equal(await input.evaluate(el=>getComputedStyle(el).fontSize),mobile?'14px':'13px');
   const initialHeight=await input.evaluate(el=>el.clientHeight);

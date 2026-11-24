@@ -15,7 +15,7 @@ const base=process.env.SITE_URL||'http://localhost:8001/';
    return page.locator('.chat-response').nth(count-1);
   }
   const records=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('4k29.question-journal.v1')).records);
-  await page.goto(new URL('assistant.html',base));await ready();
+  await page.goto(new URL('assistant.html',base).href);await ready();
   const names=[];for(let i=0;i<10;i++){const row=await ask('名前は？');names.push(await row.innerText());}
   assert.ok(new Set(names).size>=8);assert.ok(names.every(t=>t.includes('4k29')&&!/だよ。|いるよ。/.test(t)));
   await ask('これからは丁寧な口調で短く答えて');
