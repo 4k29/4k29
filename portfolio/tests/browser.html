@@ -5,7 +5,7 @@
 <header>
 <button id="run">Run browser checks</button><button id="gallery-run">Check galleries</button>
 <button id="desk">Desktop</button><button id="light">Light preference</button><button id="dark">Dark preference</button><button id="phone">390 px</button><button id="touch-drag">Simulate touch drag</button><button id="touch-release">Simulate touch release</button>
-<button data-position="0">Blank</button><button data-position="1.20">Typing</button><button data-position="1.17">I-beam</button><button data-position="1.24">Caret bar</button><button data-position="5.16">About</button><button data-position="8.67">Project</button><button data-position="4.40">About typing</button><button data-position="7.91">Project typing</button><button data-position="8.67">Project complete</button><button data-position="10.74">Windows opening</button><button data-position="13.02">Tecirc grid</button><button data-position="17.45">Photography grid</button><button data-position="21.47">Contact</button>
+<button data-position="0">Blank</button><button data-position="1.20">Typing</button><button data-position="5.16">About</button><button data-position="8.67">Project</button><button data-position="4.40">About typing</button><button data-position="7.91">Project typing</button><button data-position="8.67">Project complete</button><button data-position="10.74">Windows opening</button><button data-position="13.02">Tecirc grid</button><button data-position="17.45">Photography grid</button><button data-position="21.47">Contact</button>
 </header>
 <pre id="result"></pre><iframe title="Portfolio viewport" width="1250" height="726" src="index.html"></iframe>
 <script>
@@ -26,7 +26,7 @@ const shown=(n)=>n.style.visibility==='visible' && size(n,'opacity')>.01;
 const expect=(value,detail)=>{if(!value)throw Error(detail)};
 const style=(n)=>n.getAttribute('style');
 const scram=()=>Array.from(q('#intro h1 [aria-hidden=true]').childNodes).map(n=>n.nodeType===3?n.textContent:n.querySelector('.scramble-glyph').textContent).join('');
-const state=()=>[q('#intro p')?.innerHTML,style(q('#agent')),q('#agent path').getAttribute('d'),...all('.gallery').map(style),scram()].join('|');
+const state=()=>[q('#intro p')?.innerHTML,...all('.gallery').map(style),scram()].join('|');
 async function run(width,height){
   frame.width=width;frame.height=height;
   frame.scrollIntoView({block:'start'});
@@ -35,19 +35,19 @@ async function run(width,height){
   expect(doc.documentElement.clientWidth<=width && doc.documentElement.clientWidth>=width-17,'Viewport width');
   const stage=q('#stage');
   expect(!q('#experience').hidden && !q('#contents'),'Application initialized');
-  expect(shown(q('#scroll-hint')) && !q('#frame') && ![q('#agent'),q('#intro')].some(shown),'Only scroll hint at opening');
+  expect(shown(q('#scroll-hint')) && !q('#frame') && !q('#agent') && !shown(q('#intro')),'Only scroll hint at opening');
   expect(!q('#stage nav[aria-label="セクション"]') && !doc.body.textContent.includes('Wishlist'),'Removed top tabs and Wishlist');
   await at(1.17);
-  expect(shown(q('#agent')) && size(q('#agent path:nth-child(2)'),'opacity')>.1 && size(q('#agent path:nth-child(3)'),'opacity')>0,'Cursor changes to I-beam');
+
   await at(1.24);
-  expect(size(q('#agent path:nth-child(2)'),'opacity')>.95 && size(q('#agent path:nth-child(3)'),'opacity')===0,'Caret stem remains when I-beam caps disappear');
+
   const mixed=scram(), stopped=state();
   expect(!q('#intro h1 [data-ink]') && !q('#intro p [data-ink]') && q('#intro .scramble-pending'),'The title uses gray scrambling without colored fragments');
   expect(mixed!=="I'm うまいしか" && q('#intro .scramble-caret'),'Text scrambles with caret');
   await new Promise(r=>setTimeout(r,225));
   expect(state()===stopped,'No autonomous changes while scroll is still');
   await at(1.7);
-  expect(scram()==="I'm うまいしか" && !shown(q('#agent')) && q('#intro p [data-ink]'),'Title completes and cursor disappears ('+scram()+', '+q('#agent').style.opacity+')');
+  expect(scram()==="I'm うまいしか" && q('#intro p [data-ink]'),'Title completes and the subheading flickers');
   await at(1.24);
   expect(state()===stopped,'Reverse travel restores the same frame and scramble glyphs');
   await at(2.70);
@@ -76,6 +76,10 @@ async function run(width,height){
   await at(10.74);
   expect(!q('#articles').classList.contains('gallery-ready') && q('#articles .gallery-image img') && !q('#articles .gallery-border'),'Article cards enter fully assembled');
   await galleryChecks();
+  await at(7.82);
+  expect(q('.project-visual').style.clipPath.startsWith('polygon('),'Tecirc logo reveals in flickering strips');
+  await at(21.24);
+  expect(q('#contact .profile-links [data-ink]'),'Social links flicker as they appear');
   await at(21.47);
   expect(shown(q('#contact')) && !shown(q('#photos')) && !shown(q('#articles')),'Contact follows both galleries');
   const systemDark=w().matchMedia('(prefers-color-scheme: dark)').matches;
@@ -93,10 +97,6 @@ async function until(check,detail) {
     await new Promise(resolve=>setTimeout(resolve,40));
   }
   throw Error(detail);
-}
-async function cursorDuring(action) {
-  action();
-  await until(()=>shown(q('#agent')),'Gallery cursor stayed hidden during selection or return');
 }
 const settled=()=>until(()=>!q('.gallery[aria-busy="true"]'),'Gallery movement never settled');
 async function galleryChecks(){
@@ -152,8 +152,9 @@ async function galleryChecks(){
     width(portrait)<parseFloat(portrait.style.height),
     'Selected portrait expands and keeps its aspect ratio');
 
-  const filename=q('#photos .gallery-filename');
-  expect(/^img_\d{4}\.jpg$/.test(filename.textContent),'Selected photo keeps its filename');
+  const filename=q('#photos .gallery-tile.is-selected .gallery-titlebar');
+  expect(/^img_\d{4}\.jpg$/.test(filename.textContent),'Selected photo keeps its filename above the image');
+  expect(!q('#photos .gallery-detail'),'Photo filenames are not duplicated under the image');
   expect(!q('.gallery-close'),'There is no close button');
   portrait.click();
   expect(portrait.getAttribute('aria-pressed')==='true','Clicking the enlarged photo leaves it open');
@@ -197,4 +198,3 @@ document.querySelector('#touch-drag').onclick=()=>{
 document.querySelector('#touch-release').onclick=()=>touchEvent('touchend',[]);
 document.querySelectorAll('[data-position]').forEach(b=>b.onclick=()=>at(Number(b.dataset.position)));
 </script>
-

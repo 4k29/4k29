@@ -1,5 +1,5 @@
 import { profile, photos, articles, projects } from './content.js';
-import { box, bottomRight, clamp, cursor, ease, mixBox, mixPoint, phase, place, point, hash, Scramble, visible } from './motion.js';
+import { box, clamp, ease, mixBox, phase, place, hash, Scramble, visible } from './motion.js';
 
 const byId = (id) => document.getElementById(id);
 const el = (tag, attrs = {}, ...children) => {
@@ -53,7 +53,6 @@ const intro = byId('intro');
 const about = byId('about');
 const projectPanel = byId('project-panel');
 const contact = byId('contact');
-const agent = byId('agent');
 aboutContent(about.querySelector('.about-content'));
 profileLinks(contact.querySelector('.profile-links'));
 
@@ -70,15 +69,13 @@ function createGallery(id,items,article=false) {
   const seed=Math.floor(Math.random()*32768);
   const variation=(index,channel)=>hash(seed+index*397+channel*883);
   const backdrop=el('div',{class:'gallery-backdrop','aria-hidden':'true'});
-  const detail=el('div',{class:'gallery-detail',hidden:''});
-  const photoName=el('span',{class:'gallery-filename'});
+  const detail=article ? el('div',{class:'gallery-detail article-image-link',hidden:''}) : null;
   const articleTitle=article ? articleLink(items[0]) : null;
   if(articleTitle) {
     articleTitle.classList.add('visually-labeled-link');
     articleTitle.draggable=false;
   }
-  detail.append(articleTitle ?? photoName);
-  if(article) detail.classList.add('article-image-link');
+
   const tiles=items.map((item,index)=>{
     const visual=artwork(item,'gallery-image');
     const titlebar=el('span',{class:'gallery-titlebar','aria-hidden':'true'},item.title);
@@ -91,7 +88,11 @@ function createGallery(id,items,article=false) {
     gallery.append(button);
     return {item,button};
   });
-  gallery.append(backdrop,detail);
+  gallery.append(backdrop);
+  if(detail) {
+    detail.append(articleTitle);
+    gallery.append(detail);
+  }
 
   let selected=-1, regions, resting, movement, afterClose;
   function previewBox(index) {
@@ -99,7 +100,7 @@ function createGallery(id,items,article=false) {
     const item=items[index];
     const ratio=article ? item.ratio || 16/9 : item.width/item.height;
     const pad=mobile ? 12 : 30;
-    const width=Math.min(W-2*pad,(H-(article ? 94 : 128))*ratio);
+    const width=Math.min(W-2*pad,(H-(article ? 94 : 46))*ratio);
     const height=width/ratio+20;
     return box((W-width)/2,(H-height)/2+(article ? 12 : 0),width,height);
   }
@@ -119,13 +120,15 @@ function createGallery(id,items,article=false) {
     tiles[movingIndex].button.classList.add('is-selected');
     if(index>=0) {
       const item=items[index];
-      if(articleTitle) articleTitle.href=item.url;
-      (articleTitle ?? photoName).textContent=item.title;
+      if(articleTitle) {
+        articleTitle.href=item.url;
+        articleTitle.replaceChildren(item.title);
+      }
       tiles[index].button.focus({preventScroll:true});
     } else {
       tiles[previous].button.focus({preventScroll:true});
     }
-    detail.hidden=true;
+    if(detail) detail.hidden=true;
     movement={from:regions[movingIndex],to:index>=0 ? previewBox(index) : resting[movingIndex],
       index:movingIndex,opening:index>=0,backdropFrom:Number(backdrop.style.opacity)};
     gallery.setAttribute('aria-busy','true');
@@ -141,14 +144,14 @@ function createGallery(id,items,article=false) {
 
   function positions(m) {
     const {W,H,mobile}=m;
-    const gutter=mobile ? 22 : Math.max(36,W*.08);
+    const gutter=article ? (mobile ? 22 : Math.max(36,W*.08)) : (mobile ? 10 : Math.max(20,W*.04));
     const top=Math.max(42,Math.min(89,H*.12));
     const columns=Math.min(tiles.length,mobile ? (tiles.length>10 ? 3 : 2) : (article || tiles.length>10 ? 4 : 3));
     const rows=Math.ceil(tiles.length/columns);
     const deskWidth=Math.min(W-gutter*2,1160);
     const deskLeft=(W-deskWidth)/2;
-    const deskTop=top+54;
-    const deskHeight=Math.max(120,H-deskTop-66);
+    const deskTop=top+(article ? 54 : 38);
+    const deskHeight=Math.max(120,H-deskTop-(article ? 66 : 24));
     const cellW=deskWidth/columns;
     const cellH=deskHeight/rows;
     heading.style.left=deskLeft+'px';
@@ -158,12 +161,12 @@ function createGallery(id,items,article=false) {
       const row=Math.floor(i/columns);
       const rowCount=Math.min(columns,tiles.length-row*columns);
       const rowLeft=deskLeft+(columns-rowCount)*cellW*((row%2) ? .18 : .43);
-      const size=.67+variation(i,0)*.23;
+      const size=article ? .67+variation(i,0)*.23 : .89+variation(i,0)*.06;
       const tileWidth=Math.min(cellW*size,cellH*size*ratio);
       const tileHeight=tileWidth/ratio;
       const tilt=0;
-      const x=rowLeft+(i%columns+.5)*cellW-tileWidth/2+(variation(i,2)-.5)*cellW*.20;
-      const y=deskTop+(row+.5)*cellH-tileHeight/2+(variation(i,3)-.5)*cellH*.20;
+      const x=rowLeft+(i%columns+.5)*cellW-tileWidth/2+(variation(i,2)-.5)*cellW*(article ? .20 : .045);
+      const y=deskTop+(row+.5)*cellH-tileHeight/2+(variation(i,3)-.5)*cellH*(article ? .20 : .045);
       const left=Math.min(Math.max(x,8),W-8-tileWidth);
       const top=Math.min(Math.max(y,deskTop-10),H-24-tileHeight);
       return box(left,top,tileWidth,tileHeight,tilt);
@@ -186,11 +189,11 @@ function createGallery(id,items,article=false) {
   }
 
   function updateDetail() {
+    if(!detail) return;
     detail.hidden=selected<0;
     if (detail.hidden) return;
     const region=regions[selected];
-    const bounds=article ? box(region.x,region.y+20,region.w,region.h-20)
-      : box(region.x,region.y+region.h+8,region.w,42);
+    const bounds=box(region.x,region.y+20,region.w,region.h-20);
     place(detail,bounds);
   }
 
@@ -229,7 +232,7 @@ function createGallery(id,items,article=false) {
       if(selected>=0 || movement) {
         selected=-1;
         afterClose=undefined;
-        detail.hidden=true;
+        if(detail) detail.hidden=true;
         syncSelection(false);
         layout(metrics);
       }
@@ -245,7 +248,7 @@ function createGallery(id,items,article=false) {
       button.style.opacity=String(opened);
       place(button,regions[i]);
     });
-    if(!ready) detail.hidden=true;
+    if(!ready && detail) detail.hidden=true;
   }
   return {layout,render,closeBefore};
 }
@@ -350,6 +353,8 @@ const describe={
 };
 const aboutTags=reveals.about.querySelector('.tags');
 const revealTags=descriptionTyping(aboutTags);
+backspace(reveals.contact);
+const revealSocials=descriptionTyping(reveals.contact,2);
 const millisecondsPerTimelineUnit=1500;
 const introPause=1.15, aboutPause=1.25, projectPause=1.15, contactPause=1.80;
 const timing = {
@@ -521,50 +526,29 @@ function showPanel(node,opacity,region) {
   if (region && opacity > .001) place(node,region);
   visible(node,opacity,opacity > .94);
 }
-let typingCursor;
-function panelTyping(t,start,end,from,node,scramble) {
-  scramble?.render(phase(t,start,end));
-  const opacity=1-ease(t,start+.09,start+.15);
-  if(t>=start-.18 && opacity>.001) {
-    typingCursor={
-      from,node,opacity,
-      travel:ease(t,start-.18,start-.035),
-      form:phase(t,start-.08,start+.065),
-    };
-  }
-}
-function paintTypingCursor() {
-  stage.classList.toggle('cursor-handoff',Boolean(typingCursor));
-  if(!typingCursor) return;
-  const {from,node,opacity,travel,form}=typingCursor;
-  stage.style.setProperty('--inline-caret-opacity',String(1-opacity));
-  const active=node.querySelector('.scramble-caret,.backspace-caret');
-  const glyph=active ?? node.querySelector('.scramble-slot,.backspace-glyph');
-  const rect=glyph?.getBoundingClientRect();
-  const stageRect=stage.getBoundingClientRect();
-  const to=rect?.width ? point(
-    (active?.classList.contains('backspace-caret') ? rect.right : rect.left)-stageRect.left,
-    rect.top+rect.height/2-stageRect.top,
-  ) : from;
-  cursor(agent,mixPoint(from,to,travel),opacity,form,false,rect?.height);
-}
-
-function lowerCorner(region) {
-  return point(region.x+region.w-1,region.y+region.h-1);
+// Reveal strips of the actual logo while a few unsettled strips briefly drop out.
+function logoMask(progress) {
+  if(progress>=1 || reduced.matches) return 'none';
+  const frame=Math.floor(progress*24);
+  const strips=Array.from({length:12},(_,i)=>{
+    const left=i*100/12, right=(i+1)*100/12;
+    const distance=progress*12-i;
+    const height=distance>1.2 || (distance>-.35 && hash(i*191+frame*67)>.34) ? 100 : 0;
+    return `${left}% 0, ${left}% ${height}%, ${right}% ${height}%, ${right}% 0`;
+  });
+  return 'polygon(0 0, '+strips.join(', ')+')';
 }
 function render(s,m) {
   let frameBox = m.dormant;
   let aboutAlpha = 0, introAlpha = 0, projectAlpha = 0, projectIndex = -1;
   let photoBuild=0,articleBuild=0,contactAlpha=0,photoClosing=false,articleClosing=false;
   let introDetails=0,aboutDetails=0,projectDetails=0,contactDetails=0;
-  let introErase=0,aboutErase=0,projectErase=0;
-  typingCursor=null;
-  visible(agent,0);
+  let introErase=0,aboutErase=0,projectErase=0,logoProgress=0;
   visible(scrollHint,1-ease(s,.025,.20));
 
   if (s < timing.introEnd) {
     const t=holdAt(s,2.03,introPause);
-    panelTyping(t,1.13,1.61,bottomRight(m.dormant),names.intro.node,names.intro);
+    names.intro.render(phase(t,1.13,1.61));
     introAlpha = ease(t,.98,1.15);
     introDetails=phase(t,1.61,2.03);
   } else if (s < timing.projectStart) {
@@ -577,7 +561,6 @@ function render(s,m) {
     names.intro.render(1);
     introDetails=1;
     aboutDetails=phase(t,1.42,1.95);
-    panelTyping(t,.86,1.42,lowerCorner(frameBox),names.about.node,names.about);
     names.about.render(phase(t,.86,1.42));
   } else if (s < timing.articleStart) {
     const elapsed = s-timing.projectStart;
@@ -593,12 +576,12 @@ function render(s,m) {
     } else {
       frameBox=m.project;
       projectAlpha=t>=.91 ? 1 : 0;
-      const title=names.projects[projectIndex];
-      panelTyping(t,1.12,1.60,bottomRight(frameBox),title.node,title);
+      logoProgress=phase(t,.91,1.55);
     }
     if(projectIndex>0 && t < .18) {
       projectAlpha=1;
       projectErase=phase(t,0,.18);
+      logoProgress=1-projectErase;
       projectIndex--;
       projectDetails=1;
     }
@@ -609,6 +592,7 @@ function render(s,m) {
     const elapsed=s-timing.articleStart;
     frameBox=m.project;
     projectErase=phase(elapsed,0,.15);
+    logoProgress=1-projectErase;
     projectAlpha=projectErase<1 ? 1 : 0;
     projectIndex=projects.length-1;
     names.projects[projectIndex]?.render(1);
@@ -623,8 +607,8 @@ function render(s,m) {
     const t=holdAt(s-timing.contactStart,1.73,contactPause);
     frameBox=m.contact;
     contactAlpha=ease(t,.73,.90);
-    contactDetails=ease(t,1.62,1.72);
-    panelTyping(t,.93,1.62,bottomRight(frameBox),names.contact.node,names.contact);
+    contactDetails=phase(t,1.45,1.72);
+    names.contact.render(phase(t,.93,1.45));
   }
 
   showPanel(intro,introAlpha,frameBox);
@@ -632,7 +616,7 @@ function render(s,m) {
   showPanel(projectPanel,projectAlpha,frameBox);
   projectNodes.forEach((node,i)=>{
     node.hidden=i!==projectIndex;
-    node.querySelector('.project-visual').style.clipPath='inset(0 '+projectErase*100+'% 0 0)';
+    node.querySelector('.project-visual').style.clipPath=logoMask(logoProgress);
   });
   showPanel(contact,contactAlpha,m.contact);
   erase.intro(introErase);
@@ -644,7 +628,8 @@ function render(s,m) {
   visible(reveals.intro,introDetails>0 ? 1 : 0);
   visible(reveals.about,aboutDetails>0 ? 1 : 0);
   visible(aboutTags,tagProgress>0 ? 1 : 0);
-  visible(reveals.contact,contactDetails,contactAlpha>.94 && contactDetails>.95);
+  revealSocials(reduced.matches ? Number(contactDetails>0) : contactDetails,false);
+  visible(reveals.contact,Number(contactDetails>0),contactAlpha>.94 && contactDetails===1);
   reveals.projects.forEach((node,i)=>{
     const opacity=i===projectIndex ? projectDetails : 0;
     const amount=i===projectIndex ? projectErase : 0;
@@ -655,7 +640,6 @@ function render(s,m) {
   });
   photoGallery.render(photoBuild,photoBuild>=1,photoClosing);
   articleGallery.render(articleBuild,articleBuild>=1,articleClosing);
-  paintTypingCursor();
 }
 
 const initial = location.hash.substring(1);
@@ -664,4 +648,3 @@ document.documentElement.classList.add('immersive');
 experience.hidden=false;
 resize();
 go(Object.hasOwn(jumps,initial) ? jumps[initial] : 0);
-
