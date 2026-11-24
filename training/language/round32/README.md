@@ -1,0 +1,7 @@
+# Round32 — eval-mode negative rescoring
+
+Actual10000 updates completed; selected9500. Common exposed DEV NLL0.9714264147652326 slightly worse than R25 0.9714220852387883. Original17 first8/nonloop4/fullmeaning primary1 (one complete technical sentence; conservative sensitivity0), strict gates fail. Daily12 meaning0, native8 meaning0, fresh source5 meaning0 (one cast). Rejected; adopted research anchorR25 and public model/site unchanged.
+
+Only learning change: self-negative scoring dropout train→eval with gradients; same own8x192/vocab5455/BPE40/30/30/64-token negatives/data/LR/seed, aligned R11 latest state. Fixed204 learning inputs unchanged, same final positive exposure and Torch/private sampler RNG as R25. Latest Adam20000 and selected-step aligned Adam19500 both archived with RNG. No output repair or external model/tokenizer/API/teacher. All42 new full continuations actually read and all84 old/new saved in execution/FINAL_FULL_GENERATIONS.md, with ambiguity disclosed. No new TEST claim.
+
+See RESULTS.md, REPRODUCTION.md, EVALUATION_LIMITS.md, INTERIM_RESULTS.md and SHA-bound manual/mechanical evidence. A post-training reporting metadata omission stopped the first mechanical pipeline; execution/post-training-reporting-recovery.json records recovery without retraining. Historical automatic pending files remain historical. R33 will independently test continued dose from aligned R28, not combine that with this scoring change.
