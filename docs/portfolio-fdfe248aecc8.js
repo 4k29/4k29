@@ -9,25 +9,11 @@ const photos = [
     "height": 1033
   },
   {
-    "image": "./assets/img_3407.webp",
-    "title": "img_3407.jpg",
-    "alt": "橋の手前で赤と白の花火が扇状に広がる",
-    "width": 1500,
-    "height": 924
-  },
-  {
     "image": "./assets/ferris-wheel.webp",
     "title": "img_9936.jpg",
     "alt": "夕暮れの空に浮かぶ観覧車のゴンドラ",
     "width": 1033,
     "height": 1550
-  },
-  {
-    "image": "./assets/img_3577.webp",
-    "title": "img_3577.jpg",
-    "alt": "黒い夜空に広がる青と金色の花火",
-    "width": 1000,
-    "height": 1500
   },
   {
     "image": "./assets/fireworks.webp",
@@ -44,20 +30,6 @@ const photos = [
     "height": 1500
   },
   {
-    "image": "./assets/afterglow.webp",
-    "title": "img_0210.jpg",
-    "alt": "海沿いの空に伸びる淡いピンクの雲",
-    "width": 1033,
-    "height": 1550
-  },
-  {
-    "image": "./assets/img_3598.webp",
-    "title": "img_3598.jpg",
-    "alt": "赤紫と金色の花火が重なって開く",
-    "width": 1000,
-    "height": 1500
-  },
-  {
     "image": "./assets/golden-fireworks.webp",
     "title": "img_3427.jpg",
     "alt": "夜の橋を背景に大きく開く金色の花火",
@@ -65,39 +37,11 @@ const photos = [
     "height": 1240
   },
   {
-    "image": "./assets/img_3603.webp",
-    "title": "img_3603.jpg",
-    "alt": "赤い花火の下から緑の光が伸びる",
-    "width": 1000,
-    "height": 1500
-  },
-  {
     "image": "./assets/fireworks-reflection.webp",
     "title": "img_3417.jpg",
     "alt": "夜空に開く緑と赤の花火と橋の照明",
     "width": 1162,
     "height": 1550
-  },
-  {
-    "image": "./assets/img_3607.webp",
-    "title": "img_3607.jpg",
-    "alt": "金色の花火の下で赤い光が立ち上がる",
-    "width": 1000,
-    "height": 1500
-  },
-  {
-    "image": "./assets/img_3609.webp",
-    "title": "img_3609.jpg",
-    "alt": "緑の花火と金色の光のカーテン",
-    "width": 1000,
-    "height": 1500
-  },
-  {
-    "image": "./assets/img_3618.webp",
-    "title": "img_3618.jpg",
-    "alt": "赤い光の上に緑と白の花火が開く",
-    "width": 1000,
-    "height": 1500
   },
   {
     "image": "./assets/img_4366.webp",
@@ -472,14 +416,15 @@ function createGallery(id,items,article=false) {
 
   function positions(m) {
     const {W,H,mobile}=m;
-    const gutter=article ? (mobile ? 22 : Math.max(36,W*.08)) : (mobile ? 10 : Math.max(20,W*.04));
+    const wideArticles=article && W>=900;
+    const gutter=article ? (wideArticles ? Math.max(24,W*.035) : mobile ? 22 : Math.max(36,W*.08)) : (mobile ? 10 : Math.max(20,W*.04));
     const top=Math.max(42,Math.min(89,H*.12));
     const columns=Math.min(tiles.length,mobile ? (tiles.length>10 ? 3 : 2) : (article || tiles.length>10 ? 4 : 3));
     const rows=Math.ceil(tiles.length/columns);
-    const deskWidth=Math.min(W-gutter*2,1160);
+    const deskWidth=Math.min(W-gutter*2,wideArticles ? 1720 : 1160);
     const deskLeft=(W-deskWidth)/2;
-    const deskTop=top+(article ? 54 : 38);
-    const deskHeight=Math.max(120,H-deskTop-(article ? 66 : 24));
+    const deskTop=top+(wideArticles ? 44 : article ? 54 : 38);
+    const deskHeight=Math.max(120,H-deskTop-(article && !wideArticles ? 66 : 24));
     const cellW=deskWidth/columns;
     const cellH=deskHeight/rows;
     heading.style.left=deskLeft+'px';
@@ -489,12 +434,12 @@ function createGallery(id,items,article=false) {
       const row=Math.floor(i/columns);
       const rowCount=Math.min(columns,tiles.length-row*columns);
       const rowLeft=deskLeft+(columns-rowCount)*cellW*((row%2) ? .18 : .43);
-      const size=article ? .67+variation(i,0)*.23 : .89+variation(i,0)*.06;
+      const size=wideArticles ? .90+variation(i,0)*.07 : article ? .67+variation(i,0)*.23 : .89+variation(i,0)*.06;
       const tileWidth=Math.min(cellW*size,cellH*size*ratio);
       const tileHeight=tileWidth/ratio;
       const tilt=0;
-      const x=rowLeft+(i%columns+.5)*cellW-tileWidth/2+(variation(i,2)-.5)*cellW*(article ? .20 : .045);
-      const y=deskTop+(row+.5)*cellH-tileHeight/2+(variation(i,3)-.5)*cellH*(article ? .20 : .045);
+      const x=rowLeft+(i%columns+.5)*cellW-tileWidth/2+(variation(i,2)-.5)*cellW*(article && !wideArticles ? .20 : .045);
+      const y=deskTop+(row+.5)*cellH-tileHeight/2+(variation(i,3)-.5)*cellH*(article && !wideArticles ? .20 : .045);
       const left=Math.min(Math.max(x,8),W-8-tileWidth);
       const top=Math.min(Math.max(y,deskTop-10),H-24-tileHeight);
       return box(left,top,tileWidth,tileHeight,tilt);
@@ -839,6 +784,43 @@ function requestRender() {
 window.addEventListener('scroll',requestRender,{passive:true});
 window.addEventListener('resize',resize,{passive:true});
 
+const scrollWave=el('div',{class:'scroll-wave','aria-hidden':'true'});
+const waveMarks=Array.from({length:25},()=>el('i'));
+scrollWave.append(...waveMarks);
+document.body.append(scrollWave);
+let waveFrame=0, wavePosition, waveWake, waveTarget=0, waveEnergy=0, waveTime=0;
+
+function drawScrollWave(now) {
+  waveFrame=0;
+  const dt=Math.min(48,Math.max(1,now-waveTime));
+  waveTime=now;
+  wavePosition+=(waveTarget-wavePosition)*(1-Math.exp(-dt/75));
+  waveWake+=(wavePosition-waveWake)*(1-Math.exp(-dt/130));
+  waveEnergy*=Math.exp(-dt/280);
+  if(reduced.matches) {
+    wavePosition=waveWake=waveTarget;
+    waveEnergy=0;
+  }
+  waveMarks.forEach((mark,i)=>{
+    const position=i/(waveMarks.length-1);
+    const peak=Math.exp(-.5*((position-wavePosition)/.045)**2);
+    const ripple=Math.exp(-.5*((position-waveWake)/(.075+waveEnergy*.16))**2)*waveEnergy;
+    mark.style.opacity=String(.20+peak*.48+ripple*.25);
+    mark.style.transform=`scaleX(${.55+peak*.35+ripple*.35})`;
+    mark.style.backgroundPosition=`${waveWake*100+ripple*60}% 50%`;
+  });
+  if(waveEnergy>.003 || Math.abs(waveWake-waveTarget)>.0001 ||
+      Math.abs(wavePosition-waveTarget)>.0001) waveFrame=requestAnimationFrame(drawScrollWave);
+}
+
+function updateScrollWave(s) {
+  const next=clamp(s/timing.end);
+  if(wavePosition===undefined) wavePosition=waveWake=next;
+  if(Math.abs(next-waveTarget)>.00001) waveEnergy=Math.min(1,.38+Math.abs(next-waveTarget)*50);
+  waveTarget=next;
+  if(!waveFrame) waveFrame=requestAnimationFrame(drawScrollWave);
+}
+
 function showPanel(node,opacity,region) {
   if (region && opacity > .001) place(node,region);
   visible(node,opacity,opacity > .94);
@@ -881,6 +863,7 @@ function paintLogo(visual,progress) {
   else visual.style.removeProperty('--logo-flash');
 }
 function render(s,m) {
+  updateScrollWave(s);
   let frameBox = m.dormant;
   let aboutAlpha = 0, introAlpha = 0, projectAlpha = 0, projectIndex = -1;
   let photoBuild=0,articleBuild=0,contactAlpha=0,photoClosing=false,articleClosing=false;
@@ -893,8 +876,8 @@ function render(s,m) {
 
   if (s < timing.introEnd) {
     const t=holdAt(s,2.03,introPause);
-    names.intro(phase(t,1.13,1.61));
-    introAlpha = ease(t,.98,1.15);
+    names.intro(phase(t,.23,1.61));
+    introAlpha = ease(t,.18,.34);
     introDetails=phase(t,1.61,2.03);
   } else if (s < timing.projectStart) {
     const t=holdAt(s-timing.introEnd,1.96,aboutPause);
@@ -902,16 +885,16 @@ function render(s,m) {
     frameBox = mixBox(m.dormant,m.about,bend);
     introErase=phase(t,.06,.34);
     introAlpha=introErase<1 ? 1 : 0;
-    aboutAlpha=ease(t,.66,.82);
+    aboutAlpha=ease(t,.34,.49);
     names.intro(1);
     introDetails=1;
     aboutDetails=phase(t,1.42,1.95);
-    names.about(phase(t,.86,1.42));
+    names.about(phase(t,.39,1.42));
   } else if (s < timing.articleStart) {
     const elapsed = s-timing.projectStart;
     projectIndex = Math.min(projects.length-1,Math.floor(elapsed/timing.projectLength));
     const t=holdAt(elapsed-projectIndex*timing.projectLength,2.09,projectPause);
-    if (t < .45) {
+    if (t < .20) {
       const from = projectIndex===0 ? m.about : m.project;
       frameBox=from;
       aboutErase=phase(t,0,.18);
@@ -920,8 +903,8 @@ function render(s,m) {
       aboutDetails=1;
     } else {
       frameBox=m.project;
-      projectAlpha=t>=.91 ? 1 : 0;
-      logoProgress=phase(t,.91,1.55);
+      projectAlpha=t>=.22 ? 1 : 0;
+      logoProgress=phase(t,.22,1.55);
     }
     if(projectIndex>0 && t < .18) {
       projectAlpha=1;
@@ -931,7 +914,7 @@ function render(s,m) {
       projectDetails=1;
     }
     const closingPrevious=projectIndex<Math.floor(elapsed/timing.projectLength);
-    names.projects[projectIndex](closingPrevious ? 1 : phase(t,1.12,1.60));
+    names.projects[projectIndex](closingPrevious ? 1 : phase(t,.29,1.60));
     if (!closingPrevious) projectDetails=phase(t,1.60,2.08);
   } else if(s < timing.photoStart) {
     const elapsed=s-timing.articleStart;
@@ -943,17 +926,17 @@ function render(s,m) {
     names.projects[projectIndex](1);
     projectDetails=1;
     articleClosing=elapsed>3.59;
-    articleBuild=phase(elapsed,.18,1.38)*(1-phase(elapsed,3.59,4.58));
+    articleBuild=phase(elapsed,.06,1.38)*(1-phase(elapsed,3.59,5.25));
   } else if(s < timing.contactStart) {
     const elapsed=s-timing.photoStart;
     photoClosing=elapsed>2.75;
-    photoBuild=phase(elapsed,0,1.10)*(1-phase(elapsed,2.75,3.74));
+    photoBuild=phase(elapsed,0,1.10)*(1-phase(elapsed,2.75,4.38));
   } else {
     const t=holdAt(s-timing.contactStart,1.73,contactPause);
     frameBox=m.contact;
-    contactAlpha=ease(t,.73,.90);
+    contactAlpha=ease(t,.04,.19);
     contactDetails=phase(t,1.45,1.72);
-    names.contact(phase(t,.93,1.45));
+    names.contact(phase(t,.12,1.45));
   }
 
   showPanel(intro,introAlpha,frameBox);

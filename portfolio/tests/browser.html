@@ -35,11 +35,11 @@ async function run(width,height){
   expect(doc.documentElement.clientWidth<=width && doc.documentElement.clientWidth>=width-17,'Viewport width');
   const stage=q('#stage');
   expect(!q('#experience').hidden && !q('#contents'),'Application initialized');
+  expect(all(".scroll-wave i").length===25,"Scroll wave has 25 marks");
   expect(shown(q('#scroll-hint')) && !q('#frame') && !q('#agent') && !shown(q('#intro')),'Only scroll hint at opening');
   expect(!q('#stage nav[aria-label="セクション"]') && !doc.body.textContent.includes('Wishlist'),'Removed top tabs and Wishlist');
-  await at(1.17);
 
-  await at(1.24);
+  await at(.72);
 
   const mixed=scram(), stopped=state();
   expect(q('#intro h1 [data-ink]') && !q('#intro p [data-ink]'),'The title uses colored type flicker');
@@ -48,7 +48,7 @@ async function run(width,height){
   expect(state()===stopped,'No autonomous changes while scroll is still');
   await at(1.7);
   expect(scram()==="I'mうまいしか" && q('#intro p [data-ink]'),'Title completes and the subheading flickers');
-  await at(1.24);
+  await at(.72);
   expect(state()===stopped,'Reverse travel restores the same frame and flicker glyphs');
   await at(2.70);
   expect(scram()==="I'mうまいしか" && shown(q('#intro p')),'Intro stays visible during its hold');
@@ -107,6 +107,7 @@ async function galleryChecks(){
   const articles=all('#articles .gallery-tile');
   const bounds=tile=>tile.getBoundingClientRect().toJSON();
   const original=articles.map(bounds);
+  if(stageWidth>=1200) expect(Math.min(...original.map(tile=>tile.width))>245,"Desktop article previews use the wider layout");
   expect(q('#photos').inert && !q('#articles').inert && articles.length===8,'Tecirc articles appear before Photography');
   await at(10.60);
   expect(articles.every(tile=>Number(tile.style.opacity)>0 && tile.querySelector('.gallery-titlebar')),
@@ -132,13 +133,13 @@ async function galleryChecks(){
   await settled();
   expect(q('#articles .gallery-detail').hidden && JSON.stringify(bounds(articles[5]))===JSON.stringify(original[5]),
     'Closing the preview restores the original window');
-  await at(14.24);
+  await at(14.65);
   expect(q('#article-heading .backspace-hidden') && q('#article-heading [data-erase-ink]'),'Tecirc heading erases with colored flicker');
   await at(15.52);
   expect(q('#photo-heading [data-ink]'),'Photography heading enters with colored flicker');
   await at(17.45);
   const photos=all('#photos .gallery-tile');
-  expect(!q('#photos').inert && q('#articles').inert && photos.length>=12,'Photography follows articles and includes the recovered photos');
+  expect(!q('#photos').inert && q('#articles').inert && photos.map(tile=>tile.getAttribute('aria-label')).join(',')==='img_0098.jpg,img_9936.jpg,img_3395.jpg,img_3578.jpg,img_3427.jpg,img_3417.jpg,img_4366.jpg','Photography contains exactly the selected photos');
   const heading=q('#photos h2').getBoundingClientRect();
   expect(photos.every(tile=>{
     const rect=tile.getBoundingClientRect();
