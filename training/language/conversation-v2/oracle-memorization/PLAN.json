@@ -1,0 +1,48 @@
+{
+ "inputs": {
+  "gv-prose-pilot/corpus-C.jsonl.gz": "f4ac9a046177194631f1747b747ff90aeef17c2d15e994d6f71eadd490cb4fec",
+  "gv-collapse-diagnostic/ADDITIONAL.jsonl.gz": "ebf0b178005b14b732e7fb847f0c234a1c9e5fadb2e9248b260bddae41654451",
+  "gv-prose-pilot/EVALUATION_INPUTS.json": "5e13464b774f8af61832969ffac6038470c6c9b0d8ecc046ca7d098fa9157f72",
+  "data/tokenizer.json": "6d079e4ba0a954ae32ad34a35ddd15384eb48b8eceaf3f3529a66e4266b1da06",
+  "oracle-memorization/TRAIN.json": "a171c0ded361e0bc54d56addf4f1e7f530f80cc8fc0036938b2ed65730aa2b44"
+ },
+ "models": {
+  "initial": {
+   "path": "mixed-retention-study/artifacts/MIX-579/checkpoint.json",
+   "sha": "fc24624bcd3a298e3d0b32ecf8b419af32354c6196c764544249d05abcd980f7"
+  },
+  "B-terminal": {
+   "path": "gv-prose-pilot/artifacts/B-14/checkpoint.json",
+   "sha": "a50c24a9e6ba593cc9222e3c99f971089b666e10ab4a13ca462b35f97f1949ba"
+  },
+  "C-terminal": {
+   "path": "gv-prose-pilot/artifacts/C-14/checkpoint.json",
+   "sha": "49470e2ee5e07d5ccbe985d0d4600bfcaf29137c56b34ba665b963e65cabda16"
+  }
+ },
+ "oracle": [
+  0,
+  1,
+  4,
+  8,
+  16,
+  32
+ ],
+ "oracle_free_budget": 112,
+ "train_eval": "First sentence; free budget = number of remaining excerpt tokens. EOS not taught, no inference of document ending.",
+ "dev_eval": "Original 128 token budget and caption32 original limits.",
+ "seed": 12103,
+ "batch": 3,
+ "order": "fixed TRAIN order; cycle four batches 75 times",
+ "updates": [
+  0,
+  100,
+  300
+ ],
+ "lr": 0.0001,
+ "clip": 1,
+ "adam": "fresh AdamW betas .9/.999 eps 1e-8 decay .01",
+ "loss": "mean over active shifted positions; A all, B continuation only",
+ "primary": "Two newly generated complete, natural, connected topical sentences; reference mismatch alone is not failure. Ignore supplied tokens, reject loops/nonsense. Log first mechanically repeated autonomous 4gram separately from harmful repetition.",
+ "stop": "Stop on nonfinite gradient/parameters, failed resume equivalence, digest or disk failure. No outcome-dependent changes."
+}
