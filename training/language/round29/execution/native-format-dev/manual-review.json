@@ -1,0 +1,132 @@
+{
+  "utc": "2026-10-18T02:14:36.402384+00:00",
+  "reviewer": "Assistant actually read all4 prefixes and all12 full unedited continuations; not independent human review",
+  "protocolSha256": "5ae6343e5566e733f02e6a5f36b6ca6eec1218ba9a3bcdee8ffcf0da865499ad",
+  "sourceFiles": 4,
+  "uniqueRawSourceFiles": 4,
+  "uniquePrefixTexts": 3,
+  "allSelectedPrefixesAreGreetings": true,
+  "selectionNotChangedAfterSeeingThisLimitation": true,
+  "developmentOnly": true,
+  "newTestUsed": false,
+  "adoptionDecision": false,
+  "originalGatesChanged": false,
+  "models": {
+    "adopted25": {
+      "generationSha256": "f23c0d05a331b88352efeae8569a795ceae996493e18e03051c5d366634498d9",
+      "rows": [
+        {
+          "id": "native-dev-04573",
+          "fullContinuationCoherent": false,
+          "longLoopObserved": true,
+          "eos": false,
+          "reason": "世界・人口の所有句を長く反復する。挨拶に続く会話が展開しない。"
+        },
+        {
+          "id": "native-dev-12440",
+          "fullContinuationCoherent": false,
+          "longLoopObserved": true,
+          "eos": false,
+          "reason": "食べるので・食べるのですかを長く反復し、挨拶からの会話が成立しない。"
+        },
+        {
+          "id": "native-dev-09119",
+          "fullContinuationCoherent": false,
+          "longLoopObserved": false,
+          "eos": false,
+          "reason": "こたえの挿入、人口・人への局所再帰からQ見出しへ飛び、挨拶からの会話が成立しない。話題が変わる有限の局所反復としてprimaryでは長期周期ループと区別する。広いloop解釈の感度ではtrueでも全文不成立は不変。"
+        },
+        {
+          "id": "native-dev-12445",
+          "fullContinuationCoherent": false,
+          "longLoopObserved": true,
+          "eos": false,
+          "reason": "食べるので・食べるのですかを長く反復し、挨拶からの会話が成立しない。"
+        }
+      ],
+      "counts": {
+        "fullCoherent": 0,
+        "longLoops": 3,
+        "eos": 0
+      }
+    },
+    "human30round28": {
+      "generationSha256": "5fb08dbbf0bf55ecfb889ff4b16cda9dc86662bda81f120997be0bb7bd7fada3",
+      "rows": [
+        {
+          "id": "native-dev-04573",
+          "fullContinuationCoherent": false,
+          "longLoopObserved": true,
+          "eos": false,
+          "reason": "休みを尋ねるなど短い会話の形はあるが、お休みですね・お休みですかを長く繰り返して話題が進まない。"
+        },
+        {
+          "id": "native-dev-12440",
+          "fullContinuationCoherent": false,
+          "longLoopObserved": true,
+          "eos": false,
+          "reason": "休みを尋ねるなど短い会話の形はあるが、お休みですね・お休みですかを長く繰り返して話題が進まない。"
+        },
+        {
+          "id": "native-dev-09119",
+          "fullContinuationCoherent": false,
+          "longLoopObserved": true,
+          "eos": false,
+          "reason": "休みを尋ねるなど短い会話の形はあるが、お休みですね・お休みですかを長く繰り返して話題が進まない。"
+        },
+        {
+          "id": "native-dev-12445",
+          "fullContinuationCoherent": false,
+          "longLoopObserved": true,
+          "eos": false,
+          "reason": "休みを尋ねるなど短い会話の形はあるが、お休みですね・お休みですかを長く繰り返して話題が進まない。"
+        }
+      ],
+      "counts": {
+        "fullCoherent": 0,
+        "longLoops": 4,
+        "eos": 0
+      }
+    },
+    "interim10round29": {
+      "generationSha256": "f7eafd4b01895a5fa22b716b30b93d87c02f515134d8c3a12abb551834b98fda",
+      "rows": [
+        {
+          "id": "native-dev-04573",
+          "fullContinuationCoherent": false,
+          "longLoopObserved": true,
+          "eos": false,
+          "reason": "お願いしますを長く繰り返して挨拶から次の話題へ進まない。"
+        },
+        {
+          "id": "native-dev-12440",
+          "fullContinuationCoherent": false,
+          "longLoopObserved": true,
+          "eos": false,
+          "reason": "お願いしますを長く繰り返して挨拶から次の話題へ進まない。"
+        },
+        {
+          "id": "native-dev-09119",
+          "fullContinuationCoherent": false,
+          "longLoopObserved": true,
+          "eos": false,
+          "reason": "お願いしますを長く繰り返して挨拶から次の話題へ進まない。"
+        },
+        {
+          "id": "native-dev-12445",
+          "fullContinuationCoherent": false,
+          "longLoopObserved": true,
+          "eos": false,
+          "reason": "お願いしますを長く繰り返して挨拶から次の話題へ進まない。"
+        }
+      ],
+      "counts": {
+        "fullCoherent": 0,
+        "longLoops": 4,
+        "eos": 0
+      }
+    }
+  },
+  "limitation": "Small post-hoc diagnostic chosen after original daily failures; greeting-only/duplicate opening/content differs from role-labelled daily12; no causal role-label effect or broad conversation generalization claim. Different completed training progress across models. These openings have Python-only numerical evidence.",
+  "conclusion": "All3 models fail full coherence even on native serialized human greetings. Human-data models produce recognizable conversational phrases but do not progress beyond repeated greetings/holiday questions. This does not identify EOS density as the cause."
+}
