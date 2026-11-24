@@ -117,6 +117,9 @@ async function galleryChecks(){
   await at(10.60);
   expect(articles.every(tile=>Number(tile.style.opacity)>0 && tile.querySelector('.gallery-titlebar')),
     'All titled windows open together');
+  expect(articles.some(tile=>tile.style.clipPath.startsWith('polygon(')),'Article windows flicker as they open');
+  await at(14.04);
+  expect(articles.some(tile=>tile.style.clipPath.startsWith('polygon(')),'Article windows flicker as they close');
   await at(13.02);
   const firstBounds=articles[5].getBoundingClientRect();
   await cursorDuring(()=>articles[5].click());
@@ -128,14 +131,16 @@ async function galleryChecks(){
     (Math.abs(firstBounds.top-resized.top)<1 || Math.abs(firstBounds.bottom-resized.bottom)<1),
     'The selected window grows around a fixed corner');
   expect(dimensions(articles).every(([w,h],i)=>i===5 || w===sizes[i][0] && h===sizes[i][1]) &&
-    link.href.endsWith('/Nothing-Headphone-1/') && link.target==='_blank',
+    link.href.endsWith('/Nothing-Headphone-1/') && link.target==='_blank' &&
+    w().getComputedStyle(link).fontSize==='0px' &&
+    Math.abs(link.getBoundingClientRect().top-resized.top-20)<1,
     'Pushed neighbors keep their window dimensions and article links remain available');
   articles[0].click();
   expect(articles[0].getAttribute('aria-pressed')==='true' && q('#articles').classList.contains('is-focused'),
     'Switching windows does not reopen the overview');
   await settled();
   expect(q('#articles .gallery-detail a').href.endsWith('/touch-MacBookPro/'),'Article caption follows selection');
-  const empty=d().elementFromPoint(stageWidth/2,q('#stage').clientHeight-16);
+  const empty=d().elementFromPoint(stageWidth/2,5);
   expect(empty===q('#articles'),'Article canvas receives clicks in the empty area');
   empty.click();
   await settled();
@@ -199,3 +204,4 @@ document.querySelector('#touch-drag').onclick=()=>{
 document.querySelector('#touch-release').onclick=()=>touchEvent('touchend',[]);
 document.querySelectorAll('[data-position]').forEach(b=>b.onclick=()=>at(Number(b.dataset.position)));
 </script>
+

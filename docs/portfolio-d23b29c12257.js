@@ -190,6 +190,7 @@ const articles = [
   }
 ].sort((a,b)=>(b.date ?? '').localeCompare(a.date ?? ''));
 
+
 const clamp = (value) => Math.max(0, Math.min(1, value));
 const phase = (value, start, end) => clamp((value - start) / (end - start));
 const lerp = (from, to, progress) => from + (to - from) * progress;
@@ -327,6 +328,7 @@ class Scramble {
 }
 
 
+
 const byId = (id) => document.getElementById(id);
 const el = (tag, attrs = {}, ...children) => {
   const node = document.createElement(tag);
@@ -396,7 +398,7 @@ function framePoint(region,x,y) {
 }
 
 function pushAside(region, obstacle, {W,H}) {
-  const gap=6;
+  const gap=-Math.min(region.w,region.h)*.30;
   const left=obstacle.x-gap-region.w;
   const right=obstacle.x+obstacle.w+gap;
   const top=obstacle.y-gap-region.h;
@@ -409,10 +411,26 @@ function pushAside(region, obstacle, {W,H}) {
   const score=([x,y])=>{
     const overlapX=Math.max(0,Math.min(x+region.w,obstacle.x+obstacle.w)-Math.max(x,obstacle.x));
     const overlapY=Math.max(0,Math.min(y+region.h,obstacle.y+obstacle.h)-Math.max(y,obstacle.y));
-    return overlapX*overlapY*4+Math.hypot(x-region.x,y-region.y);
+    const overlap = overlapX*overlapY/(region.w*region.h);
+    return Math.max(0,overlap-.18)*320+Math.hypot(x-region.x,y-region.y);
   };
   const [x,y]=options.reduce((best,candidate)=>score(candidate)<score(best) ? candidate : best);
   return box(x,y,region.w,region.h,region.rotation);
+}
+
+// A single mask reveals horizontal bands of the existing window in both directions.
+function windowFlicker(progress,index,tick) {
+  const edge=band=>{
+    const seed=index*337+band*23+tick*59;
+    const blend=ease(progress*18-tick,0,1);
+    const jitter=hash(seed)*(1-blend)+hash(seed+59)*blend-.5;
+    return 100*clamp(progress+jitter*.46*Math.sin(Math.PI*progress));
+  };
+  const bands=Array.from({length:6},(_,band)=>{
+    const x=edge(band).toFixed(2)+'%';
+    return x+' '+(band*100/6)+'%, '+x+' '+((band+1)*100/6)+'%';
+  });
+  return 'polygon(0 0, '+bands.join(', ')+', 0 100%)';
 }
 
 function createGallery(id,items,article=false) {
@@ -425,8 +443,9 @@ function createGallery(id,items,article=false) {
   const detail=el('div',{class:'gallery-detail',hidden:''});
   const photoName=el('span',{class:'gallery-filename'});
   const articleTitle=article ? articleLink(items[0]) : null;
-  const caption=articleTitle ?? photoName;
-  detail.append(caption);
+  if(articleTitle) articleTitle.classList.add('visually-labeled-link');
+  detail.append(articleTitle ?? photoName);
+  if(article) detail.classList.add('article-image-link');
   const tiles=items.map((item,index)=>{
     const visual=artwork(item,'gallery-image');
     const titlebar=el('span',{class:'gallery-titlebar','aria-hidden':'true'},item.title);
@@ -435,11 +454,14 @@ function createGallery(id,items,article=false) {
     },titlebar,visual);
     button.addEventListener('click',event=>{
       if(event.detail && ignoreClick===index) { ignoreClick=-1; return; }
+      if(article && selected===index) return;
       select(selected===index ? -1 : index);
     });
     button.addEventListener('pointerdown',event=>beginDrag(event,index));
     gallery.append(button);
-    return {item,button};
+    const glyphs=Array.from(item.title, char=>el('span',{},char));
+    titlebar.replaceChildren(...glyphs);
+    return {item,button,glyphs};
   });
   gallery.append(close,detail);
 
@@ -457,8 +479,8 @@ function createGallery(id,items,article=false) {
     drag.moved=true;
     const dt=event.timeStamp-drag.lastTime;
     if(dt>0) {
-      drag.vx=(event.clientX-drag.lastX)/dt;
-      drag.vy=(event.clientY-drag.lastY)/dt;
+      drag.vx=drag.vx*.44+(event.clientX-drag.lastX)/dt*.56;
+      drag.vy=drag.vy*.44+(event.clientY-drag.lastY)/dt*.56;
       drag.lastX=event.clientX;
       drag.lastY=event.clientY;
       drag.lastTime=event.timeStamp;
@@ -467,26 +489,28 @@ function createGallery(id,items,article=false) {
     const x=Math.max(5,Math.min(metrics.W-origin.w-5,origin.x+dx));
     const y=Math.max(5,Math.min(metrics.H-origin.h-5,origin.y+dy));
     const card=box(x,y,origin.w,origin.h);
-    regions=regions.map((region,i)=>i===drag.index ? card : pushAside(region,card,metrics));
+    const originRegions=drag.destinations ?? regions;
+    drag.destinations=originRegions.map((region,i)=>i===drag.index ? card : pushAside(region,card,metrics));
+    regions=regions.map((region,i)=>i===drag.index ? card : region);
     requestRender();
   });
   function endDrag(event) {
     if(drag?.id!==event.pointerId) return;
-    const {index,moved,vx,vy,lastTime}=drag;
+    const {index,moved,vx,vy,lastTime,destinations}=drag;
     drag=undefined;
     if(!moved) return;
     ignoreClick=index;
     const from=regions;
     const landed=from[index];
-    const coast=event.type==='pointerup' && event.timeStamp-lastTime<85 ? 95 : 0;
-    const offset=value=>Math.max(-100,Math.min(100,value*coast));
+    const coast=event.type==='pointerup' && event.timeStamp-lastTime<115 ? 200 : 0;
+    const offset=value=>Math.max(-280,Math.min(280,value*coast));
     const target=box(Math.max(5,Math.min(metrics.W-landed.w-5,landed.x+offset(vx))),
       Math.max(5,Math.min(metrics.H-landed.h-5,landed.y+offset(vy))),landed.w,landed.h);
-    if(!coast || reduced.matches) {
+    if(reduced.matches) {
       if(selected<0) resting=regions;
       return;
     }
-    const to=from.map((region,i)=>i===index ? target : pushAside(region,target,metrics));
+    const to=(destinations ?? from).map((region,i)=>i===index ? target : pushAside(region,target,metrics));
     if(selected<0) resting=to;
     movement={from,to,index,throwing:true};
     gallery.setAttribute('aria-busy','true');
@@ -522,7 +546,7 @@ function createGallery(id,items,article=false) {
     if(index>=0) {
       const item=items[index];
       if(articleTitle) articleTitle.href=item.url;
-      caption.textContent=item.title;
+      (articleTitle ?? photoName).textContent=item.title;
     } else {
       tiles[previous].button.focus({preventScroll:true});
     }
@@ -585,6 +609,7 @@ function createGallery(id,items,article=false) {
   function layout(m) {
     movement=undefined;
     gallery.removeAttribute('aria-busy');
+    drag=undefined;
     resting=positions(m);
     regions=resting;
     if(selected>=0) {
@@ -598,7 +623,8 @@ function createGallery(id,items,article=false) {
     detail.hidden=selected<0;
     if (detail.hidden) return;
     const region=regions[selected];
-    const bounds=box(region.x,region.y+region.h+8,region.w,42);
+    const bounds=article ? box(region.x,region.y+20,region.w,region.h-20)
+      : box(region.x,region.y+region.h+8,region.w,42);
     place(detail,bounds);
   }
 
@@ -606,14 +632,13 @@ function createGallery(id,items,article=false) {
     const {from,to,index,towardRight,towardBottom,opening,throwing}=movement;
     const now=performance.now();
     movement.start ??= now;
-    const t=clamp((now-movement.start)/(throwing ? 390 : 640));
-    const growth=throwing ? 1-(1-t)**3 : ease(t,0,1);
+    const t=clamp((now-movement.start)/(throwing ? 860 : 980));
+    const growth=throwing ? (1-Math.exp(-4.5*t))/(1-Math.exp(-4.5)) : ease(t,0,.84);
     const card=mixBox(from[index],to[index],growth);
     regions=from.map((region,i)=>{
       if(i===index) return card;
-      const destination=(opening || throwing) && region.w===to[i].w && region.h===to[i].h
-        ? pushAside(region,card,metrics) : mixBox(region,to[i],growth);
-      return mixBox(destination,to[i],ease(t,.70,1));
+      const travel=opening ? ease(t,.14,1) : throwing ? ease(t,.10,1) : ease(t,.04,1);
+      return mixBox(region,to[i],travel);
     });
     if(opening && t<.98) {
       cursor(agent,framePoint(card,towardRight ? card.w : 0,towardBottom ? card.h : 0),1,0,true);
@@ -644,7 +669,7 @@ function createGallery(id,items,article=false) {
     visible(gallery,amount>0 ? 1 : 0,ready);
     gallery.classList.toggle('gallery-ready',ready);
     if(amount<=0) {
-      if(selected>=0 || movement) {
+      if(selected>=0 || movement || drag) {
         selected=-1;
         afterClose=undefined;
         close.hidden=detail.hidden=true;
@@ -658,13 +683,35 @@ function createGallery(id,items,article=false) {
       return;
     }
     if(movement) animateSelection();
-    else if(ready) updateDetail();
+    else if(drag?.destinations) {
+      let settling=false;
+      regions=regions.map((region,i)=>{
+        const target=drag.destinations[i];
+        if(Math.hypot(target.x-region.x,target.y-region.y)<.5 || reduced.matches) return target;
+        settling=true;
+        return mixBox(region,target,.24);
+      });
+      if(settling) requestRender();
+      if(ready) updateDetail();
+    } else if(ready) updateDetail();
 
     headingText.render(ease(amount,0,.25));
-    const opened=reduced.matches ? 1 : ease(amount,0,.24);
-    tiles.forEach(({button},i)=>{
+    const opened=reduced.matches ? 1 : ease(amount,0,1);
+    tiles.forEach(({button,glyphs},i)=>{
       const region=regions[i];
-      button.style.opacity=String(opened);
+      const reveal=reduced.matches ? 1 : opened**(1+(i%4)*.055);
+      const active=reveal>0 && reveal<1;
+      const tick=Math.floor(reveal*18);
+      button.style.opacity=String(reveal===0 ? 0 : 1);
+      button.style.clipPath=active ? windowFlicker(reveal,i,tick) : '';
+      if(button.dataset.flicker!==String(active ? tick : -1)) {
+        button.dataset.flicker=String(active ? tick : -1);
+        glyphs.forEach((glyph,j)=>{
+          const ink=active && glyph.textContent.trim() && hash(j*31+i*23+tick*7)>.72;
+          if(ink) glyph.dataset.ink=String((i+j+tick)%5);
+          else delete glyph.dataset.ink;
+        });
+      }
       const w=region.w*(.94+.06*opened), h=region.h*(.94+.06*opened);
       place(button,box(region.x+(region.w-w)/2,region.y+(region.h-h)/2,w,h));
     });
@@ -720,6 +767,16 @@ function backspace(container) {
       for(const {element,first} of tags) element.classList.toggle('backspace-empty',remaining<=first);
       previous=remaining;
     }
+    const tick=Math.floor(amount*18);
+    const isFlickering=!reduced.matches && amount>0 && amount<1;
+    characters.forEach((glyph,i)=>{
+      const nearEdge=i<remaining && i>=remaining-7;
+      const flicker=isFlickering && nearEdge && glyph.textContent.trim();
+      glyph.classList.toggle('erase-flicker-off',Boolean(flicker && hash(i*13+tick*71)<.18));
+      if(flicker && hash(i*37+tick*19)>.35)
+        glyph.dataset.eraseInk=String((i+tick)%5);
+      else if(glyph.hasAttribute('data-erase-ink')) delete glyph.dataset.eraseInk;
+    });
     const next=showCaret && amount>0 && remaining>0 ? characters[remaining-1] : null;
     if(caret!==next) {
       caret?.classList.remove('backspace-caret');
@@ -1128,5 +1185,6 @@ document.documentElement.classList.add('immersive');
 experience.hidden=false;
 resize();
 go(Object.hasOwn(jumps,initial) ? jumps[initial] : 0);
+
 
 })();

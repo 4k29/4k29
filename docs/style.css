@@ -121,10 +121,9 @@ img {max-width:100%;display:block}
 .gallery-tile,.gallery-detail {position:absolute;top:0;left:0}
 .gallery-tile {padding:0;border:0;background:var(--paper);cursor:pointer;overflow:hidden}
 .gallery-ready .gallery-tile,.gallery-ready .gallery-close,.gallery-ready .gallery-detail {pointer-events:auto}
-.gallery-tile {box-shadow:0 0 0 1px var(--frame),0 2px 7px #0002}
-.gallery-tile:is(:hover,:focus-visible) {box-shadow:0 0 0 1px var(--ink),0 3px 9px #0003}
+.gallery-tile:focus-visible {outline:2px solid var(--ink);outline-offset:3px}
 .gallery-tile.is-selected {z-index:4}
-.gallery-titlebar {position:absolute;inset:0 0 auto;height:20px;padding:0 7px;display:block;overflow:hidden;text-align:left;text-overflow:ellipsis;white-space:nowrap;font:10px/19px var(--sans);color:var(--muted);border-bottom:1px solid var(--frame);background:var(--paper);cursor:grab;touch-action:none;user-select:none}
+.gallery-titlebar {position:absolute;inset:0 0 auto;height:20px;padding:0 7px;display:block;overflow:hidden;text-align:left;text-overflow:ellipsis;white-space:nowrap;font:10px/19px var(--sans);color:var(--muted);background:var(--paper);cursor:grab;touch-action:none;user-select:none}
 .gallery-titlebar:active {cursor:grabbing}
 .gallery-image {position:absolute;inset:20px 0 0;background:var(--paper);pointer-events:none}
 .gallery-tile:active {z-index:5}
@@ -150,3 +149,19 @@ img {max-width:100%;display:block}
 
 /* Cached versions can still create detached decorative text. */
 .type-flicker {display:none!important}
+
+
+
+.erase-flicker-off {opacity:0}
+.article-image-link {background:transparent}
+.article-image-link .visually-labeled-link {
+  display:block; width:100%; height:100%; color:transparent;
+  font-size:0; padding:0; text-decoration:none;
+}
+.visually-labeled-link:focus-visible {outline:2px solid var(--ink);outline-offset:3px}
+
+.gallery-titlebar [data-ink],[data-erase-ink] {color:#171717;background:#26e7a0}
+.gallery-titlebar [data-ink="1"],[data-erase-ink="1"] {background:#b58cff}
+.gallery-titlebar [data-ink="2"],[data-erase-ink="2"] {background:#ffe44d}
+.gallery-titlebar [data-ink="3"],[data-erase-ink="3"] {background:#ff86ce}
+.gallery-titlebar [data-ink="4"],[data-erase-ink="4"] {background:#69cbff}
