@@ -145,12 +145,11 @@ function createGallery(id,items,article=false) {
   function positions(m) {
     const {W,H,mobile}=m;
     const wideArticles=article && W>=900;
-    const gutter=article ? (wideArticles ? Math.max(24,W*.035) : mobile ? 22 : Math.max(36,W*.08)) : (mobile ? 10 : Math.max(20,W*.04));
+    const deskLeft=m.dormant.x+m.panelInset;
     const top=Math.max(42,Math.min(89,H*.12));
     const columns=Math.min(tiles.length,mobile ? (tiles.length>10 ? 3 : 2) : (article || tiles.length>10 ? 4 : 3));
     const rows=Math.ceil(tiles.length/columns);
-    const deskWidth=Math.min(W-gutter*2,wideArticles ? 1720 : 1160);
-    const deskLeft=(W-deskWidth)/2;
+    const deskWidth=W-2*deskLeft;
     const deskTop=top+(wideArticles ? 44 : article ? 54 : 38);
     const deskHeight=Math.max(120,H-deskTop-(article && !wideArticles ? 66 : 24));
     const cellW=deskWidth/columns;
@@ -168,7 +167,7 @@ function createGallery(id,items,article=false) {
       const tilt=0;
       const x=rowLeft+(i%columns+.5)*cellW-tileWidth/2+(variation(i,2)-.5)*cellW*(article && !wideArticles ? .20 : .045);
       const y=deskTop+(row+.5)*cellH-tileHeight/2+(variation(i,3)-.5)*cellH*(article && !wideArticles ? .20 : .045);
-      const left=Math.min(Math.max(x,8),W-8-tileWidth);
+      const left=Math.min(Math.max(x,deskLeft),W-deskLeft-tileWidth);
       const top=Math.min(Math.max(y,deskTop-10),H-24-tileHeight);
       return box(left,top,tileWidth,tileHeight,tilt);
     });
@@ -490,7 +489,8 @@ function resize() {
     contact:Math.max(1,Math.min(H-128,345)),
   };
   const frameTop=(H-Math.max(...Object.values(heights)))/2;
-  const sizing={W,H,mobile,pad,unit:Math.max(mobile?440:620,Math.round(H*(mobile?1.20:1.23)))};
+  const panelInset=parseFloat(getComputedStyle(intro).paddingLeft);
+  const sizing={W,H,mobile,pad,panelInset,unit:Math.max(mobile?440:620,Math.round(H*(mobile?1.20:1.23)))};
   for(const [name,height] of Object.entries(heights)) {
     sizing[name]=box(mid-frameWidth/2,frameTop,frameWidth,height);
   }
@@ -533,8 +533,8 @@ function drawScrollWave(now) {
     const position=i/(waveMarks.length-1);
     const peak=Math.exp(-.5*((position-wavePosition)/.045)**2);
     const ripple=Math.exp(-.5*((position-waveWake)/(.075+waveEnergy*.16))**2)*waveEnergy;
-    mark.style.opacity=String(.20+peak*.48+ripple*.25);
-    mark.style.transform=`scaleX(${.55+peak*.35+ripple*.35})`;
+    mark.style.opacity=String(.38+peak*.52+ripple*.28);
+    mark.style.transform=`scaleX(${.65+peak*.35+ripple*.40})`;
     mark.style.backgroundPosition=`${waveWake*100+ripple*60}% 50%`;
   });
   if(waveEnergy>.003 || Math.abs(waveWake-waveTarget)>.0001 ||
@@ -561,32 +561,54 @@ const logoTiles=Array.from({length:logoColumns*logoRows},(_,i)=>i)
   .sort((a,b)=>logoRevealOrder(a)-logoRevealOrder(b));
 const logoPalette=['#26e7a0','#b58cff','#ffe44d','#ff86ce','#69cbff'];
 
-function paintLogo(visual,progress) {
+// Independent rectangles avoid the antialiased connecting edges in a compound polygon.
+const clipNamespace='http://www.w3.org/2000/svg';
+const logoClips=projectNodes.map((_,i)=>{
+  const svg=document.createElementNS(clipNamespace,'svg');
+  svg.setAttribute('aria-hidden','true');
+  svg.setAttribute('width','0');
+  svg.setAttribute('height','0');
+  svg.style.position='absolute';
+  const defs=document.createElementNS(clipNamespace,'defs');
+  const clip=document.createElementNS(clipNamespace,'clipPath');
+  clip.id='logo-reveal-'+i;
+  clip.setAttribute('clipPathUnits','objectBoundingBox');
+  const rects=logoTiles.map(tile=>{
+    const rect=document.createElementNS(clipNamespace,'rect');
+    rect.setAttribute('x',String((tile%logoColumns)/logoColumns));
+    rect.setAttribute('y',String(Math.floor(tile/logoColumns)/logoRows));
+    rect.setAttribute('width',String(1/logoColumns));
+    rect.setAttribute('height',String(1/logoRows));
+    clip.append(rect);
+    return rect;
+  });
+  defs.append(clip);
+  svg.append(defs);
+  document.body.append(svg);
+  return {clip,rects};
+});
+
+function paintLogo(visual,progress,{clip,rects}) {
   if(progress>=1 || reduced.matches) {
     visual.style.clipPath='none';
     visual.style.removeProperty('--logo-flash');
     return;
   }
   const frame=Math.floor(progress*24);
-  const paths=['0 0'];
   const flashes=[];
   logoTiles.forEach((tile,rank)=>{
     const distance=progress*logoTiles.length-rank;
     const settled=distance>5;
-    if(!settled && (progress===0 || distance< -3 || hash(tile*191+frame*67)<.36)) return;
-    const column=tile%logoColumns, row=Math.floor(tile/logoColumns);
-    const left=100*column/logoColumns, right=100*(column+1)/logoColumns;
-    const top=100*row/logoRows, bottom=100*(row+1)/logoRows;
-    // Return along the same path so separated tiles are not joined by a filled triangle.
-    const start=`${left}% ${top}%`;
-    paths.push(start,`${right}% ${top}%`,`${right}% ${bottom}%`,`${left}% ${bottom}%`,start,'0 0');
-    if(!settled) {
+    const shown=settled || (progress>0 && distance>=-3 && hash(tile*191+frame*67)>=.36);
+    rects[rank].style.display=shown ? '' : 'none';
+    if(shown && !settled) {
       const color=logoPalette[(tile+frame)%logoPalette.length]+'b8';
-      const x=100*column/(logoColumns-1), y=100*row/(logoRows-1);
+      const x=100*(tile%logoColumns)/(logoColumns-1);
+      const y=100*Math.floor(tile/logoColumns)/(logoRows-1);
       flashes.push(`linear-gradient(${color}, ${color}) ${x}% ${y}% / ${100/logoColumns}% ${100/logoRows}% no-repeat`);
     }
   });
-  visual.style.clipPath=paths.length>1 ? `polygon(${paths.join(', ')})` : 'inset(50%)';
+  visual.style.clipPath='url(#'+clip.id+')';
   if(flashes.length) visual.style.setProperty('--logo-flash',flashes.join(', '));
   else visual.style.removeProperty('--logo-flash');
 }
@@ -672,7 +694,7 @@ function render(s,m) {
   showPanel(projectPanel,projectAlpha,frameBox);
   projectNodes.forEach((node,i)=>{
     node.hidden=i!==projectIndex;
-    paintLogo(node.querySelector('.project-visual'),logoProgress);
+    if(i===projectIndex) paintLogo(node.querySelector('.project-visual'),logoProgress,logoClips[i]);
   });
   showPanel(contact,contactAlpha,m.contact);
   erase.intro(introErase);

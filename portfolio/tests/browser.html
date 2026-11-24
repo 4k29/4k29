@@ -35,7 +35,7 @@ async function run(width,height){
   expect(doc.documentElement.clientWidth<=width && doc.documentElement.clientWidth>=width-17,'Viewport width');
   const stage=q('#stage');
   expect(!q('#experience').hidden && !q('#contents'),'Application initialized');
-  expect(all(".scroll-wave i").length===25,"Scroll wave has 25 marks");
+  expect(all(".scroll-wave i").length===25 && w().getComputedStyle(q(".scroll-wave i")).height==='2px',"Scroll wave has visible two-pixel marks");
   expect(shown(q('#scroll-hint')) && !q('#frame') && !q('#agent') && !shown(q('#intro')),'Only scroll hint at opening');
   expect(!q('#stage nav[aria-label="セクション"]') && !doc.body.textContent.includes('Wishlist'),'Removed top tabs and Wishlist');
 
@@ -77,7 +77,7 @@ async function run(width,height){
   expect(!q('#articles').classList.contains('gallery-ready') && q('#articles .gallery-image img') && !q('#articles .gallery-border'),'Article cards enter fully assembled');
   await galleryChecks();
   await at(7.82);
-  expect(q('.project-visual').style.clipPath.startsWith('polygon(') && /#[0-9a-f]{8}/.test(q('.project-visual').style.getPropertyValue('--logo-flash')) && /% 20%/.test(q('.project-visual').style.clipPath),'Tecirc logo reveals in scattered colored tiles');
+  expect(q('.project-visual').style.clipPath.includes('#logo-reveal-') && q('.project-visual').style.getPropertyValue('--logo-flash') && all('clipPath rect').some(rect=>rect.style.display==='none'),'The logo flickers as separate colored tiles');
   await at(21.24);
   expect(q('#contact .profile-links [data-ink]'),'Social links flicker as they appear');
   await at(21.47);
@@ -103,11 +103,13 @@ const settled=()=>until(()=>!q('.gallery[aria-busy="true"]'),'Gallery movement n
 async function galleryChecks(){
   const stageWidth=q('#stage').clientWidth;
   const width=tile=>parseFloat(tile.style.width);
+  await at(5.16);
+  const panelLeft=q("#about").getBoundingClientRect().left+parseFloat(w().getComputedStyle(q("#about")).paddingLeft);
   await at(13.02);
   const articles=all('#articles .gallery-tile');
   const bounds=tile=>tile.getBoundingClientRect().toJSON();
   const original=articles.map(bounds);
-  if(stageWidth>=1200) expect(Math.min(...original.map(tile=>tile.width))>245,"Desktop article previews use the wider layout");
+  expect(Math.abs(q("#article-heading").getBoundingClientRect().left-panelLeft)<1,"Gallery and panel content share a left edge");
   expect(q('#photos').inert && !q('#articles').inert && articles.length===8,'Tecirc articles appear before Photography');
   await at(10.60);
   expect(articles.every(tile=>Number(tile.style.opacity)>0 && tile.querySelector('.gallery-titlebar')),
@@ -141,6 +143,7 @@ async function galleryChecks(){
   const photos=all('#photos .gallery-tile');
   expect(!q('#photos').inert && q('#articles').inert && photos.map(tile=>tile.getAttribute('aria-label')).join(',')==='img_0098.jpg,img_9936.jpg,img_3395.jpg,img_3578.jpg,img_3427.jpg,img_3417.jpg,img_4366.jpg','Photography contains exactly the selected photos');
   const heading=q('#photos h2').getBoundingClientRect();
+  expect(Math.abs(heading.left-panelLeft)<1,"Photography shares the panel content left edge");
   expect(photos.every(tile=>{
     const rect=tile.getBoundingClientRect();
     return rect.top>heading.bottom && rect.bottom<q('#stage').clientHeight;
