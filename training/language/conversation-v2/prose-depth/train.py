@@ -156,6 +156,7 @@ def evaluation(m, arm, k, terminal=False):
         for r in cases:
             if (r['panel']=='independent') and not terminal: continue
             prefix,gold=r['prefix'],r['gold']
+            gold=gold[:257-len(prefix)]
             n=min(r['budget'],256-len(prefix))
             if gold:
                 logp=m(torch.tensor([(prefix+gold)[:-1]]))[0,len(prefix)-1:].log_softmax(-1)

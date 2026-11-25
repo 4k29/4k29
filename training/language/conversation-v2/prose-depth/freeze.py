@@ -174,7 +174,7 @@ def main():
     dump(ROOT/'DATA_AUDIT.json',dict(targets_by_source=counts,mix=mix,exclusion=excluded,types=len(used),
         families=len({meta[k]['family'] for k in used}),original_source_sha=sha(CORPUS.read_bytes())))
     inputs={name:sha((ROOT/name).read_bytes()) for name in
-            ['DEV.json','DEV_AUDIT.json','TRAIN_INDEX.json','DATA_AUDIT.json','SOURCE_SNAPSHOTS.json','train.py',
+            ['DEV.json','DEV_AUDIT.json','freeze.py','acquire.py','TRAIN_INDEX.json','DATA_AUDIT.json','SOURCE_SNAPSHOTS.json','train.py',
              '../data/tokenizer.json','../../model.py','../eval_core.py','BENCHMARK.json']}
     dump(ROOT/'PLAN.json',dict(configs={k:dict(CONFIG,layers=n) for k,n in DEPTHS.items()},
          seed=131801,dropout_seed=131802,sampler_seed=131803,points=points,witness=25,targets=total,
