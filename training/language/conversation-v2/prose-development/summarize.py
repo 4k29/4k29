@@ -5,7 +5,9 @@ import math
 import statistics
 from review import ROOT,OLD,PIECES,read,dump,stage
 from run import INITIAL,load_schedule
-from freeze import grams
+
+def grams(ids):
+    return zip(*(ids[i:] for i in range(12)))
 
 def extract(rows):
     refs=[-p for r in rows for t,p in zip(r['gold'],r['ref'],strict=True) if t>=6 and t!=16]
