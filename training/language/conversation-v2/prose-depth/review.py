@@ -31,7 +31,7 @@ def review(step):
             if r['text'] is None:
                 code='v'
             elif not r['text'].strip():
-                code='r' if r['text'] and len(r['generated'])>=8 else 'e'
+                code='r' if r['repeat'] and len(r['generated'])>=8 else 'e'
             else:
                 raise ValueError(f'Missing reviewed case {i}')
         assert code in names

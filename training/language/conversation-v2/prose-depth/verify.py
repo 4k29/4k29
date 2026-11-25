@@ -1,7 +1,8 @@
 """Audit matched position counts, raw output and Git-only full state."""
 import collections
+import math
 
-from train import BASE, ROOT, CONFIG, DEPTHS, load_checkpoint, load_inputs, read, restore, sha, torch
+from train import BASE, ROOT, CONFIG, DEPTHS, load_checkpoint, load_inputs, read, restore, sha, torch, digest
 
 def main():
     plan,schedule=load_inputs()
@@ -35,6 +36,9 @@ def main():
         if r['panel']=='independent':
             assert b''.join(pieces[t] for t in r['prefix']+r['gold']).decode()==r['text']
             assert sha(r['text'].encode())==r['sha']
+    extra={r['id']:r for r in read(ROOT/'EXTRA_REFERENCES.json')['rows']}
+    assert set(extra)=={r['id'] for r in dev.values() if r['panel']=='extra'}
+    assert all(r['prefix']==dev[k]['prefix'] for k,r in extra.items())
     import gzip
     import json
     for arm in DEPTHS:
@@ -46,19 +50,30 @@ def main():
         m,o=restore(arm,state)
         assert sum(p.numel() for p in m.parameters())==read(ROOT/'BENCHMARK.json')[arm]['parameters']
         assert {int(x['step']) for x in o.state.values()}=={len(schedule)}
+        assert digest(m,o)==read(ROOT/f'{arm}-{len(schedule)}-extra.json')['provenance']['state_digest']
         assert all(torch.isfinite(p).all() for p in m.parameters())
         assert read(ROOT/f'{arm}-resume.json')['match']
         calls=list(map(json.loads,(ROOT/f'{arm}-calls.jsonl').read_text().splitlines()))
         assert calls==state['ledger']
         assert len(calls)==len(schedule)
-        for a,b in zip(calls,schedule,strict=True):
-            assert a['targets']==b['targets'] and a['lr']==b['lr']
+        for i,(a,b) in enumerate(zip(calls,schedule,strict=True),1):
+            size=max(len(row)-1 for row in b['rows'])
+            assert a['step']==i and a['targets']==a['nonpad']==b['targets'] and a['lr']==b['lr']
+            assert a['raw_positions']==size*len(b['rows']) and a['length']==size
+            assert all(math.isfinite(a[k]) for k in ('loss','norm','delta'))
         for step in [0]+plan['points']:
             with gzip.open(ROOT/f'{arm}-{step}-eval.json.gz','rt') as f:
                 result=json.load(f)
             assert {r['id'] for r in result['rows']}=={r['id'] for r in dev.values()
                 if r['panel']!='independent' or step==len(schedule)}
+            correction=read(ROOT/f'{arm}-{step}-extra.json')
+            assert correction['provenance']['optimizer_replays']==(step if arm=='A' and step==plan['points'][0] else 0)
+            assert set(correction['scores'])==set(extra)
             for r in result['rows']:
+                if r['id'] in extra:
+                    score=correction['scores'][r['id']]
+                    assert score['gold']==extra[r['id']]['gold'] and len(score['ref'])==len(score['gold'])
+                    assert all(math.isfinite(p) for p in score['ref']+list(score['self_logp'].values()))
                 assert b''.join(pieces[t] for t in r['generated']).hex()==r['rawBytesHex']
                 assert r['generated']==[t['top'][0][0] for t in r['steps']]
                 assert len(r['generated'])<=min(dev[r['id']]['budget'],256-len(dev[r['id']]['prefix']))

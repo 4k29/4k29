@@ -26,7 +26,7 @@ def diagnostics(rows):
     starts=[r['repeat']['repeatStart'] for r in rows if r['repeat']]
     departures=[r['first'] for r in rows if r['first'] is not None]
     return dict(cases=len(rows),body_targets=len(losses),nll=mean(losses),teacher_minus_self_logp=None if not gaps else -mean(gaps),
-        eos=sum(r['stop']=='EOS' for r in rows),repeat4=len(starts),
+        eos=sum(r['stop']=='EOS' for r in rows),invalid_utf8=sum(r['text'] is None for r in rows),repeat4=len(starts),
         repeat4_median=statistics.median(starts) if starts else None,
         first_departure_median=statistics.median(departures) if departures else None)
 
