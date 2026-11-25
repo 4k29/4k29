@@ -22,6 +22,11 @@ def extract(rows):
       first_departure_median=statistics.median(departures) if departures else None,
       eos=sum(r['stop']=='EOS' for r in rows),lf=tokens.count(16),space=tokens.count(38),
       digits=sum(54<=v<=63 for v in tokens),generated=len(tokens),invalid_utf8=sum(r['text'] is None for r in rows))
+    decisions=[s for r in rows for s in r['steps']]
+    for field in ('lf','space','eos','digits'):
+        probs=[s[field] for s in decisions if field in s]
+        out[f'mean_p_{field}']=statistics.mean(probs) if probs else None
+    out['median_first_token_top1_probability']=statistics.median(r['steps'][0]['top'][0][1] for r in rows)
     return out
 
 def main():
@@ -46,6 +51,8 @@ def main():
                     if g in desired:matches.setdefault(g,[key,loc+i])
     metrics={};cases={}
     for p,rows in outputs.items():
+        expected={k for k,d in dev.items() if (d['panel']=='independent')==p.startswith('holdout-')}
+        assert len(rows)==len(expected) and {r['id'] for r in rows}==expected,p
         metrics[p]={}
         cases[p]=[]
         k=int(p.split('-')[-1])
