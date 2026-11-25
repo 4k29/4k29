@@ -40,16 +40,22 @@ def audit_positions(write):
     add_rows(load_schedule(OLD),old,seen,sources,families,docs,counts,prose)
     assert counts['targets']==plan['initial_targets']
     windows=collections.Counter()
+    added_ids=set()
+    start_families=set(families)
     rows=[]
     stages={int(k):v for k,v in plan['stages'].items()}
     for k,b in enumerate(schedule,INITIAL+1):
         assert b['lr']==LR
         add_rows([b],new,seen,sources,families,docs,counts,prose)
         windows.update(tuple(seq) for seq in b['rows'])
+        added_ids.update(key for key,_ in b['ids'])
         if k in stages:
             assert counts['targets']==stages[k]
             rows.append(dict(step=k,cumulative_targets=counts['targets'],by_source=dict(sources),
                            family_count=len(families),documents=len(docs),largest_family=max(families.values()),
+                           repeated_prior_document_ids=len(added_ids&old.keys()),
+                           repeated_prior_family_count=len(start_families&{new[k]['family'] for k in added_ids}),
+                           repeated_teacher_coordinates=0,
                            eos=counts['eos'],lf=counts['lf'],space=counts['space'],
                            additional_mean_raw_sentences=statistics.mean(prose.values()),
                            document_token_median=statistics.median(docs.values()),
@@ -95,6 +101,7 @@ def verify_cold(extra_update=False):
         s=git_checkpoint(ROOT/'artifacts'/f'A-{k}')
         assert s['optimizer_step']==s['cursor']==k and s['ledger']==led[:k-INITIAL]
         assert s['initial_sha']==plan['checkpoint_sha'] and s['schedule_sha']==plan['schedule_sha']
+        assert s['plan_sha']==sha((ROOT/'PLAN.json').read_bytes())
         assert s['initial_digest']==read(ROOT/'BENCHMARK.json')['initial_digest']
         m,o=restore('A',s)
         assert sum(p.numel() for p in m.parameters())==11_225_280
