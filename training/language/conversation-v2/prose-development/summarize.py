@@ -89,6 +89,24 @@ def main():
               teachers_per_second=n/w if w else None,max_RSS_KiB=max((r['rss_KiB'] for r in running),default=None),
               mean_gradient_norm=statistics.mean(r['norm'] for r in running) if running else None,
               clips=sum(r['clip'] for r in running),actual_update_path=math.fsum(r['delta'] for r in running))
+    holdout=[p for p in points if p.startswith('holdout-')]
+    indexed={p:{r['id']:r for r in outputs[p]} for p in holdout}
+    paired={p:{'reference':[],'self':[]} for p in holdout}
+    common_cases=0
+    for identifier in indexed[holdout[0]]:
+        rows={p:indexed[p][identifier] for p in holdout}
+        if any(r['first'] is None for r in rows.values()):continue
+        common=set.intersection(*[
+            {i for i,t in enumerate(r['steps']) if t['ref'] is not None and r['first']<=i<r['first']+32}
+            for r in rows.values()])
+        common_cases+=bool(common)
+        for p,r in rows.items():
+            for i in sorted(common):
+                paired[p]['reference'].append(-r['ref'][i])
+                paired[p]['self'].append(-r['steps'][i]['ref'])
+    dump(ROOT/'PAIRED_HISTORY.json',dict(cases=common_cases,
+        positions=len(paired[holdout[0]]['self']),by_state={
+            p:{k:statistics.mean(v) for k,v in x.items()} for p,x in paired.items()}))
     dump(ROOT/'RESULTS.json',metrics)
     dump(ROOT/'CASES.json',cases)
     table=['|累積教師|更新|固定18 NLL|追加7 NLL|既閲覧24 NLL|TRAIN監視 NLL|caption|旧21重複|A-985の17保持|既閲覧49 一文／二文|',
