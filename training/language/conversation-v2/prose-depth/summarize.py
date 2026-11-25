@@ -6,7 +6,7 @@ import math
 import statistics
 import sys
 
-from train import ROOT, DEPTHS, read, dump
+from train import ROOT, DEPTHS, read, dump, load_inputs
 
 INITIAL_21={f'stair:{n}' for n in (709013,164607,780709,54096,363439,468221,705596,808794,
     269737,728815,314944,822181,287488,372931,90795,293007,322805,401499,526115,346709,337807)}
@@ -31,7 +31,13 @@ def diagnostics(rows):
         first_departure_median=statistics.median(departures) if departures else None)
 
 def main():
-    plan=read(ROOT/'PLAN.json')
+    plan,schedule=load_inputs()
+    index=read(ROOT/'TRAIN_INDEX.json')
+    sources=[]
+    for item in schedule:
+        source={'short' if index[key]['source']=='stair' else 'prose' for key,_ in item['ids']}
+        kind,=source
+        sources.append(kind)
     manual=read(ROOT/'REVIEW.json')
     metrics={}
     detail={}
@@ -61,7 +67,12 @@ def main():
             n=sum(r['targets'] for r in run_rows)
             wall=sum(r['wall'] for r in run_rows)
             p=read(ROOT/'BENCHMARK.json')[arm]['parameters']
-            panel['resource']=dict(targets=n,steps=k,train_ce=None if not n else sum(r['loss']*r['targets'] for r in run_rows)/n,
+            online={}
+            for source in ('prose','short'):
+                selected=[r for r,kind in zip(run_rows,sources) if kind==source]
+                if selected:
+                    online[source]=sum(r['loss']*r['targets'] for r in selected)/sum(r['targets'] for r in selected)
+            panel['resource']=dict(targets=n,steps=k,train_ce_by_source=online,train_ce=None if not n else sum(r['loss']*r['targets'] for r in run_rows)/n,
                 teacher_per_second=n/wall if wall else None,nonpad_per_second=sum(r['nonpad'] for r in run_rows)/wall if wall else None,
                 training_wall=wall,training_cpu=sum(r['cpu'] for r in run_rows),
                 approx_flops=6*p*sum(r['raw_positions'] for r in run_rows),
