@@ -699,8 +699,6 @@ function render(s,m) {
     introDetails=phase(t,1.61,2.03);
   } else if (s < timing.projectStart) {
     const t=holdAt(s-timing.introEnd,1.96,aboutPause);
-    const bend=ease(t,.38,.66);
-    frameBox = mixBox(m.dormant,m.about,bend);
     introErase=phase(t,.06,.34);
     introAlpha=introErase<1 ? 1 : 0;
     aboutAlpha=ease(t,.34,.49);
@@ -758,7 +756,7 @@ function render(s,m) {
   }
 
   showPanel(intro,introAlpha,frameBox);
-  showPanel(about,aboutAlpha,frameBox);
+  showPanel(about,aboutAlpha,m.about);
   showPanel(projectPanel,projectAlpha,frameBox);
   projectNodes.forEach((node,i)=>{
     node.hidden=i!==projectIndex;
