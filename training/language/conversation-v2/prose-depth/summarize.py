@@ -40,6 +40,15 @@ def main():
         sources.append(kind)
     manual=read(ROOT/'REVIEW.json')
     cases={(arm,k):raw(arm,k) for arm in DEPTHS for k in [0]+plan['points']}
+    for (arm,k),run in cases.items():
+        supplemental=read(ROOT/f'{arm}-{k}-extra.json')['scores']
+        for r in run['rows']:
+            if r['panel']=='extra':
+                extra=supplemental[r['id']]
+                assert not r['gold'] and not r['ref']
+                r.update({key:extra[key] for key in ('ref','gold','first')})
+                for pos,value in extra['self_logp'].items():
+                    r['steps'][int(pos)]['ref']=value
     def grams(tokens):
         return zip(*(tokens[i:] for i in range(12)))
     available={g for run in cases.values() for row in run['rows'] for g in grams(row['generated'])}
