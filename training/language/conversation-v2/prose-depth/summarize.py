@@ -39,13 +39,23 @@ def main():
         kind,=source
         sources.append(kind)
     manual=read(ROOT/'REVIEW.json')
+    cases={(arm,k):raw(arm,k) for arm in DEPTHS for k in [0]+plan['points']}
+    def grams(tokens):
+        return zip(*(tokens[i:] for i in range(12)))
+    available={g for run in cases.values() for row in run['rows'] for g in grams(row['generated'])}
+    train_matches={}
+    for item in schedule:
+        for (doc,offset),tokens in zip(item['ids'],item['rows'],strict=True):
+            for i,gram in enumerate(grams(tokens)):
+                if gram in available:
+                    train_matches.setdefault(gram,[doc,offset+i])
     metrics={}
     detail={}
     for arm in DEPTHS:
         calls=[json.loads(l) for l in (ROOT/f'{arm}-calls.jsonl').read_text().splitlines()]
         for k in [0]+plan['points']:
             key=f'{arm}-{k}'
-            rows=raw(arm,k)
+            rows=cases[arm,k]
             run_rows=calls[:k]
             panel=metrics[key]={}
             detail[key]=[]
@@ -55,11 +65,14 @@ def main():
                 two=bool(score.get('two'))
                 assert not two or one
                 detail[key].append(dict(id=r['id'],panel=r['panel'],nll=diagnostics([r])['nll'],
-                    first=r['first'],repeat4=r['repeat'],eos=r['stop']=='EOS',**score))
+                    first=r['first'],repeat4=r['repeat'],eos=r['stop']=='EOS',
+                    train_match12=[dict(position=i,source=train_matches[g]) for i,g in enumerate(grams(r['generated'])) if g in train_matches],
+                    **score))
             for group in PANELS:
                 data=[r for r in rows['rows'] if r['panel']==group]
                 if not data:continue
                 out=panel[group]=diagnostics(data)
+                out['train_match12']=sum(bool(r['train_match12']) for r in detail[key] if r['panel']==group)
                 for field in ('one','two','harmful','caption','topic'):
                     out[field]=sum(bool(manual[key][r['id']].get(field)) for r in data)
                 if group=='caption':
