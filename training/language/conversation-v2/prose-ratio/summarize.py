@@ -49,8 +49,11 @@ def measure(outputs, ratings, matches):
         pre_repeat_maxp=mean(r['steps'][r['repeat']['repeatStart']-1]['top'][0][1]
                          for r in outputs if r['repeat'] and r['repeat']['repeatStart']>0))
     if ratings is not None:
-        for flag in ('one','two','topic','off_topic','harmful','caption','natural_end'):
+        for flag in ('one','two','topic','off_topic','harmful','caption'):
             metrics[flag]=sum(bool(ratings[r['id']].get(flag)) for r in outputs)
+        metrics['natural_end']=sum(r['stop']=='EOS' and any(ratings[r['id']].get(f) for f in ('one','two','caption'))
+                                   and not ratings[r['id']].get('harmful') for r in outputs)
+
     return metrics
 
 def paired(outputs,names):

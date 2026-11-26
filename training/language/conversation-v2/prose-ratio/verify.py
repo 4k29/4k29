@@ -28,6 +28,16 @@ def verify(run_witness=False):
         assert entry['clip']==(entry['norm']>1)
         assert all(math.isfinite(entry[k]) for k in ('loss','norm','delta','cpu','wall'))
     assert sum(row['targets'] for row in rows)+plan['initial_targets']==plan['main_targets']
+    benchmark=read(ROOT/'BENCHMARK.json')
+    assert all(rows[0][k]==benchmark['calls'][0][k] for k in ('targets','norm','delta','loss'))
+    endings=[distribution['A-2950'],distribution[f"B-{plan['b_steps'][-1]}"]]
+    assert {d['cumulative_targets'] for d in endings}=={plan['main_targets']}
+    assert abs(endings[0]['prose']/endings[0]['targets']-.50)<.001
+    assert abs(endings[1]['prose']/endings[1]['targets']-.70)<.000001
+    for src in ('jaquad','jma','jawikivoyage','jawikibooks'):
+        first,second=[d['sources'][src]/d['prose'] for d in endings]
+        assert abs(first-second)<.001
+
     m,o,_=start()
     anchor=digest(m,o)
     assert anchor==read(PREV/'BENCHMARK.json')['initial_digest']==read(ROOT/'BENCHMARK.json')['start_digest']==read(ROOT/'PREFLIGHT.json')['initial_digest']
