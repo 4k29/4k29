@@ -177,6 +177,10 @@ def main():
     histories['prior_1017']=dict(prior_positions=count,available=count-missed,unavailable=missed,
         states={n:dict(ref=mean(v[0]),self=mean(v[1]),gap=mean(y-x for x,y in zip(*v,strict=True))) for n,v in lp.items()})
     assert count==1017
+    deltas={key:individual['holdout-B'][key]['body_nll']-individual['holdout-A'][key]['body_nll']
+            for key in individual['holdout-A']}
+    dump('NLL_DELTAS.json',dict(B_minus_A=deltas,improved=sum(n<0 for n in deltas.values()),
+         tied=sum(n==0 for n in deltas.values()),worse=sum(n>0 for n in deltas.values())))
     dump('RESULTS.json',result)
     dump('CASES.json',individual)
     dump('PAIRED_HISTORY.json',histories)
