@@ -35,7 +35,7 @@ def measure(outputs, ratings, matches):
     series=[s for r in outputs for s in r['steps']]
     starts=[r['repeat']['repeatStart'] for r in outputs if r['repeat']]
     punc_ids=PUNCTUATION
-    metrics=dict(cases=len(outputs),nll=mean(nll),body_positions=len(nll),tokens=len(out),space=out.count(38),
+    metrics=dict(cases=len(outputs),nll=mean(nll),all_reference_nll=mean(-lp for r in outputs for lp in r['ref']),body_positions=len(nll),tokens=len(out),space=out.count(38),
         digits=sum(54<=t<64 for t in out),lf=out.count(16),punctuation=sum(t in punc_ids for t in out),
         eos=out.count(2),max_space_run=max(longest(r['generated'],38) for r in outputs),
         only_whitespace=sum(r['text'] is not None and not r['text'].strip() for r in outputs),
@@ -184,12 +184,13 @@ def main():
     dump('RESULTS.json',result)
     dump('CASES.json',individual)
     dump('PAIRED_HISTORY.json',histories)
-    table=['|状態|累積教師|固定18 NLL|追加7 NLL|旧独立24 NLL|旧独立34 NLL|短文監視 NLL|caption|開始17件保持|',
+    table=['|状態|累積教師|固定18 NLL|追加7 NLL|旧独立24 NLL|旧独立34 NLL|短文監視EOS NLL|caption|開始17件保持|',
            '|---|---:|---:|---:|---:|---:|---:|---:|---:|']
     for name in names[:-3]:
         m=result[name]
         count=plan['initial_targets']+m.get('work',{}).get('targets',0)
-        vals=[f"{m[k]['nll']:.5f}" if k in m else '—' for k in ('fixed','extra','depth24','independent','short-monitor')]
+        vals=[f"{m[k]['nll']:.5f}" if k in m else '—' for k in ('fixed','extra','depth24','independent')]
+        vals.append(f"{m['short-monitor']['all_reference_nll']:.5f}")
         table.append(f"|{name}|{count:,}|"+'|'.join(vals)+f"|{m['caption']['caption']}/32|{m['caption']['initial_kept']}/17|")
     table.extend(['','|新規独立評価|本文NLL|自然な一文／二文|話題維持|有害反復|EOS|空白token|数字token|最大連続空白|',
         '|---|---:|---:|---:|---:|---:|---:|---:|---:|'])

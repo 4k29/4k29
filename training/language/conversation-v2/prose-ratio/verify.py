@@ -15,7 +15,7 @@ def verify(run_witness=False):
     plan,schedule=inputs()
     assert sha((ROOT/'PLAN.json').read_bytes())==(ROOT/'PLAN.sha256').read_text().split()[0]
     distribution=collect(plan)
-    assert distribution==read(ROOT/'DISTRIBUTION.json')
+    assert json.loads(json.dumps(distribution))==read(ROOT/'DISTRIBUTION.json')
     rows=ledger(ROOT/'LEDGER.jsonl')
     assert len(rows)==len(schedule)==plan['b_steps'][-1]-INITIAL
     for step,(entry,batch) in enumerate(zip(rows,schedule,strict=True),INITIAL+1):
